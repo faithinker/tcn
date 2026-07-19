@@ -60,6 +60,7 @@ const invitations = defineCollection({
     status: z.enum(['upcoming', 'past']),
     location: z.string(),
     venue: z.string(),
+    mapUrl: z.string().url().optional(),
     time: z.string(),
     summary: z.string(),
     paragraphs: z.array(z.string()),

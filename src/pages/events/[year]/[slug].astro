@@ -48,6 +48,19 @@ const copy = getContent(lang).events;
               <div>
                 <dt class="font-bold text-ink">{copy.location}</dt>
                 <dd class="mt-1 text-body-muted">{data.location}<br />{data.venue}</dd>
+                {data.mapUrl && (
+                  <dd class="mt-3">
+                    <a
+                      href={data.mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="inline-flex min-h-11 items-center gap-1 font-bold text-link underline"
+                    >
+                      {copy.viewMap}
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  </dd>
+                )}
               </div>
             </dl>
             <a
