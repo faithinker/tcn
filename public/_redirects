@@ -1,8 +1,17 @@
-# L11: events 트리 은퇴 → 세미나/창립총회로 301 (Cloudflare Pages)
+# L11: prefix 없는 기존 한국어 URL과 events 트리 은퇴 경로를 /ko/로 영구 이전.
 # 구체 경로 먼저, 와일드카드 나중(위→아래 첫 매치 우선).
-/events/2025/founding-ceremony-invitation     /about/founding     301
+/events/2025/founding-ceremony-invitation     /ko/about/founding     301
 /en/events/2025/founding-ceremony-invitation  /en/about/founding  301
-/en/events/*                                  /en/seminars        301
 /en/events                                    /en/seminars        301
-/events/*                                     /seminars           301
-/events                                       /seminars           301
+/events                                       /ko/seminars        301
+/about/declaration                            /ko/about/declaration 301
+/about/founding                               /ko/about/founding    301
+/about                                        /ko/about             301
+/people                                       /ko/people            301
+/seminars                                     /ko/seminars          301
+/contact                                      /ko/contact           301
+
+/en/events/*                                  /en/seminars          301
+/events/*                                     /ko/seminars          301
+/about/*                                      /ko/about/:splat       301
+/seminars/*                                   /ko/seminars/:splat    301

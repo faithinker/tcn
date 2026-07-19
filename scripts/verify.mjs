@@ -1,7 +1,7 @@
 // scripts/verify.mjs — TCN 루프 검증 하네스
 // 목적: 각 라우트를 375/768/1280에서 렌더 → (1)콘솔/페이지 에러 (2)가로 오버플로 (3)HTTP 상태 검사 + 스크린샷 저장.
 // 전제: preview/dev 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
-// 사용: BASE_URL=http://localhost:4321 ROUTES=/,/about,/about/founding,/people,/seminars,/seminars/2025-laos,/contact,/en/ node scripts/verify.mjs
+// 사용: BASE_URL=http://localhost:4321 ROUTES=/ko/,/ko/about,/ko/about/founding,/ko/people,/ko/seminars,/ko/seminars/2025-laos,/ko/contact,/en/ node scripts/verify.mjs
 // 종료코드: 실패 1건 이상이면 1 (루프 Done 게이트). 통과 시 0.
 // 산출물: verify/<route>-<width>.png  → 에이전트가 Read로 육안 확인.
 // 폰트/네트워크 로드 대기 후 촬영. 셀프호스팅 폰트라 외부 요청 없음.
@@ -17,7 +17,7 @@ try {
 }
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/people,/seminars,/seminars/2025-laos,/contact,/en/').split(',').map(s => s.trim()).filter(Boolean);
+const ROUTES = (process.env.ROUTES || '/ko/,/ko/about,/ko/about/founding,/ko/people,/ko/seminars,/ko/seminars/2025-laos,/ko/contact,/en/').split(',').map(s => s.trim()).filter(Boolean);
 const WIDTHS = (process.env.WIDTHS || '375,768,1280').split(',').map(Number);
 
 mkdirSync('verify', { recursive: true });

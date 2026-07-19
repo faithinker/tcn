@@ -2,14 +2,14 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// L3: 한국어 기본(prefix 없음) + 영어 옵션(/en/). ko='/', en='/en/'.
+// L3: 한국어(/ko/) + 영어(/en/). 루트('/')는 Cloudflare 국가/선호 언어 분기 전용.
 export default defineConfig({
   site: 'https://tcn-ezj.pages.dev',
   i18n: {
     defaultLocale: 'ko',
     locales: ['ko', 'en'],
     routing: {
-      prefixDefaultLocale: false,
+      prefixDefaultLocale: true,
       redirectToDefaultLocale: false,
     },
   },

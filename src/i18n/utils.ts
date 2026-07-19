@@ -1,5 +1,5 @@
 // L3: i18n 헬퍼 — URL에서 언어 판별, 번역 함수, 경로 지역화.
-// 라우팅: ko는 prefix 없음('/about'), en은 '/en/' prefix('/en/about').
+// 라우팅: ko는 '/ko/' prefix, en은 '/en/' prefix. 루트('/')는 엣지 언어 분기 전용.
 
 import { ui, defaultLang, type UiLang, type UiKey } from './ui';
 
@@ -19,18 +19,17 @@ export function useTranslations(lang: UiLang) {
 
 /**
  * 언어에 맞는 경로 생성.
- * ko: 그대로('/about'), en: '/en' prefix('/en/about'). 루트는 '/' / '/en/'.
+ * ko: '/ko' prefix('/ko/about'), en: '/en' prefix('/en/about').
  */
 export function localizePath(path: string, lang: UiLang): string {
   const clean = '/' + path.replace(/^\/+/, '');
-  if (lang === defaultLang) return clean;
   return clean === '/' ? `/${lang}/` : `/${lang}${clean}`;
 }
 
 /** 현재 경로에서 언어 prefix 제거 → 기준 경로('/about', 루트는 '/'). */
 export function stripLangPrefix(pathname: string): string {
   const parts = pathname.split('/');
-  if (parts[1] && parts[1] in ui && parts[1] !== defaultLang) {
+  if (parts[1] && parts[1] in ui) {
     const rest = '/' + parts.slice(2).join('/');
     return rest === '/' ? '/' : rest.replace(/\/$/, '');
   }

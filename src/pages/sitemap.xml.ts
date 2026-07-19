@@ -10,7 +10,7 @@ export const GET: APIRoute = async ({ site }) => {
         .map((entry) => entry.data.slug),
     ),
   ];
-  const paths = [
+  const localizedPaths = [
     '/',
     '/about/',
     '/about/founding/',
@@ -20,6 +20,9 @@ export const GET: APIRoute = async ({ site }) => {
     ...seminarSlugs.map((slug) => `/seminars/${slug}/`),
     '/contact/',
   ];
+  const paths = ['ko', 'en'].flatMap((lang) =>
+    localizedPaths.map((path) => path === '/' ? `/${lang}/` : `/${lang}${path}`),
+  );
 
   const urls = paths
     .map((path) => `  <url><loc>${new URL(path, siteRoot).href}</loc></url>`)

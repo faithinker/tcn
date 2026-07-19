@@ -57,8 +57,8 @@ function findHangul(value, path = '') {
 }
 
 const pageFiles = walk('src/pages').filter((file) => file.endsWith('.astro'));
-const koRoutes = pageFiles.filter((file) => !file.startsWith('src/pages/en/') && !file.endsWith('/404.astro'));
-const enRoutes = new Set(pageFiles.filter((file) => file.startsWith('src/pages/en/')).map((file) => file.replace('src/pages/en/', 'src/pages/')));
+const koRoutes = pageFiles.filter((file) => file.startsWith('src/pages/ko/')).map((file) => file.replace('src/pages/ko/', ''));
+const enRoutes = new Set(pageFiles.filter((file) => file.startsWith('src/pages/en/')).map((file) => file.replace('src/pages/en/', '')));
 check(koRoutes.every((file) => enRoutes.has(file)) && enRoutes.size === koRoutes.length,
   `라우트 소스 쌍 일치 (${koRoutes.length} ko / ${enRoutes.size} en)`);
 

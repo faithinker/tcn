@@ -29,7 +29,7 @@ const VP = { width: 1280, height: 500 };
 {
   const ctx = await browser.newContext({ viewport: VP });
   const page = await ctx.newPage();
-  await page.goto(BASE + '/', { waitUntil: 'load' });
+  await page.goto(BASE + '/ko/', { waitUntil: 'load' });
   await page.waitForTimeout(200);
 
   const hasJs = await page.evaluate(() => document.documentElement.classList.contains('js'));
@@ -60,7 +60,7 @@ const VP = { width: 1280, height: 500 };
 {
   const ctx = await browser.newContext({ viewport: VP, reducedMotion: 'reduce' });
   const page = await ctx.newPage();
-  await page.goto(BASE + '/', { waitUntil: 'load' });
+  await page.goto(BASE + '/ko/', { waitUntil: 'load' });
   await page.waitForTimeout(200);
   const val = await op(page, 'main > section', 1);
   check(val === '1', `reduced-motion: 2번째 섹션 스크롤 전 즉시 표시 (opacity=${val})`);
@@ -71,7 +71,7 @@ const VP = { width: 1280, height: 500 };
 {
   const ctx = await browser.newContext({ viewport: VP, javaScriptEnabled: false });
   const page = await ctx.newPage();
-  await page.goto(BASE + '/', { waitUntil: 'load' });
+  await page.goto(BASE + '/ko/', { waitUntil: 'load' });
   const val = await op(page, 'main > section', 1);
   check(val === '1', `no-JS: 2번째 섹션 표시(콘텐츠 안 숨김) (opacity=${val})`);
   await ctx.close();
