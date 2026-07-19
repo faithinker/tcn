@@ -14,6 +14,7 @@
     "audit:prod": "npm audit --omit=dev --audit-level=low",
     "verify": "node scripts/verify.mjs",
     "i18n": "node scripts/i18n.mjs",
+    "locale": "node scripts/locale.mjs",
     "motion": "node scripts/motion.mjs",
     "a11y": "node scripts/a11y.mjs"
   },

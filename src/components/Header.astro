@@ -113,6 +113,7 @@ const isExact = (href: string) => {
       <nav class="flex items-center font-sans text-caption font-bold" aria-label={t('common.language')}>
         <a
           href={enPath}
+          data-language-preference="en"
           hreflang="en"
           lang="en"
           aria-current={lang === 'en' ? 'page' : undefined}
@@ -121,6 +122,7 @@ const isExact = (href: string) => {
         <span aria-hidden="true" class="text-body-muted">/</span>
         <a
           href={koPath}
+          data-language-preference="ko"
           hreflang="ko"
           lang="ko"
           aria-current={lang === 'ko' ? 'page' : undefined}
@@ -197,6 +199,16 @@ const isExact = (href: string) => {
     </ul>
   </nav>
 </header>
+
+<script is:inline>
+  document.querySelectorAll('[data-language-preference]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const language = link.getAttribute('data-language-preference');
+      if (language !== 'ko' && language !== 'en') return;
+      document.cookie = `tcn_locale=${language}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`;
+    });
+  });
+</script>
 
 <script>
   const btn = document.getElementById('navToggle');
