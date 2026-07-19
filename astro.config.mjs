@@ -2,10 +2,19 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 
-// L1: 최소 스캐폴드 (Astro 5 + Tailwind 4). i18n(L3)·통합은 후속 단계에서.
+// L3: 한국어 기본(prefix 없음) + 영어 옵션(/en/). ko='/', en='/en/'.
 export default defineConfig({
   site: 'https://tcn.pages.dev',
+  i18n: {
+    defaultLocale: 'ko',
+    locales: ['ko', 'en'],
+    routing: {
+      prefixDefaultLocale: false,
+      redirectToDefaultLocale: false,
+    },
+  },
   vite: {
-    plugins: [tailwindcss()],
+    // @tailwindcss/vite와 Astro 번들 vite의 타입 버전 스큐 회피(런타임 무관, 코스메틱).
+    plugins: [/** @type {any} */ (tailwindcss())],
   },
 });
