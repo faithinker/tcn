@@ -1,0 +1,33 @@
+---
+// L5: Button — primary(잉크 채움)/outline(흰 바탕+블랙 1px). 4px 라운드, ≥48px, 산세리프.
+// href 있으면 <a>, 없으면 <button>.
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'outline';
+  type?: 'button' | 'submit';
+  class?: string;
+}
+
+const { href, variant = 'primary', type = 'button', class: cls = '' } = Astro.props;
+
+const base =
+  'inline-flex min-h-[48px] items-center justify-center rounded-sm px-6 font-sans text-button font-bold no-underline transition-colors';
+const styles = {
+  primary: 'bg-ink text-on-primary hover:bg-ink-soft',
+  outline: 'border border-hairline-strong bg-canvas text-ink hover:bg-canvas-soft',
+} as const;
+
+const cn = `${base} ${styles[variant]} ${cls}`.trim();
+---
+
+{
+  href ? (
+    <a href={href} class={cn}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} class={cn}>
+      <slot />
+    </button>
+  )
+}

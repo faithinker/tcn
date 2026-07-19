@@ -83,7 +83,7 @@
 - [x] **L2** DESIGN.md 토큰 → global.css (@theme + `:root` 라이트 단일) + **Noto Serif KR·Pretendard** 셀프호스팅 · 잉크블루 #0b3d6b
 - [x] **L3** i18n `defaultLocale:'ko'` + ui.ts(ko 기본, en 옵션) + utils.ts
 - [x] **L4** 셸: BaseLayout · Header(종이 nav+하단 블랙 헤어라인, 햄버거) · Footer(잉크블랙 밴드) — *ThemeToggle 없음*
-- [ ] **L5** 코어 컴포넌트: Button(primary/outline·4px·≥48px) · SectionTile(hero-band/section-band) · Stat
+- [x] **L5** 코어 컴포넌트: Button(primary/outline·4px·≥48px) · SectionTile(hero-band/section-band) · Stat
 - [ ] **L6** content.config.ts(Zod, 아래 스키마) + SEED 시드 파일 — `astro check` 통과
 - [ ] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)
 - [ ] **L8** About (미션/비전·활동개요·**선언문 국문 전문**·History Timeline)
