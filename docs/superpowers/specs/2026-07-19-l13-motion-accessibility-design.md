@@ -14,7 +14,7 @@
 ### 완료 게이트 (수용 기준)
 
 - `npm run build` 무에러.
-- 대표 페이지 **Lighthouse accessibility ≥ 90**: `/ /about /people /seminars /contact /events` + `/en/`.
+- 대표 페이지 **Lighthouse accessibility ≥ 90**: `/ /about /about/founding /people /seminars /seminars/2025-laos /contact` + `/en/`.
 - `prefers-reduced-motion: reduce`에서 진입 모션 완전 off.
 - JS 미동작·구형 브라우저에서 콘텐츠가 절대 숨지 않음(처음부터 표시).
 - 375 / 768 / 1280 무깨짐, 콘솔 무에러.

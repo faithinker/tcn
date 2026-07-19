@@ -12,6 +12,7 @@
     "astro": "astro",
     "check": "astro check",
     "verify": "node scripts/verify.mjs",
+    "i18n": "node scripts/i18n.mjs",
     "motion": "node scripts/motion.mjs",
     "a11y": "node scripts/a11y.mjs"
   },
