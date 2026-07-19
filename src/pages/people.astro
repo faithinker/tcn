@@ -47,6 +47,16 @@ const pendingMembers = members.filter((member) => member.data.tba);
               {member.data.nameEn}
             </p>
           )}
+          {member.data.bio && (
+            <ul class="mt-5 max-w-[58ch] space-y-2 font-serif text-body-serif text-body">
+              {member.data.bio.map((item) => (
+                <li class="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-1">
+                  <span aria-hidden="true">·</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           {member.data.affiliation && (
             <p class="mt-5 max-w-[58ch] font-serif text-body-serif text-body">
               {member.data.affiliation}
