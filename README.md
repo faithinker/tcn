@@ -74,7 +74,7 @@ src/data/
 
 | 구분 | 사용 기술 |
 | --- | --- |
-| 프레임워크 | [Astro](https://astro.build) 5 (정적 사이트 생성) |
+| 프레임워크 | [Astro](https://astro.build) 7 (정적 사이트 생성) |
 | 스타일 | [Tailwind CSS](https://tailwindcss.com) 4 (`@tailwindcss/vite`) + 디자인 토큰 |
 | 폰트 | Noto Serif KR (명조, 헤드라인·본문) · Pretendard (내비·메타데이터) |
 | 언어 | TypeScript |
@@ -135,6 +135,7 @@ npm run dev          # 개발 서버 (0.0.0.0, 핫리로드)
 npm run build        # dist/ 정적 빌드
 npm run preview      # 빌드 결과 미리보기
 npm run check        # astro check (타입·스키마 검증)
+npm run audit:prod   # 운영 의존성 보안 감사 (개발 전용 도구 제외)
 npm run i18n         # 한·영 라우트·번역·데이터 정합성 검사
 npm run verify       # Playwright 스크린샷 검증 (375/768/1280)
 npm run motion       # 스크롤 리빌·reduced-motion·JS 실패 폴백 검증
