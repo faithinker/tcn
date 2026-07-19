@@ -1,0 +1,107 @@
+---
+// L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
+// 내비=산세리프(Pretendard), 탭타깃 ≥48px. 언어 전환은 L16(영어판)에서.
+import { useTranslations, localizePath } from '../i18n/utils';
+import type { UiLang } from '../i18n/ui';
+
+interface Props {
+  lang: UiLang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const nav = [
+  { key: 'nav.home', href: '/' },
+  { key: 'nav.about', href: '/about' },
+  { key: 'nav.people', href: '/people' },
+  { key: 'nav.seminars', href: '/seminars' },
+  { key: 'nav.contact', href: '/contact' },
+] as const;
+
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => {
+  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  return target === '/' ? here === '/' : here.startsWith(target);
+};
+---
+
+<header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas">
+  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-4 px-5 py-3">
+    <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
+      <span class="font-serif text-[1.375rem] font-semibold text-ink">초문화네트워크</span>
+      <span class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">TCN</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label={t('common.menu')}>
+      {
+        nav.map((item) => (
+          <a
+            href={localizePath(item.href, lang)}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+            class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
+          >
+            {t(item.key)}
+          </a>
+        ))
+      }
+      <a
+        href={localizePath('/contact', lang)}
+        class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-[#2b2b2b]"
+      >
+        {t('nav.cta')}
+      </a>
+    </nav>
+
+    <button
+      id="navToggle"
+      type="button"
+      class="flex h-12 w-12 items-center justify-center text-ink md:hidden"
+      aria-expanded="false"
+      aria-controls="mobileNav"
+      aria-label={t('common.menu')}
+    >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas md:hidden" aria-label={t('common.menu')}>
+    <ul class="mx-auto max-w-[75rem] px-2 py-2">
+      {
+        nav.map((item) => (
+          <li>
+            <a
+              href={localizePath(item.href, lang)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
+            >
+              {t(item.key)}
+            </a>
+          </li>
+        ))
+      }
+      <li class="px-3 py-2">
+        <a
+          href={localizePath('/contact', lang)}
+          class="inline-flex min-h-[48px] w-full items-center justify-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
+        >
+          {t('nav.cta')}
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const btn = document.getElementById('navToggle');
+  const menu = document.getElementById('mobileNav');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    menu?.classList.toggle('hidden');
+  });
+</script>

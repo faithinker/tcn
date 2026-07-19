@@ -82,7 +82,7 @@
 - [x] **L1v** 검증 하네스: `npm i -D playwright@latest`(**≥1.60.0 필수** — 미만은 node26서 브라우저 추출 멈춤; 현재 1.61.1) + `npx playwright install chromium` + `scripts/verify.mjs`(작성됨) + `package.json` script `"verify"`. 스모크: 임시 `/` preview에서 `npm run verify` PASS(스크린샷 생성 확인). **실패 시**: `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`+`channel:'chrome'`(설치된 Chrome), 또는 `puppeteer-core@25.3.0`+executablePath
 - [x] **L2** DESIGN.md 토큰 → global.css (@theme + `:root` 라이트 단일) + **Noto Serif KR·Pretendard** 셀프호스팅 · 잉크블루 #0b3d6b
 - [x] **L3** i18n `defaultLocale:'ko'` + ui.ts(ko 기본, en 옵션) + utils.ts
-- [ ] **L4** 셸: BaseLayout · Header(종이 nav+하단 블랙 헤어라인, 햄버거) · Footer(잉크블랙 밴드) — *ThemeToggle 없음*
+- [x] **L4** 셸: BaseLayout · Header(종이 nav+하단 블랙 헤어라인, 햄버거) · Footer(잉크블랙 밴드) — *ThemeToggle 없음*
 - [ ] **L5** 코어 컴포넌트: Button(primary/outline·4px·≥48px) · SectionTile(hero-band/section-band) · Stat
 - [ ] **L6** content.config.ts(Zod, 아래 스키마) + SEED 시드 파일 — `astro check` 통과
 - [ ] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)

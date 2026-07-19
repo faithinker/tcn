@@ -5,8 +5,8 @@
   "private": true,
   "description": "초문화네트워크 / Transcultural Network (TCN) — 소개 사이트",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "astro dev --host 0.0.0.0",
+    "start": "astro dev --host 0.0.0.0",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",

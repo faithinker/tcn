@@ -1,0 +1,45 @@
+---
+// L4: 공통 셸 — head/meta, 스킵링크, Header, main, Footer. 단일 밝은 테마(ThemeToggle 없음).
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const siteName = t('site.name');
+const pageTitle = title ? `${title} · ${siteName}` : `${siteName} · ${t('site.nameEn')}`;
+const desc = description ?? t('site.tagline');
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a
+      href="#main"
+      class="sr-only rounded-sm bg-ink px-4 py-2 font-sans font-bold text-on-primary focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100]"
+    >
+      {t('common.skipToContent')}
+    </a>
+    <Header lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>
