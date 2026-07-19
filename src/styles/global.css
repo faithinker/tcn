@@ -6,11 +6,12 @@
    주의: @theme/@layer 블록 "내부" 인라인 주석 금지 (Tailwind v4 파서 오류).
    ============================================================ */
 
-/* 셀프호스팅 폰트 (unicode-range 서브셋 -> 한글/라틴만 실제 다운로드) */
+/* 셀프호스팅 폰트 (unicode-range 서브셋 -> 표시 글리프만 실제 다운로드).
+   Pretendard: dynamic-subset(93개 서브셋) — 단일 2MB 통파일 대신 unicode-range로 필요분만.
+   Noto Serif KR: 본문 400 + 헤드라인 600만. 700은 미사용(byline은 600으로). */
 @import '@fontsource/noto-serif-kr/400.css';
 @import '@fontsource/noto-serif-kr/600.css';
-@import '@fontsource/noto-serif-kr/700.css';
-@import 'pretendard/dist/web/variable/pretendardvariable.css';
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 
 @import 'tailwindcss';
 
@@ -80,9 +81,11 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    overflow-x: clip;
   }
 
   body {
+    min-width: 0;
     background-color: var(--color-canvas);
     color: var(--color-body);
     font-family: var(--font-serif);
@@ -105,6 +108,15 @@
 
   main, footer {
     overflow-wrap: break-word;
+  }
+
+  img, video, canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button, a {
+    touch-action: manipulation;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -135,6 +147,41 @@
     background-color: var(--color-accent);
     color: #ffffff;
   }
+}
+
+/* 작은 화면에서는 읽기 폭과 정보 밀도를 함께 낮춘다. */
+@media (max-width: 39.999rem) {
+  :root {
+    --text-body-serif: 1.0625rem;
+    --text-lead: 1.1875rem;
+    --text-display-sm: 1.375rem;
+    --text-display-md: 1.75rem;
+    --text-display-lg: 2.25rem;
+    --text-display-hero: 2.625rem;
+  }
+
+  body {
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  main > section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .eyebrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+  }
+
+  h1, h2, h3 {
+    overflow-wrap: anywhere;
+  }
+}
+
+body.nav-open {
+  overflow: hidden;
 }
 
 /* 에디토리얼 시그니처 유틸 (컴포넌트는 L4+에서 사용) */
