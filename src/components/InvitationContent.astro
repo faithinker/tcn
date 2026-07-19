@@ -38,8 +38,5 @@ const { data, compact = false } = Astro.props;
   <footer class="mt-10 border-t border-hairline pt-8 text-right">
     <p class="font-sans text-body-sm text-body-muted">{data.issuedAt}</p>
     <p class="mt-2 font-serif text-body-serif font-semibold text-ink">{data.sender} 올림</p>
-    {data.source && (
-      <p class="mt-5 font-sans text-caption text-body-muted">원문: {data.source}</p>
-    )}
   </footer>
 </div>

@@ -22,8 +22,8 @@ const activities = ['국제 세미나 개최', '공동연구', '인력 교류', 
 
 const highlights = [
   { value: '2025', label: '창립' },
-  { value: '15', label: '창립국' },
-  { value: '1', label: '세미나' },
+  { value: '15', label: '창립 참여국' },
+  { value: '1', label: '개최 세미나' },
   { value: '서울', label: '사무국' },
 ];
 ---
@@ -103,7 +103,7 @@ const highlights = [
             {featured.data.abstract ?? '주제와 연사는 추후 안내됩니다.'}
           </p>
           <div class="mt-6">
-            <Button href={localizePath('/seminars', lang)} variant="outline">
+            <Button href={localizePath('/events', lang)} variant="outline">
               세미나 전체 보기
             </Button>
           </div>

@@ -69,7 +69,6 @@ const invitations = defineCollection({
     closing: z.array(z.string()),
     issuedAt: z.string(),
     sender: z.string(),
-    source: z.string().optional(),
   }),
 });
 

@@ -1,6 +1,6 @@
 /* ============================================================
    TCN global.css — L2
-   DESIGN.md(WIRED 에디토리얼) 토큰 -> Tailwind 4 @theme + 베이스.
+   DESIGN.md editorial tokens -> Tailwind 4 @theme + base styles.
    셀프호스팅 폰트: Noto Serif KR(명조) + Pretendard Variable.
    밝은 고대비 단일 테마(다크모드 없음), 노안 가독성 우선.
    주의: @theme/@layer 블록 "내부" 인라인 주석 금지 (Tailwind v4 파서 오류).

@@ -1,16 +1,16 @@
 ---
 version: alpha
 name: TCN-editorial-analysis
-description: A scholarly editorial interface for a learned society — the WIRED broadsheet skeleton (serif display, paper canvas, magazine grid, hairline dividers, one ink-blue link color) retuned for authority, trust, and an older (late-50s+) Korean readership. Serif carries the identity: Noto Serif KR (명조) for headlines and long-form body, Pretendard sans for navigation and metadata. Larger type floors, higher-contrast text, and a warm parchment tint replace WIRED's stark, dense, small-type magazine defaults. No decorative chrome, no drop-shadows — hairline rules and a single deep institutional blue carry all hierarchy.
+description: A scholarly editorial interface designed for authority, trust, and an older Korean readership. Noto Serif KR carries headlines and long-form body copy, while Pretendard is used for navigation and metadata. Large type, high-contrast text, warm paper surfaces, hairline rules, and a single institutional blue establish the hierarchy.
 
-# Deviations from raw WIRED (intentional, audience-driven):
+# Audience-driven design decisions:
 #  1. Type floors raised — body 16→18px, caption 12→14px — for late-50s+ eyes (WCAG AAA legibility).
 #  2. Secondary gray darkened #757575→#5a5a5a (4.6:1 → ~7:1 contrast).
 #  3. Korean serif + sans font stacks added (Noto Serif KR / Pretendard); display weight 600, not 400 — hangul serif needs more weight than a Latin didone for equal presence.
-#  4. Warm parchment surfaces (#f7f5f0) replace WIRED cool #f5f5f5 — reduces white glare, adds journal warmth.
+#  4. Warm parchment surfaces (#f7f5f0) reduce white glare and add journal warmth.
 #  5. Near-black ink (#141414) instead of pure #000 — reduces halation for large hangul blocks.
 #  6. Interactive corners 4px (rounded.sm) instead of hard 0 — a touch less austere while keeping editorial gravitas.
-#  7. Line-heights relaxed — hangul clips at WIRED's tight ratios; body 1.75, display 1.12.
+#  7. Relaxed line-heights prevent Hangul clipping; body 1.75, display 1.12.
 
 colors:
   primary: "#141414"
@@ -218,7 +218,7 @@ components:
 
 ## Overview
 
-TCN's public site presents a learned society (Transcultural Network), not a SaaS product. The surface is an editorial one: a paper canvas, serif headlines and serif long-form body, a magazine-style grid of story rows separated by hairlines, and a single deep institutional blue for links. It borrows WIRED's broadsheet discipline — serif-for-narrative, sans-for-structure, square-ish geometry, no drop-shadows — but is retuned end-to-end for **authority + trust** and for a **late-50s-and-older Korean readership**: larger type, higher contrast, a warm parchment tint, and Korean-first font stacks.
+TCN's public site presents a learned society (Transcultural Network), not a SaaS product. The surface is editorial: a paper canvas, serif headlines and long-form body copy, a structured grid separated by hairlines, and a single deep institutional blue for links. It is tuned end-to-end for **authority + trust** and for a **late-50s-and-older Korean readership** through larger type, higher contrast, a warm parchment tint, and Korean-first font stacks.
 
 Type carries the identity. Two Korean-capable families ladder the system: **Noto Serif KR (명조)** for every headline and for long-form body (정관·인사말·연혁·논문 소개), and **Pretendard** (a modern Korean UI sans) for navigation, metadata, eyebrows, captions, and buttons. Serifs speak scholarship and gravitas; the sans handles structure and wayfinding.
 
@@ -249,7 +249,7 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 ### Text
 - **Ink** (`#141414`): Headlines and primary body.
 - **Ink Soft / Body** (`{colors.body}` — `#2b2b2b`): Long-form paragraphs (~13:1 contrast).
-- **Body Muted** (`{colors.body-muted}` — `#5a5a5a`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1). WIRED's `#757575` is intentionally rejected as too faint for the audience.
+- **Body Muted** (`{colors.body-muted}` — `#5a5a5a`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1) so supporting text remains legible.
 
 ## Typography
 
@@ -257,7 +257,7 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 1. **Noto Serif KR (본명조 계열)** — headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. Load weights 400/600/700 (Google Fonts). Latin fallbacks: Playfair Display (display), Lora (body).
 2. **Pretendard** — navigation, buttons, eyebrows, metadata, captions, form controls. Excellent Korean + Latin coverage; system fallbacks Apple SD Gothic Neo / Malgun Gothic.
 
-**Why display weight 600 (not WIRED's 400):** a Latin high-contrast didone reads elegant at 400; hangul serif at 400 looks thin and loses authority at display sizes. 600 restores presence without going heavy.
+**Why display weight 600:** Hangul serif at 400 looks thin and loses authority at display sizes. 600 restores presence without becoming heavy.
 
 ### Hierarchy
 
@@ -291,7 +291,7 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 - **Row padding**: `{spacing.2xl}` 24px vertical between story/officer/bylaw rows.
 
 ### Grid & Container
-- Content container ~1200px max (narrower than WIRED's 1400 — favors readable measure over density).
+- Content container ~1200px max to favor readable measure over density.
 - Long-form article/bylaw column caps at ~68ch for comfortable reading.
 - Home: hero band → intro (인사말/미션) → featured (연혁 or 학술대회) → officer grid → news/notice rows → footer.
 - Officer grid: 2-up desktop, 1-up mobile.
@@ -321,7 +321,7 @@ No drop-shadows. Surface contrast + hairlines carry all hierarchy.
 | Token | Value | Use |
 |---|---|---|
 | `{rounded.none}` | 0px | Section bands, full-bleed imagery. |
-| `{rounded.sm}` | 4px | Buttons, inputs, cards — a hair of softening over WIRED's hard 0, still editorial. |
+| `{rounded.sm}` | 4px | Buttons, inputs, cards; lightly softened while remaining editorial. |
 | `{rounded.full}` | 9999px | Author/officer avatars, icon buttons only. |
 
 ## Components

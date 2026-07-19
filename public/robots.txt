@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tcn-ezj.pages.dev/sitemap.xml

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f2efe7" />
+  <rect x="64" y="64" width="1072" height="502" fill="#ffffff" stroke="#141414" stroke-width="2" />
+  <rect x="112" y="112" width="88" height="88" rx="8" fill="#141414" />
+  <path d="M130 133h52v13h-19v39h-14v-39h-19z" fill="#ffffff" />
+  <text x="112" y="310" fill="#141414" font-family="AppleMyungjo, 'Noto Serif KR', serif" font-size="72" font-weight="700">초문화네트워크</text>
+  <text x="112" y="386" fill="#5a5a5a" font-family="Georgia, 'Times New Roman', serif" font-size="44">Transcultural Network</text>
+  <line x1="112" y1="440" x2="1088" y2="440" stroke="#ddd9d0" stroke-width="2" />
+  <text x="112" y="500" fill="#0b3d6b" font-family="Arial, sans-serif" font-size="28" font-weight="700">INTERNATIONAL SCHOLARLY NETWORK · TCN</text>
+</svg>
