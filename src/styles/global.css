@@ -6,12 +6,8 @@
    주의: @theme/@layer 블록 "내부" 인라인 주석 금지 (Tailwind v4 파서 오류).
    ============================================================ */
 
-/* 셀프호스팅 폰트 (unicode-range 서브셋 -> 표시 글리프만 실제 다운로드).
-   Pretendard: dynamic-subset(93개 서브셋) — 단일 2MB 통파일 대신 unicode-range로 필요분만.
-   Noto Serif KR: 본문 400 + 헤드라인 600만. 700은 미사용(byline은 600으로). */
-@import '@fontsource/noto-serif-kr/400.css';
-@import '@fontsource/noto-serif-kr/600.css';
-@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+/* 폰트 @font-face는 src/styles/fonts.css로 분리 — BaseLayout에서 비차단 로드.
+   (렌더블로킹 CSS에서 수백 KB의 선언을 빼 첫 페인트 단축. perf 최적화) */
 
 @import 'tailwindcss';
 
