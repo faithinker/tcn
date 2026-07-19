@@ -10,6 +10,7 @@
     "status": "past",
     "location": "성균관대학교 명륜캠퍼스",
     "venue": "퇴계인문관 첨단강의실 31511호",
+    "mapUrl": "https://www.google.com/maps/search/?api=1&query=Sungkyunkwan+University+Humanities+and+Social+Sciences+Campus+Toegye+Hall+of+Humanities",
     "time": "18:00-19:00",
     "summary": "Transcultural Network의 창립 취지를 나누고 정관 심의, 토론, 창립 선언과 교류의 시간을 마련한 창립행사 초청장입니다.",
     "paragraphs": [
@@ -42,6 +43,7 @@
     "status": "past",
     "location": "Sungkyunkwan University, Humanities and Social Sciences Campus",
     "venue": "Toegye Hall of Humanities, Advanced Lecture Room 31511",
+    "mapUrl": "https://www.google.com/maps/search/?api=1&query=Sungkyunkwan+University+Humanities+and+Social+Sciences+Campus+Toegye+Hall+of+Humanities",
     "time": "18:00–19:00",
     "summary": "An invitation to celebrate the founding of the Transcultural Network, review its bylaws, exchange ideas, issue the founding declaration, and build new connections.",
     "paragraphs": [
