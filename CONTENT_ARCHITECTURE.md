@@ -2,7 +2,7 @@
 
 Updated: 2026-07-19
 
-Runtime: Astro 5 static build
+Runtime: Astro 7 static build
 
 Default language: Korean (`/`)
 
