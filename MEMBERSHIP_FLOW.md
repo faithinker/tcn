@@ -1,5 +1,9 @@
 # TCN Membership Flow
 
+Updated: 2026-07-19
+
+Public route: `/contact` and `/en/contact`
+
 ## Phase 1: public guidance
 
 - Explain who can join and what activities members can participate in.
@@ -21,7 +25,7 @@ Do not request a phone number, birth date, home address, resident number, or ide
 
 ## Activation
 
-Set `PUBLIC_MEMBERSHIP_FORM_URL` to an approved external form or member system. Before activation, confirm:
+Set `PUBLIC_MEMBERSHIP_FORM_URL` to an approved external form or member system. The shared Korean/English contact page enables the external CTA only when this value is non-empty. Before activation, confirm:
 
 1. membership categories and approval authority;
 2. dues and payment handling, if any;
