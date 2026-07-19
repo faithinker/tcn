@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import InvitationContent from '../../../components/InvitationContent.astro';
+import { getCollection } from 'astro:content';
+import { formatDate } from '../../../i18n/utils';
+
+export async function getStaticPaths() {
+  const invitations = await getCollection('invitations');
+  const years = [...new Set(invitations.map((entry) => entry.data.year))];
+
+  return years.map((year) => ({
+    params: { year: String(year) },
+    props: { invitations: invitations.filter((entry) => entry.data.year === year) },
+  }));
+}
+
+const { year } = Astro.params;
+const { invitations } = Astro.props;
+const sortedInvitations = [...invitations].sort((a, b) => b.data.date.localeCompare(a.data.date));
+---
+
+<BaseLayout title={`${year}년 행사`} description={`${year}년 초문화네트워크 행사와 초청장`}>
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">Events · {year}</p>
+      <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+        {year}년 행사
+      </h1>
+      <p class="mt-6 font-sans text-body-sans text-body-muted">
+        <a href="/events" class="font-bold">전체 행사</a> / {year}년
+      </p>
+    </div>
+  </section>
+
+  <section class="bg-canvas-band px-5 py-16 sm:py-24">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">Invitations</p>
+      <h2 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+        초청장
+      </h2>
+      <div class="mt-8 grid gap-4">
+        {sortedInvitations.map((invitation) => (
+          <article class="border-y border-hairline-strong bg-canvas p-6 sm:p-8">
+            <p class="font-sans text-caption font-bold text-accent">
+              {invitation.data.status === 'past' ? '지난 행사 초청장' : '행사 초청장'}
+            </p>
+            <h3 class="mt-2 font-serif text-display-sm font-semibold text-ink">
+              <a
+                href={`/events/${invitation.data.year}/${invitation.data.slug}`}
+                class="text-ink no-underline hover:text-link"
+              >
+                {invitation.data.title}
+              </a>
+            </h3>
+            <p class="mt-3 font-sans text-body-sans text-body-muted">
+              {formatDate(invitation.data.date)} · {invitation.data.location}
+            </p>
+            <p class="mt-5 max-w-[68ch] font-serif text-body-serif text-body">
+              {invitation.data.summary}
+            </p>
+
+            <details class="invitation-details group mt-7 border-t border-hairline">
+              <summary
+                class="invitation-summary flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 font-sans text-body-sans font-bold text-link"
+              >
+                <span class="group-open:hidden">초청장 전문 펼쳐보기</span>
+                <span class="hidden group-open:inline">초청장 전문 접기</span>
+                <svg
+                  aria-hidden="true"
+                  class="h-5 w-5 shrink-0 transition-transform duration-150 group-open:rotate-180"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.25"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </summary>
+
+              <div class="border-t border-hairline pb-2">
+                <InvitationContent data={invitation.data} compact />
+                <a
+                  href={`/events/${invitation.data.year}/${invitation.data.slug}`}
+                  class="mt-8 inline-flex min-h-12 items-center font-sans text-body-sans font-bold underline"
+                >
+                  초청장 독립 페이지에서 읽기
+                </a>
+              </div>
+            </details>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .invitation-summary {
+    list-style: none;
+  }
+
+  .invitation-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .invitation-summary::marker {
+    content: '';
+  }
+</style>

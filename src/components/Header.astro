@@ -2,7 +2,8 @@
 // L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
 // 내비=산세리프(Pretendard), 탭타깃 ≥48px. 언어 전환은 L16(영어판)에서.
 import { useTranslations, localizePath } from '../i18n/utils';
-import type { UiLang } from '../i18n/ui';
+import type { UiKey, UiLang } from '../i18n/ui';
+import { getCollection } from 'astro:content';
 
 interface Props {
   lang: UiLang;
@@ -11,18 +12,50 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const nav = [
+const invitationYears = [
+  ...new Set(
+    (await getCollection('invitations'))
+      .filter((entry) => entry.data.lang === lang)
+      .map((entry) => entry.data.year),
+  ),
+].sort((a, b) => b - a);
+
+interface NavItem {
+  key: UiKey;
+  href: string;
+  children?: Array<{ label: string; href: string }>;
+}
+
+const nav: NavItem[] = [
   { key: 'nav.home', href: '/' },
-  { key: 'nav.about', href: '/about' },
+  {
+    key: 'nav.about',
+    href: '/about',
+    children: [
+      { label: t('nav.aboutOverview'), href: '/about' },
+      { label: t('nav.declaration'), href: '/about/declaration' },
+    ],
+  },
   { key: 'nav.people', href: '/people' },
-  { key: 'nav.seminars', href: '/seminars' },
+  {
+    key: 'nav.events',
+    href: '/events',
+    children: [
+      { label: t('nav.eventAll'), href: '/events' },
+      ...invitationYears.map((year) => ({ label: `${year}년`, href: `/events/${year}` })),
+    ],
+  },
   { key: 'nav.contact', href: '/contact' },
-] as const;
+];
 
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => {
   const target = localizePath(href, lang).replace(/\/$/, '') || '/';
   return target === '/' ? here === '/' : here.startsWith(target);
+};
+const isExact = (href: string) => {
+  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  return here === target;
 };
 ---
 
@@ -35,15 +68,48 @@ const isActive = (href: string) => {
 
     <nav class="hidden items-center gap-1 md:flex" aria-label={t('common.menu')}>
       {
-        nav.map((item) => (
-          <a
-            href={localizePath(item.href, lang)}
-            aria-current={isActive(item.href) ? 'page' : undefined}
-            class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
-          >
-            {t(item.key)}
-          </a>
-        ))
+        nav.map((item) =>
+          item.children ? (
+            <details class="group relative">
+              <summary
+                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1.5 px-3 font-sans text-body-sans font-bold text-ink hover:text-link group-open:text-link"
+              >
+                {t(item.key)}
+                <svg
+                  aria-hidden="true"
+                  class="h-[18px] w-[18px] shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.25"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </summary>
+              <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-lg">
+                {item.children.map((child) => (
+                  <a
+                    href={localizePath(child.href, lang)}
+                    aria-current={isExact(child.href) ? 'page' : undefined}
+                    class="flex min-h-[44px] items-center whitespace-nowrap px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft aria-[current]:text-link"
+                  >
+                    {child.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <a
+              href={localizePath(item.href, lang)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
+            >
+              {t(item.key)}
+            </a>
+          ),
+        )
       }
       <a
         href={localizePath('/contact', lang)}
@@ -74,13 +140,34 @@ const isActive = (href: string) => {
       {
         nav.map((item) => (
           <li>
-            <a
-              href={localizePath(item.href, lang)}
-              aria-current={isActive(item.href) ? 'page' : undefined}
-              class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
-            >
-              {t(item.key)}
-            </a>
+            {item.children ? (
+              <div class="border-b border-hairline py-2">
+                <p class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted">
+                  {t(item.key)}
+                </p>
+                <ul class="border-l border-hairline ml-3">
+                  {item.children.map((child) => (
+                    <li>
+                      <a
+                        href={localizePath(child.href, lang)}
+                        aria-current={isExact(child.href) ? 'page' : undefined}
+                        class="flex min-h-[44px] items-center px-4 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a
+                href={localizePath(item.href, lang)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
+              >
+                {t(item.key)}
+              </a>
+            )}
           </li>
         ))
       }
@@ -105,3 +192,17 @@ const isActive = (href: string) => {
     menu?.classList.toggle('hidden');
   });
 </script>
+
+<style>
+  .nav-summary {
+    list-style: none;
+  }
+
+  .nav-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-summary::marker {
+    content: '';
+  }
+</style>

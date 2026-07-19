@@ -48,4 +48,27 @@ const history = defineCollection({
   }),
 });
 
-export const collections = { seminars, members, history };
+const invitations = defineCollection({
+  loader: file('src/data/invitations.json'),
+  schema: z.object({
+    lang: z.enum(['ko', 'en']).default('ko'),
+    year: z.number(),
+    slug: z.string(),
+    title: z.string(),
+    shortTitle: z.string(),
+    date: z.string(),
+    status: z.enum(['upcoming', 'past']),
+    location: z.string(),
+    venue: z.string(),
+    time: z.string(),
+    summary: z.string(),
+    paragraphs: z.array(z.string()),
+    program: z.array(z.string()),
+    closing: z.array(z.string()),
+    issuedAt: z.string(),
+    sender: z.string(),
+    source: z.string().optional(),
+  }),
+});
+
+export const collections = { seminars, members, history, invitations };

@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const declarationIntro = [
+  '존경하는 내외 귀빈 여러분, 그리고 전 세계에서 이 자리를 함께해 주신 교수님들과 전문가 여러분, 오늘 Transcultural Network의 출범을 함께 축하해 주셔서 진심으로 감사드립니다.',
+  '우리는 지금 디지털 전환과 인공지능의 확산, 글로벌 연결성으로 주변 환경이 급변하고 새로운 질서가 태동하는 역동적인 시대를 마주하고 있습니다. AI는 언어의 장벽을 허물고, 디지털 플랫폼은 생활 세계와 문화의 구조를 재편하고 있습니다. 개인과 사회, 문화와 기술의 새로운 접합이 매일 일어나 국경과 전통적 경계가 모호해지는 가운데 기존의 국가 단위, 민족 단위, 언어 단위의 문화를 이해하는 것만으로는 더 이상 현실을 충분히 설명할 수 없습니다.',
+  '이제 문화는 정체된 상태이거나 단일한 형식이 아니라, 서로 만나 영향을 주고받으며 역동적으로 재구성되는 초문화적 흐름으로 이해되어야 합니다. Transcultural Network는 이러한 시대적 요구에 부응하여 출범하는 새로운 지적 연대이며, 문화 연구의 지평을 ‘교차·융합·창조’의 단계로 확장하는 국제 학술 공동체입니다.',
+  '우리는 앞으로 다음과 같은 네 가지 핵심적 사명을 실천하고자 합니다.',
+];
+
+const missions = [
+  {
+    title: '초문화 연구의 학문적 기반 구축',
+    body: '문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하여, 초문화 연구의 새로운 이론과 방법론을 발전시키겠습니다.',
+  },
+  {
+    title: '국제 연구 네트워크 기반 학술 협력',
+    body: 'Transcultural Network는 서울의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.',
+  },
+  {
+    title: '새로운 문화 창조를 탐구하는 지적 공동체',
+    body: '우리가 연구하는 초문화는 단지 문화 간의 차이를 살피는 데서 그치지 않고 그 접촉과 교차에서 생성되는 제3의 문화, 새로운 창조 가능성 자체를 탐구하는 것입니다. Transcultural Network는 이러한 창조적 형성 과정을 학술적으로 밝히고 사회적 실천으로 연결하고자 합니다.',
+  },
+  {
+    title: '학술 논의의 현실 변화와 정책 제안 확장',
+    body: '디지털 및 AI 시대의 교육, 문화정책, 국제문화교류, 플랫폼 경제 등 다양한 영역에서 초문화적 관점이 실제 변화를 이끌 수 있도록 기여하겠습니다.',
+  },
+];
+
+const declarationClosing = [
+  '존경하는 여러분, 오늘 우리는 단순히 하나의 학술단체를 설립하는 것이 아니라, 새로운 시대에 걸맞은 지적 기반을 세우고 있습니다. Transcultural Network는 특정 국가나 집단의 이익이 아닌, 인류 전체의 문화적 이해와 창조를 위한 공공적 지식을 지향합니다.',
+  '우리는 서로의 차이를 인정하고 존중하며, 그 차이 사이에서 발견되는 새로운 가능성을 함께 탐구할 것입니다. 그리고 그 여정 속에서 우리는 초문화 연구의 국제적 기준을 설정하고, 미래 세대 연구자들에게 새로운 학문적 지평을 열어줄 것입니다.',
+  '오늘 이 자리에 함께하신 모든 분들께 진심으로 깊은 감사의 마음을 전합니다. 여러분 한 분, 한 분의 참여와 연대가 Transcultural Network의 미래를 형성할 것입니다. 앞으로 학술대회, 연구 프로젝트, 공동 출판, 정책 연구 등 다양한 활동을 통해 더욱 활발히 소통하고 협력하기를 기대합니다.',
+  '지금 이 순간을 기점으로 우리는 Transcultural Network의 공식 창립을 선언합니다. 오늘의 선언이 초문화 시대를 이해하고 이끌어갈 지속적인 국제 학술 협력의 출발점이 되기를 진심으로 기원합니다.',
+  '감사합니다.',
+];
+---
+
+<BaseLayout
+  title="창립 선언문"
+  description="Transcultural Network 창립 선언문"
+>
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <div class="border-y border-hairline-strong py-8">
+        <p class="eyebrow">Founding Declaration</p>
+        <h1 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+          Transcultural Network 창립 선언문
+        </h1>
+        <p class="mt-4 max-w-[64ch] font-sans text-body-sans text-body-muted">
+          원문: <span class="font-bold text-ink">Transcultural Network 창립 선언문.docx</span>
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <aside class="hidden lg:block">
+          <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
+            <p class="text-caption font-bold uppercase text-accent">Declaration</p>
+            <p class="mt-2 text-body-sm text-body-muted">
+              디지털·AI 시대의 초문화 연구와 국제 학술 협력을 위한 창립 선언.
+            </p>
+          </div>
+        </aside>
+
+        <div class="max-w-[74ch]">
+          <div class="space-y-7 font-serif text-body-serif text-body">
+            {declarationIntro.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+
+          <ol class="mt-12 grid gap-4">
+            {missions.map((mission, index) => (
+              <li class="border border-hairline bg-canvas-soft p-6">
+                <p class="font-sans text-caption font-bold uppercase text-accent">
+                  Mission {String(index + 1).padStart(2, '0')}
+                </p>
+                <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">
+                  {mission.title}
+                </h2>
+                <p class="mt-4 font-serif text-body-serif text-body">{mission.body}</p>
+              </li>
+            ))}
+          </ol>
+
+          <div class="mt-12 space-y-7 font-serif text-body-serif text-body">
+            {declarationClosing.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+
+          <footer class="mt-12 border-t border-hairline pt-8">
+            <p class="font-serif text-body-serif font-semibold text-ink">창립준비위원장</p>
+          </footer>
+        </div>
+      </div>
+    </article>
+  </section>
+</BaseLayout>

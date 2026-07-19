@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate } from '../i18n/utils';
+
+interface Props {
+  data: CollectionEntry<'invitations'>['data'];
+  compact?: boolean;
+}
+
+const { data, compact = false } = Astro.props;
+---
+
+<div class={compact ? 'max-w-[74ch] pt-7' : 'max-w-[74ch]'}>
+  <div class="space-y-7 font-serif text-body-serif text-body">
+    {data.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+
+  <section class="mt-10 border-y border-hairline-strong bg-canvas-soft p-6 sm:p-8">
+    <p class="font-sans text-caption font-bold uppercase text-accent">창립 행사 개요</p>
+    <dl class="mt-5 grid gap-4 font-sans text-body-sans sm:grid-cols-[6rem_minmax(0,1fr)]">
+      <dt class="font-bold text-ink">일시</dt>
+      <dd class="text-body">{formatDate(data.date, data.lang)} {data.time}</dd>
+      <dt class="font-bold text-ink">장소</dt>
+      <dd class="text-body">{data.location} {data.venue}</dd>
+      <dt class="font-bold text-ink">내용</dt>
+      <dd>
+        <ul class="space-y-1 text-body">
+          {data.program.map((item) => <li>· {item}</li>)}
+        </ul>
+      </dd>
+    </dl>
+  </section>
+
+  <div class="mt-10 space-y-7 font-serif text-body-serif text-body">
+    {data.closing.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+
+  <footer class="mt-10 border-t border-hairline pt-8 text-right">
+    <p class="font-sans text-body-sm text-body-muted">{data.issuedAt}</p>
+    <p class="mt-2 font-serif text-body-serif font-semibold text-ink">{data.sender} 올림</p>
+    {data.source && (
+      <p class="mt-5 font-sans text-caption text-body-muted">원문: {data.source}</p>
+    )}
+  </footer>
+</div>
