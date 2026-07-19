@@ -1,0 +1,17 @@
+[
+  {
+    "id": "s2026-korea",
+    "title": "제2차 세미나",
+    "date": "2026-10-30",
+    "status": "upcoming",
+    "location": "대한민국"
+  },
+  {
+    "id": "s2025-laos",
+    "title": "제1차 세미나",
+    "date": "2025-12-26",
+    "status": "past",
+    "location": "라오스 루앙프라방",
+    "tags": ["한국", "베트남", "라오스"]
+  }
+]

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "kim",
+    "name": "김원준",
+    "nameEn": "Dr. Wonjoon Kim",
+    "role": "회장",
+    "category": "board",
+    "order": 1,
+    "affiliation": "Kim & Chang 고문 · 前 공정거래위원회 사무처장. 경제학박사(Paris X)·성균관대 경제학. 창립준비위원장 겸 초대 회장."
+  },
+  {
+    "id": "jeon",
+    "name": "전성호",
+    "nameEn": "Prof. Jeon Sung-ho",
+    "role": "수석부회장",
+    "category": "board",
+    "order": 2,
+    "affiliation": "한국학중앙연구원 세종국가경영연구소 연구교수. 경제사학·개성 자본회계론·성균관대 경제학 박사·Oxford 방문교수."
+  },
+  {
+    "id": "director-cn",
+    "name": "추후 공개",
+    "nameEn": "To be announced",
+    "role": "이사",
+    "category": "board",
+    "order": 3,
+    "country": "China",
+    "tba": true
+  },
+  {
+    "id": "director-vn",
+    "name": "추후 공개",
+    "nameEn": "To be announced",
+    "role": "이사",
+    "category": "board",
+    "order": 4,
+    "country": "Vietnam",
+    "tba": true
+  },
+  {
+    "id": "director-la",
+    "name": "추후 공개",
+    "nameEn": "To be announced",
+    "role": "이사",
+    "category": "board",
+    "order": 5,
+    "country": "Laos",
+    "tba": true
+  },
+  {
+    "id": "director-uz",
+    "name": "추후 공개",
+    "nameEn": "To be announced",
+    "role": "이사",
+    "category": "board",
+    "order": 6,
+    "country": "Uzbekistan",
+    "tba": true
+  },
+  {
+    "id": "lee",
+    "name": "John Lee",
+    "nameEn": "John Lee",
+    "role": "감사",
+    "category": "board",
+    "order": 7,
+    "affiliation": "미국 (소속 추후 안내)"
+  }
+]
