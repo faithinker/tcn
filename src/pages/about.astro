@@ -1,0 +1,133 @@
+---
+// L8: About — 소개(미션/비전·활동·조직개요) · 창립 선언문 국문 전문 · 연혁 타임라인.
+// IA 5페이지 통합본: Mission/Overview/Declaration/History를 About 하나로 흡수(앵커 분리).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionTile from '../components/SectionTile.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl, formatDate } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+
+const history = (await getCollection('history'))
+  .filter((h) => h.data.lang === lang)
+  .sort((a, b) => a.data.date.localeCompare(b.data.date));
+
+const activities = ['국제 세미나 개최', '공동연구', '인력 교류', '정책 대안 제시'];
+
+const facts = [
+  { k: '명칭', v: '초문화네트워크 · Transcultural Network (TCN)' },
+  { k: '분야', v: '초문화교류를 연구하는 국제 학술단체' },
+  { k: '창립', v: '2025년 12월 12일 · 성균관대학교 명륜캠퍼스 · 15개국 참여' },
+  { k: '사무국', v: '대한민국 서울' },
+];
+
+// 창립 선언문 국문 전문 (contents/Transcultural Network 창립 선언문.docx 원문)
+const declaration = [
+  '존경하는 내외 귀빈 여러분, 그리고 전 세계에서 이 자리를 함께해 주신 교수님들과 전문가 여러분, 오늘 Transcultural Network의 출범을 함께 축하해 주셔서 진심으로 감사드립니다.',
+  '우리는 지금 디지털 전환과 인공지능의 확산, 글로벌 연결성으로 주변 환경이 급변하고 새로운 질서가 태동하는 역동적인 시대를 마주 하고 있습니다. AI는 언어의 장벽을 허물고, 디지털 플랫폼은 생활 세계와 문화의 구조를 재편하고 있습니다. 개인과 사회, 문화와 기술의 새로운 접합이 매일 일어나 국경과 전통적 경계가 모호해지는 가운데 기존의 국가 단위, 민족 단위, 언어 단위의 문화를 이해하는 것만으로는 더 이상 현실을 충분히 설명할 수 없습니다.',
+  '이제 문화는 정체된 상태이거나 단일한 형식이 아니라, 서로 만나 영향을 주고 받으며 역동적으로 재구성되는 초문화적 흐름으로 이해되어야 합니다. Transcultural Network는 이러한 시대적 요구에 부응하여 출범하는 새로운 지적 연대이며, 문화 연구의 지평을 ‘교차·융합·창조’의 단계로 확장하는 국제 학술 공동체입니다.',
+];
+
+const missions = [
+  '첫째, 초문화 현상을 본격적으로 연구하는 학문적 기반을 구축하겠습니다. 문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하여, 초문화 연구의 새로운 이론과 방법론을 발전시키겠습니다.',
+  '둘째, 국제적 연구 네트워크를 중심으로 한 학술 협력의 장을 만들겠습니다. Transcultural Network는 서울의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 ‘네트워크 중심의 지식 생산 모델’을 실현할 것입니다.',
+  '셋째, 새로운 문화 창조의 미래를 함께 탐구하는 지적 공동체가 되겠습니다. 우리가 연구하는 초문화는 단지 문화 간의 차이를 살피는 데서 그치지 않고 그 접촉과 교차에서 생성되는 제3의 문화, 새로운 창조 가능성 자체를 탐구하는 것입니다. Transcultural Network는 이러한 창조적 형성 과정을 학술적으로 밝히고 사회적 실천으로 연결하고자 합니다.',
+  '넷째, 학술적 논의를 현실 변화와 정책 제안으로 확장하겠습니다. 디지털 및 AI 시대의 교육, 문화정책, 국제문화교류, 플랫폼 경제 등 다양한 영역에서 초문화적 관점이 실제 변화를 이끌 수 있도록 기여하겠습니다.',
+];
+
+const declarationClose = [
+  '존경하는 여러분, 오늘 우리는 단순히 하나의 학술단체를 설립하는 것이 아니라, 새로운 시대에 걸맞은 지적 기반을 세우고 있습니다. Transcultural Network는 특정 국가나 집단의 이익이 아닌, 인류 전체의 문화적 이해와 창조를 위한 공공적 지식을 지향합니다.',
+  '우리는 서로의 차이를 인정하고 존중하며, 그 차이 사이에서 발견되는 새로운 가능성을 함께 탐구할 것입니다. 그리고 그 여정 속에서 우리는 초문화 연구의 국제적 기준을 설정하고, 미래 세대 연구자들에게 새로운 학문적 지평을 열어줄 것입니다.',
+  '오늘 이 자리에 함께하신 모든 분들께 진심으로 깊은 감사의 마음을 전합니다. 여러분 한 분, 한 분의 참여와 연대가 Transcultural Network의 미래를 형성할 것입니다. 앞으로 학술대회, 연구 프로젝트, 공동 출판, 정책 연구 등 다양한 활동을 통해 더욱 활발히 소통하고 협력하기를 기대합니다.',
+  '지금 이 순간을 기점으로 우리는 Transcultural Network의 공식 창립을 선언합니다. 오늘의 선언이 초문화 시대를 이해하고 이끌어갈 지속적인 국제 학술 협력의 출발점이 되기를 진심으로 기원합니다.',
+];
+---
+
+<BaseLayout title="학회 소개">
+  <!-- 페이지 헤더 -->
+  <section class="bg-canvas px-5 pt-16 pb-10 sm:pt-24 sm:pb-12">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">소개</p>
+      <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink">학회 소개</h1>
+      <p class="mt-5 max-w-[68ch] font-serif text-lead text-body">
+        초문화네트워크(TCN)는 디지털·AI 시대의 문화 교류와 창조를 연구하는 국제 학술단체입니다.
+      </p>
+      <nav class="mt-8 flex flex-wrap gap-x-6 gap-y-2" aria-label="이 페이지 내">
+        <a href="#overview" class="font-sans text-body-sans font-bold text-link no-underline">소개·조직</a>
+        <a href="#declaration" class="font-sans text-body-sans font-bold text-link no-underline">창립 선언문</a>
+        <a href="#history" class="font-sans text-body-sans font-bold text-link no-underline">연혁</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- #overview 미션·비전·활동·조직 -->
+  <SectionTile variant="band" eyebrow="설립 취지" title="왜 초문화네트워크인가" id="overview" class="scroll-mt-20">
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      국경 없는 디지털·AI 시대에 문화의 교류와 새로운 문화의 창조가 지속되고 있습니다.
+      초문화네트워크는 이 과정을 규명하고, 더 나은 문화 창조에 기여하고자 합니다.
+    </p>
+    <div class="mt-10 grid gap-8 border-t border-hairline pt-8 sm:grid-cols-2">
+      <div>
+        <p class="eyebrow">비전</p>
+        <p class="mt-2 font-serif text-body-serif text-body">인류가 공존하고 인간이 존중받는 문화 창조를 지향합니다.</p>
+      </div>
+      <div>
+        <p class="eyebrow">미션</p>
+        <p class="mt-2 font-serif text-body-serif text-body">각국의 전문가가 지혜와 경험을 공유합니다.</p>
+      </div>
+    </div>
+
+    <div class="mt-10 border-t border-hairline pt-8">
+      <p class="eyebrow">핵심 활동</p>
+      <ul class="mt-3 flex flex-wrap gap-x-8 gap-y-2">
+        {activities.map((a) => <li class="font-serif text-body-serif text-body">· {a}</li>)}
+      </ul>
+    </div>
+
+    <dl class="mt-10 border-t border-hairline pt-8">
+      {
+        facts.map((f) => (
+          <div class="grid grid-cols-[6rem_1fr] gap-4 border-b border-hairline py-3 sm:grid-cols-[10rem_1fr]">
+            <dt class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">{f.k}</dt>
+            <dd class="font-serif text-body-serif text-body">{f.v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </SectionTile>
+
+  <!-- #declaration 창립 선언문 전문 -->
+  <SectionTile variant="soft" eyebrow="창립 선언문" title="Transcultural Network 창립 선언문" id="declaration" class="scroll-mt-20">
+    <div class="mt-8 max-w-[68ch] space-y-5">
+      {declaration.map((p) => <p class="font-serif text-body-serif text-body">{p}</p>)}
+      <p class="pt-2 font-serif text-body-serif font-semibold text-ink">
+        우리는 앞으로 다음과 같은 네 가지 핵심적 사명을 실천하고자 합니다.
+      </p>
+      <ol class="space-y-5">
+        {missions.map((m) => <li class="font-serif text-body-serif text-body">{m}</li>)}
+      </ol>
+      {declarationClose.map((p) => <p class="font-serif text-body-serif text-body">{p}</p>)}
+      <p class="font-serif text-body-serif text-body">감사합니다.</p>
+      <p class="pt-6 font-serif text-byline font-bold text-body-muted">창립준비위원장 김원준</p>
+    </div>
+  </SectionTile>
+
+  <!-- #history 연혁 -->
+  <SectionTile variant="canvas" eyebrow="연혁" title="주요 연혁" id="history" class="scroll-mt-20">
+    <ol class="mt-8 max-w-[68ch]">
+      {
+        history.map((h) => (
+          <li class="grid grid-cols-[7rem_1fr] gap-x-6 border-t border-hairline py-6 sm:grid-cols-[9rem_1fr]">
+            <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-accent">
+              {formatDate(h.data.date, lang)}
+            </p>
+            <div>
+              <h3 class="font-serif text-display-sm font-semibold text-ink">{h.data.title}</h3>
+              <p class="mt-2 font-serif text-body-serif text-body">{h.data.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </SectionTile>
+</BaseLayout>

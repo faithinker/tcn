@@ -1,6 +1,6 @@
 # TCN 사이트 빌드 — LOOP (goal + 루프 엔지니어링)
 
-작성: 2026-07-19 · 작업 위치: `/Users/jhkim/Desktop/work/tcn`
+작성: 2026-07-19 · 작업 위치: **`/Users/jhkim/Desktop/work/tcn-loop`** (워크트리, 브랜치 `claude-loop`) — 메인 `tcn/`는 다른 코덱스 소유, 편집 금지. 검증 포트 4323.
 상세 스펙(페이지 레이아웃·DESIGN 토큰 매핑): Obsidian `dev/TCN 사이트 — 메뉴 구조 & 루프 실행 계획.md`, `dev/TCN 학회 소개 사이트 — 개발 계획.md`
 **시각·CSS 레퍼런스: Obsidian `TCN 사이트맵.html`** — WIRED 스타일 완전 구현본(토큰·컬러·명조+Pretendard·48px 타깃·상태 배지). L2 토큰 이식·컴포넌트 스타일의 실참조. 콘텐츠 인벤토리(8그룹·상태)도 포함.
 이 파일 = **/loop가 매 반복 읽는 자족 빌드 스펙 + 진행 상태**.
@@ -86,7 +86,7 @@
 - [x] **L5** 코어 컴포넌트: Button(primary/outline·4px·≥48px) · SectionTile(hero-band/section-band) · Stat
 - [x] **L6** content.config.ts(Zod, 아래 스키마) + SEED 시드 파일 — `astro check` 통과
 - [x] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)
-- [ ] **L8** About (미션/비전·활동개요·**선언문 국문 전문**·History Timeline)
+- [x] **L8** About (미션/비전·활동개요·**선언문 국문 전문**·History Timeline)
 - [ ] **L9** People (Board: 회장·수석부회장·이사4 TBA·감사 / Advisors·Members 숨김) + MemberCard(이니셜 모노그램)
 - [ ] **L10** Seminars 목록 (Upcoming/Past) + SeminarCard
 - [ ] **L11** Seminar 상세 `[slug]` (제목·메타·abstract 폴백·back)
