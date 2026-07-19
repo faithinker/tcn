@@ -4,9 +4,9 @@ Updated: 2026-07-19
 
 Runtime: Astro 7 static build
 
-Default language: Korean (`/`)
+Localized routes: Korean (`/ko/`) and English (`/en/`)
 
-Optional language: English (`/en/`)
+Root routing: `/` redirects by saved `tcn_locale` preference, then by country (`KR` → `/ko/`, all others → `/en/`)
 
 ## 1. Source and publication policy
 
@@ -20,16 +20,16 @@ The five top-level navigation items are Home, About, People, Seminars, and Conta
 
 | Korean route | English route | Source |
 | --- | --- | --- |
-| `/` | `/en/` | `content.ts`, seminar summary |
-| `/about` | `/en/about` | `content.ts`, `history.json` |
-| `/about/founding` | `/en/about/founding` | `content.ts`, `invitations.json` |
-| `/about/declaration` | `/en/about/declaration` | `content.ts` |
-| `/people` | `/en/people` | `content.ts`, `members.json` |
-| `/seminars` | `/en/seminars` | `content.ts`, `seminars.json` |
-| `/seminars/[slug]` | `/en/seminars/[slug]` | `seminars.json` |
-| `/contact` | `/en/contact` | `content.ts`, public environment variable |
+| `/ko/` | `/en/` | `content.ts`, seminar summary |
+| `/ko/about` | `/en/about` | `content.ts`, `history.json` |
+| `/ko/about/founding` | `/en/about/founding` | `content.ts`, `invitations.json` |
+| `/ko/about/declaration` | `/en/about/declaration` | `content.ts` |
+| `/ko/people` | `/en/people` | `content.ts`, `members.json` |
+| `/ko/seminars` | `/en/seminars` | `content.ts`, `seminars.json` |
+| `/ko/seminars/[slug]` | `/en/seminars/[slug]` | `seminars.json` |
+| `/ko/contact` | `/en/contact` | `content.ts`, optional `PUBLIC_MEMBERSHIP_FORM_URL` |
 
-The retired `/events` tree is not a runtime route. `public/_redirects` permanently redirects old event URLs to `/seminars` or `/about/founding`, including English equivalents.
+`functions/index.js` handles only `/`; `public/_routes.json` keeps every localized page and asset on the static path. The retired `/events` tree and prefixless Korean routes permanently redirect to `/ko/` equivalents through `public/_redirects`.
 
 ## 3. Content ownership
 
@@ -78,7 +78,7 @@ Required fields are `id`, `lang`, `date`, `kind`, `status`, `title`, `location`,
 
 ### `invitations`
 
-This collection currently holds the bilingual founding ceremony invitation rendered at `/about/founding`. Required fields include the shared `slug`, date/status/location/venue/time, invitation paragraphs, programme, closing, issued date, and sender.
+This collection currently holds the bilingual founding ceremony invitation rendered at `/ko/about/founding` and `/en/about/founding`. Required fields include the shared `slug`, date/status/location/venue/time, invitation paragraphs, programme, closing, issued date, and sender.
 
 The collection no longer generates `/events/[year]/[slug]` routes.
 
@@ -91,7 +91,7 @@ Every repeatable record must have one Korean and one English entry.
 - parallel arrays retain the same number and order of items
 - translations may adapt wording but must not add unsupported facts
 - English source strings must not contain Hangul
-- every Korean Astro page source has an English wrapper at the equivalent `/en/` path
+- every Korean wrapper under `src/pages/ko/` has an English wrapper under `src/pages/en/`
 
 Run `npm run i18n` after any content or route change. It checks route pairs, content/UI object shapes, JSON record invariants, parallel array lengths, and Hangul leakage into English sources.
 
@@ -115,16 +115,17 @@ The list and both localized detail routes are generated automatically.
 
 ### Update the founding invitation
 
-Edit both language entries in `invitations.json`. Keep factual fields and paragraph/programme structure aligned. The result appears on the localized `/about/founding` pages.
+Edit both language entries in `invitations.json`. Keep factual fields and paragraph/programme structure aligned. The result appears on the localized `/ko/about/founding` and `/en/about/founding` pages.
 
 ### Change navigation or routes
 
-Update the shared page/component first, add the equivalent English wrapper when a new route is introduced, then update `public/_redirects`, `src/pages/sitemap.xml.ts`, README, and this document. Finish with the full verification sequence.
+Update the shared page/component first, add equivalent wrappers under both `src/pages/ko/` and `src/pages/en/`, then update `public/_redirects`, `src/pages/sitemap.xml.ts`, README, and this document. Finish with the full verification sequence.
 
 ## 7. Verification
 
 ```bash
 npm run i18n   # ko/en source parity
+npm run locale # country routing and saved-language precedence
 npm run check  # Astro and schema diagnostics
 npm run build  # all static routes
 npm run motion # reveal, reduced-motion, fail-open behavior

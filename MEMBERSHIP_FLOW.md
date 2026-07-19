@@ -2,7 +2,7 @@
 
 Updated: 2026-07-19
 
-Public route: `/contact` and `/en/contact`
+Public routes: `/ko/contact` and `/en/contact`
 
 ## Phase 1: public guidance
 

@@ -60,7 +60,7 @@ src/data/
 ├── members.json       # 임원·구성원
 ├── seminars.json      # 세미나 목록
 ├── history.json       # 연혁 타임라인
-└── invitations.json   # 창립총회 초청장 (→ /about/founding)
+└── invitations.json   # 창립총회 초청장 (→ /{lang}/about/founding)
 ```
 
 - 새 세미나 추가: `seminars.json`에 ko/en 항목을 같은 `slug`로 추가 → 언어별 상세 라우트 자동 생성.
@@ -157,4 +157,4 @@ npm run a11y         # Lighthouse 접근성 점수 검증 (preview 서버 필요
 - `npm run preview`는 정적 산출물 확인용이며 Pages Function을 실행하지 않습니다. 국가/쿠키 분기까지 로컬에서 확인하려면 `npm run build` 후 `npx wrangler pages dev dist`를 실행합니다.
 - `verify`, `motion`, `a11y`는 기본적으로 `http://localhost:4321`의 실행 중인 서버를 사용하며 `BASE_URL`로 변경할 수 있습니다.
 - **Node**: v26 호환 확인됨 (Playwright 1.61+).
-- 현재 필수 환경 변수나 데이터베이스 연결은 없습니다. `.env` 파일은 커밋에서 제외합니다.
+- 필수 환경 변수나 데이터베이스 연결은 없습니다. 선택적 가입 폼은 `.env.example`의 `PUBLIC_MEMBERSHIP_FORM_URL`을 참고하며 `.env`는 커밋에서 제외합니다.
