@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import InvitationContent from '../../components/InvitationContent.astro';
+import { getCollection } from 'astro:content';
+import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const about = getContent(lang).about;
+
+// 창립총회 초청장(현재 1건). 언어별 첫 항목.
+const invitation = (await getCollection('invitations')).find((entry) => entry.data.lang === lang);
+const data = invitation?.data;
+---
+
+<BaseLayout title={about.foundingTitle} description={data?.summary ?? about.foundingBody}>
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <a
+        href={localizePath('/about', lang)}
+        class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+      >← {about.foundingBack}</a>
+
+      <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
+        <p class="eyebrow">{about.foundingEyebrow}</p>
+        <h1 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+          {data?.title ?? about.foundingTitle}
+        </h1>
+        {data && (
+          <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">
+            {formatDate(data.date, lang)} {data.time}
+          </p>
+        )}
+      </header>
+
+      {data ? (
+        <div class="mt-12">
+          <InvitationContent data={data} />
+        </div>
+      ) : (
+        <p class="mt-10 font-serif text-body-serif text-body">{about.foundingBody}</p>
+      )}
+    </article>
+  </section>
+</BaseLayout>

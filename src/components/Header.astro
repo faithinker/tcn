@@ -2,9 +2,7 @@
 // L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
 // 내비=산세리프(Pretendard), 탭타깃 ≥48px. 언어 전환은 L16(영어판)에서.
 import { useTranslations, localizePath, switchLangPath } from '../i18n/utils';
-import { getContent } from '../i18n/content';
 import type { UiKey, UiLang } from '../i18n/ui';
-import { getCollection } from 'astro:content';
 
 interface Props {
   lang: UiLang;
@@ -12,17 +10,8 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const eventCopy = getContent(lang).events;
 const koPath = switchLangPath(Astro.url.pathname, 'ko');
 const enPath = switchLangPath(Astro.url.pathname, 'en');
-
-const invitationYears = [
-  ...new Set(
-    (await getCollection('invitations'))
-      .filter((entry) => entry.data.lang === lang)
-      .map((entry) => entry.data.year),
-  ),
-].sort((a, b) => b - a);
 
 interface NavItem {
   key: UiKey;
@@ -38,19 +27,12 @@ const nav: NavItem[] = [
     children: [
       { label: t('nav.aboutOverview'), href: '/about' },
       { label: t('nav.history'), href: '/about#history' },
+      { label: t('nav.founding'), href: '/about/founding' },
       { label: t('nav.declaration'), href: '/about/declaration' },
     ],
   },
   { key: 'nav.people', href: '/people' },
-  {
-    key: 'nav.events',
-    href: '/events',
-    children: [
-      { label: t('nav.eventAll'), href: '/events' },
-      { label: t('nav.seminars'), href: '/seminars' },
-      ...invitationYears.map((year) => ({ label: eventCopy.yearLabel(year), href: `/events/${year}` })),
-    ],
-  },
+  { key: 'nav.seminars', href: '/seminars' },
   { key: 'nav.contact', href: '/contact' },
 ];
 

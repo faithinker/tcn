@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { getCollection } from 'astro:content';
 import { getContent } from '../i18n/content';
-import { formatDate, getLangFromUrl } from '../i18n/utils';
+import { formatDate, getLangFromUrl, localizePath } from '../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).seminars;
@@ -14,10 +14,14 @@ const upcoming = seminars
 const past = seminars
   .filter((entry) => entry.data.status === 'past')
   .sort((a, b) => b.data.date.localeCompare(a.data.date));
+
+// 차기 세미나 = 가장 이른 예정 1건. 없으면 히어로 숨김.
+const next = upcoming[0];
+const detailHref = (slug: string) => localizePath(`/seminars/${slug}`, lang);
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>
-  <section class="bg-canvas px-5 py-16 sm:py-24">
+  <section class="bg-canvas px-5 pt-16 pb-10 sm:pt-24 sm:pb-14">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
       <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
@@ -27,19 +31,48 @@ const past = seminars
     </div>
   </section>
 
+  {next && (
+    <section class="bg-canvas px-5 pb-16 sm:pb-20">
+      <div class="mx-auto max-w-[75rem]">
+        <a
+          href={detailHref(next.data.slug)}
+          class="group block border-y-2 border-accent bg-canvas-soft p-6 no-underline sm:p-10"
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="eyebrow !mb-0">{copy.nextEyebrow}</p>
+            <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
+              {copy.upcomingBadge}
+            </span>
+          </div>
+          <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
+            {formatDate(next.data.date, lang)}
+          </p>
+          <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.data.title}</p>
+          <p class="mt-2 font-sans text-body-sans text-body-muted">
+            {next.data.location} · {next.data.summary ?? copy.details}
+          </p>
+          <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
+            {copy.viewDetail} →
+          </span>
+        </a>
+      </div>
+    </section>
+  )}
+
   <SectionTile variant="band" eyebrow={copy.upcomingEyebrow} title={copy.upcomingTitle}>
     <div class="mt-8 grid gap-4">
       {upcoming.length ? upcoming.map((seminar) => (
-        <article class="border-y border-hairline-strong bg-canvas p-6 sm:p-8">
+        <a
+          href={detailHref(seminar.data.slug)}
+          class="group block border-y border-hairline-strong bg-canvas p-6 no-underline sm:p-8"
+        >
           <p class="font-sans text-caption font-bold uppercase text-accent">
             {formatDate(seminar.data.date, lang)}
           </p>
-          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{seminar.data.title}</h2>
+          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{seminar.data.title}</h2>
           <p class="mt-3 font-sans text-body-sans text-body-muted">{seminar.data.location}</p>
-          <p class="mt-5 max-w-[68ch] font-serif text-body-serif text-body">
-            {seminar.data.abstract ?? copy.details}
-          </p>
-        </article>
+          <span class="mt-4 inline-flex items-center font-sans text-body-sm font-bold text-link underline">{copy.viewDetail} →</span>
+        </a>
       )) : <p class="font-serif text-body-serif text-body">{copy.empty}</p>}
     </div>
   </SectionTile>
@@ -47,13 +80,14 @@ const past = seminars
   <SectionTile variant="canvas" eyebrow={copy.pastEyebrow} title={copy.pastTitle}>
     <div class="mt-8 grid gap-4">
       {past.length ? past.map((seminar) => (
-        <article class="border-t border-hairline py-7">
+        <a href={detailHref(seminar.data.slug)} class="group block border-t border-hairline py-7 no-underline">
           <p class="font-sans text-caption font-bold uppercase text-accent">
             {formatDate(seminar.data.date, lang)}
           </p>
-          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{seminar.data.title}</h2>
+          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{seminar.data.title}</h2>
           <p class="mt-3 font-sans text-body-sans text-body-muted">{seminar.data.location}</p>
-        </article>
+          <span class="mt-4 inline-flex items-center font-sans text-body-sm font-bold text-link underline">{copy.viewDetail} →</span>
+        </a>
       )) : <p class="font-serif text-body-serif text-body">{copy.empty}</p>}
     </div>
   </SectionTile>
