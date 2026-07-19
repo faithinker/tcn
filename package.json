@@ -11,7 +11,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "motion": "node scripts/motion.mjs",
+    "a11y": "node scripts/a11y.mjs"
   },
   "dependencies": {
     "@fontsource/noto-serif-kr": "^5.3.0",
@@ -21,6 +23,8 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@tailwindcss/vite": "^4.1.4",
+    "chrome-launcher": "^1.2.1",
+    "lighthouse": "^13.4.0",
     "playwright": "^1.61.1",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.9.3"

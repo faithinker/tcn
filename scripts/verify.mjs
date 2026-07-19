@@ -37,7 +37,16 @@ for (const route of ROUTES) {
     try {
       const resp = await page.goto(BASE + route, { waitUntil: 'networkidle', timeout: 20000 });
       status = resp ? resp.status() : 0;
-      await page.waitForTimeout(300); // 폰트/모션 안정화
+      // L13: 스크롤 진입 리빌을 발화시킨 뒤 촬영(접힘 아래 섹션이 캡처에 보이도록).
+      await page.evaluate(async () => {
+        const step = Math.floor(window.innerHeight * 0.8);
+        for (let y = 0; y <= document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 60));
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(800); // 폰트/모션 전환 안정화
       overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       const name = (route === '/' ? 'home' : route.replace(/^\//, '').replace(/\//g, '_')) + '-' + w;
       await page.screenshot({ path: `verify/${name}.png`, fullPage: true });

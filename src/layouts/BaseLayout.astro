@@ -51,6 +51,7 @@ const organizationJsonLd = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={desc} />
@@ -92,5 +93,8 @@ const organizationJsonLd = {
       <slot />
     </main>
     <Footer lang={lang} />
+    <script>
+      import '../scripts/reveal.ts';
+    </script>
   </body>
 </html>

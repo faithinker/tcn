@@ -72,20 +72,21 @@
 
 CSS 골격:
 
+최적화: `[data-reveal]` 전체에 `will-change`를 걸면 요소마다 컴포지터 레이어가 상주해 메모리를 낭비한다. 짧은 1회 opacity/transform 페이드는 힌트 없이도 컴포지터가 처리하므로 **`will-change` 미사용**.
+
 ```css
-html.js [data-reveal] {
+html.js main > section:not(:first-of-type) {
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 0.7s cubic-bezier(.22,.61,.36,1),
               transform 0.7s cubic-bezier(.22,.61,.36,1);
-  will-change: opacity, transform;
 }
-html.js [data-reveal].is-visible {
+html.js main > section:not(:first-of-type).is-visible {
   opacity: 1;
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  html.js [data-reveal] {
+  html.js main > section:not(:first-of-type) {
     opacity: 1;
     transform: none;
     transition: none;
@@ -93,22 +94,21 @@ html.js [data-reveal].is-visible {
 }
 ```
 
-### 4.3 적용 입도 = 섹션 단위
+### 4.3 적용 입도 = 섹션 단위 (구조 선택자, 마크업 속성 불필요)
 
-- 카드·행 개별이 아니라 **섹션 래퍼 한 덩어리**에만 부여(차분함 유지).
-- `SectionTile.astro`에 `reveal` prop(기본 `true`) 추가 → `data-reveal` 자동 스탬프.
-- SectionTile을 안 쓰는 섹션(각 페이지 hero 아래 블록, People 그룹, Seminars Upcoming/Past, Contact 블록, Events 리스트)엔 `data-reveal` 직접.
-- **Hero/마스트헤드/Header/Footer는 제외** — 접힘 위 첫 화면은 로드부터 단단히 고정(권위). 리빌은 둘째 섹션부터 시작.
+- 리빌 대상은 **`main` 직속 `<section>` 중 2번째부터**. 카드·행 개별이 아니라 섹션 덩어리 단위(차분함).
+- **첫 섹션(hero)·Header·Footer는 제외** — 접힘 위 첫 화면은 로드부터 단단히 고정(권위). 리빌은 둘째 섹션부터.
+- 모든 페이지가 `hero <section>` + `SectionTile(<section>)` 구조이고, `en/` 페이지는 ko 페이지 컴포넌트를 그대로 재-import(`import HomePage from '../index.astro'`)하므로 **구조 선택자 하나로 ko·en·events·declaration 전부 균일 커버**. `data-reveal` 속성이나 SectionTile prop, 페이지별 편집이 전혀 필요 없다(최적화·최소 표면적).
 
-### 4.4 파일
+### 4.4 파일 (3개만)
 
 | 파일 | 변경 |
 |---|---|
-| `src/styles/global.css` | §4.2 reveal CSS + reduced-motion 가드 |
-| `src/scripts/reveal.ts` (신규) | `.js` 클래스 부여 + IntersectionObserver 로직 |
-| `src/layouts/BaseLayout.astro` | head 인라인 `.js` 스크립트, `reveal.ts` 로드 |
-| `src/components/SectionTile.astro` | `reveal` prop → `data-reveal` |
-| `src/pages/*.astro` (ko 7 + en 미러) | 접힘 아래 섹션에 `data-reveal` |
+| `src/styles/global.css` | §4.2 reveal CSS(구조 선택자) + reduced-motion 가드 + 다크 포커스 링 |
+| `src/scripts/reveal.ts` (신규) | IntersectionObserver 로직(노출 즉시 unobserve, 완료 시 disconnect) |
+| `src/layouts/BaseLayout.astro` | head 인라인 `.js` 스크립트(페인트 전) + `reveal.ts` 로드 |
+
+SectionTile·개별 페이지·en 미러는 **손대지 않음**.
 
 ## 5. Part B — 접근성 (Lighthouse 주도)
 
@@ -119,13 +119,10 @@ Footer는 `bg-ink`(#141414). 전역 `:focus-visible { outline: 2px solid var(--c
 수정: 다크 표면에서 밝은 링으로 전환.
 
 ```css
-.on-dark :focus-visible,
-.bg-ink :focus-visible {
-  outline-color: var(--color-canvas); /* 흰 링 */
+footer :focus-visible {
+  outline-color: var(--color-canvas); /* 잉크블랙 위 흰 링 */
 }
 ```
-
-Footer 루트에 훅 클래스 부여(또는 `footer :focus-visible` 셀렉터). 정확한 셀렉터는 구현 시 Footer 마크업에 맞춤.
 
 ### 5.2 측정 → 델타 수정 루프
 
@@ -136,31 +133,34 @@ Footer 루트에 훅 클래스 부여(또는 `footer :focus-visible` 셀렉터).
 
 ## 6. 측정 하네스
 
-- devDep: `lighthouse` 추가.
-- 신규 `scripts/a11y.mjs`: `npm run preview`(빌드본) 기동 → 각 대표 URL에 `lighthouse --only-categories=accessibility --output=json` → 점수·실패 audit 요약 출력, 하나라도 <90이면 비정상 종료(루프 게이트).
-- Chrome: 기존 Playwright 크로미움 재사용(`CHROME_PATH` 지정) → 별도 브라우저 설치 리스크 회피.
-- `package.json` script: `"a11y": "node scripts/a11y.mjs"`.
+- devDep: `lighthouse` + `chrome-launcher` 추가.
+- 신규 `scripts/a11y.mjs`: preview(빌드본) 대상 각 대표 URL에 `lighthouse`(accessibility 카테고리만) 실행 → 점수·실패 audit 요약, 하나라도 `MIN_A11Y`(기본 90) 미만이면 비정상 종료(루프 게이트).
+- Chrome: 시스템 Google Chrome을 `chrome-launcher`가 자동 탐색(headless).
+- `package.json` scripts: `"a11y": "node scripts/a11y.mjs"`, `"motion": "node scripts/motion.mjs"`.
 
-## 7. 테스트 (Playwright)
+## 7. 테스트 (Playwright — `scripts/motion.mjs`)
 
-기존 `scripts/verify.mjs` 하네스와 동일 스택.
+기존 `scripts/verify.mjs`와 동일 스택. 짧은 뷰포트(500px)로 2번째 섹션을 접힘 아래에 두고 검사.
 
-1. **진입 리빌**: 하단 `[data-reveal]` 섹션이 초기 `opacity:0` → 스크롤 후 `.is-visible` + `opacity:1`.
-2. **reduced-motion**: `emulateMedia({ reducedMotion: 'reduce' })` → `[data-reveal]`가 스크롤 전부터 `opacity:1`.
-3. **no-JS 폴백**: JS 비활성 컨텍스트에서 `[data-reveal]` 표시(`opacity:1`).
-4. **Hero 제외**: 접힘 위 hero엔 `data-reveal` 없음(로드부터 표시).
+1. **`.js` 부여**: `html.js` 클래스가 페인트 전 인라인 스크립트로 설정됨.
+2. **Hero 표시**: `main > section` 첫 요소 `opacity:1` (리빌 대상 아님).
+3. **진입 리빌**: 2번째 섹션 초기 `opacity:0` → `scrollIntoView` 후 `opacity:1`.
+4. **reduced-motion**: `reducedMotion: 'reduce'` → 2번째 섹션이 스크롤 전부터 `opacity:1`.
+5. **no-JS 폴백**: `javaScriptEnabled: false` → 2번째 섹션 `opacity:1`(콘텐츠 안 숨김).
+
+추가로 `verify.mjs`는 촬영 전 페이지를 스텝 스크롤해 리빌을 발화시킨 뒤 fullPage 캡처(접힘 아래 섹션이 스크린샷에 보이도록).
 
 ## 8. 검증 순서 (완료 정의)
 
 1. `npm run build` 무에러.
-2. Playwright 모션 테스트 4종 통과.
+2. `npm run motion` 5종 통과.
 3. `npm run a11y` → 대표 페이지 전부 accessibility ≥90.
-4. 375/768/1280 스크린샷 무깨짐, 콘솔 무에러.
+4. `npm run verify` 375/768/1280 무깨짐, 콘솔 무에러.
 5. `git commit` (`L13: motion + accessibility`).
 
 ## 9. 리스크 / 결정
 
-- **Lighthouse Chrome 의존**: 크로미움 경로 문제 시 `chrome-launcher` 기본 탐색 폴백, 그래도 실패면 라이브 URL(`tcn-ezj.pages.dev`) 대상 측정으로 대체.
-- **FOUC 방지**: `.js` 클래스는 반드시 head 인라인·동기 스크립트로 첫 페인트 전에 부여(외부 모듈 지연 로드 금지).
+- **Lighthouse Chrome 의존**: `chrome-launcher`가 시스템 Google Chrome 자동 탐색(macOS 확인됨). 부재 환경(CI 등)에선 라이브 URL(`tcn-ezj.pages.dev`) 대상 측정으로 대체.
+- **FOUC 방지**: `.js` 클래스는 head 인라인·동기 스크립트로 첫 페인트 전 부여. reveal 로직은 Astro가 소형 모듈로 각 페이지에 인라인(추가 요청 0, 지연 실행).
 - **모션 세기**: 4px/0.7s로 확정. 무게감 우선, 언제든 CSS 상수만으로 재조정 가능.
 - **스코프 규율**: Part B는 Lighthouse 실패 audit에 한정. 점수와 무관한 리팩터링 금지.
