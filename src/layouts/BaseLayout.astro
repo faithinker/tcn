@@ -29,6 +29,7 @@ const pageTitle = title && title !== siteName
   : lang === 'ko'
     ? `${siteName} | ${t('site.nameEn')}`
     : siteName;
+const socialTitle = siteName;
 const desc = description ?? t('site.tagline');
 const siteRoot = Astro.site ?? Astro.url;
 const canonical = new URL(Astro.url.pathname, siteRoot);
@@ -67,7 +68,7 @@ const organizationJsonLd = {
     <meta property="og:site_name" content={siteName} />
     <meta property="og:type" content={type} />
     <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
-    <meta property="og:title" content={pageTitle} />
+    <meta property="og:title" content={socialTitle} />
     <meta property="og:description" content={desc} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImageURL} />
@@ -75,7 +76,7 @@ const organizationJsonLd = {
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={lang === 'ko' ? '초문화네트워크 · Transcultural Network' : 'Transcultural Network'} />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={desc} />
     <meta name="twitter:image" content={socialImageURL} />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(organizationJsonLd)} />
