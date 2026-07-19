@@ -1,0 +1,2 @@
+/* L1: Tailwind 4 진입점. DESIGN.md 토큰(@theme·:root)은 L2에서 주입. */
+@import 'tailwindcss';

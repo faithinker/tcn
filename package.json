@@ -1,0 +1,23 @@
+{
+  "name": "tcn-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "초문화네트워크 / Transcultural Network (TCN) — 소개 사이트",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "verify": "node scripts/verify.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.6.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "tailwindcss": "^4.1.4"
+  }
+}
