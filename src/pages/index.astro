@@ -5,11 +5,12 @@ import SectionTile from '../components/SectionTile.astro';
 import Stat from '../components/Stat.astro';
 import Button from '../components/Button.astro';
 import { getCollection } from 'astro:content';
-import { getLangFromUrl, formatDate, localizePath } from '../i18n/utils';
+import { getLangFromUrl, formatDate, localizePath, useTranslations } from '../i18n/utils';
 import { getContent } from '../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).home;
+const t = useTranslations(lang);
 
 const seminars = (await getCollection('seminars')).filter((s) => s.data.lang === lang);
 const upcoming = seminars
@@ -40,7 +41,7 @@ const featured = upcoming[0] ?? past[0];
         {copy.sublead}
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
-        <Button href={localizePath('/contact', lang)} variant="primary">{lang === 'en' ? 'Join / Contact' : '가입·문의'}</Button>
+        <Button href={localizePath('/contact', lang)} variant="primary">{t('nav.cta')}</Button>
         <Button href={localizePath('/about', lang)} variant="outline">{copy.aboutButton}</Button>
         <Button href={localizePath('/about/declaration', lang)} variant="outline">{copy.declarationButton}</Button>
       </div>
@@ -87,7 +88,7 @@ const featured = upcoming[0] ?? past[0];
     featured && (
       <SectionTile variant="soft" eyebrow={copy.seminarEyebrow}>
         <article class="mt-6 max-w-[68ch]">
-          <p class="eyebrow">{featured.data.status === 'upcoming' ? (lang === 'en' ? 'Upcoming' : '예정') : copy.pastEvent}</p>
+          <p class="eyebrow">{featured.data.status === 'upcoming' ? t('common.upcoming') : copy.pastEvent}</p>
           <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.data.title}</h3>
           <p class="mt-3 font-serif text-byline font-bold text-body-muted">
             {formatDate(featured.data.date, lang)} · {featured.data.location}
@@ -123,7 +124,7 @@ const featured = upcoming[0] ?? past[0];
         {copy.joinBody}
       </p>
       <div class="mt-8">
-        <Button href={localizePath('/contact', lang)} variant="primary">{lang === 'en' ? 'Join / Contact' : '가입·문의'}</Button>
+        <Button href={localizePath('/contact', lang)} variant="primary">{t('nav.cta')}</Button>
       </div>
     </div>
   </SectionTile>

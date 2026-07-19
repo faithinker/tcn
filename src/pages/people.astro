@@ -2,11 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { getCollection } from 'astro:content';
-import { getLangFromUrl } from '../i18n/utils';
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
 import { getContent } from '../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).people;
+const t = useTranslations(lang);
 const members = (await getCollection('members'))
   .filter((member) => member.data.lang === lang && member.data.category === 'board')
   .sort((a, b) => a.data.order - b.data.order);
@@ -71,7 +72,7 @@ const pendingMembers = members.filter((member) => member.data.tba);
               {member.data.role}
             </h2>
             <p class="mt-3 font-sans text-body-sm font-bold text-body-muted">
-              {lang === 'en' ? 'To be announced' : '추후 공개'}
+              {t('common.tba')}
             </p>
           </article>
         ))}

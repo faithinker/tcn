@@ -46,6 +46,7 @@ const nav: NavItem[] = [
     href: '/events',
     children: [
       { label: t('nav.eventAll'), href: '/events' },
+      { label: t('nav.seminars'), href: '/seminars' },
       ...invitationYears.map((year) => ({ label: eventCopy.yearLabel(year), href: `/events/${year}` })),
     ],
   },
@@ -70,7 +71,7 @@ const isExact = (href: string) => {
       <span class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">TCN</span>
     </a>
 
-    <nav class="hidden items-center gap-1 lg:flex" aria-label={t('common.menu')}>
+    <nav class="hidden items-center gap-1 xl:flex" aria-label={t('common.menu')}>
       {
         nav.map((item) =>
           item.children ? (
@@ -134,7 +135,7 @@ const isExact = (href: string) => {
     <button
       id="navToggle"
       type="button"
-      class="flex h-12 w-12 shrink-0 items-center justify-center text-ink lg:hidden"
+      class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
       aria-expanded="false"
       aria-controls="mobileNav"
       aria-label={t('common.menu')}
@@ -147,7 +148,7 @@ const isExact = (href: string) => {
     </button>
   </div>
 
-  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas lg:hidden" aria-label={t('common.menu')}>
+  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas xl:hidden" aria-label={t('common.menu')}>
     <ul class="mx-auto max-w-[75rem] px-2 py-2">
       {
         nav.map((item) => (
