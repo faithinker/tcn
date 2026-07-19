@@ -28,9 +28,26 @@ const hasBody = Boolean(
   (data.speakers && data.speakers.length) ||
   (data.materials && data.materials.length),
 );
+
+// SEO: Event 구조화 데이터 — 검색 결과에 일시·장소 리치 스니펫.
+// 확보된 필드만 수록(추정 금지). 지난 행사도 Scheduled(개최됨) 유지.
+const siteRoot = Astro.site ?? Astro.url;
+const orgName = lang === 'ko' ? '초문화네트워크' : 'Transcultural Network';
+const eventJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: data.title,
+  startDate: data.date,
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: { '@type': 'Place', name: data.location },
+  organizer: { '@type': 'Organization', name: orgName, url: new URL('/', siteRoot).href },
+  ...(data.summary || data.abstract ? { description: data.summary ?? data.abstract } : {}),
+};
 ---
 
 <BaseLayout title={data.title} description={data.summary ?? data.abstract ?? copy.description}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(eventJsonLd)} />
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <a

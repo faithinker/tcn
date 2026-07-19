@@ -4,6 +4,19 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getLangFromUrl, switchLangPath, useTranslations } from '../i18n/utils';
+// perf: 마스트헤드·히어로("초문화네트워크 / Transcultural Network") 글리프를 담은
+// Noto Serif KR 600 서브셋 4개(총 ~67KB)를 preload — 렌더블로킹 CSS 파싱을 기다리지
+// 않고 폰트를 병렬 다운로드해 LCP 단축. ?url이라 CSS의 unicode-range 파일과 동일
+// 해시 URL → 이중 다운로드 없음. en은 Georgia 폴백이라 ko에서만 주입.
+import notoKr116 from '@fontsource/noto-serif-kr/files/noto-serif-kr-116-600-normal.woff2?url';
+import notoKr117 from '@fontsource/noto-serif-kr/files/noto-serif-kr-117-600-normal.woff2?url';
+import notoKr118 from '@fontsource/noto-serif-kr/files/noto-serif-kr-118-600-normal.woff2?url';
+import notoKr119 from '@fontsource/noto-serif-kr/files/noto-serif-kr-119-600-normal.woff2?url';
+// 폰트 @font-face 번들(수백 KB)은 렌더를 막지 않도록 별도 CSS로 비차단 로드.
+// media="print" → onload에서 all로 전환(표준 async CSS 패턴), noscript 폴백 제공.
+import fontsCssUrl from '../styles/fonts.css?url';
+
+const preloadFonts = [notoKr116, notoKr117, notoKr118, notoKr119];
 
 interface Props {
   title?: string;
@@ -53,6 +66,9 @@ const organizationJsonLd = {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>document.documentElement.classList.add('js');</script>
+    {lang === 'ko' && preloadFonts.map((href) => (
+      <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />
+    ))}
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={desc} />
@@ -94,6 +110,9 @@ const organizationJsonLd = {
       <slot />
     </main>
     <Footer lang={lang} />
+    <!-- 폰트 @font-face 번들: body 끝 로드 — 뒤 콘텐츠 없어 첫 페인트 비차단.
+         텍스트는 폴백으로 즉시 그려지고 크리티컬 서브셋은 head preload가 조기 확보. -->
+    <link rel="stylesheet" href={fontsCssUrl} />
     <script>
       import '../scripts/reveal.ts';
     </script>
