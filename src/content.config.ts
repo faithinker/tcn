@@ -41,9 +41,12 @@ const history = defineCollection({
   loader: file('src/data/history.json'),
   schema: z.object({
     lang: z.enum(['ko', 'en']).default('ko'),
-    year: z.string().optional(),
     date: z.string(),
+    kind: z.enum(['founding', 'seminar']),
+    status: z.enum(['past', 'upcoming']),
     title: z.string(),
+    location: z.string(),
+    participants: z.array(z.string()).default([]),
     description: z.string(),
   }),
 });

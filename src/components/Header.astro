@@ -37,6 +37,7 @@ const nav: NavItem[] = [
     href: '/about',
     children: [
       { label: t('nav.aboutOverview'), href: '/about' },
+      { label: t('nav.history'), href: '/about#history' },
       { label: t('nav.declaration'), href: '/about/declaration' },
     ],
   },
@@ -59,6 +60,7 @@ const isActive = (href: string) => {
   return target === '/' ? here === '/' : here.startsWith(target);
 };
 const isExact = (href: string) => {
+  if (href.includes('#')) return false;
   const target = localizePath(href, lang).replace(/\/$/, '') || '/';
   return here === target;
 };
