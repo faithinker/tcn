@@ -1,0 +1,8 @@
+# L11: events 트리 은퇴 → 세미나/창립총회로 301 (Cloudflare Pages)
+# 구체 경로 먼저, 와일드카드 나중(위→아래 첫 매치 우선).
+/events/2025/founding-ceremony-invitation     /about/founding     301
+/en/events/2025/founding-ceremony-invitation  /en/about/founding  301
+/en/events/*                                  /en/seminars        301
+/en/events                                    /en/seminars        301
+/events/*                                     /seminars           301
+/events                                       /seminars           301

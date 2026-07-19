@@ -7,14 +7,21 @@ const seminars = defineCollection({
   loader: file('src/data/seminars.json'),
   schema: z.object({
     lang: z.enum(['ko', 'en']).default('ko'),
+    slug: z.string(), // 언어 무관 상세 라우트 키(ko/en 공통) → /seminars/[slug]
     title: z.string(),
     date: z.string(), // ISO(YYYY-MM-DD) — 문자열 유지(정렬은 사전순으로 충분)
     status: z.enum(['upcoming', 'past']),
     location: z.string(),
     speaker: z.string().optional(),
     affiliation: z.string().optional(),
+    theme: z.string().optional(),
+    summary: z.string().optional(),
     abstract: z.string().optional(),
+    program: z.array(z.string()).optional(),
+    speakers: z.array(z.string()).optional(),
+    materials: z.array(z.object({ label: z.string(), url: z.string() })).optional(),
     materialsUrl: z.string().optional(),
+    outcomes: z.array(z.string()).optional(),
     tags: z.array(z.string()).optional(),
   }),
 });

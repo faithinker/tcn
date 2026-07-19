@@ -88,7 +88,18 @@ const history = (await getCollection('history'))
     </ol>
   </SectionTile>
 
-  <SectionTile variant="band" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
+  <SectionTile variant="band" eyebrow={copy.foundingEyebrow} title={copy.foundingTitle}>
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      {copy.foundingBody}
+    </p>
+    <div class="mt-8">
+      <Button href={localizePath('/about/founding', lang)} variant="outline">
+        {copy.foundingButton}
+      </Button>
+    </div>
+  </SectionTile>
+
+  <SectionTile variant="canvas" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
     <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
       {copy.declarationBody}
     </p>

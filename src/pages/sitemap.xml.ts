@@ -3,16 +3,22 @@ import { getCollection } from 'astro:content';
 
 export const GET: APIRoute = async ({ site }) => {
   const siteRoot = site ?? new URL('https://tcn-ezj.pages.dev');
-  const invitations = await getCollection('invitations');
-  const years = [...new Set(invitations.map((entry) => entry.data.year))];
+  const seminarSlugs = [
+    ...new Set(
+      (await getCollection('seminars'))
+        .filter((entry) => entry.data.lang === 'ko')
+        .map((entry) => entry.data.slug),
+    ),
+  ];
   const paths = [
     '/',
     '/about/',
+    '/about/founding/',
     '/about/declaration/',
     '/people/',
-    '/events/',
-    ...years.map((year) => `/events/${year}/`),
-    ...invitations.map((entry) => `/events/${entry.data.year}/${entry.data.slug}/`),
+    '/seminars/',
+    ...seminarSlugs.map((slug) => `/seminars/${slug}/`),
+    '/contact/',
   ];
 
   const urls = paths
