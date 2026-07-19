@@ -1,0 +1,134 @@
+# 초문화네트워크 (Transcultural Network, TCN) — 소개 사이트
+
+디지털·AI 시대의 **초문화(transcultural) 현상**을 연구하는 국제 학술단체 초문화네트워크(TCN)의 공식 소개 웹사이트입니다. 한국어를 기본으로 하고 영어(`/en/`)를 선택 언어로 제공합니다.
+
+- **배포**: https://tcn-ezj.pages.dev (Cloudflare Pages)
+- **성격**: 학술단체 소개 사이트 — 정적(static), 서버·DB 없음
+
+---
+
+## 1. 콘텐츠 내용
+
+### 단체 소개
+
+| 항목 | 내용 |
+| --- | --- |
+| 한글명 | 초문화네트워크 |
+| 영문명 | Transcultural Network |
+| 약칭 | TCN |
+| 정의 | 국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크 |
+| 사무국 | 대한민국 서울 |
+| 창립 | 2025-12-12, 성균관대 명륜캠퍼스 퇴계인문관 (창립국 15개국) |
+| 회장 | 김원준 (Dr. Wonjoon Kim) |
+| 수석부회장 | 전성호 교수 |
+| 제1회 세미나 | 2025-12-26, 라오스 루앙프라방 |
+| 차기 세미나 | 2026-10-30, 한국 |
+
+### 페이지 구조 (5-페이지 IA)
+
+각 페이지는 한국어(`/`)와 영어(`/en/`) 두 버전으로 제공됩니다.
+
+| 경로 | 페이지 | 내용 |
+| --- | --- | --- |
+| `/` | 홈 | 히어로, 미션, 연혁·행사 하이라이트, 임원 소개 |
+| `/about` | 학회 소개 | 정체성, 미션·비전, 연혁 타임라인 |
+| `/about/declaration` | 창립 선언문 | 창립 선언문 전문 |
+| `/people` | 구성원 | 임원진·이사·감사 카드 (실명 미확보 시 "추후 공개") |
+| `/events` | 행사 | 초청장 아카이브 (`/events/[year]/[slug]`) |
+| `/seminars` | 세미나 | 예정/지난 세미나 목록 |
+| `/contact` | 연락처 | 사무국 연락처 |
+
+### 콘텐츠 원칙
+
+- **출처 기반만 수록** — 창립 선언문·정관·확정 질문지 근거 자료만 사용.
+- **추정·창작 금지** — 미확보 임원 실명, 세미나 프로그램, 이메일 등은 만들지 않고 폴백 처리("추후 공개", "Details to be announced").
+- **동의 없는 사진 미노출** — 임원 사진은 동의 확인 전까지 텍스트/모노그램 카드로만 표시.
+- 내부 상태 마커(`[필요]` 등)는 공개 화면에 렌더링하지 않음.
+
+### 콘텐츠 데이터 위치
+
+콘텐츠는 코드와 분리된 JSON 데이터로 관리하며, Astro Content Layer(`file` 로더 + Zod 스키마)로 타입 검증합니다.
+
+```text
+src/data/
+├── members.json       # 임원·구성원
+├── seminars.json      # 세미나 목록
+├── history.json       # 연혁 타임라인
+└── invitations.json   # 연도별 초청장 (→ /events/[year]/[slug] 자동 생성)
+```
+
+- 새 초청장 추가: `invitations.json`에 객체 하나만 append → 라우트·연도 메뉴 자동 생성.
+- 스키마 정의: `src/content.config.ts`.
+- 다국어 UI 문자열: `src/i18n/ui.ts` (ko 우선, en 누락 시 ko 폴백).
+
+---
+
+## 2. 개발 내용
+
+### 기술 스택
+
+| 구분 | 사용 기술 |
+| --- | --- |
+| 프레임워크 | [Astro](https://astro.build) 5 (정적 사이트 생성) |
+| 스타일 | [Tailwind CSS](https://tailwindcss.com) 4 (`@tailwindcss/vite`) + 디자인 토큰 |
+| 폰트 | Noto Serif KR (명조, 헤드라인·본문) · Pretendard (내비·메타데이터) |
+| 언어 | TypeScript |
+| i18n | Astro 내장 i18n (ko 기본, `/en/` 옵션) |
+| 검증 | `astro check` + Playwright 스크린샷 하네스 |
+| 배포 | Cloudflare Pages (Wrangler) |
+
+### 디자인 테마
+
+에디토리얼(editorial) 학술지 감성 — SaaS 랜딩페이지 아님. **50대 후반 이상 한국어 독자**를 위한 권위·신뢰·가독성 중심. 전체 스펙은 [`DESIGN.md`](./DESIGN.md) 참조.
+
+- **타이포가 정체성** — Noto Serif KR 명조 헤드라인(weight 600) + 세리프 본문 18px/행간 1.75. 이미지 없이 글자만으로 성립.
+- **단일 강조색** — 딥 인스티튜셔널 블루 `#0b3d6b` (링크·아이브로·활성 상태 전용). 나머지는 종이 위 잉크(near-black `#141414`).
+- **웜 페이퍼 배경** — 순백 대신 파치먼트 톤(`#f7f5f0` / `#f2efe7`)으로 눈부심 완화.
+- **가독성 하한** — 최소 14px, 보조 텍스트 명도 `#5a5a5a`(약 7:1 대비) 이상.
+- **드롭섀도 없음** — 헤어라인(1px)과 여백만으로 위계 표현.
+- **터치 타깃 ≥ 48px** — 안드로이드 기본 확대에서도 편한 조작.
+
+### 디렉터리 구조
+
+```text
+tcn/
+├── astro.config.mjs        # Astro 설정 (i18n, Tailwind, site URL)
+├── src/
+│   ├── pages/              # 라우트 (ko 루트 + en/ 미러)
+│   │   ├── index.astro
+│   │   ├── about/          # 소개 · 창립 선언문
+│   │   ├── people.astro
+│   │   ├── events/         # 행사 아카이브 [year]/[slug]
+│   │   ├── seminars.astro
+│   │   ├── contact.astro
+│   │   ├── en/             # 영어 미러
+│   │   └── sitemap.xml.ts
+│   ├── layouts/
+│   │   └── BaseLayout.astro
+│   ├── components/         # Header, Footer, Button, MemberCard, SectionTile, Stat …
+│   ├── data/              # 콘텐츠 JSON (members, seminars, history, invitations)
+│   ├── content.config.ts   # 컬렉션 Zod 스키마
+│   ├── i18n/               # ui.ts, content.ts, utils.ts
+│   └── styles/
+│       └── global.css      # 디자인 토큰 + Tailwind
+├── public/                 # 파비콘, OG 이미지, robots.txt, webmanifest
+├── scripts/
+│   └── verify.mjs          # Playwright 검증 하네스
+├── DESIGN.md               # 디자인 시스템 스펙
+├── CONTENT_ARCHITECTURE.md # 콘텐츠·컬렉션 설계
+└── MEMBERSHIP_FLOW.md      # 가입 플로우 메모
+```
+
+### 개발 실행
+
+```bash
+npm install          # 의존성 설치
+npm run dev          # 개발 서버 (0.0.0.0, 핫리로드)
+npm run build        # dist/ 정적 빌드
+npm run preview      # 빌드 결과 미리보기
+npm run check        # astro check (타입·스키마 검증)
+npm run verify       # Playwright 스크린샷 검증 (375/768/1280)
+```
+
+- **Node**: v26 호환 확인됨 (Playwright 1.61+).
+- 환경 변수는 `.env.example` 참조 (`.env`는 커밋 제외).

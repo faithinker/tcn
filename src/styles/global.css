@@ -152,3 +152,35 @@
     border-color: var(--color-hairline);
   }
 }
+
+/* ============================================================
+   L13: 스크롤 진입 모션 — 점진적 향상(구조 선택자, 마크업 속성 불필요).
+   html.js일 때만 은닉 -> JS 실패/구형 브라우저/크롤러는 처음부터 완전 표시.
+   히어로(첫 섹션) 제외, main 직속 2번째 섹션부터. "잉크가 종이에 앉듯" 절제.
+   메모리 절약: will-change 미사용(짧은 1회 전환은 힌트 없이 컴포지터 처리).
+   ============================================================ */
+html.js main > section:not(:first-of-type) {
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+html.js main > section:not(:first-of-type).is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* 접근성: 모션 민감 사용자는 진입 애니메이션 완전 off */
+@media (prefers-reduced-motion: reduce) {
+  html.js main > section:not(:first-of-type) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* L13: 다크(잉크) 표면 포커스 링 대비 확보 — accent 파랑 대신 흰 링 */
+footer :focus-visible {
+  outline-color: var(--color-canvas);
+}
