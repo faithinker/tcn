@@ -14,7 +14,7 @@ const data = invitation?.data;
 ---
 
 <BaseLayout title={about.foundingTitle} description={data?.summary ?? about.foundingBody}>
-  <section class="bg-canvas px-5 py-16 sm:py-24">
+  <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <a
         href={localizePath('/about', lang)}
@@ -34,7 +34,7 @@ const data = invitation?.data;
       </header>
 
       {data ? (
-        <div class="mt-12">
+        <div class="mt-10 sm:mt-12">
           <InvitationContent data={data} />
         </div>
       ) : (

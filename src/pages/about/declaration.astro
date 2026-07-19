@@ -11,7 +11,7 @@ const copy = getContent(lang).declaration;
   title={copy.title}
   description={copy.description}
 >
-  <section class="bg-canvas px-5 py-16 sm:py-24">
+  <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <div class="border-y border-hairline-strong py-8">
         <p class="eyebrow">{copy.eyebrow}</p>
@@ -20,7 +20,7 @@ const copy = getContent(lang).declaration;
         </h1>
       </div>
 
-      <div class="mt-12 grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <div class="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <aside class="hidden lg:block">
           <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
             <p class="text-caption font-bold uppercase text-accent">{copy.asideLabel}</p>
@@ -37,7 +37,7 @@ const copy = getContent(lang).declaration;
 
           <ol class="mt-12 grid gap-4">
             {copy.missions.map((mission, index) => (
-              <li class="border border-hairline bg-canvas-soft p-6">
+              <li class="border border-hairline bg-canvas-soft p-5 sm:p-6">
                 <p class="font-sans text-caption font-bold uppercase text-accent">
                   Mission {String(index + 1).padStart(2, '0')}
                 </p>

@@ -21,7 +21,7 @@ const detailHref = (slug: string) => localizePath(`/seminars/${slug}`, lang);
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>
-  <section class="bg-canvas px-5 pt-16 pb-10 sm:pt-24 sm:pb-14">
+  <section class="bg-canvas px-5 pt-12 pb-8 sm:pt-24 sm:pb-14">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
       <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
@@ -36,7 +36,7 @@ const detailHref = (slug: string) => localizePath(`/seminars/${slug}`, lang);
       <div class="mx-auto max-w-[75rem]">
         <a
           href={detailHref(next.data.slug)}
-          class="group block border-y-2 border-accent bg-canvas-soft p-6 no-underline sm:p-10"
+          class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
         >
           <div class="flex flex-wrap items-center gap-3">
             <p class="eyebrow !mb-0">{copy.nextEyebrow}</p>
@@ -64,7 +64,7 @@ const detailHref = (slug: string) => localizePath(`/seminars/${slug}`, lang);
       {upcoming.length ? upcoming.map((seminar) => (
         <a
           href={detailHref(seminar.data.slug)}
-          class="group block border-y border-hairline-strong bg-canvas p-6 no-underline sm:p-8"
+          class="group block border-y border-hairline-strong bg-canvas p-5 no-underline sm:p-8"
         >
           <p class="font-sans text-caption font-bold uppercase text-accent">
             {formatDate(seminar.data.date, lang)}
