@@ -15,7 +15,7 @@ const check = (cond, msg) => {
 };
 const op = (locator) => locator.evaluate((el) => getComputedStyle(el).opacity);
 
-// 짧은 뷰포트 → 2번째 섹션이 접힘 아래에 위치하도록.
+// 짧은 뷰포트 + 마지막 리빌 대상 → 안정적인 오프스크린 조건.
 const VP = { width: 1280, height: 500 };
 
 // 1) 기본 동작

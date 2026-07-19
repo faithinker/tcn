@@ -1,4 +1,4 @@
-// L6: Astro 5 Content Layer — 데이터 컬렉션(Zod 스키마). ko 기본, en은 L16.
+// Astro 5 Content Layer — ko/en JSON 데이터 컬렉션과 Zod 스키마.
 // 데이터는 src/data/*.json (file 로더). 각 항목의 "id"가 엔트리 키(slug).
 import { defineCollection, z } from 'astro:content';
 import { file } from 'astro/loaders';

@@ -8,7 +8,7 @@ import lighthouse from 'lighthouse';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/,/about,/people,/seminars,/contact,/events,/en/')
+const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/people,/seminars,/seminars/2025-laos,/contact,/en/')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const MIN = Number(process.env.MIN_A11Y || 90);
 

@@ -1,335 +1,135 @@
 # TCN Content Architecture
 
-Created: 2026-07-19
-Source vault: `/Users/jhkim/Desktop/Obsidian/tcn`
-Target app: `/Users/jhkim/Desktop/work/tcn`
+Updated: 2026-07-19
 
-## 1. Obsidian Content Structure
+Runtime: Astro 5 static build
 
-The Obsidian vault is compact and already separates planning from source content.
+Default language: Korean (`/`)
+
+Optional language: English (`/en/`)
+
+## 1. Source and publication policy
+
+Public content must be backed by the founding declaration, bylaws, invitation, or confirmed questionnaire responses. Do not invent officer names, affiliations, seminar programmes, contact channels, fees, or registration links.
+
+Missing information uses an explicit public fallback such as `추후 공개` or `To be announced`. Internal markers such as `[필요]` must never render. Officer photographs remain unpublished until both the image and consent are confirmed.
+
+## 2. Current information architecture
+
+The five top-level navigation items are Home, About, People, Seminars, and Contact. Korean and English use the same page components and route shape.
+
+| Korean route | English route | Source |
+| --- | --- | --- |
+| `/` | `/en/` | `content.ts`, seminar summary |
+| `/about` | `/en/about` | `content.ts`, `history.json` |
+| `/about/founding` | `/en/about/founding` | `content.ts`, `invitations.json` |
+| `/about/declaration` | `/en/about/declaration` | `content.ts` |
+| `/people` | `/en/people` | `content.ts`, `members.json` |
+| `/seminars` | `/en/seminars` | `content.ts`, `seminars.json` |
+| `/seminars/[slug]` | `/en/seminars/[slug]` | `seminars.json` |
+| `/contact` | `/en/contact` | `content.ts`, public environment variable |
+
+The retired `/events` tree is not a runtime route. `public/_redirects` permanently redirects old event URLs to `/seminars` or `/about/founding`, including English equivalents.
+
+## 3. Content ownership
 
 ```text
-/Users/jhkim/Desktop/Obsidian/tcn
-├── TCN 사이트맵.html
-├── TCN 웹사이트 콘텐츠 구조.md
-├── contents
-│   ├── TCN 콘텐츠.md
-│   ├── TCN 웹사이트 - 고객 질문지.md
-│   ├── 1212TCN초청장.docx
-│   ├── 2512TCN정관.docx
-│   └── Transcultural Network 창립 선언문.docx
-└── dev
-    ├── TCN 사이트 — 메뉴 구조 & 루프 실행 계획.md
-    └── TCN 학회 소개 사이트 — 개발 계획.md
+src/
+├── content.config.ts       # file-loader collections and Zod schemas
+├── data/
+│   ├── members.json        # leadership and board cards
+│   ├── seminars.json       # seminar list/detail records
+│   ├── history.json        # About timeline
+│   └── invitations.json    # founding ceremony invitation
+└── i18n/
+    ├── content.ts          # page-level Korean and English copy
+    ├── ui.ts               # shared navigation, labels, footer copy
+    └── utils.ts            # language detection, paths, dates
 ```
 
-### Source Roles
+`content.ts` owns editorial page copy. `ui.ts` owns short reusable interface strings. Repeatable factual records belong in JSON and are loaded through Astro Content Layer.
 
-| Source | Role | Implementation Use |
-| --- | --- | --- |
-| `TCN 웹사이트 콘텐츠 구조.md` | Canonical sitemap and content mapping | Page/section IA, status tracking, source provenance |
-| `contents/TCN 웹사이트 - 고객 질문지.md` | Requirements tracker | Required/optional field policy, fallback policy |
-| `contents/TCN 콘텐츠.md` | Compact factual memo | Initial seed data for officers and seminars |
-| `contents/1212TCN초청장.docx` | Founding invitation | Founding event, founding rationale |
-| `contents/2512TCN정관.docx` | Bylaws | Membership, organization, business areas |
-| `contents/Transcultural Network 창립 선언문.docx` | Founding declaration | About declaration, mission, research areas |
-| `dev/TCN 사이트 — 메뉴 구조 & 루프 실행 계획.md` | Build plan | Current 5-page IA and implementation milestones |
-| `TCN 사이트맵.html` | Visual IA artifact | Human reference only, not a runtime source |
+## 4. Collection schemas
 
-### Confirmed Facts
+All collections use `file()` from `astro/loaders` and are validated during `npm run check` and `npm run build`.
 
-These can be seeded without asking again:
+### `seminars`
 
-| Item | Value |
-| --- | --- |
-| Korean name | 초문화네트워크 |
-| English name | Transcultural Network |
-| Abbreviation | TCN |
-| Definition | 디지털·AI 시대의 초문화 현상을 연구하는 국제 학술단체 |
-| Secretariat | 대한민국 서울 |
-| Founding | 2025-12-12, 성균관대 명륜캠퍼스 퇴계인문관 31511호 |
-| Founding countries | 15 |
-| Chair | Dr. Wonjoon Kim / 김원준 |
-| Senior vice chair | 전성호 교수 |
-| First seminar | 2025-12-26, 라오스 루앙프라방 |
-| Upcoming seminar | 2026-10-30, 한국 |
-| Default language | Korean at `/` |
-| Optional language | English at `/en/` later |
+Required fields:
 
-### Missing or Deferred Content
+- `id`: unique record key; English uses the Korean key plus `-en`
+- `slug`: language-independent URL key shared by the ko/en pair
+- `lang`: `ko` or `en`
+- `title`, `date`, `status`, `location`
 
-Missing content should not block the first build. Do not render `[필요]` or internal status markers on the public site.
+Optional confirmed detail fields include `theme`, `summary`, `abstract`, `program`, `speakers`, `materials`, `outcomes`, and `tags`. A missing detail body renders the localized “details to be announced” fallback.
 
-| Area | Missing | Build Behavior |
-| --- | --- | --- |
-| Slogan | Official short slogan | Use declaration-based hero line |
-| Directors | China/Vietnam/Laos/Uzbekistan names and affiliations | Render `To be announced` country cards if needed |
-| Auditor | John Lee affiliation | Render name with affiliation fallback |
-| Officer photos | Photos and consent | Text-only cards with monograms |
-| Second seminar | Venue, topic, program, registration, fee | Show date/country and `Details to be announced` |
-| First seminar | Topic, speakers, materials | Show date/location/countries only |
-| Contact | Email, address, phone | Show `Contact details coming soon` |
-| News/resources | Operational cadence and assets | Keep routes deferred |
+List ordering is upcoming ascending and past descending. Detail routes are generated from every localized record.
 
-## 2. Astro Content Collection Design
+### `members`
 
-Use Astro content collections through `src/content.config.ts` and `src/content/`.
+Required fields are `id`, `lang`, `name`, `role`, `category`, and `order`. Optional fields include `nameEn`, `affiliation`, `bio`, `country`, `photo`, `email`, and `website`.
 
-Astro 5 supports defining collections with:
+Use `tba: true` only for a confirmed seat whose person is not yet public. Korean and English records use the same order and category.
 
-- `defineCollection` from `astro:content`
-- `glob` from `astro/loaders`
-- `z` from `astro/zod`
-- `getCollection()` in pages/components
+### `history`
 
-### Collection Overview
+Required fields are `id`, `lang`, `date`, `kind`, `status`, `title`, `location`, `participants`, and `description`. Timeline records stay concise; longer seminar material belongs in `seminars.json`.
 
-```text
-src/content.config.ts
-src/content/
-├── site/
-│   └── ko.md
-├── declarations/
-│   └── founding.ko.md
-├── members/
-│   ├── wonjoon-kim.md
-│   ├── sung-ho-jeon.md
-│   ├── director-china.md
-│   ├── director-vietnam.md
-│   ├── director-laos.md
-│   ├── director-uzbekistan.md
-│   └── john-lee.md
-├── seminars/
-│   ├── founding-assembly-2025.md
-│   ├── luang-prabang-2025.md
-│   └── korea-2026.md
-└── history/
-    ├── founding-assembly-2025.md
-    ├── first-seminar-2025.md
-    └── second-seminar-2026.md
+### `invitations`
+
+This collection currently holds the bilingual founding ceremony invitation rendered at `/about/founding`. Required fields include the shared `slug`, date/status/location/venue/time, invitation paragraphs, programme, closing, issued date, and sender.
+
+The collection no longer generates `/events/[year]/[slug]` routes.
+
+## 5. Korean/English pairing rules
+
+Every repeatable record must have one Korean and one English entry.
+
+- English `id` = Korean `id` + `-en`
+- `slug`, `date`, `status`, ordering, categories, URLs, and time notation remain identical
+- parallel arrays retain the same number and order of items
+- translations may adapt wording but must not add unsupported facts
+- English source strings must not contain Hangul
+- every Korean Astro page source has an English wrapper at the equivalent `/en/` path
+
+Run `npm run i18n` after any content or route change. It checks route pairs, content/UI object shapes, JSON record invariants, parallel array lengths, and Hangul leakage into English sources.
+
+## 6. Editing workflows
+
+### Add a seminar
+
+1. Append Korean and English entries to `src/data/seminars.json`.
+2. Reuse the same URL-safe `slug`; suffix only the English `id` with `-en`.
+3. Add only confirmed optional details.
+4. Run `npm run i18n`, `npm run check`, and `npm run build`.
+
+The list and both localized detail routes are generated automatically.
+
+### Update an officer
+
+1. Update the matching ko/en records in `members.json`.
+2. Keep `order`, `category`, country, and placeholder state aligned.
+3. Do not add a photo without confirmed consent.
+4. Run the i18n and build checks.
+
+### Update the founding invitation
+
+Edit both language entries in `invitations.json`. Keep factual fields and paragraph/programme structure aligned. The result appears on the localized `/about/founding` pages.
+
+### Change navigation or routes
+
+Update the shared page/component first, add the equivalent English wrapper when a new route is introduced, then update `public/_redirects`, `src/pages/sitemap.xml.ts`, README, and this document. Finish with the full verification sequence.
+
+## 7. Verification
+
+```bash
+npm run i18n   # ko/en source parity
+npm run check  # Astro and schema diagnostics
+npm run build  # all static routes
+npm run motion # reveal, reduced-motion, fail-open behavior
+npm run verify # viewport, overflow, console, screenshots
+npm run a11y   # Lighthouse accessibility on representative routes
 ```
 
-Recommended route mapping:
-
-| Route | Collections Used |
-| --- | --- |
-| `/` | `site`, `seminars`, `history` summary |
-| `/about` | `site`, `history` |
-| `/about/declaration` | `declarations` |
-| `/people` | `members` |
-| `/events` | `invitations`, `seminars` |
-| `/events/[year]` | `invitations`, `seminars` filtered by year |
-| `/events/[year]/[slug]` | `invitations` |
-| `/contact` | `site` |
-
-### `site` Collection
-
-Purpose: stable organization-level data and copy that is not a repeatable article.
-
-```ts
-const site = defineCollection({
-  loader: glob({ base: './src/content/site', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    lang: z.enum(['ko', 'en']).default('ko'),
-    nameKo: z.string(),
-    nameEn: z.string(),
-    abbreviation: z.string(),
-    tagline: z.string(),
-    description: z.string(),
-    office: z.string(),
-    contactEmail: z.string().email().optional(),
-    contactNote: z.string().optional(),
-    foundedAt: z.coerce.date(),
-    foundingLocation: z.string(),
-    foundingCountryCount: z.number().int().positive().optional(),
-    mission: z.array(z.string()),
-    vision: z.string(),
-    activities: z.array(z.string()),
-    researchAreas: z.array(z.string()),
-  }),
-});
-```
-
-Use this for:
-
-- hero copy
-- mission/vision
-- business/research areas
-- office/contact fallback
-- home stats
-
-### `declarations` Collection
-
-Purpose: long-form founding declaration, bylaws summary, and future official statements.
-
-```ts
-const declarations = defineCollection({
-  loader: glob({ base: './src/content/declarations', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    title: z.string(),
-    lang: z.enum(['ko', 'en']).default('ko'),
-    type: z.enum(['founding-declaration', 'bylaws-summary', 'statement']),
-    date: z.coerce.date().optional(),
-    source: z.string().optional(),
-    order: z.number().int().default(0),
-  }),
-});
-```
-
-Use this for:
-
-- `/about/declaration`
-- future public statements
-- bylaws summary if public download is approved
-
-### `invitations` Collection
-
-Purpose: annual event invitations and their public archive. The current implementation uses the file loader with `src/data/invitations.json`.
-
-Each invitation must have a unique `id`, numeric `year`, URL-safe `slug`, ISO `date`, `status`, event location/time, invitation paragraphs, program, closing, and sender. Routes are generated automatically as `/events/{year}/{slug}` and the available years are derived from the data for the header and archive pages.
-
-To add the 2026 invitation, append one object to `src/data/invitations.json`; do not add a year manually to the menu.
-
-### `members` Collection
-
-Purpose: officers, advisors, members, and future committees.
-
-```ts
-const members = defineCollection({
-  loader: glob({ base: './src/content/members', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    name: z.string(),
-    nameEn: z.string().optional(),
-    role: z.enum([
-      'chair',
-      'senior-vice-chair',
-      'vice-chair',
-      'director',
-      'auditor',
-      'advisor',
-      'member',
-      'secretariat',
-    ]),
-    category: z.enum(['board', 'advisor', 'member', 'secretariat']),
-    country: z.string().optional(),
-    affiliation: z.string().optional(),
-    title: z.string().optional(),
-    expertise: z.array(z.string()).default([]),
-    bio: z.string().optional(),
-    website: z.string().url().optional(),
-    photo: z.string().optional(),
-    consentConfirmed: z.boolean().default(false),
-    isPlaceholder: z.boolean().default(false),
-    order: z.number().int().default(100),
-  }),
-});
-```
-
-Display policy:
-
-- Sort by `order`.
-- Group by `category`, then `role`.
-- Hide empty `advisor`, `member`, and `secretariat` groups.
-- Render monogram when `photo` is missing.
-- Do not show photos unless `consentConfirmed` is `true`.
-- Placeholder cards are acceptable only for known board seats and countries.
-
-### `seminars` Collection
-
-Purpose: event listings, upcoming seminars, archive, and detail pages.
-
-```ts
-const seminars = defineCollection({
-  loader: glob({ base: './src/content/seminars', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    title: z.string(),
-    titleEn: z.string().optional(),
-    date: z.coerce.date(),
-    endDate: z.coerce.date().optional(),
-    status: z.enum(['upcoming', 'past', 'draft']).default('draft'),
-    kind: z.enum(['founding-assembly', 'seminar', 'symposium', 'conference']),
-    location: z.string(),
-    city: z.string().optional(),
-    country: z.string().optional(),
-    countries: z.array(z.string()).default([]),
-    summary: z.string().optional(),
-    theme: z.string().optional(),
-    program: z.array(z.object({
-      time: z.string().optional(),
-      title: z.string(),
-      speaker: z.string().optional(),
-      affiliation: z.string().optional(),
-    })).default([]),
-    speakers: z.array(z.string()).default([]),
-    materials: z.array(z.object({
-      label: z.string(),
-      url: z.string(),
-      type: z.enum(['pdf', 'ppt', 'link', 'image', 'video']).default('link'),
-    })).default([]),
-    registrationUrl: z.string().url().optional(),
-    isRegistrationOpen: z.boolean().default(false),
-    order: z.number().int().default(100),
-  }),
-});
-```
-
-Display policy:
-
-- `/seminars`: split by `status`, then sort upcoming ascending and past descending.
-- Detail page fallback text: `Details to be announced`.
-- Do not invent speakers, topics, fees, or registration links.
-- Use future date logic only for UI grouping if `status` is missing, but prefer explicit `status`.
-
-### `history` Collection
-
-Purpose: About timeline, independent from seminars because not every history item is a seminar.
-
-```ts
-const history = defineCollection({
-  loader: glob({ base: './src/content/history', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    year: z.number().int(),
-    summary: z.string(),
-    location: z.string().optional(),
-    relatedSeminar: z.string().optional(),
-    source: z.string().optional(),
-    order: z.number().int().default(100),
-  }),
-});
-```
-
-Display policy:
-
-- `/about#history`: chronological timeline.
-- Link to `relatedSeminar` when present.
-- Keep history factual and short; put long materials in seminars/resources.
-
-## Seed Data Boundaries
-
-Initial seed should include only source-backed data:
-
-- Site identity and mission from declaration, bylaws, and customer-confirmed questionnaire.
-- Members: chair, senior vice chair, directors by country placeholder, auditor John Lee.
-- Seminars: founding assembly, first Luang Prabang seminar, upcoming Korea seminar.
-- History: same three events, written as timeline entries.
-- Declaration: Korean founding declaration body.
-
-Do not seed:
-
-- unconfirmed email
-- unconfirmed legal status
-- invented officer affiliations
-- invented seminar programs
-- images copied from external profiles without permission
-- English translations as final copy unless approved
-
-## Implementation Order
-
-1. Add `src/content.config.ts`.
-2. Add seed files under `src/content/`.
-3. Run `npm run check`.
-4. Replace home hard-coded highlights with `getCollection()`.
-5. Build `/about`, `/people`, `/seminars`, `/seminars/[slug]`, `/contact`.
-6. Run `npm run build` and visual checks.
+Content work is complete only when these checks pass and the Korean and English pages communicate the same confirmed facts.

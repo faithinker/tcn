@@ -1,5 +1,5 @@
-// L3: i18n 문자열 사전 — 한국어 기본, 영어 옵션.
-// 키 추가 시 ko를 먼저 채우고 en은 옵션(누락 시 ko로 폴백 — utils.useTranslations).
+// i18n 문자열 사전 — 한국어 기본, 영어 미러.
+// 키 추가 시 ko/en을 함께 채우고 `npm run i18n`으로 구조 정합성을 검사한다.
 
 export const languages = {
   ko: '한국어',
@@ -24,8 +24,6 @@ export const ui = {
     'nav.founding': '창립총회',
     'nav.declaration': '창립 선언문',
     'nav.people': '구성원',
-    'nav.events': '행사',
-    'nav.eventAll': '전체 행사',
     'nav.seminars': '세미나',
     'nav.contact': '연락처',
     'nav.cta': '가입·문의',
@@ -57,8 +55,6 @@ export const ui = {
     'nav.founding': 'Founding Ceremony',
     'nav.declaration': 'Founding Declaration',
     'nav.people': 'People',
-    'nav.events': 'Events',
-    'nav.eventAll': 'All events',
     'nav.seminars': 'Seminars',
     'nav.contact': 'Contact',
     'nav.cta': 'Join / Contact',

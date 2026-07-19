@@ -24,19 +24,22 @@
 | 제1회 세미나 | 2025-12-26, 라오스 루앙프라방 |
 | 차기 세미나 | 2026-10-30, 한국 |
 
-### 페이지 구조 (5-페이지 IA)
+### 페이지 구조 (5개 상위 메뉴 IA)
 
 각 페이지는 한국어(`/`)와 영어(`/en/`) 두 버전으로 제공됩니다.
 
 | 경로 | 페이지 | 내용 |
 | --- | --- | --- |
-| `/` | 홈 | 히어로, 미션, 연혁·행사 하이라이트, 임원 소개 |
+| `/` | 홈 | 히어로, 미션, 핵심 활동, 세미나 하이라이트, 가입 안내 |
 | `/about` | 학회 소개 | 정체성, 미션·비전, 연혁 타임라인 |
+| `/about/founding` | 창립총회 | 창립총회 초청장과 행사 개요 |
 | `/about/declaration` | 창립 선언문 | 창립 선언문 전문 |
 | `/people` | 구성원 | 임원진·이사·감사 카드 (실명 미확보 시 "추후 공개") |
-| `/events` | 행사 | 초청장 아카이브 (`/events/[year]/[slug]`) |
-| `/seminars` | 세미나 | 예정/지난 세미나 목록 |
+| `/seminars` | 세미나 | 예정/지난 세미나 목록과 차기 세미나 강조 |
+| `/seminars/[slug]` | 세미나 상세 | 일정·장소·참여국과 확정된 프로그램·자료 |
 | `/contact` | 연락처 | 사무국 연락처 |
+
+기존 `/events` 경로는 Cloudflare Pages의 `public/_redirects`에서 세미나 또는 창립총회 페이지로 301 이동합니다.
 
 ### 콘텐츠 원칙
 
@@ -54,12 +57,14 @@ src/data/
 ├── members.json       # 임원·구성원
 ├── seminars.json      # 세미나 목록
 ├── history.json       # 연혁 타임라인
-└── invitations.json   # 연도별 초청장 (→ /events/[year]/[slug] 자동 생성)
+└── invitations.json   # 창립총회 초청장 (→ /about/founding)
 ```
 
-- 새 초청장 추가: `invitations.json`에 객체 하나만 append → 라우트·연도 메뉴 자동 생성.
+- 새 세미나 추가: `seminars.json`에 ko/en 항목을 같은 `slug`로 추가 → 언어별 상세 라우트 자동 생성.
+- 창립총회 초청장 수정: `invitations.json`의 ko/en 쌍을 함께 갱신.
 - 스키마 정의: `src/content.config.ts`.
-- 다국어 UI 문자열: `src/i18n/ui.ts` (ko 우선, en 누락 시 ko 폴백).
+- 페이지 콘텐츠: `src/i18n/content.ts`, 공통 UI 문자열: `src/i18n/ui.ts`.
+- `npm run i18n`으로 라우트·번역 키·ko/en JSON 쌍과 영문 한글 혼입을 검사.
 
 ---
 
@@ -97,10 +102,9 @@ tcn/
 ├── src/
 │   ├── pages/              # 라우트 (ko 루트 + en/ 미러)
 │   │   ├── index.astro
-│   │   ├── about/          # 소개 · 창립 선언문
+│   │   ├── about/          # 소개 · 창립총회 · 창립 선언문
 │   │   ├── people.astro
-│   │   ├── events/         # 행사 아카이브 [year]/[slug]
-│   │   ├── seminars.astro
+│   │   ├── seminars/       # 세미나 목록 · [slug] 상세
 │   │   ├── contact.astro
 │   │   ├── en/             # 영어 미러
 │   │   └── sitemap.xml.ts
@@ -112,9 +116,12 @@ tcn/
 │   ├── i18n/               # ui.ts, content.ts, utils.ts
 │   └── styles/
 │       └── global.css      # 디자인 토큰 + Tailwind
-├── public/                 # 파비콘, OG 이미지, robots.txt, webmanifest
+├── public/                 # 파비콘, OG 이미지, redirects, cache headers
 ├── scripts/
-│   └── verify.mjs          # Playwright 검증 하네스
+│   ├── verify.mjs          # Playwright 화면 검증
+│   ├── motion.mjs          # 스크롤 모션·실패 폴백 검증
+│   ├── a11y.mjs            # Lighthouse 접근성 검증
+│   └── i18n.mjs            # 한·영 정합성 감사
 ├── DESIGN.md               # 디자인 시스템 스펙
 ├── CONTENT_ARCHITECTURE.md # 콘텐츠·컬렉션 설계
 └── MEMBERSHIP_FLOW.md      # 가입 플로우 메모
@@ -128,6 +135,7 @@ npm run dev          # 개발 서버 (0.0.0.0, 핫리로드)
 npm run build        # dist/ 정적 빌드
 npm run preview      # 빌드 결과 미리보기
 npm run check        # astro check (타입·스키마 검증)
+npm run i18n         # 한·영 라우트·번역·데이터 정합성 검사
 npm run verify       # Playwright 스크린샷 검증 (375/768/1280)
 npm run motion       # 스크롤 리빌·reduced-motion·JS 실패 폴백 검증
 npm run a11y         # Lighthouse 접근성 점수 검증 (preview 서버 필요)

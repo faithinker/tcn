@@ -14,7 +14,7 @@
 ### 완료 게이트 (수용 기준)
 
 - `npm run build` 무에러.
-- 대표 페이지 **Lighthouse accessibility ≥ 90**: `/ /about /people /seminars /contact /events` + `/en/`.
+- 대표 페이지 **Lighthouse accessibility ≥ 90**: `/ /about /about/founding /people /seminars /seminars/2025-laos /contact` + `/en/`.
 - `prefers-reduced-motion: reduce`에서 진입 모션 완전 off.
 - JS 미동작·구형 브라우저에서 콘텐츠가 절대 숨지 않음(처음부터 표시).
 - 375 / 768 / 1280 무깨짐, 콘솔 무에러.
@@ -94,21 +94,24 @@ html.reveal-ready [data-reveal].is-visible {
 }
 ```
 
-### 4.3 적용 입도 = 섹션 단위 (구조 선택자, 마크업 속성 불필요)
+### 4.3 적용 입도 = 섹션 단위 (명시적 `data-reveal` 훅)
 
-- 리빌 대상은 **`main` 직속 `<section>` 중 2번째부터**. 카드·행 개별이 아니라 섹션 덩어리 단위(차분함).
+- 리빌 대상은 명시적으로 `data-reveal`을 가진 섹션이다. 카드·행 개별이 아니라 섹션 덩어리 단위(차분함).
 - **첫 섹션(hero)·Header·Footer는 제외** — 접힘 위 첫 화면은 로드부터 단단히 고정(권위). 리빌은 둘째 섹션부터.
-- 모든 페이지가 `hero <section>` + `SectionTile(<section>)` 구조이고, `en/` 페이지는 ko 페이지 컴포넌트를 그대로 재-import(`import HomePage from '../index.astro'`)하므로 **구조 선택자 하나로 ko·en·events·declaration 전부 균일 커버**. `data-reveal` 속성이나 SectionTile prop, 페이지별 편집이 전혀 필요 없다(최적화·최소 표면적).
+- `SectionTile`은 `reveal` prop(기본 `true`)으로 `data-reveal`을 자동 부여한다. Hero는 훅을 생략하고, `SectionTile`을 쓰지 않는 접힘 아래 섹션만 `data-reveal`을 직접 선언한다.
+- `en/` 페이지는 ko 페이지 컴포넌트를 재사용하므로 같은 리빌 마크업과 동작을 공유한다.
 
-### 4.4 파일 (3개만)
+### 4.4 파일
 
 | 파일 | 변경 |
 |---|---|
-| `src/styles/global.css` | §4.2 reveal CSS(구조 선택자) + reduced-motion 가드 + 다크 포커스 링 |
+| `src/styles/global.css` | §4.2 `[data-reveal]` CSS + reduced-motion 가드 + 다크 포커스 링 |
 | `src/scripts/reveal.ts` (신규) | IntersectionObserver 로직(노출 즉시 unobserve, 완료 시 disconnect) |
 | `src/layouts/BaseLayout.astro` | `reveal.ts` 로드 |
+| `src/components/SectionTile.astro` | `reveal` prop과 `data-reveal` 출력 |
+| `src/pages/*.astro` | `SectionTile` 밖 접힘 아래 섹션에 `data-reveal` 선언 |
 
-SectionTile·개별 페이지·en 미러는 **손대지 않음**.
+en 미러는 공유 ko 페이지 컴포넌트를 import하므로 별도 모션 마크업이 없다.
 
 ## 5. Part B — 접근성 (Lighthouse 주도)
 
@@ -135,32 +138,33 @@ footer :focus-visible {
 
 - devDep: `lighthouse` + `chrome-launcher` 추가.
 - 신규 `scripts/a11y.mjs`: preview(빌드본) 대상 각 대표 URL에 `lighthouse`(accessibility 카테고리만) 실행 → 점수·실패 audit 요약, 하나라도 `MIN_A11Y`(기본 90) 미만이면 비정상 종료(루프 게이트).
-- Chrome: 시스템 Google Chrome을 `chrome-launcher`가 자동 탐색(headless).
+- Chrome: 설치된 Playwright Chromium 경로를 `chrome-launcher`에 전달해 기존 브라우저를 재사용.
 - `package.json` scripts: `"a11y": "node scripts/a11y.mjs"`, `"motion": "node scripts/motion.mjs"`.
 
 ## 7. 테스트 (Playwright — `scripts/motion.mjs`)
 
-기존 `scripts/verify.mjs`와 동일 스택. 짧은 뷰포트(500px)로 2번째 섹션을 접힘 아래에 두고 검사.
+기존 `scripts/verify.mjs`와 동일 스택. 홈의 마지막 `[data-reveal]`을 결정적 오프스크린 대상으로 검사.
 
 1. **준비 상태**: 관찰 등록 뒤 `html.reveal-ready` 클래스가 설정됨.
 2. **Hero 표시**: hero에 `data-reveal`이 없고 `opacity:1`.
-3. **진입 리빌**: 2번째 섹션 초기 `opacity:0` → `scrollIntoView` 후 `opacity:1`.
-4. **reduced-motion**: `reducedMotion: 'reduce'` → 2번째 섹션이 스크롤 전부터 `opacity:1`.
-5. **no-JS 폴백**: `javaScriptEnabled: false` → 2번째 섹션 `opacity:1`(콘텐츠 안 숨김).
+3. **진입 리빌**: 오프스크린 `[data-reveal]` 초기 `opacity:0` → `scrollIntoView` 후 `opacity:1`.
+4. **reduced-motion**: `reducedMotion: 'reduce'` → 리빌 대상이 스크롤 전부터 `opacity:1`.
+5. **초기화 실패**: `IntersectionObserver` 생성 실패 시 `.reveal-ready`가 붙지 않고 콘텐츠가 표시됨.
+6. **no-JS 폴백**: `javaScriptEnabled: false` → 리빌 대상 `opacity:1`(콘텐츠 안 숨김).
 
 추가로 `verify.mjs`는 촬영 전 페이지를 스텝 스크롤해 리빌을 발화시킨 뒤 fullPage 캡처(접힘 아래 섹션이 스크린샷에 보이도록).
 
 ## 8. 검증 순서 (완료 정의)
 
 1. `npm run build` 무에러.
-2. `npm run motion` 5종 통과.
+2. `npm run motion` 기본·reduced-motion·no-JS·초기화 실패 4개 시나리오 통과.
 3. `npm run a11y` → 대표 페이지 전부 accessibility ≥90.
 4. `npm run verify` 375/768/1280 무깨짐, 콘솔 무에러.
 5. `git commit` (`L13: motion + accessibility`).
 
 ## 9. 리스크 / 결정
 
-- **Lighthouse Chrome 의존**: `chrome-launcher`가 시스템 Google Chrome 자동 탐색(macOS 확인됨). 부재 환경(CI 등)에선 라이브 URL(`tcn-ezj.pages.dev`) 대상 측정으로 대체.
+- **Lighthouse Chrome 의존**: Playwright Chromium을 명시적으로 재사용하고 `CHROME_PATH`가 있으면 그 값을 우선한다.
 - **실패 안전성 우선**: 관찰 등록 완료 전에는 `.reveal-ready`를 부여하지 않아 모듈 실패 시 콘텐츠가 숨지 않게 한다.
 - **모션 세기**: 4px/0.7s로 확정. 무게감 우선, 언제든 CSS 상수만으로 재조정 가능.
 - **스코프 규율**: Part B는 Lighthouse 실패 audit에 한정. 점수와 무관한 리팩터링 금지.

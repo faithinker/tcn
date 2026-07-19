@@ -254,8 +254,8 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 ## Typography
 
 ### Font Family
-1. **Noto Serif KR (본명조 계열)** — headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. Load weights 400/600/700 (Google Fonts). Latin fallbacks: Playfair Display (display), Lora (body).
-2. **Pretendard** — navigation, buttons, eyebrows, metadata, captions, form controls. Excellent Korean + Latin coverage; system fallbacks Apple SD Gothic Neo / Malgun Gothic.
+1. **Noto Serif KR (본명조 계열)** — headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. Self-host weights 400/600 only; 600 covers all emphasized serif text. Latin fallbacks: Playfair Display (display), Lora (body).
+2. **Pretendard** — navigation, buttons, eyebrows, metadata, captions, form controls. Self-host regular/bold dynamic subsets only; system fallbacks Apple SD Gothic Neo / Malgun Gothic.
 
 **Why display weight 600:** Hangul serif at 400 looks thin and loses authority at display sizes. 600 restores presence without becoming heavy.
 
