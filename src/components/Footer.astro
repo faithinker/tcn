@@ -21,8 +21,8 @@ const year = 2026;
 ---
 
 <footer class="bg-ink text-on-primary">
-  <div class="mx-auto grid max-w-[75rem] grid-cols-2 gap-x-6 gap-y-10 px-5 py-12 sm:py-16 lg:grid-cols-[1.5fr_1fr_1fr]">
-    <div class="col-span-2 lg:col-span-1">
+  <div class="mx-auto grid max-w-[75rem] grid-cols-1 gap-x-6 gap-y-9 px-4 py-12 sm:grid-cols-2 sm:px-5 sm:py-16 lg:grid-cols-[1.5fr_1fr_1fr]">
+    <div class="sm:col-span-2 lg:col-span-1">
       <p class="font-serif text-[1.375rem] font-semibold">{t('site.name')}</p>
       {lang === 'ko' && <p class="mt-1 font-sans text-body-sm text-white/70">{t('site.nameEn')}</p>}
       <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-white/70">
@@ -60,7 +60,7 @@ const year = 2026;
   </div>
 
   <div class="border-t border-white/15">
-    <div class="mx-auto max-w-[75rem] px-5 py-6">
+    <div class="mx-auto max-w-[75rem] px-4 py-6 sm:px-5">
       <p class="font-sans text-caption text-white/60">© {year} {t('footer.copyright')}</p>
     </div>
   </div>

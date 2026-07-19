@@ -145,7 +145,12 @@ const isExact = (href: string) => {
     </div>
   </div>
 
-  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas xl:hidden" aria-label={t('common.menu')}>
+  <nav
+    id="mobileNav"
+    class="max-h-[calc(100dvh-73px)] overflow-y-auto overscroll-contain border-t border-hairline bg-canvas xl:hidden"
+    aria-label={t('common.menu')}
+    hidden
+  >
     <ul class="mx-auto max-w-[75rem] px-2 py-2">
       {
         nav.map((item) => (
@@ -196,10 +201,31 @@ const isExact = (href: string) => {
 <script>
   const btn = document.getElementById('navToggle');
   const menu = document.getElementById('mobileNav');
+
+  const setMenuOpen = (open: boolean) => {
+    if (!(btn instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) return;
+    btn.setAttribute('aria-expanded', String(open));
+    menu.hidden = !open;
+    document.body.classList.toggle('nav-open', open);
+  };
+
   btn?.addEventListener('click', () => {
-    const open = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!open));
-    menu?.classList.toggle('hidden');
+    setMenuOpen(btn.getAttribute('aria-expanded') !== 'true');
+  });
+
+  menu?.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a')) setMenuOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') {
+      setMenuOpen(false);
+      btn.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1280) setMenuOpen(false);
   });
 </script>
 
