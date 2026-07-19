@@ -2,12 +2,17 @@
   {
     "id": "kim",
     "lang": "ko",
-    "name": "김원준",
+    "name": "김원준 (金元俊)",
     "nameEn": "Dr. Wonjoon Kim",
     "role": "회장",
     "category": "board",
     "order": 1,
-    "affiliation": "Kim & Chang 고문 · 前 공정거래위원회 사무처장. 경제학박사(Paris X)·성균관대 경제학. 창립준비위원장 겸 초대 회장."
+    "bio": [
+      "김앤장 법률사무소 고문 · 前 공정거래위원회 사무처장 직무대행",
+      "경제기획원·공정거래위원회·주OECD대표부 근무",
+      "제22회 행정고시 합격 · 파리 제10대학교 경제학박사",
+      "서울대학교 행정학석사 · 성균관대학교 경제학사"
+    ]
   },
   {
     "id": "jeon",
@@ -17,7 +22,12 @@
     "role": "수석부회장",
     "category": "board",
     "order": 2,
-    "affiliation": "한국학중앙연구원 세종국가경영연구소 연구교수. 경제사학·개성 자본회계론·성균관대 경제학 박사·Oxford 방문교수."
+    "bio": [
+      "경제학자 · 성균관대학교 경제학 학사·석사·박사",
+      "영국 옥스퍼드대학교 박사 후 과정",
+      "독일 프랑크푸르트 괴테대학교 객원교수",
+      "네덜란드 국제사회사연구소 연구원"
+    ]
   },
   {
     "id": "director-cn",
@@ -80,7 +90,12 @@
     "role": "Chair",
     "category": "board",
     "order": 1,
-    "affiliation": "Advisor at Kim & Chang and former Secretary General of the Korea Fair Trade Commission. PhD in Economics from Paris Nanterre University (Paris X); studied Economics at Sungkyunkwan University. Chair of the Founding Preparatory Committee and inaugural Chair."
+    "bio": [
+      "Advisor at Kim & Chang · Former Acting Secretary General of the Korea Fair Trade Commission",
+      "Economic Planning Board, KFTC, and Korean Delegation to the OECD",
+      "22nd Higher Civil Service Examination · PhD in Economics, Paris Nanterre University",
+      "MPA, Seoul National University · BA in Economics, Sungkyunkwan University"
+    ]
   },
   {
     "id": "jeon-en",
@@ -89,7 +104,12 @@
     "role": "Senior Vice Chair",
     "category": "board",
     "order": 2,
-    "affiliation": "Research Professor at the Sejong Institute of National Management, Academy of Korean Studies. Scholar of economic history and Gaeseong capital accounting; PhD in Economics from Sungkyunkwan University; former Visiting Professor at the University of Oxford."
+    "bio": [
+      "Economist · BA, MA, and PhD in Economics, Sungkyunkwan University",
+      "Postdoctoral research at the University of Oxford",
+      "Visiting Professor at Goethe University Frankfurt",
+      "Researcher at the International Institute of Social History, Netherlands"
+    ]
   },
   {
     "id": "director-cn-en",

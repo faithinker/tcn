@@ -29,6 +29,7 @@ const members = defineCollection({
     category: z.enum(['board', 'advisor', 'member']),
     order: z.number().default(0),
     affiliation: z.string().optional(),
+    bio: z.array(z.string()).optional(),
     country: z.string().optional(),
     tba: z.boolean().default(false), // 실명 미확보 → "추후 공개" 카드
     photo: z.string().optional(),
