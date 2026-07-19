@@ -1,6 +1,7 @@
 [
   {
     "id": "founding-2025",
+    "lang": "ko",
     "date": "2025-12-12",
     "year": "2025",
     "title": "창립",
@@ -8,6 +9,7 @@
   },
   {
     "id": "seminar1-2025",
+    "lang": "ko",
     "date": "2025-12-26",
     "year": "2025",
     "title": "제1차 세미나",
@@ -15,9 +17,34 @@
   },
   {
     "id": "seminar2-2026",
+    "lang": "ko",
     "date": "2026-10-30",
     "year": "2026",
     "title": "제2차 세미나 (예정)",
     "description": "대한민국에서 제2차 국제 세미나 개최 예정."
+  },
+  {
+    "id": "founding-2025-en",
+    "lang": "en",
+    "date": "2025-12-12",
+    "year": "2025",
+    "title": "Founding",
+    "description": "The founding assembly was held at Sungkyunkwan University’s Humanities and Social Sciences Campus with experts from 15 countries, including a review of the bylaws and the founding declaration."
+  },
+  {
+    "id": "seminar1-2025-en",
+    "lang": "en",
+    "date": "2025-12-26",
+    "year": "2025",
+    "title": "First International Seminar",
+    "description": "The first international seminar was held in Luang Prabang, Laos, with experts from Korea, Vietnam, and Laos."
+  },
+  {
+    "id": "seminar2-2026-en",
+    "lang": "en",
+    "date": "2026-10-30",
+    "year": "2026",
+    "title": "Second International Seminar (Upcoming)",
+    "description": "The second international seminar is scheduled to take place in the Republic of Korea."
   }
 ]

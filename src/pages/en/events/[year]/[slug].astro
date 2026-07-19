@@ -1,0 +1,20 @@
+---
+import InvitationPage from '../../../events/[year]/[slug].astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const invitations = (await getCollection('invitations')).filter((entry) => entry.data.lang === 'en');
+
+  return invitations.map((invitation) => ({
+    params: {
+      year: String(invitation.data.year),
+      slug: invitation.data.slug,
+    },
+    props: { invitation },
+  }));
+}
+
+const { invitation } = Astro.props;
+---
+
+<InvitationPage invitation={invitation} />

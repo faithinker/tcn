@@ -2,10 +2,11 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import InvitationContent from '../../../components/InvitationContent.astro';
 import { getCollection } from 'astro:content';
-import { formatDate } from '../../../i18n/utils';
+import { formatDate, getLangFromUrl, localizePath } from '../../../i18n/utils';
+import { getContent } from '../../../i18n/content';
 
 export async function getStaticPaths() {
-  const invitations = await getCollection('invitations');
+  const invitations = (await getCollection('invitations')).filter((entry) => entry.data.lang === 'ko');
   const years = [...new Set(invitations.map((entry) => entry.data.year))];
 
   return years.map((year) => ({
@@ -16,44 +17,46 @@ export async function getStaticPaths() {
 
 const { year } = Astro.params;
 const { invitations } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const copy = getContent(lang).events;
 const sortedInvitations = [...invitations].sort((a, b) => b.data.date.localeCompare(a.data.date));
 ---
 
-<BaseLayout title={`${year}년 행사`} description={`${year}년 초문화네트워크 행사와 초청장`}>
+<BaseLayout title={copy.yearTitle(year!)} description={copy.yearDescription(year!)}>
   <section class="bg-canvas px-5 py-16 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">Events · {year}</p>
       <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
-        {year}년 행사
+        {copy.yearTitle(year!)}
       </h1>
       <p class="mt-6 font-sans text-body-sans text-body-muted">
-        <a href="/events" class="font-bold">전체 행사</a> / {year}년
+        <a href={localizePath('/events', lang)} class="font-bold">{copy.allEvents}</a> / {copy.yearLabel(year!)}
       </p>
     </div>
   </section>
 
   <section class="bg-canvas-band px-5 py-16 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
-      <p class="eyebrow">Invitations</p>
+      <p class="eyebrow">{copy.invitationsEyebrow}</p>
       <h2 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
-        초청장
+        {copy.invitationTitle}
       </h2>
       <div class="mt-8 grid gap-4">
         {sortedInvitations.map((invitation) => (
           <article class="border-y border-hairline-strong bg-canvas p-6 sm:p-8">
             <p class="font-sans text-caption font-bold text-accent">
-              {invitation.data.status === 'past' ? '지난 행사 초청장' : '행사 초청장'}
+              {invitation.data.status === 'past' ? copy.pastInvitation : copy.invitation}
             </p>
             <h3 class="mt-2 font-serif text-display-sm font-semibold text-ink">
               <a
-                href={`/events/${invitation.data.year}/${invitation.data.slug}`}
+                href={localizePath(`/events/${invitation.data.year}/${invitation.data.slug}`, lang)}
                 class="text-ink no-underline hover:text-link"
               >
                 {invitation.data.title}
               </a>
             </h3>
             <p class="mt-3 font-sans text-body-sans text-body-muted">
-              {formatDate(invitation.data.date)} · {invitation.data.location}
+              {formatDate(invitation.data.date, lang)} · {invitation.data.location}
             </p>
             <p class="mt-5 max-w-[68ch] font-serif text-body-serif text-body">
               {invitation.data.summary}
@@ -63,8 +66,8 @@ const sortedInvitations = [...invitations].sort((a, b) => b.data.date.localeComp
               <summary
                 class="invitation-summary flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 font-sans text-body-sans font-bold text-link"
               >
-                <span class="group-open:hidden">초청장 전문 펼쳐보기</span>
-                <span class="hidden group-open:inline">초청장 전문 접기</span>
+                <span class="group-open:hidden">{copy.expand}</span>
+                <span class="hidden group-open:inline">{copy.collapse}</span>
                 <svg
                   aria-hidden="true"
                   class="h-5 w-5 shrink-0 transition-transform duration-150 group-open:rotate-180"
@@ -82,10 +85,10 @@ const sortedInvitations = [...invitations].sort((a, b) => b.data.date.localeComp
               <div class="border-t border-hairline pb-2">
                 <InvitationContent data={invitation.data} compact />
                 <a
-                  href={`/events/${invitation.data.year}/${invitation.data.slug}`}
+                  href={localizePath(`/events/${invitation.data.year}/${invitation.data.slug}`, lang)}
                   class="mt-8 inline-flex min-h-12 items-center font-sans text-body-sans font-bold underline"
                 >
-                  초청장 독립 페이지에서 읽기
+                  {copy.standalone}
                 </a>
               </div>
             </details>

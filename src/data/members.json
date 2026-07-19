@@ -1,6 +1,7 @@
 [
   {
     "id": "kim",
+    "lang": "ko",
     "name": "김원준",
     "nameEn": "Dr. Wonjoon Kim",
     "role": "회장",
@@ -10,6 +11,7 @@
   },
   {
     "id": "jeon",
+    "lang": "ko",
     "name": "전성호",
     "nameEn": "Prof. Jeon Sung-ho",
     "role": "수석부회장",
@@ -19,6 +21,7 @@
   },
   {
     "id": "director-cn",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
@@ -29,6 +32,7 @@
   },
   {
     "id": "director-vn",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
@@ -39,6 +43,7 @@
   },
   {
     "id": "director-la",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
@@ -49,6 +54,7 @@
   },
   {
     "id": "director-uz",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
@@ -59,11 +65,79 @@
   },
   {
     "id": "lee",
+    "lang": "ko",
     "name": "John Lee",
     "nameEn": "John Lee",
     "role": "감사",
     "category": "board",
     "order": 7,
     "affiliation": "미국 (소속 추후 안내)"
+  },
+  {
+    "id": "kim-en",
+    "lang": "en",
+    "name": "Dr. Wonjoon Kim",
+    "role": "Chair",
+    "category": "board",
+    "order": 1,
+    "affiliation": "Advisor at Kim & Chang and former Secretary General of the Korea Fair Trade Commission. PhD in Economics from Paris Nanterre University (Paris X); studied Economics at Sungkyunkwan University. Chair of the Founding Preparatory Committee and inaugural Chair."
+  },
+  {
+    "id": "jeon-en",
+    "lang": "en",
+    "name": "Prof. Jeon Sung-ho",
+    "role": "Senior Vice Chair",
+    "category": "board",
+    "order": 2,
+    "affiliation": "Research Professor at the Sejong Institute of National Management, Academy of Korean Studies. Scholar of economic history and Gaeseong capital accounting; PhD in Economics from Sungkyunkwan University; former Visiting Professor at the University of Oxford."
+  },
+  {
+    "id": "director-cn-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 3,
+    "country": "China",
+    "tba": true
+  },
+  {
+    "id": "director-vn-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 4,
+    "country": "Vietnam",
+    "tba": true
+  },
+  {
+    "id": "director-la-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 5,
+    "country": "Laos",
+    "tba": true
+  },
+  {
+    "id": "director-uz-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 6,
+    "country": "Uzbekistan",
+    "tba": true
+  },
+  {
+    "id": "lee-en",
+    "lang": "en",
+    "name": "John Lee",
+    "role": "Auditor",
+    "category": "board",
+    "order": 7,
+    "affiliation": "United States (affiliation to be announced)"
   }
 ]
