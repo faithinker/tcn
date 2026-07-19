@@ -2,11 +2,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
-import { getLangFromUrl, localizePath } from '../i18n/utils';
+import { getCollection } from 'astro:content';
+import { formatDate, getLangFromUrl, localizePath } from '../i18n/utils';
 import { getContent } from '../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).about;
+const history = (await getCollection('history'))
+  .filter((entry) => entry.data.lang === lang)
+  .sort((a, b) => a.data.date.localeCompare(b.data.date));
 ---
 
 <BaseLayout
@@ -43,7 +47,48 @@ const copy = getContent(lang).about;
     </div>
   </SectionTile>
 
-  <SectionTile variant="canvas" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
+  <SectionTile id="history" class="scroll-mt-20" variant="canvas" eyebrow={copy.historyEyebrow} title={copy.historyTitle}>
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      {copy.historyBody}
+    </p>
+    <ol class="mt-10 border-t border-hairline-strong">
+      {history.map((entry) => (
+        <li class="grid gap-4 border-b border-hairline py-7 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8 sm:py-9">
+          <time
+            datetime={entry.data.date}
+            class="font-sans text-body-sans font-bold text-accent"
+          >
+            {formatDate(entry.data.date, lang)}
+          </time>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h3 class="font-serif text-display-sm font-semibold text-ink">
+                {entry.data.title}
+              </h3>
+              <span class={`border px-2 py-1 font-sans text-caption font-bold ${entry.data.status === 'upcoming' ? 'border-accent text-accent' : 'border-hairline text-body-muted'}`}>
+                {entry.data.status === 'upcoming' ? copy.historyUpcomingLabel : copy.historyPastLabel}
+              </span>
+            </div>
+            <p class="mt-4 max-w-[68ch] font-serif text-body-serif text-body">
+              {entry.data.description}
+            </p>
+            <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
+              <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
+              <dd class="text-body">{entry.data.location}</dd>
+              {entry.data.participants.length > 0 && (
+                <>
+                  <dt class="font-bold text-body-muted">{copy.historyParticipantsLabel}</dt>
+                  <dd class="text-body">{entry.data.participants.join(' · ')}</dd>
+                </>
+              )}
+            </dl>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </SectionTile>
+
+  <SectionTile variant="band" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
     <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
       {copy.declarationBody}
     </p>

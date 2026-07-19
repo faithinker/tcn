@@ -3,48 +3,66 @@
     "id": "founding-2025",
     "lang": "ko",
     "date": "2025-12-12",
-    "year": "2025",
-    "title": "창립",
-    "description": "성균관대학교 명륜캠퍼스에서 15개국 전문가가 참여한 창립총회 개최. 정관 심의·창립 선언."
+    "kind": "founding",
+    "status": "past",
+    "title": "초문화네트워크 창립",
+    "location": "대한민국 서울, 성균관대학교 명륜캠퍼스",
+    "participants": ["15개국 전문가"],
+    "description": "창립총회를 열고 정관 심의와 창립 선언을 진행했습니다."
   },
   {
     "id": "seminar1-2025",
     "lang": "ko",
     "date": "2025-12-26",
-    "year": "2025",
+    "kind": "seminar",
+    "status": "past",
     "title": "제1차 세미나",
-    "description": "라오스 루앙프라방에서 한국·베트남·라오스 전문가가 참가한 제1차 국제 세미나 개최."
+    "location": "라오스 루앙프라방",
+    "participants": ["한국", "베트남", "라오스"],
+    "description": "세 나라의 전문가들이 참여한 제1차 국제 세미나를 개최했습니다."
   },
   {
     "id": "seminar2-2026",
     "lang": "ko",
     "date": "2026-10-30",
-    "year": "2026",
-    "title": "제2차 세미나 (예정)",
-    "description": "대한민국에서 제2차 국제 세미나 개최 예정."
+    "kind": "seminar",
+    "status": "upcoming",
+    "title": "제2차 세미나",
+    "location": "대한민국",
+    "participants": [],
+    "description": "제2차 국제 세미나를 개최할 예정입니다."
   },
   {
     "id": "founding-2025-en",
     "lang": "en",
     "date": "2025-12-12",
-    "year": "2025",
-    "title": "Founding",
-    "description": "The founding assembly was held at Sungkyunkwan University’s Humanities and Social Sciences Campus with experts from 15 countries, including a review of the bylaws and the founding declaration."
+    "kind": "founding",
+    "status": "past",
+    "title": "Founding of the Transcultural Network",
+    "location": "Sungkyunkwan University, Seoul, Republic of Korea",
+    "participants": ["Experts from 15 countries"],
+    "description": "The founding assembly reviewed the bylaws and formally declared the Network’s establishment."
   },
   {
     "id": "seminar1-2025-en",
     "lang": "en",
     "date": "2025-12-26",
-    "year": "2025",
+    "kind": "seminar",
+    "status": "past",
     "title": "First International Seminar",
-    "description": "The first international seminar was held in Luang Prabang, Laos, with experts from Korea, Vietnam, and Laos."
+    "location": "Luang Prabang, Laos",
+    "participants": ["Korea", "Vietnam", "Laos"],
+    "description": "Experts from the three countries convened for the first international seminar."
   },
   {
     "id": "seminar2-2026-en",
     "lang": "en",
     "date": "2026-10-30",
-    "year": "2026",
-    "title": "Second International Seminar (Upcoming)",
-    "description": "The second international seminar is scheduled to take place in the Republic of Korea."
+    "kind": "seminar",
+    "status": "upcoming",
+    "title": "Second International Seminar",
+    "location": "Republic of Korea",
+    "participants": [],
+    "description": "The second international seminar is scheduled to take place."
   }
 ]
