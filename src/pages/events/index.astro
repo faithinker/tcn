@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionTile from '../../components/SectionTile.astro';
+import { getCollection } from 'astro:content';
+import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const invitations = (await getCollection('invitations'))
+  .filter((entry) => entry.data.lang === lang)
+  .sort((a, b) => b.data.date.localeCompare(a.data.date));
+const years = [...new Set(invitations.map((entry) => entry.data.year))].sort((a, b) => b - a);
+---
+
+<BaseLayout title="행사" description="초문화네트워크의 연도별 행사와 초청장">
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">Events Archive</p>
+      <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+        연도별 행사
+      </h1>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
+        초문화네트워크가 개최한 행사와 초청장을 연도별로 기록합니다.
+      </p>
+    </div>
+  </section>
+
+  <SectionTile variant="band" eyebrow="Archive" title="연도 선택">
+    <nav aria-label="행사 연도" class="mt-8 flex flex-wrap gap-3">
+      {years.map((year) => (
+        <a
+          href={localizePath(`/events/${year}`, lang)}
+          class="inline-flex min-h-12 items-center border border-hairline-strong bg-canvas px-6 font-sans text-body-sans font-bold text-ink no-underline hover:bg-canvas-soft"
+        >
+          {year}년
+        </a>
+      ))}
+    </nav>
+  </SectionTile>
+
+  <SectionTile variant="canvas" eyebrow="Invitations" title="행사 초청장">
+    <div class="mt-8 grid gap-4">
+      {invitations.map((invitation) => (
+        <article class="grid gap-5 border-t border-hairline py-7 sm:grid-cols-[8rem_minmax(0,1fr)_auto] sm:items-start">
+          <div>
+            <p class="font-sans text-caption font-bold text-accent">{invitation.data.year}</p>
+            <p class="mt-1 font-sans text-body-sm text-body-muted">
+              {invitation.data.status === 'past' ? '지난 행사' : '예정 행사'}
+            </p>
+          </div>
+          <div>
+            <h2 class="font-serif text-display-sm font-semibold text-ink">
+              {invitation.data.shortTitle}
+            </h2>
+            <p class="mt-2 font-sans text-body-sans text-body-muted">
+              {formatDate(invitation.data.date, lang)} · {invitation.data.location}
+            </p>
+            <p class="mt-4 max-w-[68ch] font-serif text-body-serif text-body">
+              {invitation.data.summary}
+            </p>
+          </div>
+          <a
+            href={localizePath(`/events/${invitation.data.year}/${invitation.data.slug}`, lang)}
+            class="inline-flex min-h-12 items-center font-sans text-body-sans font-bold text-link underline"
+          >
+            초청장 읽기
+          </a>
+        </article>
+      ))}
+    </div>
+  </SectionTile>
+</BaseLayout>

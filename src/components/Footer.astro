@@ -1,0 +1,67 @@
+---
+// L4: Footer — 잉크블랙 밴드, 흰 텍스트. 바로가기 · 사무국 · 저작권. 연락처는 "추후 안내".
+import { useTranslations, localizePath } from '../i18n/utils';
+import type { UiLang } from '../i18n/ui';
+
+interface Props {
+  lang: UiLang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const nav = [
+  { key: 'nav.about', href: '/about' },
+  { key: 'nav.people', href: '/people' },
+  { key: 'nav.events', href: '/events' },
+  { key: 'nav.contact', href: '/contact' },
+] as const;
+
+const year = 2026;
+---
+
+<footer class="bg-ink text-on-primary">
+  <div class="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+    <div>
+      <p class="font-serif text-[1.375rem] font-semibold">초문화네트워크</p>
+      <p class="mt-1 font-sans text-body-sm text-white/70">Transcultural Network</p>
+      <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-white/70">
+        {t('site.tagline')}
+      </p>
+    </div>
+
+    <nav aria-label={t('common.menu')}>
+      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-white/50">
+        {t('common.menu')}
+      </p>
+      <ul class="mt-3 space-y-1">
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={localizePath(item.href, lang)}
+                class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-white/90 no-underline hover:text-white"
+              >
+                {t(item.key)}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-white/50">
+        {t('footer.office')}
+      </p>
+      <p class="mt-3 font-sans text-body-sans text-white/90">{t('footer.officeValue')}</p>
+      <p class="mt-2 font-sans text-body-sm text-white/60">{t('footer.contactNote')}</p>
+    </div>
+  </div>
+
+  <div class="border-t border-white/15">
+    <div class="mx-auto max-w-[75rem] px-5 py-6">
+      <p class="font-sans text-caption text-white/60">© {year} {t('footer.copyright')}</p>
+    </div>
+  </div>
+</footer>

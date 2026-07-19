@@ -1,0 +1,208 @@
+---
+// L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
+// 내비=산세리프(Pretendard), 탭타깃 ≥48px. 언어 전환은 L16(영어판)에서.
+import { useTranslations, localizePath } from '../i18n/utils';
+import type { UiKey, UiLang } from '../i18n/ui';
+import { getCollection } from 'astro:content';
+
+interface Props {
+  lang: UiLang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const invitationYears = [
+  ...new Set(
+    (await getCollection('invitations'))
+      .filter((entry) => entry.data.lang === lang)
+      .map((entry) => entry.data.year),
+  ),
+].sort((a, b) => b - a);
+
+interface NavItem {
+  key: UiKey;
+  href: string;
+  children?: Array<{ label: string; href: string }>;
+}
+
+const nav: NavItem[] = [
+  { key: 'nav.home', href: '/' },
+  {
+    key: 'nav.about',
+    href: '/about',
+    children: [
+      { label: t('nav.aboutOverview'), href: '/about' },
+      { label: t('nav.declaration'), href: '/about/declaration' },
+    ],
+  },
+  { key: 'nav.people', href: '/people' },
+  {
+    key: 'nav.events',
+    href: '/events',
+    children: [
+      { label: t('nav.eventAll'), href: '/events' },
+      ...invitationYears.map((year) => ({ label: `${year}년`, href: `/events/${year}` })),
+    ],
+  },
+  { key: 'nav.contact', href: '/contact' },
+];
+
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => {
+  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  return target === '/' ? here === '/' : here.startsWith(target);
+};
+const isExact = (href: string) => {
+  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  return here === target;
+};
+---
+
+<header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas">
+  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-4 px-5 py-3">
+    <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
+      <span class="font-serif text-[1.375rem] font-semibold text-ink">초문화네트워크</span>
+      <span class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">TCN</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label={t('common.menu')}>
+      {
+        nav.map((item) =>
+          item.children ? (
+            <details class="group relative">
+              <summary
+                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1.5 px-3 font-sans text-body-sans font-bold text-ink hover:text-link group-open:text-link"
+              >
+                {t(item.key)}
+                <svg
+                  aria-hidden="true"
+                  class="h-[18px] w-[18px] shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.25"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </summary>
+              <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-lg">
+                {item.children.map((child) => (
+                  <a
+                    href={localizePath(child.href, lang)}
+                    aria-current={isExact(child.href) ? 'page' : undefined}
+                    class="flex min-h-[44px] items-center whitespace-nowrap px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft aria-[current]:text-link"
+                  >
+                    {child.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <a
+              href={localizePath(item.href, lang)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
+            >
+              {t(item.key)}
+            </a>
+          ),
+        )
+      }
+      <a
+        href={localizePath('/contact', lang)}
+        class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-[#2b2b2b]"
+      >
+        {t('nav.cta')}
+      </a>
+    </nav>
+
+    <button
+      id="navToggle"
+      type="button"
+      class="flex h-12 w-12 items-center justify-center text-ink md:hidden"
+      aria-expanded="false"
+      aria-controls="mobileNav"
+      aria-label={t('common.menu')}
+    >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas md:hidden" aria-label={t('common.menu')}>
+    <ul class="mx-auto max-w-[75rem] px-2 py-2">
+      {
+        nav.map((item) => (
+          <li>
+            {item.children ? (
+              <div class="border-b border-hairline py-2">
+                <p class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted">
+                  {t(item.key)}
+                </p>
+                <ul class="border-l border-hairline ml-3">
+                  {item.children.map((child) => (
+                    <li>
+                      <a
+                        href={localizePath(child.href, lang)}
+                        aria-current={isExact(child.href) ? 'page' : undefined}
+                        class="flex min-h-[44px] items-center px-4 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
+                      >
+                        {child.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a
+                href={localizePath(item.href, lang)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
+              >
+                {t(item.key)}
+              </a>
+            )}
+          </li>
+        ))
+      }
+      <li class="px-3 py-2">
+        <a
+          href={localizePath('/contact', lang)}
+          class="inline-flex min-h-[48px] w-full items-center justify-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
+        >
+          {t('nav.cta')}
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const btn = document.getElementById('navToggle');
+  const menu = document.getElementById('mobileNav');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    menu?.classList.toggle('hidden');
+  });
+</script>
+
+<style>
+  .nav-summary {
+    list-style: none;
+  }
+
+  .nav-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-summary::marker {
+    content: '';
+  }
+</style>

@@ -1,0 +1,32 @@
+---
+// L5: SectionTile — 풀폭 밴드 래퍼. variant로 배경 교차(캔버스/미색밴드/parchment).
+// 옵션 eyebrow + title, 나머지는 slot. 컨테이너 max 1200px, 세로 리듬 96px(6xl).
+interface Props {
+  variant?: 'canvas' | 'band' | 'soft';
+  eyebrow?: string;
+  title?: string;
+  class?: string;
+}
+
+const { variant = 'canvas', eyebrow, title, class: cls = '' } = Astro.props;
+
+const bg: Record<NonNullable<Props['variant']>, string> = {
+  canvas: 'bg-canvas',
+  band: 'bg-canvas-band',
+  soft: 'bg-canvas-soft',
+};
+---
+
+<section class={`${bg[variant]} px-5 py-16 sm:py-24 ${cls}`.trim()}>
+  <div class="mx-auto max-w-[75rem]">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    {
+      title && (
+        <h2 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+          {title}
+        </h2>
+      )
+    }
+    <slot />
+  </div>
+</section>

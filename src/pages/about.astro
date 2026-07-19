@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionTile from '../components/SectionTile.astro';
+import Button from '../components/Button.astro';
+import { getLangFromUrl, localizePath } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+---
+
+<BaseLayout
+  title="소개"
+  description="초문화네트워크(Transcultural Network)의 설립 취지와 비전"
+>
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">About TCN</p>
+      <h1 class="mt-3 max-w-[14ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+        초문화 시대를 연구하는 국제 학술 공동체
+      </h1>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
+        Transcultural Network는 디지털 전환과 인공지능의 확산 속에서 국가·민족·언어·문화의 경계를 넘어 재구성되는 문화 현상을 연구합니다.
+      </p>
+    </div>
+  </section>
+
+  <SectionTile variant="band" eyebrow="Mission & Vision" title="교차·융합·창조의 학술 네트워크">
+    <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <p class="max-w-prose font-serif text-body-serif text-body">
+        초문화네트워크는 문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하고 초문화 연구의 새로운 이론과 방법론을 발전시키고자 합니다.
+      </p>
+      <p class="max-w-prose font-serif text-body-serif text-body">
+        서울 사무국을 중심으로 다양한 지역의 전문가들이 협력하며, 학술대회·연구 프로젝트·공동 출판·정책 연구를 통해 국제 학술 협력의 지속적인 기반을 만듭니다.
+      </p>
+    </div>
+  </SectionTile>
+
+  <SectionTile variant="canvas" eyebrow="Founding Declaration" title="창립 선언문">
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      디지털·AI 시대의 초문화 연구와 국제 학술 협력을 위한 네 가지 사명과 네트워크의 출범 취지를 담았습니다.
+    </p>
+    <div class="mt-8">
+      <Button href={localizePath('/about/declaration', lang)} variant="outline">
+        창립 선언문 읽기
+      </Button>
+    </div>
+  </SectionTile>
+</BaseLayout>

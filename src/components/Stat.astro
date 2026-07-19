@@ -1,0 +1,18 @@
+---
+// L5: Stat — 통계 블록. 명조 대형 값 + 산세리프 트래킹 라벨(미들그레이). 홈 하이라이트용.
+interface Props {
+  value: string;
+  label: string;
+}
+
+const { value, label } = Astro.props;
+---
+
+<div>
+  <p class="font-serif text-display-md font-semibold leading-none text-ink sm:text-display-lg">
+    {value}
+  </p>
+  <p class="mt-2 font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">
+    {label}
+  </p>
+</div>

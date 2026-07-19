@@ -41,3 +41,15 @@ export function stripLangPrefix(pathname: string): string {
 export function switchLangPath(currentPath: string, toLang: UiLang): string {
   return localizePath(stripLangPrefix(currentPath), toLang);
 }
+
+const EN_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+/** ISO 날짜(YYYY-MM-DD)를 언어별 표기로. Date 객체 미사용(빌드 결정성). */
+export function formatDate(iso: string, lang: UiLang = defaultLang): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return lang === 'en' ? `${EN_MONTHS[m - 1]} ${d}, ${y}` : `${y}년 ${m}월 ${d}일`;
+}
