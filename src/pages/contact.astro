@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionTile from '../components/SectionTile.astro';
+
+const membershipFormUrl = import.meta.env.PUBLIC_MEMBERSHIP_FORM_URL?.trim();
+
+const benefits = [
+  '국제 세미나와 학술행사 참여',
+  '공동연구와 학술 교류 기회',
+  '초문화 연구자·전문가 네트워크 참여',
+  '정책 연구와 지식 확산 활동 참여',
+];
+
+const applicationDetails = [
+  '성명과 영문 성명',
+  '소속·직위와 활동 국가',
+  '연구 분야 또는 전문 영역',
+  '가입 동기와 참여 희망 활동',
+  '회신받을 이메일 주소',
+];
+
+const steps = [
+  {
+    title: '가입 의향 제출',
+    body: '온라인 신청서가 개설되면 기본 정보와 연구·활동 분야를 제출합니다.',
+  },
+  {
+    title: '운영진 검토',
+    body: '네트워크의 설립 취지와 활동 방향을 기준으로 신청 내용을 확인합니다.',
+  },
+  {
+    title: '결과와 활동 안내',
+    body: '검토 후 가입 결과와 참여 가능한 학술행사·연구 활동을 개별 안내합니다.',
+  },
+];
+---
+
+<BaseLayout
+  title="회원 가입·문의"
+  description="초문화네트워크 회원 가입 대상, 참여 활동과 신청 절차 안내"
+>
+  <section class="bg-canvas px-5 py-16 sm:py-24">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">Join TCN</p>
+      <h1 class="mt-3 max-w-[16ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+        회원 가입·문의
+      </h1>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
+        초문화 연구와 국제 학술 협력에 관심 있는 연구자·교육자·전문가의 참여를 기다립니다.
+      </p>
+    </div>
+  </section>
+
+  <SectionTile variant="band" eyebrow="Membership" title="함께할 수 있는 활동">
+    <ul class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2">
+      {benefits.map((benefit, index) => (
+        <li class="min-w-0 bg-canvas p-6 sm:p-8">
+          <p class="font-sans text-caption font-bold text-accent">
+            {String(index + 1).padStart(2, '0')}
+          </p>
+          <p class="mt-2 font-serif text-[1.375rem] font-semibold text-ink">{benefit}</p>
+        </li>
+      ))}
+    </ul>
+  </SectionTile>
+
+  <SectionTile variant="canvas" eyebrow="Application" title="가입 절차">
+    <ol class="mt-8 grid gap-8 lg:grid-cols-3">
+      {steps.map((step, index) => (
+        <li class="border-t border-hairline-strong pt-5">
+          <p class="font-sans text-caption font-bold text-accent">
+            Step {String(index + 1).padStart(2, '0')}
+          </p>
+          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{step.title}</h2>
+          <p class="mt-4 font-serif text-body-serif text-body">{step.body}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="mt-12 grid gap-8 border-y border-hairline-strong bg-canvas-soft p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div>
+        <h2 class="font-serif text-display-sm font-semibold text-ink">온라인 가입 신청</h2>
+        <p class="mt-3 max-w-[62ch] font-serif text-body-serif text-body">
+          회원 구분, 회비와 개인정보 처리 기준을 확정한 뒤 온라인 신청을 시작합니다.
+        </p>
+      </div>
+      {membershipFormUrl ? (
+        <a
+          href={membershipFormUrl}
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex min-h-12 items-center justify-center rounded-sm bg-ink px-6 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
+        >
+          온라인 신청서 열기
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          class="inline-flex min-h-12 items-center justify-center rounded-sm border border-hairline px-6 font-sans text-button font-bold text-body-muted"
+        >
+          온라인 신청 준비 중
+        </span>
+      )}
+    </div>
+  </SectionTile>
+
+  <SectionTile variant="soft" eyebrow="Before Applying" title="신청 시 준비할 정보">
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      신청 단계에서는 활동 검토와 회신에 필요한 최소 정보만 요청할 예정입니다.
+    </p>
+    <ul class="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+      {applicationDetails.map((detail) => (
+        <li class="border-t border-hairline pt-4 font-serif text-body-serif text-body">
+          {detail}
+        </li>
+      ))}
+    </ul>
+  </SectionTile>
+
+  <SectionTile variant="canvas" eyebrow="Contact" title="사무국 문의">
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+      사무국 전화번호와 이메일은 운영 채널이 확정되는 대로 안내합니다.
+    </p>
+    <dl class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2">
+      <div class="bg-canvas p-6">
+        <dt class="font-sans text-caption font-bold uppercase text-accent">전화번호</dt>
+        <dd class="mt-4 min-h-7 border-b border-hairline" aria-label="아직 등록되지 않음"></dd>
+      </div>
+      <div class="bg-canvas p-6">
+        <dt class="font-sans text-caption font-bold uppercase text-accent">이메일</dt>
+        <dd class="mt-4 min-h-7 border-b border-hairline" aria-label="아직 등록되지 않음"></dd>
+      </div>
+    </dl>
+  </SectionTile>
+</BaseLayout>
