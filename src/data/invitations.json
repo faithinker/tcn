@@ -30,5 +30,37 @@
     ],
     "issuedAt": "2025년 11월",
     "sender": "Transcultural Network(초문화 네트워크) 창립준비위원회"
+  },
+  {
+    "id": "2025-founding-ceremony-invitation-en",
+    "lang": "en",
+    "year": 2025,
+    "slug": "founding-ceremony-invitation",
+    "title": "Invitation to the Founding Ceremony of the Transcultural Network",
+    "shortTitle": "Founding Ceremony Invitation",
+    "date": "2025-12-12",
+    "status": "past",
+    "location": "Sungkyunkwan University, Humanities and Social Sciences Campus",
+    "venue": "Toegye Hall of Humanities, Advanced Lecture Room 31511",
+    "time": "18:00–19:00",
+    "summary": "An invitation to celebrate the founding of the Transcultural Network, review its bylaws, exchange ideas, issue the founding declaration, and build new connections.",
+    "paragraphs": [
+      "Greetings,",
+      "You are cordially invited to join us as we announce the founding of the Transcultural Network. The spread of digitalisation and AI technology, together with the growing everyday reality of global mobility, has made exchange, cooperation, and cultural creation across national, ethnic, linguistic, and cultural boundaries an urgent task of our time. As boundaries between cultures disappear or become more fluid, transculturalism points beyond cultural coexistence toward the creation of a new third culture.",
+      "Cross-border exchange and global digital platforms can no longer be adequately explained through the culture of any single nation, and scholarship is shifting from nation- and discourse-centred approaches toward network-centred ones. We invite you to encourage the first step of the Transcultural Network as it explores the dynamic processes through which cultures transform one another through contact and exchange, generate new cultures, and contribute to scholarly dialogue and policy development among experts."
+    ],
+    "program": [
+      "Introduction to the founding purpose of the Transcultural Network",
+      "Review of the bylaws",
+      "Discussion",
+      "Founding declaration",
+      "Networking"
+    ],
+    "closing": [
+      "We warmly welcome your interest and participation so that the newly launched Transcultural Network can become a forum for cooperation in cultural exchange and creation in the digital era. We would be honoured by your presence, and your confirmation of attendance would greatly assist us in preparing for the event.",
+      "Thank you."
+    ],
+    "issuedAt": "November 2025",
+    "sender": "Founding Preparatory Committee, Transcultural Network"
   }
 ]

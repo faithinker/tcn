@@ -1,112 +1,143 @@
 [
   {
     "id": "kim",
+    "lang": "ko",
     "name": "김원준",
     "nameEn": "Dr. Wonjoon Kim",
     "role": "회장",
     "category": "board",
     "order": 1,
-    "affiliation": "법무법인(유) 김·장 법률사무소 고문 · 前 공정거래위원회 사무처장",
-    "bio": "경제학 박사(파리 제10대학교)·성균관대 경제학. 주OECD대표부 주재관, 공정거래위원회 사무처장 등을 거쳤다. 창립준비위원장 겸 초대 회장."
+    "affiliation": "Kim & Chang 고문 · 前 공정거래위원회 사무처장. 경제학박사(Paris X)·성균관대 경제학. 창립준비위원장 겸 초대 회장."
   },
   {
     "id": "jeon",
+    "lang": "ko",
     "name": "전성호",
     "nameEn": "Prof. Jeon Sung-ho",
     "role": "수석부회장",
     "category": "board",
     "order": 2,
-    "affiliation": "한국학중앙연구원 교수",
-    "bio": "성균관대 경제학 박사·옥스퍼드대 박사후 과정. 경제사·개성 자본회계 연구. 저서 『개성자본회계론』."
+    "affiliation": "한국학중앙연구원 세종국가경영연구소 연구교수. 경제사학·개성 자본회계론·성균관대 경제학 박사·Oxford 방문교수."
   },
   {
     "id": "director-cn",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
     "category": "board",
     "order": 3,
-    "country": "중국",
-    "affiliation": "중국 · 교수 (추후 공개)",
+    "country": "China",
     "tba": true
   },
   {
     "id": "director-vn",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
     "category": "board",
     "order": 4,
-    "country": "베트남",
-    "affiliation": "베트남 · 교수 (추후 공개)",
+    "country": "Vietnam",
     "tba": true
   },
   {
     "id": "director-la",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
     "category": "board",
     "order": 5,
-    "country": "라오스",
-    "affiliation": "라오스 · 교수 (추후 공개)",
+    "country": "Laos",
     "tba": true
   },
   {
     "id": "director-uz",
+    "lang": "ko",
     "name": "추후 공개",
     "nameEn": "To be announced",
     "role": "이사",
     "category": "board",
     "order": 6,
-    "country": "우즈베키스탄",
-    "affiliation": "우즈베키스탄 · 교수 (추후 공개)",
+    "country": "Uzbekistan",
     "tba": true
   },
   {
     "id": "lee",
+    "lang": "ko",
     "name": "John Lee",
     "nameEn": "John Lee",
     "role": "감사",
     "category": "board",
     "order": 7,
-    "country": "미국",
     "affiliation": "미국 (소속 추후 안내)"
   },
   {
-    "id": "expert-kr",
-    "name": "박정우",
-    "nameEn": "Park Jung-woo",
-    "role": "참여 연구자",
-    "category": "member",
+    "id": "kim-en",
+    "lang": "en",
+    "name": "Dr. Wonjoon Kim",
+    "role": "Chair",
+    "category": "board",
     "order": 1,
-    "country": "한국",
-    "affiliation": "성균관대학교 문화연구소",
-    "bio": "디지털·AI 시대의 초문화 현상과 문화 이론을 연구한다.",
-    "placeholder": true
+    "affiliation": "Advisor at Kim & Chang and former Secretary General of the Korea Fair Trade Commission. PhD in Economics from Paris Nanterre University (Paris X); studied Economics at Sungkyunkwan University. Chair of the Founding Preparatory Committee and inaugural Chair."
   },
   {
-    "id": "expert-vn",
-    "name": "응우옌 티 흐엉",
-    "nameEn": "Nguyen Thi Huong",
-    "role": "참여 연구자",
-    "category": "member",
+    "id": "jeon-en",
+    "lang": "en",
+    "name": "Prof. Jeon Sung-ho",
+    "role": "Senior Vice Chair",
+    "category": "board",
     "order": 2,
-    "country": "베트남",
-    "affiliation": "하노이국립대학교 인문사회과학대학",
-    "bio": "동남아시아 문화 교류사와 초국적 문화 형성을 연구한다.",
-    "placeholder": true
+    "affiliation": "Research Professor at the Sejong Institute of National Management, Academy of Korean Studies. Scholar of economic history and Gaeseong capital accounting; PhD in Economics from Sungkyunkwan University; former Visiting Professor at the University of Oxford."
   },
   {
-    "id": "expert-la",
-    "name": "분미 케오사왕",
-    "nameEn": "Bounmy Keosavang",
-    "role": "참여 연구자",
-    "category": "member",
+    "id": "director-cn-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
     "order": 3,
-    "country": "라오스",
-    "affiliation": "라오스국립대학교",
-    "bio": "메콩 지역의 언어·문화 다양성과 교류를 연구한다.",
-    "placeholder": true
+    "country": "China",
+    "tba": true
+  },
+  {
+    "id": "director-vn-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 4,
+    "country": "Vietnam",
+    "tba": true
+  },
+  {
+    "id": "director-la-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 5,
+    "country": "Laos",
+    "tba": true
+  },
+  {
+    "id": "director-uz-en",
+    "lang": "en",
+    "name": "To be announced",
+    "role": "Director",
+    "category": "board",
+    "order": 6,
+    "country": "Uzbekistan",
+    "tba": true
+  },
+  {
+    "id": "lee-en",
+    "lang": "en",
+    "name": "John Lee",
+    "role": "Auditor",
+    "category": "board",
+    "order": 7,
+    "affiliation": "United States (affiliation to be announced)"
   }
 ]

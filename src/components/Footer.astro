@@ -14,6 +14,7 @@ const nav = [
   { key: 'nav.about', href: '/about' },
   { key: 'nav.people', href: '/people' },
   { key: 'nav.events', href: '/events' },
+  { key: 'nav.seminars', href: '/seminars' },
   { key: 'nav.contact', href: '/contact' },
 ] as const;
 
@@ -23,8 +24,8 @@ const year = 2026;
 <footer class="bg-ink text-on-primary">
   <div class="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
     <div>
-      <p class="font-serif text-[1.375rem] font-semibold">초문화네트워크</p>
-      <p class="mt-1 font-sans text-body-sm text-white/70">Transcultural Network</p>
+      <p class="font-serif text-[1.375rem] font-semibold">{t('site.name')}</p>
+      {lang === 'ko' && <p class="mt-1 font-sans text-body-sm text-white/70">{t('site.nameEn')}</p>}
       <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-white/70">
         {t('site.tagline')}
       </p>

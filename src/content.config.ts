@@ -31,8 +31,6 @@ const members = defineCollection({
     affiliation: z.string().optional(),
     country: z.string().optional(),
     tba: z.boolean().default(false), // 실명 미확보 → "추후 공개" 카드
-    placeholder: z.boolean().default(false), // 가상/예시 데이터 → "예시" 배지, 실배포 전 교체
-    bio: z.string().optional(),
     photo: z.string().optional(),
     email: z.string().optional(),
     website: z.string().optional(),
@@ -69,6 +67,7 @@ const invitations = defineCollection({
     closing: z.array(z.string()),
     issuedAt: z.string(),
     sender: z.string(),
+    source: z.string().optional(),
   }),
 });
 

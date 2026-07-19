@@ -3,7 +3,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getLangFromUrl, switchLangPath, useTranslations } from '../i18n/utils';
 
 interface Props {
   title?: string;
@@ -24,16 +24,22 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const siteName = t('site.name');
-const pageTitle = title ? `${title} | ${siteName}` : `${siteName} | ${t('site.nameEn')}`;
+const pageTitle = title && title !== siteName
+  ? `${title} | ${siteName}`
+  : lang === 'ko'
+    ? `${siteName} | ${t('site.nameEn')}`
+    : siteName;
 const desc = description ?? t('site.tagline');
 const siteRoot = Astro.site ?? Astro.url;
-const canonicalURL = new URL(Astro.url.pathname, siteRoot);
+const canonical = new URL(Astro.url.pathname, siteRoot);
+const koUrl = new URL(switchLangPath(Astro.url.pathname, 'ko'), siteRoot);
+const enUrl = new URL(switchLangPath(Astro.url.pathname, 'en'), siteRoot);
 const socialImageURL = new URL(image, siteRoot);
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: siteName,
-  alternateName: t('site.nameEn'),
+  alternateName: lang === 'ko' ? t('site.nameEn') : 'TCN',
   url: new URL('/', siteRoot).href,
   logo: new URL('/icon-512.png', siteRoot).href,
   description: t('site.tagline'),
@@ -50,7 +56,10 @@ const organizationJsonLd = {
     <meta name="description" content={desc} />
     <meta name="theme-color" content="#141414" />
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
-    <link rel="canonical" href={canonicalURL} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="ko" href={koUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={koUrl} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
@@ -60,11 +69,11 @@ const organizationJsonLd = {
     <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={desc} />
-    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImageURL} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="초문화네트워크 · Transcultural Network" />
+    <meta property="og:image:alt" content={lang === 'ko' ? '초문화네트워크 · Transcultural Network' : 'Transcultural Network'} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={desc} />

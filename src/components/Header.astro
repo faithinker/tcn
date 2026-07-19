@@ -1,7 +1,8 @@
 ---
 // L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
 // 내비=산세리프(Pretendard), 탭타깃 ≥48px. 언어 전환은 L16(영어판)에서.
-import { useTranslations, localizePath } from '../i18n/utils';
+import { useTranslations, localizePath, switchLangPath } from '../i18n/utils';
+import { getContent } from '../i18n/content';
 import type { UiKey, UiLang } from '../i18n/ui';
 import { getCollection } from 'astro:content';
 
@@ -11,6 +12,9 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+const eventCopy = getContent(lang).events;
+const koPath = switchLangPath(Astro.url.pathname, 'ko');
+const enPath = switchLangPath(Astro.url.pathname, 'en');
 
 const invitationYears = [
   ...new Set(
@@ -42,7 +46,8 @@ const nav: NavItem[] = [
     href: '/events',
     children: [
       { label: t('nav.eventAll'), href: '/events' },
-      ...invitationYears.map((year) => ({ label: `${year}년`, href: `/events/${year}` })),
+      { label: t('nav.seminars'), href: '/seminars' },
+      ...invitationYears.map((year) => ({ label: eventCopy.yearLabel(year), href: `/events/${year}` })),
     ],
   },
   { key: 'nav.contact', href: '/contact' },
@@ -60,13 +65,14 @@ const isExact = (href: string) => {
 ---
 
 <header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas">
-  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-4 px-5 py-3">
+  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5">
     <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
-      <span class="font-serif text-[1.375rem] font-semibold text-ink">초문화네트워크</span>
-      <span class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">TCN</span>
+      <span class="hidden font-serif text-[1.375rem] font-semibold text-ink sm:inline">{t('site.name')}</span>
+      <span class="font-serif text-[1.125rem] font-semibold text-ink sm:hidden">TCN</span>
+      <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted sm:inline">TCN</span>
     </a>
 
-    <nav class="hidden items-center gap-1 md:flex" aria-label={t('common.menu')}>
+    <nav class="hidden items-center gap-1 xl:flex" aria-label={t('common.menu')}>
       {
         nav.map((item) =>
           item.children ? (
@@ -119,23 +125,43 @@ const isExact = (href: string) => {
       </a>
     </nav>
 
-    <button
-      id="navToggle"
-      type="button"
-      class="flex h-12 w-12 items-center justify-center text-ink md:hidden"
-      aria-expanded="false"
-      aria-controls="mobileNav"
-      aria-label={t('common.menu')}
-    >
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+    <div class="flex shrink-0 items-center gap-1">
+      <nav class="flex items-center font-sans text-caption font-bold" aria-label={t('common.language')}>
+        <a
+          href={enPath}
+          hreflang="en"
+          lang="en"
+          aria-current={lang === 'en' ? 'page' : undefined}
+          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
+        >EN</a>
+        <span aria-hidden="true" class="text-body-muted">/</span>
+        <a
+          href={koPath}
+          hreflang="ko"
+          lang="ko"
+          aria-current={lang === 'ko' ? 'page' : undefined}
+          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
+        >{lang === 'en' ? 'KO' : '한국어'}</a>
+      </nav>
+
+      <button
+        id="navToggle"
+        type="button"
+        class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
+        aria-expanded="false"
+        aria-controls="mobileNav"
+        aria-label={t('common.menu')}
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </div>
 
-  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas md:hidden" aria-label={t('common.menu')}>
+  <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas xl:hidden" aria-label={t('common.menu')}>
     <ul class="mx-auto max-w-[75rem] px-2 py-2">
       {
         nav.map((item) => (
