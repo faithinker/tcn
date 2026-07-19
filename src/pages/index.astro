@@ -1,5 +1,5 @@
 ---
-// L7: Home — Hero · 미션 · 핵심활동 · 최신 세미나 · 하이라이트 · 가입 CTA.
+// L7: Home — Hero · 차기 세미나 안내 · 미션 · 핵심활동 · 최신 세미나 · 하이라이트 · 가입 CTA.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Stat from '../components/Stat.astro';
@@ -10,6 +10,7 @@ import { getContent } from '../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).home;
+const seminarCopy = getContent(lang).seminars;
 const t = useTranslations(lang);
 
 const seminars = (await getCollection('seminars')).filter((s) => s.data.lang === lang);
@@ -19,7 +20,11 @@ const upcoming = seminars
 const past = seminars
   .filter((s) => s.data.status === 'past')
   .sort((a, b) => b.data.date.localeCompare(a.data.date));
-const featured = upcoming[0] ?? past[0];
+
+// 차기 세미나 = 가장 이른 예정 1건 → 히어로 직후 안내 배너.
+// '최신 세미나' 섹션은 배너와 중복되지 않는 행사 우선.
+const next = upcoming[0];
+const featured = past[0] ?? upcoming.find((s) => s !== next);
 
 ---
 
@@ -49,6 +54,37 @@ const featured = upcoming[0] ?? past[0];
       </div>
     </div>
   </section>
+
+  <!-- 1.5 차기 세미나 안내 -->
+  {
+    next && (
+      <section class="bg-canvas px-5 pb-12 sm:pb-20">
+        <div class="mx-auto max-w-[75rem]">
+          <a
+            href={localizePath(`/seminars/${next.data.slug}`, lang)}
+            class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
+          >
+            <div class="flex flex-wrap items-center gap-3">
+              <p class="eyebrow !mb-0">{seminarCopy.nextEyebrow}</p>
+              <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
+                {seminarCopy.upcomingBadge}
+              </span>
+            </div>
+            <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
+              {formatDate(next.data.date, lang)}
+            </p>
+            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.data.title}</p>
+            <p class="mt-2 font-sans text-body-sans text-body-muted">
+              {next.data.venue ? `${next.data.location} ${next.data.venue}` : next.data.location} · {next.data.summary ?? seminarCopy.details}
+            </p>
+            <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
+              {seminarCopy.viewDetail} →
+            </span>
+          </a>
+        </div>
+      </section>
+    )
+  }
 
   <!-- 2. 미션 -->
   <SectionTile variant="band" eyebrow={copy.missionEyebrow} title={copy.missionTitle}>

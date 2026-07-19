@@ -13,6 +13,8 @@ const seminars = defineCollection({
     date: z.string(), // ISO(YYYY-MM-DD) — 문자열 유지(정렬은 사전순으로 충분)
     status: z.enum(['upcoming', 'past']),
     location: z.string(),
+    venue: z.string().optional(), // 세부 장소(건물·호실). 있으면 상세 페이지에 행사 개요 박스 노출.
+    mapUrl: z.url().optional(),
     speaker: z.string().optional(),
     affiliation: z.string().optional(),
     theme: z.string().optional(),

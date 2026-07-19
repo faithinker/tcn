@@ -23,7 +23,7 @@ const copy = getContent(lang).seminars;
 
 const badge = data.status === 'upcoming' ? copy.upcomingBadge : copy.pastBadge;
 const hasBody = Boolean(
-  data.summary || data.abstract || data.theme || data.speaker ||
+  data.summary || data.abstract || data.theme || data.speaker || data.venue ||
   (data.program && data.program.length) ||
   (data.speakers && data.speakers.length) ||
   (data.materials && data.materials.length),
@@ -40,7 +40,7 @@ const eventJsonLd = {
   startDate: data.date,
   eventStatus: 'https://schema.org/EventScheduled',
   eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  location: { '@type': 'Place', name: data.location },
+  location: { '@type': 'Place', name: data.venue ? `${data.location} ${data.venue}` : data.location },
   organizer: { '@type': 'Organization', name: orgName, url: new URL('/', siteRoot).href },
   ...(data.summary || data.abstract ? { description: data.summary ?? data.abstract } : {}),
 };
@@ -67,8 +67,40 @@ const eventJsonLd = {
       </header>
 
       <div class="mt-10 max-w-[68ch]">
+        {data.venue && (
+          <section class="border-y border-hairline-strong bg-canvas-soft p-5 sm:p-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.overviewLabel}</p>
+            <dl class="mt-5 grid gap-4 font-sans text-body-sans md:grid-cols-[7.5rem_minmax(0,1fr)]">
+              <dt class="font-bold text-ink">{copy.dateLabel}</dt>
+              <dd class="text-body">{formatDate(data.date, lang)}</dd>
+              <dt class="font-bold text-ink">{copy.locationLabel}</dt>
+              <dd class="text-body">
+                {data.location} {data.venue}
+                {data.mapUrl && (
+                  <a
+                    href={data.mapUrl}
+                    target="_blank"
+                    rel="noopener"
+                    class="ml-2 whitespace-nowrap font-bold text-link underline hover:text-link-hover"
+                  >{copy.mapLink} ↗</a>
+                )}
+              </dd>
+              <dt class="font-bold text-ink">{copy.contentLabel}</dt>
+              <dd class="text-body">
+                {data.program && data.program.length > 0 ? (
+                  <ul class="space-y-1">
+                    {data.program.map((item) => <li>· {item}</li>)}
+                  </ul>
+                ) : (
+                  copy.contentTbd
+                )}
+              </dd>
+            </dl>
+          </section>
+        )}
+
         {data.theme && (
-          <p class="font-serif text-lead text-body">{data.theme}</p>
+          <p class="mt-10 font-serif text-lead text-body">{data.theme}</p>
         )}
         {(data.summary || data.abstract) && (
           <p class="mt-6 font-serif text-body-serif text-body">{data.summary ?? data.abstract}</p>

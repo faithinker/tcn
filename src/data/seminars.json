@@ -6,7 +6,9 @@
     "title": "제2차 세미나",
     "date": "2026-10-30",
     "status": "upcoming",
-    "location": "대한민국"
+    "location": "성균관대학교 명륜캠퍼스",
+    "venue": "퇴계인문관 첨단강의실 31511호",
+    "mapUrl": "https://www.google.com/maps/search/?api=1&query=Sungkyunkwan+University+Humanities+and+Social+Sciences+Campus+Toegye+Hall+of+Humanities"
   },
   {
     "id": "s2025-laos",
@@ -25,7 +27,9 @@
     "title": "Second International Seminar",
     "date": "2026-10-30",
     "status": "upcoming",
-    "location": "Republic of Korea"
+    "location": "Sungkyunkwan University, Humanities and Social Sciences Campus",
+    "venue": "Toegye Hall of Humanities, Advanced Lecture Room 31511",
+    "mapUrl": "https://www.google.com/maps/search/?api=1&query=Sungkyunkwan+University+Humanities+and+Social+Sciences+Campus+Toegye+Hall+of+Humanities"
   },
   {
     "id": "s2025-laos-en",
