@@ -87,7 +87,7 @@
 - [x] **L6** content.config.ts(Zod, 아래 스키마) + SEED 시드 파일 — `astro check` 통과
 - [x] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)
 - [x] **L8** About (미션/비전·활동개요·**선언문 국문 전문**·History Timeline)
-- [ ] **L9** People (Board: 회장·수석부회장·이사4 TBA·감사 / Advisors·Members 숨김) + MemberCard(이니셜 모노그램)
+- [x] **L9** People (Board: 회장·수석부회장·이사4 TBA·감사 / 국제 전문가 예시) + MemberCard(이니셜 모노그램)
 - [ ] **L10** Seminars 목록 (Upcoming/Past) + SeminarCard
 - [ ] **L11** Seminar 상세 `[slug]` (제목·메타·abstract 폴백·back)
 - [ ] **L12** Contact ("연락처 추후 안내" + 가입 자리)

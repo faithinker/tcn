@@ -1,0 +1,53 @@
+---
+// L9: People — 임원(Board: 회장·수석부회장·이사4·감사) + 국제 전문가(예시).
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionTile from '../components/SectionTile.astro';
+import MemberCard from '../components/MemberCard.astro';
+import { getCollection } from 'astro:content';
+import { getLangFromUrl } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const members = (await getCollection('members')).filter((m) => m.data.lang === lang);
+const board = members
+  .filter((m) => m.data.category === 'board')
+  .sort((a, b) => a.data.order - b.data.order);
+const experts = members
+  .filter((m) => m.data.category === 'member')
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="구성원">
+  <!-- 페이지 헤더 -->
+  <section class="bg-canvas px-5 pt-16 pb-10 sm:pt-24 sm:pb-12">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">구성원</p>
+      <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink">구성원</h1>
+      <p class="mt-5 max-w-[68ch] font-serif text-lead text-body">
+        초문화네트워크는 성균관대학교 경제학을 뿌리로, 여러 나라의 전문가가 함께 참여하는
+        국제 학술 네트워크입니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- 임원 (Board) -->
+  <SectionTile variant="band" eyebrow="임원" title="임원진">
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      {board.map((m) => <MemberCard {...m.data} />)}
+    </div>
+  </SectionTile>
+
+  <!-- 국제 전문가 (예시) -->
+  {
+    experts.length > 0 && (
+      <SectionTile variant="canvas" eyebrow="국제 전문가" title="참여 연구자">
+        <p class="mt-3 max-w-[68ch] font-sans text-body-sm text-body-muted">
+          제1차 세미나(2025년 라오스 루앙프라방) 참여 연구자. ※ 아래는 예시 데이터로, 실제 명단
+          확보 시 교체됩니다.
+        </p>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {experts.map((m) => <MemberCard {...m.data} />)}
+        </div>
+      </SectionTile>
+    )
+  }
+</BaseLayout>
