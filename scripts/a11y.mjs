@@ -5,13 +5,17 @@
 
 import { launch } from 'chrome-launcher';
 import lighthouse from 'lighthouse';
+import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
 const ROUTES = (process.env.ROUTES || '/,/about,/people,/seminars,/contact,/events,/en/')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const MIN = Number(process.env.MIN_A11Y || 90);
 
-const chrome = await launch({ chromeFlags: ['--headless=new', '--no-sandbox'] });
+const chrome = await launch({
+  chromePath: process.env.CHROME_PATH || chromium.executablePath(),
+  chromeFlags: ['--headless=new', '--no-sandbox'],
+});
 let fail = 0;
 const summary = [];
 
@@ -36,7 +40,7 @@ try {
     if (bad) fail++;
   }
 } finally {
-  await chrome.kill();
+  chrome.kill();
 }
 
 console.log('\n' + (fail

@@ -53,8 +53,8 @@
 
 ### 4.1 원리 (점진적 향상 — 콘텐츠 절대 안 숨김)
 
-1. `<head>` 인라인 스크립트가 페인트 전에 `document.documentElement.classList.add('js')` 실행.
-2. CSS는 `html.js [data-reveal]`에만 초기 은닉 적용 → **JS 실패·구형 브라우저·크롤러는 처음부터 완전 표시**.
+1. 리빌 모듈이 대상 관찰 등록을 완료한 뒤 `document.documentElement.classList.add('reveal-ready')` 실행.
+2. CSS는 `html.reveal-ready [data-reveal]`에만 초기 은닉 적용 → **JS 실패·구형 브라우저·크롤러는 처음부터 완전 표시**.
 3. 단일 `IntersectionObserver`가 모든 `[data-reveal]` 관찰 → 진입 시 `.is-visible` 부여 후 관찰 해제(1회성, 역방향 없음).
 4. `matchMedia('(prefers-reduced-motion: reduce)').matches`면 관찰 스킵. CSS 미디어쿼리가 즉시 표시 + transition 제거로 이중 보장.
 
@@ -75,18 +75,18 @@ CSS 골격:
 최적화: `[data-reveal]` 전체에 `will-change`를 걸면 요소마다 컴포지터 레이어가 상주해 메모리를 낭비한다. 짧은 1회 opacity/transform 페이드는 힌트 없이도 컴포지터가 처리하므로 **`will-change` 미사용**.
 
 ```css
-html.js main > section:not(:first-of-type) {
+html.reveal-ready [data-reveal] {
   opacity: 0;
   transform: translateY(4px);
+}
+html.reveal-ready [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
   transition: opacity 0.7s cubic-bezier(.22,.61,.36,1),
               transform 0.7s cubic-bezier(.22,.61,.36,1);
 }
-html.js main > section:not(:first-of-type).is-visible {
-  opacity: 1;
-  transform: none;
-}
 @media (prefers-reduced-motion: reduce) {
-  html.js main > section:not(:first-of-type) {
+  html.reveal-ready [data-reveal] {
     opacity: 1;
     transform: none;
     transition: none;
@@ -106,7 +106,7 @@ html.js main > section:not(:first-of-type).is-visible {
 |---|---|
 | `src/styles/global.css` | §4.2 reveal CSS(구조 선택자) + reduced-motion 가드 + 다크 포커스 링 |
 | `src/scripts/reveal.ts` (신규) | IntersectionObserver 로직(노출 즉시 unobserve, 완료 시 disconnect) |
-| `src/layouts/BaseLayout.astro` | head 인라인 `.js` 스크립트(페인트 전) + `reveal.ts` 로드 |
+| `src/layouts/BaseLayout.astro` | `reveal.ts` 로드 |
 
 SectionTile·개별 페이지·en 미러는 **손대지 않음**.
 
@@ -142,8 +142,8 @@ footer :focus-visible {
 
 기존 `scripts/verify.mjs`와 동일 스택. 짧은 뷰포트(500px)로 2번째 섹션을 접힘 아래에 두고 검사.
 
-1. **`.js` 부여**: `html.js` 클래스가 페인트 전 인라인 스크립트로 설정됨.
-2. **Hero 표시**: `main > section` 첫 요소 `opacity:1` (리빌 대상 아님).
+1. **준비 상태**: 관찰 등록 뒤 `html.reveal-ready` 클래스가 설정됨.
+2. **Hero 표시**: hero에 `data-reveal`이 없고 `opacity:1`.
 3. **진입 리빌**: 2번째 섹션 초기 `opacity:0` → `scrollIntoView` 후 `opacity:1`.
 4. **reduced-motion**: `reducedMotion: 'reduce'` → 2번째 섹션이 스크롤 전부터 `opacity:1`.
 5. **no-JS 폴백**: `javaScriptEnabled: false` → 2번째 섹션 `opacity:1`(콘텐츠 안 숨김).
@@ -161,6 +161,6 @@ footer :focus-visible {
 ## 9. 리스크 / 결정
 
 - **Lighthouse Chrome 의존**: `chrome-launcher`가 시스템 Google Chrome 자동 탐색(macOS 확인됨). 부재 환경(CI 등)에선 라이브 URL(`tcn-ezj.pages.dev`) 대상 측정으로 대체.
-- **FOUC 방지**: `.js` 클래스는 head 인라인·동기 스크립트로 첫 페인트 전 부여. reveal 로직은 Astro가 소형 모듈로 각 페이지에 인라인(추가 요청 0, 지연 실행).
+- **실패 안전성 우선**: 관찰 등록 완료 전에는 `.reveal-ready`를 부여하지 않아 모듈 실패 시 콘텐츠가 숨지 않게 한다.
 - **모션 세기**: 4px/0.7s로 확정. 무게감 우선, 언제든 CSS 상수만으로 재조정 가능.
 - **스코프 규율**: Part B는 Lighthouse 실패 audit에 한정. 점수와 무관한 리팩터링 금지.

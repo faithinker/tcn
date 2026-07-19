@@ -82,6 +82,7 @@ src/data/
 에디토리얼(editorial) 학술지 감성 — SaaS 랜딩페이지 아님. **50대 후반 이상 한국어 독자**를 위한 권위·신뢰·가독성 중심. 전체 스펙은 [`DESIGN.md`](./DESIGN.md) 참조.
 
 - **타이포가 정체성** — Noto Serif KR 명조 헤드라인(weight 600) + 세리프 본문 18px/행간 1.75. 이미지 없이 글자만으로 성립.
+- **폰트 전송 최적화** — Noto Serif KR 400/600과 Pretendard 400/700 동적 서브셋만 셀프호스팅하고, 해시 자산은 장기 캐시.
 - **단일 강조색** — 딥 인스티튜셔널 블루 `#0b3d6b` (링크·아이브로·활성 상태 전용). 나머지는 종이 위 잉크(near-black `#141414`).
 - **웜 페이퍼 배경** — 순백 대신 파치먼트 톤(`#f7f5f0` / `#f2efe7`)으로 눈부심 완화.
 - **가독성 하한** — 최소 14px, 보조 텍스트 명도 `#5a5a5a`(약 7:1 대비) 이상.
@@ -128,6 +129,8 @@ npm run build        # dist/ 정적 빌드
 npm run preview      # 빌드 결과 미리보기
 npm run check        # astro check (타입·스키마 검증)
 npm run verify       # Playwright 스크린샷 검증 (375/768/1280)
+npm run motion       # 스크롤 리빌·reduced-motion·JS 실패 폴백 검증
+npm run a11y         # Lighthouse 접근성 점수 검증 (preview 서버 필요)
 ```
 
 - **Node**: v26 호환 확인됨 (Playwright 1.61+).

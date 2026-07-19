@@ -9,8 +9,8 @@
 /* 셀프호스팅 폰트 (unicode-range 서브셋 -> 한글/라틴만 실제 다운로드) */
 @import '@fontsource/noto-serif-kr/400.css';
 @import '@fontsource/noto-serif-kr/600.css';
-@import '@fontsource/noto-serif-kr/700.css';
-@import 'pretendard/dist/web/variable/pretendardvariable.css';
+@import 'pretendard/dist/web/static/Pretendard-Regular.css';
+@import 'pretendard/dist/web/static/Pretendard-Bold.css';
 
 @import 'tailwindcss';
 
@@ -35,7 +35,7 @@
   --color-on-primary: #ffffff;
 
   --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, sans-serif;
 
   --text-caption: 0.875rem;
   --text-caption--line-height: 1.5;
@@ -96,7 +96,7 @@
 
   html[lang='en'] {
     --font-serif: Georgia, 'Times New Roman', serif;
-    --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Pretendard', system-ui, -apple-system, sans-serif;
   }
 
   html[lang='en'] body {
@@ -154,26 +154,26 @@
 }
 
 /* ============================================================
-   L13: 스크롤 진입 모션 — 점진적 향상(구조 선택자, 마크업 속성 불필요).
-   html.js일 때만 은닉 -> JS 실패/구형 브라우저/크롤러는 처음부터 완전 표시.
-   히어로(첫 섹션) 제외, main 직속 2번째 섹션부터. "잉크가 종이에 앉듯" 절제.
+   L13: 스크롤 진입 모션 — 명시적 data-reveal 훅으로 재사용/opt-out 가능.
+   초기화 성공 후에만 은닉 -> JS 실패/구형 브라우저/크롤러는 처음부터 완전 표시.
+   히어로는 훅을 생략해 제외. "잉크가 종이에 앉듯" 절제.
    메모리 절약: will-change 미사용(짧은 1회 전환은 힌트 없이 컴포지터 처리).
    ============================================================ */
-html.js main > section:not(:first-of-type) {
+html.reveal-ready [data-reveal] {
   opacity: 0;
   transform: translateY(4px);
+}
+html.reveal-ready [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
   transition:
     opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
     transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-html.js main > section:not(:first-of-type).is-visible {
-  opacity: 1;
-  transform: none;
-}
 
 /* 접근성: 모션 민감 사용자는 진입 애니메이션 완전 off */
 @media (prefers-reduced-motion: reduce) {
-  html.js main > section:not(:first-of-type) {
+  html.reveal-ready [data-reveal] {
     opacity: 1;
     transform: none;
     transition: none;

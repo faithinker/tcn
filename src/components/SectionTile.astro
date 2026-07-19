@@ -7,9 +7,10 @@ interface Props {
   title?: string;
   id?: string;
   class?: string;
+  reveal?: boolean;
 }
 
-const { variant = 'canvas', eyebrow, title, id, class: cls = '' } = Astro.props;
+const { variant = 'canvas', eyebrow, title, id, class: cls = '', reveal = true } = Astro.props;
 
 const bg: Record<NonNullable<Props['variant']>, string> = {
   canvas: 'bg-canvas',
@@ -18,7 +19,11 @@ const bg: Record<NonNullable<Props['variant']>, string> = {
 };
 ---
 
-<section id={id} class={`${bg[variant]} px-5 py-16 sm:py-24 ${cls}`.trim()}>
+<section
+  id={id}
+  class={`${bg[variant]} px-5 py-16 sm:py-24 ${cls}`.trim()}
+  data-reveal={reveal ? '' : undefined}
+>
   <div class="mx-auto max-w-[75rem]">
     {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     {

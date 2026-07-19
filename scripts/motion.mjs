@@ -1,7 +1,7 @@
 // scripts/motion.mjs — L13 스크롤 진입 모션 검증 (Playwright).
 // 전제: preview 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
-// 검사: (1)html.js 부여 (2)hero 항상 표시 (3)하위 섹션 스크롤 전 은닉→후 표시
-//       (4)reduced-motion서 즉시 표시 (5)JS 미동작 시 표시.
+// 검사: (1)초기화 준비 상태 (2)hero 항상 표시 (3)하위 섹션 스크롤 전 은닉→후 표시
+//       (4)reduced-motion서 즉시 표시 (5)JS 미동작/초기화 실패 시 표시.
 // 종료코드: 실패 1건 이상이면 1.
 
 import { chromium } from 'playwright';
@@ -13,14 +13,7 @@ const check = (cond, msg) => {
   console.log(`${cond ? '✅' : '❌'} ${msg}`);
   if (!cond) fail++;
 };
-const op = (page, sel, nth = 0) =>
-  page.evaluate(
-    ([s, n]) => {
-      const el = document.querySelectorAll(s)[n];
-      return el ? getComputedStyle(el).opacity : null;
-    },
-    [sel, nth],
-  );
+const op = (locator) => locator.evaluate((el) => getComputedStyle(el).opacity);
 
 // 짧은 뷰포트 → 2번째 섹션이 접힘 아래에 위치하도록.
 const VP = { width: 1280, height: 500 };
@@ -30,28 +23,31 @@ const VP = { width: 1280, height: 500 };
   const ctx = await browser.newContext({ viewport: VP });
   const page = await ctx.newPage();
   await page.goto(BASE + '/', { waitUntil: 'load' });
-  await page.waitForTimeout(200);
+  const hero = page.locator('main > section').first();
+  const target = page.locator('[data-reveal]').last();
 
-  const hasJs = await page.evaluate(() => document.documentElement.classList.contains('js'));
-  check(hasJs, 'html.js 클래스 부여됨 (페인트 전 인라인 스크립트)');
+  const isReady = await page.evaluate(() => document.documentElement.classList.contains('reveal-ready'));
+  check(isReady, '리빌 모듈 초기화 후 reveal-ready 클래스 부여됨');
 
-  check((await op(page, 'main > section', 0)) === '1', 'hero(첫 섹션) 항상 표시');
+  check(!(await hero.getAttribute('data-reveal')), 'hero에 data-reveal 없음');
+  check((await op(hero)) === '1', 'hero(첫 섹션) 항상 표시');
 
-  const beforeScroll = await op(page, 'main > section', 1);
-  check(beforeScroll === '0', `2번째 섹션 스크롤 전 은닉 (opacity=${beforeScroll})`);
+  const isOffscreen = await target.evaluate((el) => el.getBoundingClientRect().top >= window.innerHeight);
+  check(isOffscreen, '검사 대상이 스크롤 전 뷰포트 밖에 있음');
+  const beforeScroll = await op(target);
+  check(beforeScroll === '0', `하단 섹션 스크롤 전 은닉 (opacity=${beforeScroll})`);
 
-  await page.evaluate(() =>
-    document.querySelectorAll('main > section')[1].scrollIntoView({ block: 'center' }),
-  );
+  await target.scrollIntoViewIfNeeded();
   await page.waitForFunction(
     () => {
-      const el = document.querySelectorAll('main > section')[1];
+      const elements = document.querySelectorAll('[data-reveal]');
+      const el = elements[elements.length - 1];
       return el && getComputedStyle(el).opacity === '1';
     },
     { timeout: 2000 },
   ).catch(() => {});
-  const afterScroll = await op(page, 'main > section', 1);
-  check(afterScroll === '1', `2번째 섹션 스크롤 후 표시 (opacity=${afterScroll})`);
+  const afterScroll = await op(target);
+  check(afterScroll === '1', `하단 섹션 스크롤 후 표시 (opacity=${afterScroll})`);
 
   await ctx.close();
 }
@@ -61,9 +57,9 @@ const VP = { width: 1280, height: 500 };
   const ctx = await browser.newContext({ viewport: VP, reducedMotion: 'reduce' });
   const page = await ctx.newPage();
   await page.goto(BASE + '/', { waitUntil: 'load' });
-  await page.waitForTimeout(200);
-  const val = await op(page, 'main > section', 1);
-  check(val === '1', `reduced-motion: 2번째 섹션 스크롤 전 즉시 표시 (opacity=${val})`);
+  const target = page.locator('[data-reveal]').last();
+  const val = await op(target);
+  check(val === '1', `reduced-motion: 하단 섹션 스크롤 전 즉시 표시 (opacity=${val})`);
   await ctx.close();
 }
 
@@ -72,8 +68,27 @@ const VP = { width: 1280, height: 500 };
   const ctx = await browser.newContext({ viewport: VP, javaScriptEnabled: false });
   const page = await ctx.newPage();
   await page.goto(BASE + '/', { waitUntil: 'load' });
-  const val = await op(page, 'main > section', 1);
-  check(val === '1', `no-JS: 2번째 섹션 표시(콘텐츠 안 숨김) (opacity=${val})`);
+  const val = await op(page.locator('[data-reveal]').last());
+  check(val === '1', `no-JS: 하단 섹션 표시(콘텐츠 안 숨김) (opacity=${val})`);
+  await ctx.close();
+}
+
+// 4) IntersectionObserver 초기화 실패 → 준비 클래스 미부여, 모든 섹션 표시
+{
+  const ctx = await browser.newContext({ viewport: VP });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => {
+    window.IntersectionObserver = class {
+      constructor() {
+        throw new Error('forced IntersectionObserver init failure');
+      }
+    };
+  });
+  await page.goto(BASE + '/', { waitUntil: 'load' });
+  const isReady = await page.evaluate(() => document.documentElement.classList.contains('reveal-ready'));
+  const val = await op(page.locator('[data-reveal]').last());
+  check(!isReady, '관찰자 초기화 실패 시 reveal-ready 미부여');
+  check(val === '1', `초기화 실패: 하단 섹션 표시 (opacity=${val})`);
   await ctx.close();
 }
 

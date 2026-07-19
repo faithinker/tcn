@@ -92,7 +92,7 @@ const featured = upcoming[0] ?? past[0];
         <article class="mt-6 max-w-[68ch]">
           <p class="eyebrow">{featured.data.status === 'upcoming' ? t('common.upcoming') : copy.pastEvent}</p>
           <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.data.title}</h3>
-          <p class="mt-3 font-serif text-byline font-bold text-body-muted">
+          <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
             {formatDate(featured.data.date, lang)} · {featured.data.location}
           </p>
           <p class="mt-4 font-serif text-body-serif text-body">

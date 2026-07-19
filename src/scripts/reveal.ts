@@ -1,8 +1,8 @@
 // L13: 스크롤 진입 리빌 — 단일 IntersectionObserver, 1회성.
-// 대상: main 직속 2번째 섹션부터(히어로 제외). 초기 은닉은 global.css(html.js).
+// 대상: 명시적으로 data-reveal을 선언한 섹션. 초기 은닉은 초기화 성공 후에만 활성화.
 // 메모리: 노출 즉시 unobserve, 전부 끝나면 disconnect -> 참조 해제(누수 없음).
 
-const SELECTOR = 'main > section:not(:first-of-type)';
+const SELECTOR = '[data-reveal]';
 
 function reveal(): void {
   const targets = document.querySelectorAll<HTMLElement>(SELECTOR);
@@ -12,10 +12,7 @@ function reveal(): void {
   const noMotion =
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
     !('IntersectionObserver' in window);
-  if (noMotion) {
-    targets.forEach((el) => el.classList.add('is-visible'));
-    return;
-  }
+  if (noMotion) return;
 
   let remaining = targets.length;
   const io = new IntersectionObserver(
@@ -31,6 +28,10 @@ function reveal(): void {
   );
 
   targets.forEach((el) => io.observe(el));
+
+  // 모든 관찰 등록에 성공한 경우에만 CSS 은닉을 켠다.
+  // 번들 요청이나 초기화가 실패하면 이 클래스가 없어 콘텐츠는 계속 표시된다.
+  document.documentElement.classList.add('reveal-ready');
 }
 
 if (document.readyState === 'loading') {
