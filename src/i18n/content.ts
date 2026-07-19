@@ -176,7 +176,7 @@ const content = {
       title: 'Transcultural Network',
       eyebrow: 'International Scholarly Network',
       name: 'Transcultural Network',
-      alternateName: '초문화네트워크',
+      alternateName: '',
       lead: 'An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture.',
       sublead: 'We study cultural exchange and creation in the digital and AI era.',
       aboutButton: 'About TCN',

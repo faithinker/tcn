@@ -13,8 +13,8 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const eventCopy = getContent(lang).events;
-const alternateLang = lang === 'ko' ? 'en' : 'ko';
-const alternateLabel = lang === 'ko' ? 'English' : '한국어';
+const koPath = switchLangPath(Astro.url.pathname, 'ko');
+const enPath = switchLangPath(Astro.url.pathname, 'en');
 
 const invitationYears = [
   ...new Set(
@@ -65,10 +65,11 @@ const isExact = (href: string) => {
 ---
 
 <header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas">
-  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-4 px-5 py-3">
+  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5">
     <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
-      <span class="font-serif text-[1.375rem] font-semibold text-ink">{t('site.name')}</span>
-      <span class="font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted">TCN</span>
+      <span class="hidden font-serif text-[1.375rem] font-semibold text-ink sm:inline">{t('site.name')}</span>
+      <span class="font-serif text-[1.125rem] font-semibold text-ink sm:hidden">TCN</span>
+      <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted sm:inline">TCN</span>
     </a>
 
     <nav class="hidden items-center gap-1 xl:flex" aria-label={t('common.menu')}>
@@ -122,30 +123,42 @@ const isExact = (href: string) => {
       >
         {t('nav.cta')}
       </a>
-      <a
-        href={switchLangPath(Astro.url.pathname, alternateLang)}
-        hreflang={alternateLang}
-        lang={alternateLang}
-        class="ml-1 inline-flex min-h-[48px] items-center px-3 font-sans text-body-sm font-bold text-link no-underline hover:underline"
-      >
-        {alternateLabel}
-      </a>
     </nav>
 
-    <button
-      id="navToggle"
-      type="button"
-      class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
-      aria-expanded="false"
-      aria-controls="mobileNav"
-      aria-label={t('common.menu')}
-    >
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
+    <div class="flex shrink-0 items-center gap-1">
+      <nav class="flex items-center font-sans text-caption font-bold" aria-label={t('common.language')}>
+        <a
+          href={enPath}
+          hreflang="en"
+          lang="en"
+          aria-current={lang === 'en' ? 'page' : undefined}
+          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
+        >EN</a>
+        <span aria-hidden="true" class="text-body-muted">/</span>
+        <a
+          href={koPath}
+          hreflang="ko"
+          lang="ko"
+          aria-current={lang === 'ko' ? 'page' : undefined}
+          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
+        >한국어</a>
+      </nav>
+
+      <button
+        id="navToggle"
+        type="button"
+        class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
+        aria-expanded="false"
+        aria-controls="mobileNav"
+        aria-label={t('common.menu')}
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <nav id="mobileNav" class="hidden border-t border-hairline bg-canvas xl:hidden" aria-label={t('common.menu')}>
@@ -190,16 +203,6 @@ const isExact = (href: string) => {
           class="inline-flex min-h-[48px] w-full items-center justify-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
         >
           {t('nav.cta')}
-        </a>
-      </li>
-      <li class="border-t border-hairline px-3 py-2">
-        <a
-          href={switchLangPath(Astro.url.pathname, alternateLang)}
-          hreflang={alternateLang}
-          lang={alternateLang}
-          class="inline-flex min-h-[48px] w-full items-center font-sans text-body-sans font-bold text-link no-underline"
-        >
-          {t('common.language')}: {alternateLabel}
         </a>
       </li>
     </ul>

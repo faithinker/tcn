@@ -31,9 +31,11 @@ const featured = upcoming[0] ?? past[0];
       <h1 class="mt-3 font-serif font-semibold text-ink text-[1.75rem] leading-[1.2] sm:text-[2rem]">
         {copy.name}
       </h1>
-      <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
-        {copy.alternateName}
-      </p>
+      {copy.alternateName && (
+        <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
+          {copy.alternateName}
+        </p>
+      )}
       <p class="mt-6 max-w-[60ch] font-serif text-[1.3125rem] leading-[1.6] text-body">
         {copy.lead}
       </p>
