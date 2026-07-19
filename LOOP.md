@@ -85,7 +85,7 @@
 - [x] **L4** 셸: BaseLayout · Header(종이 nav+하단 블랙 헤어라인, 햄버거) · Footer(잉크블랙 밴드) — *ThemeToggle 없음*
 - [x] **L5** 코어 컴포넌트: Button(primary/outline·4px·≥48px) · SectionTile(hero-band/section-band) · Stat
 - [x] **L6** content.config.ts(Zod, 아래 스키마) + SEED 시드 파일 — `astro check` 통과
-- [ ] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)
+- [x] **L7** Home (Hero·미션·최신세미나·하이라이트·가입CTA·Footer)
 - [ ] **L8** About (미션/비전·활동개요·**선언문 국문 전문**·History Timeline)
 - [ ] **L9** People (Board: 회장·수석부회장·이사4 TBA·감사 / Advisors·Members 숨김) + MemberCard(이니셜 모노그램)
 - [ ] **L10** Seminars 목록 (Upcoming/Past) + SeminarCard
