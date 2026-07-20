@@ -1,0 +1,85 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const label = t('common.themeToggle');
+---
+
+<button
+  id="themeToggle"
+  type="button"
+  aria-pressed="false"
+  class="inline-flex min-h-[48px] min-w-[48px] items-center justify-center gap-2 rounded-sm border border-hairline-strong bg-canvas px-3 font-sans text-body-sm font-bold text-ink hover:text-link hover:border-link transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+  aria-label={label}
+  title={label}
+>
+  <!-- Moon icon (shown in light mode) -->
+  <svg
+    class="moon-icon h-5 w-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
+  <!-- Sun icon (shown in dark mode) -->
+  <svg
+    class="sun-icon h-5 w-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  </svg>
+  <span class="sr-only sm:inline">{label}</span>
+</button>
+
+<style>
+  .sun-icon {
+    display: none;
+  }
+  .moon-icon {
+    display: block;
+  }
+  :global(html.dark) .sun-icon {
+    display: block;
+  }
+  :global(html.dark) .moon-icon {
+    display: none;
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('themeToggle');
+  if (toggle) {
+    const updateAriaPressed = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      toggle.setAttribute('aria-pressed', String(isDark));
+    };
+
+    updateAriaPressed();
+
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('tcn_theme', isDark ? 'dark' : 'light');
+      updateAriaPressed();
+    });
+  }
+</script>
