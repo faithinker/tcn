@@ -3,6 +3,8 @@ import type { UiLang } from './ui';
 const getPeopleProfileCopy = (lang: UiLang) => {
   const ko = lang === 'ko';
   return {
+    listEyebrow: 'Directory',
+    listTitle: ko ? '구성원 전체' : 'All Members',
     leadershipIntro: ko
       ? '학술적 비전과 국제 협력의 방향을 세우고 네트워크의 주요 활동을 이끕니다.'
       : 'The leadership sets the scholarly vision and direction for international collaboration.',
