@@ -35,6 +35,7 @@
 | `/{lang}/about` | 학회 소개 | 정체성, 미션·비전, 연혁 타임라인 |
 | `/{lang}/about/founding` | 창립총회 | 창립총회 초청장과 행사 개요 |
 | `/{lang}/about/declaration` | 창립 선언문 | 창립 선언문 전문 |
+| `/{lang}/about/bylaws` | 정관 | 한국어·영문 정관, 5장 17조·부칙 |
 | `/{lang}/people` | 구성원 | 임원진·이사·감사 카드 (실명 미확보 시 "추후 공개") |
 | `/{lang}/seminars` | 세미나 | 예정/지난 세미나 목록과 차기 세미나 강조 |
 | `/{lang}/seminars/[slug]` | 세미나 상세 | 일정·장소·참여국과 확정된 프로그램·자료 |
@@ -107,7 +108,7 @@ tcn/
 ├── src/
 │   ├── pages/
 │   │   ├── index.astro     # 공통 홈 페이지 구현
-│   │   ├── about/          # 공통 소개 · 창립총회 · 창립 선언문 구현
+│   │   ├── about/          # 공통 소개 · 창립총회 · 창립 선언문 · 정관 구현
 │   │   ├── people.astro    # 공통 구성원 페이지 구현
 │   │   ├── seminars/       # 공통 세미나 목록 · [slug] 상세 구현
 │   │   ├── contact.astro   # 공통 연락처 페이지 구현

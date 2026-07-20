@@ -93,6 +93,79 @@ const content = {
       ],
       signature: '창립준비위원장',
     },
+    bylaws: {
+      title: '정관',
+      description: '초문화네트워크의 조직과 운영에 관한 정관',
+      eyebrow: 'Bylaws',
+      heroTitle: '초문화네트워크 정관',
+      adoptionLabel: '시행',
+      adoptionDate: '2025년 12월 12일 (창립총회 의결)',
+      structureLabel: '구성',
+      structureValue: '5장 17조 · 부칙 2조',
+      contentsLabel: '목차',
+      relatedLabel: '관련 문서',
+      declarationLink: '창립 선언문',
+      foundingLink: '창립총회',
+      adoptionNotice: '본 정관은 2025년 12월 12일 창립총회에서 의결되었습니다.',
+      backToTopLabel: '맨 위로',
+      chapters: [
+        {
+          id: 'general', label: '제1장', title: '총칙', articles: [
+            { number: '제1조', title: '명칭', blocks: [{ type: 'paragraph', text: '본 단체의 명칭은 초문화네트워크라 하며 영문 명칭은 Transcultural Network(TCN)라 한다.' }] },
+            { number: '제2조', title: '목적', blocks: [{ type: 'paragraph', text: '본 단체는 디지털화된 세계에서 경계를 넘는 초문화적(Transcultural) 현상을 연구하고, 국가 간 학술, 문화, 정책의 교류를 위한 장을 마련하며, 미래의 문화 창조와 관련된 연구 및 정책 제언을 통해 국제적 학술협력 증진에 이바지함을 목적으로 한다.' }] },
+            { number: '제3조', title: '주사무소 소재지', blocks: [{ type: 'paragraph', text: '본 단체의 주된 사무소(사무국)는 대한민국에 둔다. 필요시 이사회의 의결로 국내외에 분과 및 지부를 둘 수 있다.' }] },
+            { number: '제4조', title: '사업', blocks: [
+              { type: 'paragraph', text: '본 단체는 제2조의 목적을 달성하기 위하여 다음의 사업을 수행한다.' },
+              { type: 'list', items: ['학술회의, 세미나, 심포지움 개최', '국제 공동연구, 정책수립 지원', '회원 간 학술, 정보 교류 및 출판사업', '관련 분야의 교육, 연수, 인재 양성 활동', '국내외 연구기관, 대학, 공공기관 등과의 협력', '기타 네트워크의 목적 달성에 필요한 사업'] },
+            ] },
+          ],
+        },
+        {
+          id: 'members', label: '제2장', title: '회원', articles: [
+            { number: '제5조', title: '회원 자격 및 가입', blocks: [
+              { type: 'paragraph', text: '본 단체의 회원은 제2조의 목적에 찬동하고 정관을 준수할 것을 동의한 자 중 소정의 가입 절차(전자우편 또는 가입신청서 제출 등)를 완료하고 이사회의 승인을 얻은 자로 한다. 회원은 정회원, 준회원, 법인회원으로 한다.' },
+              { type: 'list', items: ['정회원은 석사학위 이상의 학위 소지자 또는 이에 준하는 자격을 갖춘 자', '준회원은 석사 과정에 재학 중인 대학원생 또는 이에 준하는 자격을 갖춘 자', '법인회원은 국내외의 기업, 단체 및 연구기관'] },
+            ] },
+            { number: '제6조', title: '회원의 권리와 의무, 제명', blocks: [{ type: 'clauses', items: ['정회원 및 법인회원은 본 단체의 사업에 참여할 권리를 가지며, 총회에서의 의결권 및 선거권을 갖는다.', '회원은 이사회가 정하는 경우 회비를 납부하여야 하며 정관 및 제 규정을 준수한다.', '회원이 본 단체의 명예를 훼손하거나 정관을 위반한 경우에는 이사회의 의결을 거쳐 제명할 수 있다.'] }] },
+            { number: '제7조', title: '재정 및 회계연도', blocks: [{ type: 'paragraph', text: '본 단체의 재정은 회원 회비, 회원 또는 비회원들의 찬조금, 보조금, 사업 수입 등으로 충당한다. 본 단체의 회계연도는 매년 1월 1일부터 12월 31일까지로 한다.' }] },
+          ],
+        },
+        {
+          id: 'organization', label: '제3장', title: '조직과 임원', articles: [
+            { number: '제8조', title: '임원 구성 및 선임', blocks: [
+              { type: 'paragraph', text: '본 단체는 다음의 임원으로 구성한다. 임원은 이사회 구성원으로서 본 단체의 운영을 책임진다.' },
+              { type: 'clauses', items: ['회장: 1인 (본 단체를 대표하고 총회 및 이사회의 의장이 된다)', '부회장: 국가별 1인 (회장을 보좌하며 회장 부재 시 직무를 대행한다)', '이사: 본 단체의 주요 사업 및 운영에 관한 의사결정에 참여한다.', '감사: 필요 시 1명을 선임할 수 있으며, 본 단체의 재정 및 운영에 대해 감사한다.', '회장 및 감사는 총회에서 선임한다.', '회장은 부회장 중에서 집행, 연구, 기획 등의 업무를 담당할 수석부회장을 위촉할 수 있다.', '명예회장, 부회장, 이사, 고문은 정회원 중에서 회장이 추천하여 총회에서 선임한다.', '임원의 임기는 2년으로 하며 연임할 수 있다.'] },
+            ] },
+            { number: '제9조', title: '분과위원회', blocks: [{ type: 'paragraph', text: '본 단체는 특정 연구 분야나 사업 수행을 위하여 이사회 산하에 국가별 분과위원회를 둘 수 있다. 분과위원회는 해당 분야의 회원들로 구성되며, 분과위원회의 위원장과 위원은 회장이 이사회의 의결을 거쳐 임명한다. 각 분과위원회는 해당 분야 사업을 계획·집행하며, 필요에 따라 수시로 회의를 개최할 수 있다. 분과위원회의 설치 및 운영에 관한 사항은 이사회가 별도로 정한다.' }] },
+            { number: '제10조', title: '사무국', blocks: [{ type: 'paragraph', text: '본 단체의 원활한 운영을 위한 사무국은 본 단체의 일상 행정 업무와 회원 관리, 회의 준비, 대외 협력 등을 담당한다. 사무국에는 사무국장 1인과 필요에 따라 약간 명의 직원을 둘 수 있다. 사무국장은 이사회의 의결을 거쳐 회장이 임명하며, 사무국 직원은 사무국장의 추천으로 회장이 임명한다. 사무국의 조직 및 운영에 관한 세부사항은 이사회가 정한다.' }] },
+            { number: '제11조', title: '명예회장, 고문', blocks: [{ type: 'paragraph', text: '본 단체는 이사회의 의결을 거쳐 명예회장과 고문을 둘 수 있다.' }] },
+          ],
+        },
+        {
+          id: 'meetings', label: '제4장', title: '회의', articles: [
+            { number: '제12조', title: '총회', blocks: [{ type: 'clauses', items: ['총회는 회원으로 구성한다.', '총회는 정관 개정, 임원 선출, 사업계획 및 예산·결산 승인, 기타 본 단체 운영의 주요 사항을 의결한다.', '총회는 정기총회와 임시총회로 하며 정기총회는 매년 회장이 소집한다. 임시총회는 회장이나 이사회의 요구가 있을 때 소집할 수 있다. 총회는 서면결의나 온라인 회의 등으로 의결할 수 있다.', '총회의 소집은 회장이 회의 안건·일시·장소를 명기하여 개최 7일 전까지 모든 회원에게 서면 또는 전자우편 등으로 통지한다. 총회는 출석회원 과반수의 찬성으로 의결한다. 총회에 참석할 수 없는 회원은 다른 회원에게 서면 또는 전자매체로 그 의결권의 대리행사를 위임할 수 있다.', '총회의 의장은 회장이 되며, 회장 유고 시 수석부회장, 부회장 순으로 대신한다.'] }] },
+            { number: '제13조', title: '이사회 회의', blocks: [
+              { type: 'clauses', items: ['이사회는 회장, 부회장, 이사로 구성되고 이사회 의장은 회장이 된다.', '이사회는 의장이 필요하다고 인정할 때나 이사회 구성원 3분의 1 이상 또는 감사의 요구가 있을 때 의장이 소집한다.', '이사회는 출석한 이사회의 구성원 과반수의 찬성으로 다음 사항을 의결하며, 가부동수인 때에는 의장이 결정권을 갖는다. 이사회는 서면결의나 온라인 회의 등으로 의결할 수 있다.'] },
+              { type: 'list', items: ['회원의 가입, 제명에 대한 승인', '회비 액수의 결정', '본 단체의 예산 및 결산, 재산의 취득 및 처분에 대한 사항, 기타 주요 사업'] },
+            ] },
+            { number: '제14조', title: '분과위원회 회의', blocks: [{ type: 'paragraph', text: '각 분과위원회의 회의는 해당 위원회 위원장이 필요에 따라 수시로 소집한다. 분과위원회는 자체적으로 안건을 협의하여 사업을 추진하되, 중요한 사항은 이사회의 승인을 받는다. 분과위원회의 활동 결과는 정기총회 또는 이사회에 보고되어야 한다.' }] },
+          ],
+        },
+        {
+          id: 'amendment', label: '제5장', title: '정관의 개정 및 해산', articles: [
+            { number: '제15조', title: '정관 개정', blocks: [{ type: 'paragraph', text: '정관을 개정하고자 할 때에는 총회 출석 회원 3분의 2 이상의 찬성으로 의결한다.' }] },
+            { number: '제16조', title: '해산', blocks: [{ type: 'paragraph', text: '본 단체를 해산하고자 할 때에는 총회에서 재적 정회원 및 법인회원 3분의 2 이상의 찬성으로 의결하여 결정한다.' }] },
+            { number: '제17조', title: '준용 및 기타', blocks: [{ type: 'paragraph', text: '본 정관에 규정되지 아니한 사항이 발생한 경우에는 이사회 결정에 따르며, 일반적인 비영리단체의 관례와 관련 법령을 준용한다. 본 단체의 운영상 필요한 세부 규칙은 이사회의 의결을 통해 별도로 제정할 수 있다.' }] },
+          ],
+        },
+      ],
+      addenda: {
+        id: 'addenda', title: '부칙', articles: [
+          { number: '제1조', title: '창립회원의 가입에 관한 특례', blocks: [{ type: 'paragraph', text: '본 단체의 설립을 위하여 창립총회에 참석하여 정관안에 동의한 자는 이사회의 승인 없이 창립회원으로 확정한다. 창립회원 명부는 창립총회 회의록에 첨부한 명단으로 갈음한다. 이 규정은 창립총회 이후 이사회가 구성되는 시점에 효력을 상실한다.' }] },
+          { number: '제2조', title: '정관의 발효', blocks: [{ type: 'paragraph', text: '본 정관은 창립총회에서 의결된 날로부터 효력을 가진다.' }] },
+        ],
+      },
+    },
     people: {
       title: '구성원',
       description: '초문화네트워크 임원진과 국제 네트워크 구성원',
@@ -264,6 +337,79 @@ const content = {
         'Thank you.',
       ],
       signature: 'Chair of the Founding Preparatory Committee',
+    },
+    bylaws: {
+      title: 'Bylaws',
+      description: 'Bylaws governing the organization and operation of the Transcultural Network',
+      eyebrow: 'Bylaws',
+      heroTitle: 'Bylaws of the Transcultural Network',
+      adoptionLabel: 'Effective',
+      adoptionDate: '12 December 2025 (adopted at the founding assembly)',
+      structureLabel: 'Structure',
+      structureValue: '5 chapters, 17 articles · Supplementary Provisions: 2 articles',
+      contentsLabel: 'Contents',
+      relatedLabel: 'Related documents',
+      declarationLink: 'Founding Declaration',
+      foundingLink: 'Founding Assembly',
+      adoptionNotice: 'These Bylaws were adopted at the founding assembly on 12 December 2025.',
+      backToTopLabel: 'Back to top',
+      chapters: [
+        {
+          id: 'general', label: 'Chapter 1', title: 'General Provisions', articles: [
+            { number: 'Article 1', title: 'Name', blocks: [{ type: 'paragraph', text: 'The name of this organization shall be the Transcultural Network (TCN).' }] },
+            { number: 'Article 2', title: 'Purpose', blocks: [{ type: 'paragraph', text: 'This organization aims to study transcultural phenomena that cross boundaries in a digitized world; provide a forum for academic, cultural, and policy exchange among countries; and contribute to international academic cooperation through research and policy recommendations concerning the creation of future cultures.' }] },
+            { number: 'Article 3', title: 'Location of the Principal Office', blocks: [{ type: 'paragraph', text: 'The principal office (Secretariat) of this organization shall be located in the Republic of Korea. Where necessary, divisions and branches may be established in Korea or abroad by resolution of the Board of Directors.' }] },
+            { number: 'Article 4', title: 'Activities', blocks: [
+              { type: 'paragraph', text: 'To achieve the purpose set out in Article 2, this organization shall undertake the following activities:' },
+              { type: 'list', items: ['Holding academic conferences, seminars, and symposia', 'Supporting international joint research and policy development', 'Promoting academic and information exchange among members and publishing activities', 'Providing education, training, and talent development in related fields', 'Cooperating with research institutes, universities, public institutions, and other bodies in Korea and abroad', 'Undertaking other activities necessary to achieve the purpose of the Network'] },
+            ] },
+          ],
+        },
+        {
+          id: 'members', label: 'Chapter 2', title: 'Members', articles: [
+            { number: 'Article 5', title: 'Eligibility and Admission', blocks: [
+              { type: 'paragraph', text: 'Members of this organization shall be persons or entities that support the purpose set out in Article 2, agree to comply with these Bylaws, complete the prescribed application procedure, including submission by email or application form, and receive approval from the Board of Directors. Membership shall consist of regular members, associate members, and institutional members.' },
+              { type: 'list', items: ['Regular members shall hold a master’s degree or higher, or possess equivalent qualifications.', 'Associate members shall be enrolled in a master’s degree programme, or possess equivalent qualifications.', 'Institutional members shall be companies, organizations, and research institutes in Korea or abroad.'] },
+            ] },
+            { number: 'Article 6', title: 'Rights, Duties, and Expulsion of Members', blocks: [{ type: 'clauses', items: ['Regular members and institutional members have the right to participate in the activities of this organization and the right to vote on resolutions and in elections at the General Assembly.', 'Members shall pay membership fees when determined by the Board of Directors and shall comply with these Bylaws and other regulations.', 'A member who damages the reputation of this organization or violates these Bylaws may be expelled by resolution of the Board of Directors.'] }] },
+            { number: 'Article 7', title: 'Finances and Fiscal Year', blocks: [{ type: 'paragraph', text: 'The finances of this organization shall be funded by membership fees, contributions from members or non-members, subsidies, programme income, and other sources. The fiscal year shall run from 1 January through 31 December each year.' }] },
+          ],
+        },
+        {
+          id: 'organization', label: 'Chapter 3', title: 'Organization and Officers', articles: [
+            { number: 'Article 8', title: 'Composition and Appointment of Officers', blocks: [
+              { type: 'paragraph', text: 'This organization shall have the following officers. The officers shall constitute the Board of Directors and be responsible for operating this organization.' },
+              { type: 'clauses', items: ['President: one person, who represents this organization and chairs the General Assembly and the Board of Directors.', 'Vice Presidents: one person from each country, who assists the President and acts on the President’s behalf in the President’s absence.', 'Directors: participate in decisions concerning the principal activities and operation of this organization.', 'Auditor: one person may be appointed when necessary to audit the finances and operation of this organization.', 'The President and Auditor shall be elected by the General Assembly.', 'The President may appoint a Senior Vice President from among the Vice Presidents to oversee executive, research, planning, or other duties.', 'The Honorary President, Vice Presidents, Directors, and Advisors shall be nominated by the President from among regular members and elected by the General Assembly.', 'The term of office shall be two years, and officers may serve consecutive terms.'] },
+            ] },
+            { number: 'Article 9', title: 'Divisional Committees', blocks: [{ type: 'paragraph', text: 'This organization may establish country-based divisional committees under the Board of Directors for particular research fields or activities. Each committee shall consist of members in the relevant field. The President shall appoint its chair and members following a resolution of the Board of Directors. Each committee shall plan and carry out activities in its field and may meet as needed. The Board of Directors shall separately determine matters concerning the establishment and operation of the committees.' }] },
+            { number: 'Article 10', title: 'Secretariat', blocks: [{ type: 'paragraph', text: 'The Secretariat shall handle the day-to-day administration of this organization, membership management, meeting preparation, external cooperation, and other operational matters. It may have one Secretary-General and additional staff as necessary. The President shall appoint the Secretary-General following a resolution of the Board of Directors, and shall appoint Secretariat staff upon the recommendation of the Secretary-General. The Board of Directors shall determine detailed matters concerning the organization and operation of the Secretariat.' }] },
+            { number: 'Article 11', title: 'Honorary President and Advisors', blocks: [{ type: 'paragraph', text: 'This organization may have an Honorary President and Advisors by resolution of the Board of Directors.' }] },
+          ],
+        },
+        {
+          id: 'meetings', label: 'Chapter 4', title: 'Meetings', articles: [
+            { number: 'Article 12', title: 'General Assembly', blocks: [{ type: 'clauses', items: ['The General Assembly shall consist of the members.', 'The General Assembly shall decide amendments to these Bylaws, election of officers, approval of activity plans and budgets and accounts, and other major matters concerning the operation of this organization.', 'The General Assembly shall hold regular and extraordinary meetings. The President shall convene a regular meeting each year. An extraordinary meeting may be convened at the request of the President or the Board of Directors. Decisions may be made in writing or through online meetings.', 'The President shall give all members written or electronic notice stating the agenda, date, time, and place at least seven days before a General Assembly meeting. Decisions shall be made by a majority of the members present. A member unable to attend may authorize another member, in writing or electronically, to exercise the member’s voting right by proxy.', 'The President shall chair the General Assembly. If the President is unable to serve, the Senior Vice President, followed by a Vice President, shall act as chair.'] }] },
+            { number: 'Article 13', title: 'Meetings of the Board of Directors', blocks: [
+              { type: 'clauses', items: ['The Board of Directors shall consist of the President, Vice Presidents, and Directors, and the President shall chair the Board.', 'The chair shall convene the Board when deemed necessary or when requested by at least one-third of its members or by the Auditor.', 'The Board shall decide the following matters by a majority vote of the members present. In the event of a tie, the chair shall have the deciding vote. Decisions may be made in writing or through online meetings.'] },
+              { type: 'list', items: ['Approval of admission or expulsion of members', 'Determination of membership fees', 'The budget and accounts of this organization, acquisition and disposal of property, and other major activities'] },
+            ] },
+            { number: 'Article 14', title: 'Meetings of Divisional Committees', blocks: [{ type: 'paragraph', text: 'The chair of each divisional committee shall convene meetings as needed. A committee may discuss its own agenda and carry out activities, but important matters require approval from the Board of Directors. The results of committee activities shall be reported to the regular General Assembly or the Board of Directors.' }] },
+          ],
+        },
+        {
+          id: 'amendment', label: 'Chapter 5', title: 'Amendment and Dissolution', articles: [
+            { number: 'Article 15', title: 'Amendment of the Bylaws', blocks: [{ type: 'paragraph', text: 'An amendment to these Bylaws requires approval by at least two-thirds of the members present at a General Assembly meeting.' }] },
+            { number: 'Article 16', title: 'Dissolution', blocks: [{ type: 'paragraph', text: 'Dissolution of this organization requires a resolution of the General Assembly approved by at least two-thirds of the total number of regular and institutional members.' }] },
+            { number: 'Article 17', title: 'Application Mutatis Mutandis and Other Matters', blocks: [{ type: 'paragraph', text: 'Matters not provided for in these Bylaws shall be determined by the Board of Directors. The customary practices of nonprofit organizations and applicable laws and regulations shall apply mutatis mutandis. Detailed rules necessary for the operation of this organization may be established separately by resolution of the Board of Directors.' }] },
+          ],
+        },
+      ],
+      addenda: {
+        id: 'addenda', title: 'Supplementary Provisions', articles: [
+          { number: 'Article 1', title: 'Special Provision for Admission of Founding Members', blocks: [{ type: 'paragraph', text: 'Persons who attended the founding assembly and agreed to the proposed Bylaws for the purpose of establishing this organization shall be confirmed as founding members without approval from the Board of Directors. The list attached to the minutes of the founding assembly shall serve as the register of founding members. This provision shall cease to have effect once the Board of Directors is constituted following the founding assembly.' }] },
+          { number: 'Article 2', title: 'Entry into Force', blocks: [{ type: 'paragraph', text: 'These Bylaws shall take effect on the date of their adoption by the founding assembly.' }] },
+        ],
+      },
     },
     people: {
       title: 'People',

@@ -15,6 +15,7 @@ export const GET: APIRoute = async ({ site }) => {
     '/about/',
     '/about/founding/',
     '/about/declaration/',
+    '/about/bylaws/',
     '/people/',
     '/seminars/',
     ...seminarSlugs.map((slug) => `/seminars/${slug}/`),
