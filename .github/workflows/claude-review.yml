@@ -2,7 +2,7 @@ name: Claude PR Review
 
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: claude-review-${{ github.event.pull_request.number }}
@@ -62,5 +62,5 @@ jobs:
             findings, say so clearly without inventing suggestions.
           claude_args: |
             --model claude-sonnet-4-6
-            --max-turns 5
+            --max-turns 12
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Read,Glob,Grep"
