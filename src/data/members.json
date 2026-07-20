@@ -6,50 +6,48 @@
     "nameEn": "Dr. Wonjoon Kim",
     "role": "회장",
     "category": "board",
+    "group": "leadership",
     "order": 1,
+    "country": "대한민국",
+    "position": "김앤장 법률사무소 고문",
+    "summary": "공정거래위원회 사무처장 직무대행과 주OECD 대한민국 대표부 주재관 등을 역임했으며, 파리 제10대학교에서 경제학 박사학위를 받았다.",
     "bio": [
-      "김앤장 법률사무소 고문 · 前 공정거래위원회 사무처장 직무대행",
-      "경제기획원·공정거래위원회·주OECD대표부 근무",
-      "제22회 행정고시 합격 · 파리 제10대학교 경제학박사",
-      "서울대학교 행정학석사 · 성균관대학교 경제학사"
-    ]
+      "김앤장 법률사무소 고문",
+      "前 공정거래위원회 사무처장 직무대행",
+      "경제기획원·공정거래위원회·주OECD 대한민국 대표부 근무",
+      "파리 제10대학교 경제학 박사",
+      "서울대학교 행정학 석사·성균관대학교 경제학 학사"
+    ],
+    "highlights": [
+      "공정거래위원회 경쟁정책국장·기획홍보본부장 역임",
+      "서울대학교 행정학 석사·성균관대학교 경제학 학사"
+    ],
+    "expertise": ["경제정책", "경쟁정책", "국제협력"]
   },
   {
     "id": "jeon",
     "lang": "ko",
     "name": "전성호",
-    "nameEn": "Dr. Jeon Sung-ho",
+    "nameEn": "Dr. SeongHo Jun",
     "role": "수석부회장",
     "category": "board",
+    "group": "leadership",
     "order": 2,
+    "country": "대한민국",
+    "position": "한국학중앙연구원 교수",
+    "summary": "성균관대학교에서 경제학 학사·석사·박사학위를 받았으며, 경제사와 회계사(會計史), 개성의 상업과 자본을 연구한다.",
     "bio": [
-      "한국학중앙연구원 교수·성균관대학교 경제학 학사·석사·박사",
-      "영국 옥스퍼드대학교 박사 후 과정",
+      "한국학중앙연구원 교수",
+      "성균관대학교 경제학 학사·석사·박사",
+      "영국 옥스퍼드대학교 박사후과정",
       "독일 프랑크푸르트 괴테대학교 객원교수",
       "네덜란드 국제사회사연구소 연구원"
-    ]
-  },
-  {
-    "id": "director-cn",
-    "lang": "ko",
-    "name": "추후 공개",
-    "nameEn": "To be announced",
-    "role": "이사",
-    "category": "board",
-    "order": 3,
-    "country": "China",
-    "tba": true
-  },
-  {
-    "id": "director-vn",
-    "lang": "ko",
-    "name": "추후 공개",
-    "nameEn": "To be announced",
-    "role": "이사",
-    "category": "board",
-    "order": 4,
-    "country": "Vietnam",
-    "tba": true
+    ],
+    "highlights": [
+      "독일 프랑크푸르트 괴테대학교 객원교수",
+      "네덜란드 국제사회사연구소 연구원"
+    ],
+    "expertise": ["경제사", "회계사(會計史)", "상업·자본 연구"]
   },
   {
     "id": "director-la",
@@ -58,37 +56,115 @@
     "nameEn": "Dr. Vilayphone Somsamone",
     "role": "이사",
     "category": "board",
-    "order": 5,
-    "country": "Laos",
+    "group": "directors",
+    "order": 3,
+    "country": "라오스",
+    "position": "수파누봉대학교 경제·관광학부 부교수 겸 학장대행",
+    "summary": "수파누봉대학교 한국학센터를 이끌며 지속가능 관광, 지역경제와 한국학을 연구한다.",
     "bio": [
-      "라오스 수파누봉대학교 경제·관광학부 부교수 및 부학장",
+      "한국학중앙연구원 한국학대학원 경제학 박사",
+      "수파누봉대학교 경제·관광학부 부교수 겸 학장대행",
+      "수파누봉대학교 한국학센터 소장"
+    ],
+    "highlights": [
       "수파누봉대학교 한국학센터 소장",
-      "한국학중앙연구원 한국학대학원 박사 (관광 개발 전공)"
-    ]
+      "한국학중앙연구원 경제학 박사, 2017"
+    ],
+    "expertise": ["지속가능 관광", "지역경제", "한국학"]
+  },
+  {
+    "id": "director-cn",
+    "lang": "ko",
+    "name": "장원",
+    "nameEn": "Dr. Zhang Wen",
+    "role": "이사",
+    "category": "board",
+    "group": "directors",
+    "order": 4,
+    "country": "중국",
+    "position": "산둥대학교 경제연구원",
+    "summary": "한중 전통 회계사를 연구해 경제학 박사학위를 받았으며, 동아시아 경제사와 상업·무역 네트워크를 연구한다.",
+    "bio": [
+      "한국학중앙연구원 한국학대학원 경제학 박사",
+      "산둥대학교 경제연구원",
+      "남방과학기술대학교 경영대학 박사후연구원",
+      "중국회계박물관 연구원"
+    ],
+    "highlights": [
+      "남방과학기술대학교 경영대학 박사후연구원",
+      "한국학중앙연구원 경제학 박사, 2019"
+    ],
+    "expertise": ["동아시아 경제사", "전통 회계", "무역 네트워크"]
   },
   {
     "id": "director-uz",
     "lang": "ko",
-    "name": "고잘 샤무라토바",
+    "name": "구잘 샤무라토바",
     "nameEn": "Dr. Gozal Shamuratova",
     "role": "이사",
     "category": "board",
-    "order": 6,
-    "country": "Uzbekistan",
+    "group": "directors",
+    "order": 5,
+    "country": "우즈베키스탄",
+    "position": "카라칼파크스탄 국립대학교 교수·최고위원회 의장 고문",
+    "summary": "중앙아시아와 한반도의 초문화 현상을 연구하며 대한민국과의 무역·투자·경제협력에 관해 자문한다.",
     "bio": [
-      "우즈베키스탄 카라칼파크스탄 공화국 최고위원회 의장 고문 (대한민국 경제 협력·투자·무역 부문)",
-      "카라칼파크스탄 국립대학교 대외 협력 및 학술·문화 교류 자문역"
-    ]
+      "한국학중앙연구원 한국학대학원 경제학 박사",
+      "카라칼파크스탄 국립대학교 교수",
+      "카라칼파크스탄 공화국 최고위원회 의장 고문",
+      "대한민국과의 무역·투자·경제협력 자문"
+    ],
+    "highlights": [
+      "대한민국과의 무역·투자·경제협력 자문",
+      "한국학중앙연구원 경제학 박사, 2024"
+    ],
+    "expertise": ["초문화주의", "중앙아시아", "경제협력"]
   },
   {
-    "id": "lee",
+    "id": "auditor-vn",
     "lang": "ko",
-    "name": "John Lee",
-    "nameEn": "John O. Lee",
+    "name": "레 란 흐엉",
+    "nameEn": "Dr. Le Lan Huong",
     "role": "감사",
     "category": "board",
+    "group": "support",
+    "order": 6,
+    "country": "베트남",
+    "position": "사이공대학교 경영학부 강사",
+    "summary": "한국과 베트남의 인적자원개발 연구로 경제학 박사학위를 받았으며 인력계획, 경영학과 경제성장을 연구한다.",
+    "bio": [
+      "한국학중앙연구원 한국학대학원 경제학 박사",
+      "사이공대학교 경영학부 강사",
+      "한국·베트남 인적자원개발과 인력계획 비교 연구"
+    ],
+    "highlights": [
+      "한국·베트남 인적자원개발 비교 연구",
+      "한국학중앙연구원 경제학 박사, 2020"
+    ],
+    "expertise": ["인적자원개발", "경영학", "경제성장"]
+  },
+  {
+    "id": "advisor-us",
+    "lang": "ko",
+    "name": "존 오 리",
+    "nameEn": "John O. Lee",
+    "role": "고문",
+    "category": "board",
+    "group": "support",
     "order": 7,
-    "affiliation": "미국 Ace Engineering, Inc. 설립자 및 CEO"
+    "country": "미국",
+    "position": "ACE Engineering, Inc. 최고경영자",
+    "summary": "대한민국 출신 미국 토목·건설 기업인으로, 1987년 회사를 설립해 연방정부와 군 관련 건설사업을 수행해 왔다.",
+    "bio": [
+      "미국 ACE Engineering, Inc. 최고경영자",
+      "미국 연방정부·군·지방정부 건설사업 수행",
+      "성균관대학교 토목공학 학사"
+    ],
+    "highlights": [
+      "성균관대학교 토목공학 학사, 1980",
+      "미국 연방정부·군·지방정부 건설사업 수행"
+    ],
+    "expertise": ["토목공학", "건설", "정부 사업"]
   },
   {
     "id": "kim-en",
@@ -96,47 +172,47 @@
     "name": "Dr. Wonjoon Kim",
     "role": "Chair",
     "category": "board",
+    "group": "leadership",
     "order": 1,
+    "country": "Republic of Korea",
+    "position": "Advisor at Kim & Chang",
+    "summary": "He formerly served as Acting Secretary General of the Korea Fair Trade Commission and as a Counsellor at the Korean Delegation to the OECD.",
     "bio": [
-      "Advisor at Kim & Chang · Former Acting Secretary General of the Korea Fair Trade Commission",
+      "Advisor at Kim & Chang",
+      "Former Acting Secretary General of the Korea Fair Trade Commission",
       "Economic Planning Board, KFTC, and Korean Delegation to the OECD",
-      "22nd Higher Civil Service Examination · PhD in Economics, Paris Nanterre University",
-      "MPA, Seoul National University · BA in Economics, Sungkyunkwan University"
-    ]
+      "PhD in Economics, Paris Nanterre University",
+      "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
+    ],
+    "highlights": [
+      "Former Director General for Competition Policy at the KFTC",
+      "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
+    ],
+    "expertise": ["Economic policy", "Competition policy", "International cooperation"]
   },
   {
     "id": "jeon-en",
     "lang": "en",
-    "name": "Prof. Jeon Sung-ho",
+    "name": "Dr. SeongHo Jun",
     "role": "Senior Vice Chair",
     "category": "board",
+    "group": "leadership",
     "order": 2,
+    "country": "Republic of Korea",
+    "position": "Professor at the Academy of Korean Studies",
+    "summary": "He holds BA, MA, and PhD degrees in Economics from Sungkyunkwan University and researches economic and accounting history.",
     "bio": [
-      "Economist · BA, MA, and PhD in Economics, Sungkyunkwan University",
+      "Professor at the Academy of Korean Studies",
+      "BA, MA, and PhD in Economics, Sungkyunkwan University",
       "Postdoctoral research at the University of Oxford",
       "Visiting Professor at Goethe University Frankfurt",
       "Researcher at the International Institute of Social History, Netherlands"
-    ]
-  },
-  {
-    "id": "director-cn-en",
-    "lang": "en",
-    "name": "To be announced",
-    "role": "Director",
-    "category": "board",
-    "order": 3,
-    "country": "China",
-    "tba": true
-  },
-  {
-    "id": "director-vn-en",
-    "lang": "en",
-    "name": "To be announced",
-    "role": "Director",
-    "category": "board",
-    "order": 4,
-    "country": "Vietnam",
-    "tba": true
+    ],
+    "highlights": [
+      "Visiting Professor at Goethe University Frankfurt",
+      "Researcher at the International Institute of Social History"
+    ],
+    "expertise": ["Economic history", "Accounting history", "Commerce and capital"]
   },
   {
     "id": "director-la-en",
@@ -144,13 +220,44 @@
     "name": "Dr. Vilayphone Somsamone",
     "role": "Director",
     "category": "board",
-    "order": 5,
+    "group": "directors",
+    "order": 3,
     "country": "Laos",
+    "position": "Associate Professor and Acting Dean, Souphanouvong University",
+    "summary": "She leads the university's Center for Korean Studies and researches sustainable tourism, regional development, and Korean studies.",
     "bio": [
-      "Associate Professor & Vice Dean of the Faculty of Economics and Tourism, Souphanouvong University",
-      "Director of the Center for Korean Studies at Souphanouvong University (CKSSU)",
-      "PhD, Graduate School of the Academy of Korean Studies (AKS)"
-    ]
+      "PhD in Economics, Graduate School of Korean Studies, AKS",
+      "Associate Professor and Acting Dean of the Faculty of Economics and Tourism, Souphanouvong University",
+      "Director of the Center for Korean Studies at Souphanouvong University"
+    ],
+    "highlights": [
+      "Director of the Center for Korean Studies",
+      "PhD in Economics, Academy of Korean Studies, 2017"
+    ],
+    "expertise": ["Sustainable tourism", "Regional development", "Korean studies"]
+  },
+  {
+    "id": "director-cn-en",
+    "lang": "en",
+    "name": "Dr. Zhang Wen",
+    "role": "Director",
+    "category": "board",
+    "group": "directors",
+    "order": 4,
+    "country": "China",
+    "position": "Center for Economic Research, Shandong University",
+    "summary": "She researches East Asian economic history, traditional accounting, commercial networks, and trade relations.",
+    "bio": [
+      "PhD in Economics, Graduate School of Korean Studies, AKS",
+      "Center for Economic Research, Shandong University",
+      "Former Postdoctoral Researcher, School of Business, Southern University of Science and Technology",
+      "Former Researcher at the China Accounting Museum"
+    ],
+    "highlights": [
+      "Former Postdoctoral Researcher at SUSTech",
+      "PhD in Economics, Academy of Korean Studies, 2019"
+    ],
+    "expertise": ["East Asian economic history", "Traditional accounting", "Trade networks"]
   },
   {
     "id": "director-uz-en",
@@ -158,20 +265,65 @@
     "name": "Dr. Gozal Shamuratova",
     "role": "Director",
     "category": "board",
-    "order": 6,
+    "group": "directors",
+    "order": 5,
     "country": "Uzbekistan",
+    "position": "Professor at Karakalpakstan National University and Advisor to the Chair of the Supreme Council",
+    "summary": "She researches transculturalism in Central Asia and Korea and advises on trade, investment, and economic relations with the Republic of Korea.",
     "bio": [
-      "Advisor to the Chairman of the Supreme Council of the Republic of Karakalpakstan on trade, investment, and economic relations with the Republic of Korea",
-      "Strategic Advisor for External and Academic Collaborations, Karakalpak State University (KSU)"
-    ]
+      "PhD in Economics, Graduate School of Korean Studies, AKS",
+      "Professor at Karakalpakstan National University",
+      "Advisor to the Chair of the Supreme Council of Karakalpakstan",
+      "Responsible for trade, investment, and economic relations with the Republic of Korea"
+    ],
+    "highlights": [
+      "Advisor on trade, investment, and economic relations with the Republic of Korea",
+      "PhD in Economics, Academy of Korean Studies, 2024"
+    ],
+    "expertise": ["Transculturalism", "Central Asia", "Economic cooperation"]
   },
   {
-    "id": "lee-en",
+    "id": "auditor-vn-en",
     "lang": "en",
-    "name": "John O. Lee",
+    "name": "Dr. Le Lan Huong",
     "role": "Auditor",
     "category": "board",
+    "group": "support",
+    "order": 6,
+    "country": "Vietnam",
+    "position": "Lecturer, Faculty of Business Administration, Saigon University",
+    "summary": "She researches human resource development, workforce planning, business administration, and economic growth in Korea and Vietnam.",
+    "bio": [
+      "PhD in Economics, Graduate School of Korean Studies, AKS",
+      "Lecturer in the Faculty of Business Administration at Saigon University",
+      "Comparative research on human resource development in Korea and Vietnam"
+    ],
+    "highlights": [
+      "Comparative research on Korean and Vietnamese human resource development",
+      "PhD in Economics, Academy of Korean Studies, 2020"
+    ],
+    "expertise": ["Human resource development", "Business administration", "Economic growth"]
+  },
+  {
+    "id": "advisor-us-en",
+    "lang": "en",
+    "name": "John O. Lee",
+    "role": "Advisor",
+    "category": "board",
+    "group": "support",
     "order": 7,
-    "affiliation": "Founder & CEO of Ace Engineering, Inc., USA"
+    "country": "United States",
+    "position": "CEO of ACE Engineering, Inc.",
+    "summary": "A South Korea-born civil engineering and construction executive in the United States, he founded ACE Engineering in 1987 and has led government and military construction projects.",
+    "bio": [
+      "CEO of ACE Engineering, Inc., USA",
+      "Construction projects for U.S. federal, military, state, and local government clients",
+      "BS in Civil Engineering, Sungkyunkwan University"
+    ],
+    "highlights": [
+      "BS in Civil Engineering, Sungkyunkwan University, 1980",
+      "Construction projects for U.S. federal, military, state, and local government clients"
+    ],
+    "expertise": ["Civil engineering", "Construction", "Government projects"]
   }
 ]
