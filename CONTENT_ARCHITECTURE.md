@@ -1,6 +1,6 @@
 # TCN Content Architecture
 
-Updated: 2026-07-19
+Updated: 2026-07-20
 
 Runtime: Astro 7 static build
 
@@ -24,6 +24,7 @@ The five top-level navigation items are Home, About, People, Seminars, and Conta
 | `/ko/about` | `/en/about` | `content.ts`, `history.json` |
 | `/ko/about/founding` | `/en/about/founding` | `content.ts`, `invitations.json` |
 | `/ko/about/declaration` | `/en/about/declaration` | `content.ts` |
+| `/ko/about/bylaws` | `/en/about/bylaws` | `content.ts`, `2512TCN정관.docx` |
 | `/ko/people` | `/en/people` | `content.ts`, `members.json` |
 | `/ko/seminars` | `/en/seminars` | `content.ts`, `seminars.json` |
 | `/ko/seminars/[slug]` | `/en/seminars/[slug]` | `seminars.json` |
@@ -116,6 +117,10 @@ The list and both localized detail routes are generated automatically.
 ### Update the founding invitation
 
 Edit both language entries in `invitations.json`. Keep factual fields and paragraph/programme structure aligned. The result appears on the localized `/ko/about/founding` and `/en/about/founding` pages.
+
+### Update the bylaws
+
+Edit the parallel `bylaws` entries in `content.ts`, preserving the chapter, article, clause, and addenda structure. The Korean text is authoritative; the English page is a reference translation and must not introduce unsupported meaning. Verify any amendment against the approved source document before publishing, then run the full bilingual and build checks.
 
 ### Change navigation or routes
 

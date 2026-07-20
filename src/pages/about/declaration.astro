@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import RelatedDocuments from '../../components/RelatedDocuments.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 
@@ -20,43 +21,32 @@ const copy = getContent(lang).declaration;
         </h1>
       </div>
 
-      <div class="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside class="hidden lg:block">
-          <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
-            <p class="text-caption font-bold uppercase text-accent">{copy.asideLabel}</p>
-            <p class="mt-2 text-body-sm text-body-muted">
-              {copy.asideBody}
-            </p>
-          </div>
-        </aside>
+      <RelatedDocuments lang={lang} current="declaration" />
 
-        <div class="max-w-[74ch]">
-          <div class="space-y-7 font-serif text-body-serif text-body">
-            {copy.intro.map((paragraph) => <p>{paragraph}</p>)}
-          </div>
-
-          <ol class="mt-12 grid gap-4">
-            {copy.missions.map((mission, index) => (
-              <li class="border border-hairline bg-canvas-soft p-5 sm:p-6">
-                <p class="font-sans text-caption font-bold uppercase text-accent">
-                  Mission {String(index + 1).padStart(2, '0')}
-                </p>
-                <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">
-                  {mission.title}
-                </h2>
-                <p class="mt-4 font-serif text-body-serif text-body">{mission.body}</p>
-              </li>
-            ))}
-          </ol>
-
-          <div class="mt-12 space-y-7 font-serif text-body-serif text-body">
-            {copy.closing.map((paragraph) => <p>{paragraph}</p>)}
-          </div>
-
-          <footer class="mt-12 border-t border-hairline pt-8">
-            <p class="font-serif text-body-serif font-semibold text-ink">{copy.signature}</p>
-          </footer>
+      <div class="mx-auto mt-10 max-w-[74ch] sm:mt-12">
+        <div class="space-y-7 font-serif text-body-serif text-body">
+          {copy.intro.map((paragraph) => <p>{paragraph}</p>)}
         </div>
+
+        <ol class="mt-12 grid gap-4">
+          {copy.missions.map((mission) => (
+            <li class="border border-hairline bg-canvas-soft p-5 sm:p-6">
+              <p class="font-sans text-caption font-bold uppercase text-accent">{mission.label}</p>
+              <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">
+                {mission.title}
+              </h2>
+              <p class="mt-4 font-serif text-body-serif text-body">{mission.body}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div class="mt-12 space-y-7 font-serif text-body-serif text-body">
+          {copy.closing.map((paragraph) => <p>{paragraph}</p>)}
+        </div>
+
+        <footer class="mt-12 border-t border-hairline pt-8">
+          <p class="font-serif text-body-serif font-semibold text-ink">{copy.signature}</p>
+        </footer>
       </div>
     </article>
   </section>
