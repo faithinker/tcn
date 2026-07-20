@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RelatedDocuments from '../../components/RelatedDocuments.astro';
+import BackToTop from '../../components/BackToTop.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 
@@ -136,6 +137,8 @@ const copy = getContent(lang).bylaws;
       </div>
     </article>
   </section>
+
+  <BackToTop label={copy.backToTopLabel} />
 </BaseLayout>
 
 <script>
@@ -159,6 +162,10 @@ const copy = getContent(lang).bylaws;
 </script>
 
 <style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
   .toc-jump {
     transform-origin: left center;
     transition: color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out;
@@ -227,6 +234,10 @@ const copy = getContent(lang).bylaws;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    :global(html) {
+      scroll-behavior: auto;
+    }
+
     .toc-jump {
       transition: none;
     }

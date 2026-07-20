@@ -83,7 +83,9 @@ src/data/
 | 폰트 | Noto Serif KR (명조, 헤드라인·본문) · Pretendard (내비·메타데이터) |
 | 언어 | TypeScript |
 | i18n | Astro 내장 i18n (`/ko/`, `/en/`) + Cloudflare 국가/쿠키 기반 루트 분기 |
-| 검증 | `astro check` + Playwright 스크린샷 하네스 |
+| 검증 | `astro check` + Vitest 유닛 테스트 + Playwright 스크린샷 하네스 |
+| 품질 / 보안 | [Codecov](https://codecov.io) (테스트 커버리지) · [SonarQube Cloud](https://sonarcloud.io) (정적 분석) · [GitGuardian](https://www.gitguardian.com) (비밀키 스캔) |
+| 알림 | Discord (웹훅) · Telegram (봇 API) |
 | 배포 | Cloudflare Pages + Pages Functions |
 
 ### 디자인 테마
@@ -103,8 +105,14 @@ src/data/
 ```text
 tcn/
 ├── astro.config.mjs        # Astro 설정 (i18n, Tailwind, site URL)
+├── vitest.config.ts        # Vitest 환경 및 커버리지 포맷 설정
+├── sonar-project.properties # SonarCloud 분석 범위 및 제외 목록 설정
 ├── functions/
 │   └── index.js            # 루트 국가/사용자 선호 언어 분기 (Pages Function)
+├── .github/
+│   └── workflows/
+│       ├── deploy-pages.yml # Cloudflare Pages 배포 파이프라인
+│       └── ci.yml          # CI 파이프라인 (Test, Codecov, Discord/Telegram 알림)
 ├── src/
 │   ├── pages/
 │   │   ├── index.astro     # 공통 홈 페이지 구현
@@ -120,7 +128,7 @@ tcn/
 │   ├── components/         # Header, Footer, Button, MemberCard, SectionTile, Stat …
 │   ├── data/              # 콘텐츠 JSON (members, seminars, history, invitations)
 │   ├── content.config.ts   # 컬렉션 Zod 스키마
-│   ├── i18n/               # ui.ts, content.ts, utils.ts
+│   ├── i18n/               # ui.ts, content.ts, utils.ts (및 유닛 테스트 utils.test.ts)
 │   └── styles/
 │       └── global.css      # 디자인 토큰 + Tailwind
 ├── public/
@@ -144,6 +152,7 @@ tcn/
 ```bash
 npm ci               # lockfile 기준 의존성 설치
 npm run dev          # 개발 서버 (0.0.0.0, 핫리로드)
+npm run test         # Vitest 유닛 테스트 실행 (커버리지 측정)
 npm run build        # dist/ 정적 빌드
 npm run preview      # 빌드 결과 미리보기
 npm run check        # astro check (타입·스키마 검증)
