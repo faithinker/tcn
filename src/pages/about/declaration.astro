@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RelatedDocuments from '../../components/RelatedDocuments.astro';
+import BackToTop from '../../components/BackToTop.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 
@@ -50,4 +51,5 @@ const copy = getContent(lang).declaration;
       </div>
     </article>
   </section>
+  <BackToTop label={copy.backToTopLabel} />
 </BaseLayout>
