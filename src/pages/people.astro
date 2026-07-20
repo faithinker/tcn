@@ -1,25 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import MemberProfileCard from '../components/MemberProfileCard.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { getCollection } from 'astro:content';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { getLangFromUrl } from '../i18n/utils';
 import { getContent } from '../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).people;
-const t = useTranslations(lang);
 const members = (await getCollection('members'))
-  .filter((member) => member.data.lang === lang && member.data.category === 'board')
+  .filter((member) => member.data.lang === lang && member.data.category === 'board' && !member.data.tba)
   .sort((a, b) => a.data.order - b.data.order);
 
-const namedMembers = members.filter((member) => !member.data.tba);
-const pendingMembers = members.filter((member) => member.data.tba);
+const leadership = members.filter((member) => member.data.group === 'leadership');
+const directors = members.filter((member) => member.data.group === 'directors');
+const support = members.filter((member) => member.data.group === 'support');
+const expertiseLabel = lang === 'ko' ? '전문 분야' : 'Areas of expertise';
 ---
 
-<BaseLayout
-  title={copy.title}
-  description={copy.description}
->
+<BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
@@ -32,61 +31,178 @@ const pendingMembers = members.filter((member) => member.data.tba);
     </div>
   </section>
 
-  <SectionTile variant="band" eyebrow={copy.leadershipEyebrow} title={copy.leadershipTitle}>
-    <div class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
-      {namedMembers.map((member) => (
-        <article class="min-w-0 bg-canvas p-5 sm:p-8">
-          <p class="font-sans text-caption font-bold uppercase text-accent">
-            {member.data.role}
-          </p>
-          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">
-            {member.data.name}
+  <section class="border-y border-hairline bg-canvas px-5 py-8 sm:py-10" aria-labelledby="layout-title">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">{copy.layoutEyebrow}</p>
+      <div class="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(32rem,0.9fr)] lg:items-end">
+        <div>
+          <h2 id="layout-title" class="font-serif text-display-sm font-semibold text-ink sm:text-display-md">
+            {copy.layoutTitle}
           </h2>
-          {member.data.nameEn && (
-            <p class="mt-1 font-sans text-body-sm font-bold text-body-muted">
-              {member.data.nameEn}
-            </p>
-          )}
-          {member.data.bio && (
-            <ul class="mt-5 max-w-[58ch] space-y-2 font-serif text-body-serif text-body">
-              {member.data.bio.map((item) => (
-                <li class="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-1">
-                  <span aria-hidden="true">·</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {member.data.affiliation && (
-            <p class="mt-5 max-w-[58ch] font-serif text-body-serif text-body">
-              {member.data.affiliation}
-            </p>
-          )}
-        </article>
-      ))}
+          <p class="mt-2 max-w-[60ch] font-serif text-body-sm text-body-muted">{copy.layoutBody}</p>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-2" role="group" aria-label={copy.layoutTitle}>
+          <button
+            type="button"
+            class="layout-choice"
+            data-layout-choice="1"
+            aria-pressed="true"
+            aria-controls="people-layout-1"
+          >
+            <span class="choice-title">{copy.layoutOne}</span>
+            <span class="choice-body">{copy.layoutOneBody}</span>
+          </button>
+          <button
+            type="button"
+            class="layout-choice"
+            data-layout-choice="2"
+            aria-pressed="false"
+            aria-controls="people-layout-2"
+          >
+            <span class="choice-title">{copy.layoutTwo}</span>
+            <span class="choice-body">{copy.layoutTwoBody}</span>
+          </button>
+        </div>
+      </div>
     </div>
-  </SectionTile>
+  </section>
 
-  {pendingMembers.length > 0 && (
-    <SectionTile variant="canvas" eyebrow={copy.boardEyebrow} title={copy.boardTitle}>
-      <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
-        {copy.boardBody}
-      </p>
-      <div class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-        {pendingMembers.map((member) => (
-          <article class="min-w-0 bg-canvas p-5 sm:p-6">
-            <p class="font-sans text-caption font-bold uppercase text-accent">
-              {member.data.country}
-            </p>
-            <h2 class="mt-2 font-serif text-[1.375rem] font-semibold text-ink">
-              {member.data.role}
-            </h2>
-            <p class="mt-3 font-sans text-body-sm font-bold text-body-muted">
-              {t('common.tba')}
-            </p>
+  <div id="people-layout-1" data-people-layout="1">
+    <SectionTile variant="band" eyebrow={copy.listEyebrow} title={copy.listTitle}>
+      <div class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
+        {members.map((member) => (
+          <article class="min-w-0 bg-canvas p-5 sm:p-8">
+            <div class="flex items-start justify-between gap-5">
+              <p class="font-sans text-caption font-bold uppercase text-accent">{member.data.role}</p>
+              {member.data.country && (
+                <p class="text-right font-sans text-caption font-bold text-body-muted">{member.data.country}</p>
+              )}
+            </div>
+            <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{member.data.name}</h2>
+            {member.data.nameEn && (
+              <p class="mt-1 font-sans text-body-sm font-bold text-body-muted">{member.data.nameEn}</p>
+            )}
+            {member.data.bio && (
+              <ul class="mt-5 max-w-[58ch] space-y-2 font-serif text-body-serif text-body">
+                {member.data.bio.map((item) => (
+                  <li class="grid grid-cols-[0.75rem_minmax(0,1fr)] gap-1">
+                    <span aria-hidden="true">·</span><span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </article>
         ))}
       </div>
     </SectionTile>
-  )}
+  </div>
+
+  <div id="people-layout-2" data-people-layout="2" hidden>
+    <SectionTile variant="band" eyebrow={copy.leadershipEyebrow} title={copy.leadershipTitle}>
+      <p class="mt-5 max-w-[64ch] font-serif text-body-serif text-body-muted">{copy.leadershipIntro}</p>
+      <div class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
+        {leadership.map((member) => (
+          <MemberProfileCard member={member.data} currentLabel={copy.currentLabel} expertiseLabel={expertiseLabel} />
+        ))}
+      </div>
+    </SectionTile>
+
+    <SectionTile variant="canvas" eyebrow={copy.boardEyebrow} title={copy.boardTitle}>
+      <p class="mt-5 max-w-[64ch] font-serif text-body-serif text-body-muted">{copy.boardBody}</p>
+      <div class="directors-grid profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline md:grid-cols-2 lg:grid-cols-3">
+        {directors.map((member) => (
+          <MemberProfileCard
+            member={member.data}
+            currentLabel={copy.currentLabel}
+            expertiseLabel={expertiseLabel}
+            compact
+          />
+        ))}
+      </div>
+    </SectionTile>
+
+    <SectionTile variant="soft" eyebrow={copy.supportEyebrow} title={copy.supportTitle}>
+      <p class="mt-5 max-w-[64ch] font-serif text-body-serif text-body-muted">{copy.supportBody}</p>
+      <div class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
+        {support.map((member) => (
+          <MemberProfileCard
+            member={member.data}
+            currentLabel={copy.currentLabel}
+            expertiseLabel={expertiseLabel}
+            hideDuplicateName
+          />
+        ))}
+      </div>
+    </SectionTile>
+  </div>
 </BaseLayout>
+
+<script is:inline>
+  (() => {
+    const storageKey = 'tcn-people-layout';
+    const buttons = Array.from(document.querySelectorAll('[data-layout-choice]'));
+    const layouts = Array.from(document.querySelectorAll('[data-people-layout]'));
+
+    const selectLayout = (value, persist = true) => {
+      const selected = value === '2' ? '2' : '1';
+      layouts.forEach((layout) => {
+        layout.hidden = layout.getAttribute('data-people-layout') !== selected;
+      });
+      buttons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.getAttribute('data-layout-choice') === selected));
+      });
+      if (persist) {
+        try { localStorage.setItem(storageKey, selected); } catch {}
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', selected);
+        history.replaceState(null, '', url);
+      }
+    };
+
+    const queryChoice = new URL(window.location.href).searchParams.get('view');
+    let savedChoice = null;
+    try { savedChoice = localStorage.getItem(storageKey); } catch {}
+    selectLayout(queryChoice || savedChoice || '1', queryChoice !== null);
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => selectLayout(button.getAttribute('data-layout-choice')));
+    });
+  })();
+</script>
+
+<style>
+  .layout-choice {
+    min-height: 5.75rem;
+    border: 1px solid var(--color-hairline);
+    background: var(--color-canvas);
+    padding: 1rem;
+    text-align: left;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .layout-choice:hover { border-color: var(--color-ink); }
+  .layout-choice[aria-pressed='true'] {
+    border-color: var(--color-accent);
+    background: var(--color-canvas-soft);
+    box-shadow: inset 3px 0 0 var(--color-accent);
+  }
+  .choice-title {
+    display: block;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+  .choice-body {
+    display: block;
+    margin-top: .35rem;
+    color: var(--color-body-muted);
+    font-family: var(--font-sans);
+    font-size: .8125rem;
+    line-height: 1.5;
+  }
+  [data-people-layout][hidden] { display: none !important; }
+  @media (min-width: 48rem) and (max-width: 63.999rem) {
+    :global(.directors-grid > .profile-card:last-child:nth-child(odd)) { grid-column: 1 / -1; }
+  }
+</style>

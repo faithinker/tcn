@@ -1,5 +1,38 @@
 import type { UiLang } from './ui';
 
+const getPeopleProfileCopy = (lang: UiLang) => {
+  const ko = lang === 'ko';
+  return {
+    listEyebrow: 'Directory',
+    listTitle: ko ? '구성원 전체' : 'All Members',
+    leadershipIntro: ko
+      ? '학술적 비전과 국제 협력의 방향을 세우고 네트워크의 주요 활동을 이끕니다.'
+      : 'The leadership sets the scholarly vision and direction for international collaboration.',
+    boardBody: ko
+      ? '아시아와 중앙아시아 각 지역에서 연구와 교육, 국제 교류를 연결합니다.'
+      : 'Directors across Asia and Central Asia connect research, education, and international exchange.',
+    supportEyebrow: 'Audit & Advisory',
+    supportTitle: ko ? '감사와 고문' : 'Audit and Advisory',
+    supportBody: ko
+      ? '연구·교육과 민간 분야의 경험을 바탕으로 네트워크의 운영과 대외 협력을 지원합니다.'
+      : 'Academic and private-sector experience supports the network’s governance and external collaboration.',
+    layoutEyebrow: 'Layout Preview',
+    layoutTitle: ko ? '소개 방식 선택' : 'Choose a profile format',
+    layoutBody: ko
+      ? '두 가지 구성원 소개 방식을 비교해 보세요. 선택한 방식은 이 브라우저에 유지됩니다.'
+      : 'Compare two ways of presenting our people. Your selection is remembered in this browser.',
+    layoutOne: ko ? '1번 목록형' : 'Option 1 · List',
+    layoutOneBody: ko
+      ? '주요 경력과 학력을 목록으로 빠르게 확인'
+      : 'Scan key career and education details in a concise list',
+    layoutTwo: ko ? '2번 상세형' : 'Option 2 · Profile',
+    layoutTwoBody: ko
+      ? '현직과 소속, 소개, 핵심 이력과 전문분야를 함께 확인'
+      : 'See current role or affiliation, introduction, highlights, and expertise',
+    currentLabel: ko ? '현직·소속' : 'Current role or affiliation',
+  };
+};
+
 const content = {
   ko: {
     home: {
@@ -30,7 +63,7 @@ const content = {
         { value: '2025', label: '창립' },
         { value: '15', label: '창립 참여국' },
         { value: '1', label: '개최 세미나' },
-        { value: '서울', label: '사무국' },
+        { value: '강화', label: '사무국' },
       ],
       joinEyebrow: '함께하기',
       joinTitle: '회원 가입·문의',
@@ -46,7 +79,7 @@ const content = {
       missionTitle: '교차·융합·창조의 학술 네트워크',
       missionBodies: [
         '초문화네트워크는 문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하고 초문화 연구의 새로운 이론과 방법론을 발전시키고자 합니다.',
-        '서울 사무국을 중심으로 다양한 지역의 전문가들이 협력하며, 학술대회·연구 프로젝트·공동 출판·정책 연구를 통해 국제 학술 협력의 지속적인 기반을 만듭니다.',
+        '인천 강화 사무국을 중심으로 다양한 지역의 전문가들이 협력하며, 학술대회·연구 프로젝트·공동 출판·정책 연구를 통해 국제 학술 협력의 지속적인 기반을 만듭니다.',
       ],
       historyEyebrow: 'History',
       historyTitle: '주요 연혁',
@@ -78,7 +111,7 @@ const content = {
       ],
       missions: [
         { label: '첫째', title: '초문화 현상을 본격적으로 연구하는 학문적 기반을 구축하겠습니다.', body: '문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하여, 초문화 연구의 새로운 이론과 방법론을 발전시키겠습니다.' },
-        { label: '둘째', title: '국제적 연구 네트워크를 중심으로 한 학술 협력의 장을 만들겠습니다.', body: 'Transcultural Network는 서울의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.' },
+        { label: '둘째', title: '국제적 연구 네트워크를 중심으로 한 학술 협력의 장을 만들겠습니다.', body: 'Transcultural Network는 인천 강화의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.' },
         { label: '셋째', title: '새로운 문화 창조의 미래를 함께 탐구하는 지적 공동체가 되겠습니다.', body: '우리가 연구하는 초문화는 단지 문화 간의 차이를 살피는 데서 그치지 않고 그 접촉과 교차에서 생성되는 제3의 문화, 새로운 창조 가능성 자체를 탐구하는 것입니다. Transcultural Network는 이러한 창조적 형성 과정을 학술적으로 밝히고 사회적 실천으로 연결하고자 합니다.' },
         { label: '넷째', title: '학술적 논의를 현실 변화와 정책 제안으로 확장하겠습니다.', body: '디지털 및 AI 시대의 교육, 문화정책, 국제문화교류, 플랫폼 경제 등 다양한 영역에서 초문화적 관점이 실제 변화를 이끌 수 있도록 기여하겠습니다.' },
       ],
@@ -171,7 +204,7 @@ const content = {
       leadershipTitle: '임원진',
       boardEyebrow: 'International Board',
       boardTitle: '국제 이사진',
-      boardBody: '국가별 이사진은 확정되는 대로 순차적으로 공개합니다.',
+      ...getPeopleProfileCopy('ko'),
     },
     seminars: {
       title: '세미나',
@@ -270,7 +303,7 @@ const content = {
         { value: '2025', label: 'Founded' },
         { value: '15', label: 'Founding Countries' },
         { value: '1', label: 'Seminar' },
-        { value: 'Seoul', label: 'Secretariat' },
+        { value: 'Ganghwa', label: 'Secretariat' },
       ],
       joinEyebrow: 'Get Involved',
       joinTitle: 'Membership & Enquiries',
@@ -286,7 +319,7 @@ const content = {
       missionTitle: 'A scholarly network for intersection, convergence, and creation',
       missionBodies: [
         'We take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to advance new theories and methods of transcultural research.',
-        'Working through our secretariat in Seoul, experts from diverse regions collaborate through conferences, research projects, joint publications, and policy studies to build a lasting foundation for international scholarly cooperation.',
+        'Working through our secretariat in Ganghwa, Incheon, experts from diverse regions collaborate through conferences, research projects, joint publications, and policy studies to build a lasting foundation for international scholarly cooperation.',
       ],
       historyEyebrow: 'History',
       historyTitle: 'Milestones',
@@ -318,7 +351,7 @@ const content = {
       ],
       missions: [
         { label: 'First', title: 'We will build an academic foundation for the systematic study of transcultural phenomena.', body: 'We will take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to develop new theories and methods of transcultural research.' },
-        { label: 'Second', title: 'We will create a forum for academic cooperation centred on an international research network.', body: 'With our secretariat in Seoul, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
+        { label: 'Second', title: 'We will create a forum for academic cooperation centred on an international research network.', body: 'With our secretariat in Ganghwa, Incheon, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
         { label: 'Third', title: 'We will become an intellectual community that explores the future of new cultural creation.', body: 'For us, transcultural research does more than examine differences between cultures. It explores the third cultures and new creative possibilities that emerge where cultures meet and intersect. The Transcultural Network will study these processes of creative formation and connect scholarly inquiry with social practice.' },
         { label: 'Fourth', title: 'We will extend academic discourse into real-world change and policy proposals.', body: 'We will help transcultural perspectives produce meaningful change in education, cultural policy, international cultural exchange, the platform economy, and other areas of the digital and AI era.' },
       ],
@@ -411,7 +444,7 @@ const content = {
       leadershipTitle: 'Executive Board',
       boardEyebrow: 'International Board',
       boardTitle: 'International Directors',
-      boardBody: 'Directors representing each country will be introduced as appointments are confirmed.',
+      ...getPeopleProfileCopy('en'),
     },
     seminars: {
       title: 'Seminars',
