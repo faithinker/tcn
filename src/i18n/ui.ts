@@ -31,6 +31,7 @@ export const ui = {
     // 공통 라벨
     'common.skipToContent': '본문 바로가기',
     'common.menu': '메뉴',
+    'common.relatedDocuments': '관련 문서',
     'common.close': '닫기',
     'common.readMore': '자세히 보기',
     'common.back': '뒤로',
@@ -62,6 +63,7 @@ export const ui = {
     'nav.cta': 'Join / Contact',
     'common.skipToContent': 'Skip to content',
     'common.menu': 'Menu',
+    'common.relatedDocuments': 'Related documents',
     'common.close': 'Close',
     'common.readMore': 'Read more',
     'common.back': 'Back',

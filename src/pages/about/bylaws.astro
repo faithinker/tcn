@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getLangFromUrl, localizePath } from '../../i18n/utils';
+import RelatedDocuments from '../../components/RelatedDocuments.astro';
+import { getLangFromUrl } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 
 const lang = getLangFromUrl(Astro.url);
@@ -34,11 +35,7 @@ const copy = getContent(lang).bylaws;
           </p>
         </div>
 
-        <nav class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2 font-sans text-body-sm" aria-label={copy.relatedLabel}>
-          <span class="font-bold text-ink">{copy.relatedLabel}</span>
-          <a class="font-bold" href={localizePath('/about/declaration', lang)}>{copy.declarationLink}</a>
-          <a class="font-bold" href={localizePath('/about/founding', lang)}>{copy.foundingLink}</a>
-        </nav>
+        <RelatedDocuments lang={lang} current="bylaws" />
 
         <nav class="mt-6 border-t border-hairline pt-5 lg:hidden" aria-label={copy.contentsLabel}>
           <p class="font-sans text-body-sm font-bold uppercase tracking-wide text-accent">{copy.contentsLabel}</p>
