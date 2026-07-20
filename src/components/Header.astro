@@ -3,6 +3,7 @@
 // 내비=산세리프(Pretendard), 탭타깃 ≥48px, ko/en 언어 전환 제공.
 import { useTranslations, localizePath, switchLangPath } from '../i18n/utils';
 import type { UiKey, UiLang } from '../i18n/ui';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   lang: UiLang;
@@ -112,7 +113,7 @@ const isExact = (href: string) => {
       </a>
     </nav>
 
-    <div class="order-2 ml-auto flex shrink-0 items-center gap-1">
+    <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
       <nav class="flex items-center font-sans text-caption font-bold" aria-label={t('common.language')}>
         <a
           href={enPath}
@@ -133,8 +134,9 @@ const isExact = (href: string) => {
         >{lang === 'en' ? 'KO' : '한국어'}</a>
       </nav>
 
-      <button
-        id="navToggle"
+      <ThemeToggle lang={lang} />
+
+      <button id="navToggle"
         type="button"
         class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
         aria-expanded="false"
