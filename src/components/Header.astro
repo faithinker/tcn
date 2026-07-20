@@ -29,6 +29,7 @@ const nav: NavItem[] = [
       { label: t('nav.history'), href: '/about#history' },
       { label: t('nav.founding'), href: '/about/founding' },
       { label: t('nav.declaration'), href: '/about/declaration' },
+      { label: t('nav.bylaws'), href: '/about/bylaws' },
     ],
   },
   { key: 'nav.people', href: '/people' },
@@ -39,7 +40,8 @@ const nav: NavItem[] = [
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => {
   const target = localizePath(href, lang).replace(/\/$/, '') || '/';
-  return target === '/' ? here === '/' : here.startsWith(target);
+  if (href === '/') return here === target;
+  return here === target || here.startsWith(`${target}/`);
 };
 const isExact = (href: string) => {
   if (href.includes('#')) return false;
@@ -62,7 +64,8 @@ const isExact = (href: string) => {
           item.children ? (
             <details class="group relative">
               <summary
-                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1.5 px-3 font-sans text-body-sans font-bold text-ink hover:text-link group-open:text-link"
+                aria-current={isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined}
+                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1.5 px-3 font-sans text-body-sans font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link"
               >
                 {t(item.key)}
                 <svg
@@ -159,7 +162,10 @@ const isExact = (href: string) => {
           <li>
             {item.children ? (
               <div class="border-b border-hairline py-2">
-                <p class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted">
+                <p
+                  aria-current={isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined}
+                  class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted aria-[current]:text-link"
+                >
                   {t(item.key)}
                 </p>
                 <ul class="border-l border-hairline ml-3">

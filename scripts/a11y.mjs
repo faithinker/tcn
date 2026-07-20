@@ -7,7 +7,7 @@ import { launch } from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/ko/,/ko/about,/ko/about/founding,/ko/people,/ko/seminars,/ko/seminars/2025-laos,/ko/contact,/en/')
+const ROUTES = (process.env.ROUTES || '/ko/,/ko/about,/ko/about/founding,/ko/about/bylaws,/en/about/bylaws,/ko/people,/ko/seminars,/ko/seminars/2025-laos,/ko/contact,/en/')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const MIN = Number(process.env.MIN_A11Y || 90);
 
