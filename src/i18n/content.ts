@@ -30,7 +30,7 @@ const content = {
         { value: '2025', label: '창립' },
         { value: '15', label: '창립 참여국' },
         { value: '1', label: '개최 세미나' },
-        { value: '서울', label: '사무국' },
+        { value: '강화', label: '사무국' },
       ],
       joinEyebrow: '함께하기',
       joinTitle: '회원 가입·문의',
@@ -46,7 +46,7 @@ const content = {
       missionTitle: '교차·융합·창조의 학술 네트워크',
       missionBodies: [
         '초문화네트워크는 문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하고 초문화 연구의 새로운 이론과 방법론을 발전시키고자 합니다.',
-        '서울 사무국을 중심으로 다양한 지역의 전문가들이 협력하며, 학술대회·연구 프로젝트·공동 출판·정책 연구를 통해 국제 학술 협력의 지속적인 기반을 만듭니다.',
+        '인천 강화 사무국을 중심으로 다양한 지역의 전문가들이 협력하며, 학술대회·연구 프로젝트·공동 출판·정책 연구를 통해 국제 학술 협력의 지속적인 기반을 만듭니다.',
       ],
       historyEyebrow: 'History',
       historyTitle: '주요 연혁',
@@ -80,7 +80,7 @@ const content = {
       ],
       missions: [
         { title: '초문화 연구의 학문적 기반 구축', body: '문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하여, 초문화 연구의 새로운 이론과 방법론을 발전시키겠습니다.' },
-        { title: '국제 연구 네트워크 기반 학술 협력', body: 'Transcultural Network는 서울의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.' },
+        { title: '국제 연구 네트워크 기반 학술 협력', body: 'Transcultural Network는 인천 강화의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.' },
         { title: '새로운 문화 창조를 탐구하는 지적 공동체', body: '우리가 연구하는 초문화는 단지 문화 간의 차이를 살피는 데서 그치지 않고 그 접촉과 교차에서 생성되는 제3의 문화, 새로운 창조 가능성 자체를 탐구하는 것입니다. Transcultural Network는 이러한 창조적 형성 과정을 학술적으로 밝히고 사회적 실천으로 연결하고자 합니다.' },
         { title: '학술 논의의 현실 변화와 정책 제안 확장', body: '디지털 및 AI 시대의 교육, 문화정책, 국제문화교류, 플랫폼 경제 등 다양한 영역에서 초문화적 관점이 실제 변화를 이끌 수 있도록 기여하겠습니다.' },
       ],
@@ -202,7 +202,7 @@ const content = {
         { value: '2025', label: 'Founded' },
         { value: '15', label: 'Founding Countries' },
         { value: '1', label: 'Seminar' },
-        { value: 'Seoul', label: 'Secretariat' },
+        { value: 'Ganghwa', label: 'Secretariat' },
       ],
       joinEyebrow: 'Get Involved',
       joinTitle: 'Membership & Enquiries',
@@ -218,7 +218,7 @@ const content = {
       missionTitle: 'A scholarly network for intersection, convergence, and creation',
       missionBodies: [
         'We take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to advance new theories and methods of transcultural research.',
-        'Working through our secretariat in Seoul, experts from diverse regions collaborate through conferences, research projects, joint publications, and policy studies to build a lasting foundation for international scholarly cooperation.',
+        'Working through our secretariat in Ganghwa, Incheon, experts from diverse regions collaborate through conferences, research projects, joint publications, and policy studies to build a lasting foundation for international scholarly cooperation.',
       ],
       historyEyebrow: 'History',
       historyTitle: 'Milestones',
@@ -252,7 +252,7 @@ const content = {
       ],
       missions: [
         { title: 'Build an academic foundation for transcultural research', body: 'We will take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to develop new theories and methods of transcultural research.' },
-        { title: 'Advance scholarly cooperation through an international research network', body: 'With our secretariat in Seoul, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
+        { title: 'Advance scholarly cooperation through an international research network', body: 'With our secretariat in Ganghwa, Incheon, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
         { title: 'Form an intellectual community that explores new cultural creation', body: 'For us, transcultural research does more than examine differences between cultures. It explores the third cultures and new creative possibilities that emerge where cultures meet and intersect. The Transcultural Network will study these processes of creative formation and connect scholarly inquiry with social practice.' },
         { title: 'Extend scholarly debate into social change and policy', body: 'We will help transcultural perspectives produce meaningful change in education, cultural policy, international cultural exchange, the platform economy, and other areas of the digital and AI era.' },
       ],
