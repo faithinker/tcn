@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RelatedDocuments from '../../components/RelatedDocuments.astro';
+import BackToTop from '../../components/BackToTop.astro';
 import { getLangFromUrl } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 
@@ -137,35 +138,12 @@ const copy = getContent(lang).bylaws;
     </article>
   </section>
 
-  <button
-    type="button"
-    data-back-to-top
-    aria-label={copy.backToTopLabel}
-    title={copy.backToTopLabel}
-    class="back-to-top fixed bottom-4 right-4 z-40 grid h-12 w-12 place-items-center rounded-sm border border-ink bg-ink font-sans text-[1.25rem] text-on-primary opacity-0 invisible pointer-events-none hover:border-accent hover:bg-accent sm:bottom-5 sm:right-5"
-  >
-    <span aria-hidden="true">↑</span>
-  </button>
+  <BackToTop label={copy.backToTopLabel} />
 </BaseLayout>
 
 <script>
-  const backToTop = document.querySelector('[data-back-to-top]');
   const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
   const sections = [...document.querySelectorAll<HTMLElement>('[data-bylaws-section]')];
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  const updateBackToTop = () => {
-    if (!(backToTop instanceof HTMLButtonElement)) return;
-    const visible = window.scrollY > 720;
-    backToTop.classList.toggle('is-visible', visible);
-  };
-
-  window.addEventListener('scroll', updateBackToTop, { passive: true });
-  updateBackToTop();
-
-  backToTop?.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-  });
 
   if ('IntersectionObserver' in window) {
     const sectionObserver = new IntersectionObserver((entries) => {
@@ -255,25 +233,12 @@ const copy = getContent(lang).bylaws;
     }
   }
 
-  .back-to-top {
-    transform: translateY(0.5rem);
-    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
-  }
-
-  .back-to-top.is-visible {
-    visibility: visible;
-    pointer-events: auto;
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   @media (prefers-reduced-motion: reduce) {
     :global(html) {
       scroll-behavior: auto;
     }
 
-    .toc-jump,
-    .back-to-top {
+    .toc-jump {
       transition: none;
     }
 

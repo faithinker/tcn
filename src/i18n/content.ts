@@ -109,6 +109,7 @@ const content = {
         '이제 문화는 정체된 상태이거나 단일한 형식이 아니라, 서로 만나 영향을 주고받으며 역동적으로 재구성되는 초문화적 흐름으로 이해되어야 합니다. Transcultural Network는 이러한 시대적 요구에 부응하여 출범하는 새로운 지적 연대이며, 문화 연구의 지평을 ‘교차·융합·창조’의 단계로 확장하는 국제 학술 공동체입니다.',
         '우리는 앞으로 다음과 같은 네 가지 핵심적 사명을 실천하고자 합니다.',
       ],
+      backToTopLabel: '맨 위로',
       missions: [
         { label: '첫째', title: '초문화 현상을 본격적으로 연구하는 학문적 기반을 구축하겠습니다.', body: '문화 간 접촉과 이동, 플랫폼 기반 사회, 디지털 창작 생태계 등 변화하는 현실을 다학제적으로 분석하여, 초문화 연구의 새로운 이론과 방법론을 발전시키겠습니다.' },
         { label: '둘째', title: '국제적 연구 네트워크를 중심으로 한 학술 협력의 장을 만들겠습니다.', body: 'Transcultural Network는 인천 강화의 사무국을 중심으로 아시아, 중앙아시아, 유럽 등 다양한 지역의 전문가들과 긴밀히 협력하며, 국가 중심의 연구 틀을 넘어선 네트워크 중심의 지식 생산 모델을 실현할 것입니다.' },
@@ -349,6 +350,7 @@ const content = {
         'Culture must now be understood not as static or singular, but as a transcultural flow—one that is continuously reshaped through encounter and mutual influence. The Transcultural Network is a new intellectual alliance formed in response to this historic need, and an international scholarly community that seeks to broaden cultural research through intersection, convergence, and creation.',
         'We therefore commit ourselves to four core missions.',
       ],
+      backToTopLabel: 'Back to top',
       missions: [
         { label: 'First', title: 'We will build an academic foundation for the systematic study of transcultural phenomena.', body: 'We will take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to develop new theories and methods of transcultural research.' },
         { label: 'Second', title: 'We will create a forum for academic cooperation centred on an international research network.', body: 'With our secretariat in Ganghwa, Incheon, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
