@@ -1,5 +1,36 @@
 import type { UiLang } from './ui';
 
+const getPeopleProfileCopy = (lang: UiLang) => {
+  const ko = lang === 'ko';
+  return {
+    leadershipIntro: ko
+      ? '학술적 비전과 국제 협력의 방향을 세우고 네트워크의 주요 활동을 이끕니다.'
+      : 'The leadership sets the scholarly vision and direction for international collaboration.',
+    boardBody: ko
+      ? '아시아와 중앙아시아 각 지역에서 연구와 교육, 국제 교류를 연결합니다.'
+      : 'Directors across Asia and Central Asia connect research, education, and international exchange.',
+    supportEyebrow: 'Audit & Advisory',
+    supportTitle: ko ? '감사와 고문' : 'Audit and Advisory',
+    supportBody: ko
+      ? '연구·교육과 민간 분야의 경험을 바탕으로 네트워크의 운영과 대외 협력을 지원합니다.'
+      : 'Academic and private-sector experience supports the network’s governance and external collaboration.',
+    layoutEyebrow: 'Layout Preview',
+    layoutTitle: ko ? '소개 방식 선택' : 'Choose a profile format',
+    layoutBody: ko
+      ? '두 가지 구성원 소개 방식을 비교해 보세요. 선택한 방식은 이 브라우저에 유지됩니다.'
+      : 'Compare two ways of presenting our people. Your selection is remembered in this browser.',
+    layoutOne: ko ? '1번 목록형' : 'Option 1 · List',
+    layoutOneBody: ko
+      ? '주요 경력과 학력을 목록으로 빠르게 확인'
+      : 'Scan key career and education details in a concise list',
+    layoutTwo: ko ? '2번 상세형' : 'Option 2 · Profile',
+    layoutTwoBody: ko
+      ? '현직과 소속, 소개, 핵심 이력과 전문분야를 함께 확인'
+      : 'See current role or affiliation, introduction, highlights, and expertise',
+    currentLabel: ko ? '현직·소속' : 'Current role or affiliation',
+  };
+};
+
 const content = {
   ko: {
     home: {
@@ -169,21 +200,9 @@ const content = {
       heroBody: '다양한 지역과 분야의 전문가들이 초문화 연구와 국제 학술 협력을 함께합니다.',
       leadershipEyebrow: 'Leadership',
       leadershipTitle: '임원진',
-      leadershipIntro: '학술적 비전과 국제 협력의 방향을 세우고 네트워크의 주요 활동을 이끕니다.',
       boardEyebrow: 'International Board',
       boardTitle: '국제 이사진',
-      boardBody: '아시아와 중앙아시아 각 지역에서 연구와 교육, 국제 교류를 연결합니다.',
-      supportEyebrow: 'Audit & Advisory',
-      supportTitle: '감사와 고문',
-      supportBody: '연구·교육과 민간 분야의 경험을 바탕으로 네트워크의 운영과 대외 협력을 지원합니다.',
-      layoutEyebrow: 'Layout Preview',
-      layoutTitle: '소개 방식 선택',
-      layoutBody: '두 가지 구성원 소개 방식을 비교해 보세요. 선택한 방식은 이 브라우저에 유지됩니다.',
-      layoutOne: '1번 목록형',
-      layoutOneBody: '주요 경력과 학력을 목록으로 빠르게 확인',
-      layoutTwo: '2번 상세형',
-      layoutTwoBody: '현직과 소속, 소개, 핵심 이력과 전문분야를 함께 확인',
-      currentLabel: '현직·소속',
+      ...getPeopleProfileCopy('ko'),
     },
     seminars: {
       title: '세미나',
@@ -421,21 +440,9 @@ const content = {
       heroBody: 'Experts from diverse regions and disciplines work together to advance transcultural research and international scholarly collaboration.',
       leadershipEyebrow: 'Leadership',
       leadershipTitle: 'Executive Board',
-      leadershipIntro: 'The leadership sets the scholarly vision and direction for international collaboration.',
       boardEyebrow: 'International Board',
       boardTitle: 'International Directors',
-      boardBody: 'Directors across Asia and Central Asia connect research, education, and international exchange.',
-      supportEyebrow: 'Audit & Advisory',
-      supportTitle: 'Audit and Advisory',
-      supportBody: 'Academic and private-sector experience supports the network’s governance and external collaboration.',
-      layoutEyebrow: 'Layout Preview',
-      layoutTitle: 'Choose a profile format',
-      layoutBody: 'Compare two ways of presenting our people. Your selection is remembered in this browser.',
-      layoutOne: 'Option 1 · List',
-      layoutOneBody: 'Scan key career and education details in a concise list',
-      layoutTwo: 'Option 2 · Profile',
-      layoutTwoBody: 'See current role or affiliation, introduction, highlights, and expertise',
-      currentLabel: 'Current role or affiliation',
+      ...getPeopleProfileCopy('en'),
     },
     seminars: {
       title: 'Seminars',
