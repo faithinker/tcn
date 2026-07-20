@@ -41,7 +41,7 @@ export const ui = {
     'common.tba': '추후 공개',
     // 푸터
     'footer.office': '사무국',
-    'footer.officeValue': '대한민국 서울',
+    'footer.officeValue': '인천광역시 강화군 강화읍 국화리 286',
     'footer.copyright': '초문화네트워크(Transcultural Network)',
     'footer.contactNote': '연락처 추후 안내',
   },
@@ -72,7 +72,7 @@ export const ui = {
     'common.past': 'Past',
     'common.tba': 'To be announced',
     'footer.office': 'Secretariat',
-    'footer.officeValue': 'Seoul, Republic of Korea',
+    'footer.officeValue': '286, Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
     'footer.copyright': 'Transcultural Network',
     'footer.contactNote': 'Contact details to be announced',
   },
