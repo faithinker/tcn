@@ -1,17 +1,14 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    name: Run Tests and Upload Coverage
+  run:
+    name: CI Run
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -19,25 +16,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Node.js
+      - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
 
-      - name: Run Tests with Coverage
+      - name: Test
         run: npm run test
 
-      - name: Upload coverage to Codecov
+      - name: Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-      - name: Send Telegram Notification
+      - name: Telegram
         uses: appleboy/telegram-action@master
         if: always()
         with:
@@ -51,7 +48,7 @@ jobs:
             Commit: ${{ github.event.head_commit.message }}
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-      - name: Send Discord Notification
+      - name: Discord
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
