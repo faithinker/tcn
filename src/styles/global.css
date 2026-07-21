@@ -2,7 +2,7 @@
    TCN global.css — L2
    DESIGN.md editorial tokens -> Tailwind 4 @theme + base styles.
    셀프호스팅 폰트: Noto Serif KR(명조) + Pretendard Variable.
-   밝은 고대비 단일 테마(다크모드 없음), 노안 가독성 우선.
+   밝은 고대비 기본 + 눈 보호(다크) 모드(html.dark), 노안 가독성 우선.
    주의: @theme/@layer 블록 "내부" 인라인 주석 금지 (Tailwind v4 파서 오류).
    ============================================================ */
 
@@ -16,20 +16,22 @@
    폰트: 세리프=서사(명조), 산세리프=구조(Pretendard).
    타입 스케일: DESIGN.md, 14px 바닥. 간격은 Tailwind 기본 스케일(4px 단위)이 DESIGN 토큰과 일치. */
 @theme {
-  --color-ink: #141414;
-  --color-ink-soft: #2b2b2b;
-  --color-body: #2b2b2b;
-  --color-body-muted: #5a5a5a;
+  --color-ink: #171310;
+  --color-ink-soft: #2e2a22;
+  --color-body: #2e2a22;
+  --color-body-muted: #5d5647;
   --color-canvas: #ffffff;
   --color-canvas-soft: #f7f5f0;
   --color-canvas-band: #f2efe7;
   --color-hairline: #ddd9d0;
-  --color-hairline-strong: #141414;
+  --color-hairline-strong: #171310;
   --color-accent: #0b3d6b;
   --color-accent-hover: #09507f;
   --color-link: #0b3d6b;
   --color-link-hover: #09507f;
   --color-on-primary: #ffffff;
+  --color-footer: #171310;
+  --color-on-footer: #ffffff;
 
   --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, sans-serif;
@@ -64,6 +66,8 @@
 
   --radius-sm: 4px;
 
+  --shadow-overlay: 0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08);
+
   --container-prose: 68ch;
   --container-page: 75rem;
 }
@@ -71,7 +75,7 @@
 /* 베이스 요소: 본문 18px 명조, 잉크 온 캔버스, 링크=액센트, 접근성 포커스링 */
 @layer base {
   :root {
-    color-scheme: light only;
+    color-scheme: light;
   }
 
   html.dark {
@@ -82,7 +86,7 @@
     --color-ink: #e6e2da;
     --color-ink-soft: #d1cbbd;
     --color-body: #d1cbbd;
-    --color-body-muted: #8e8779;
+    --color-body-muted: #928b7d;
     --color-accent: #8bb2d9;
     --color-accent-hover: #a3c5e8;
     --color-link: #8bb2d9;
@@ -90,6 +94,7 @@
     --color-hairline: #383530;
     --color-hairline-strong: #e6e2da;
     --color-on-primary: #181715;
+    --color-footer: #12110f;
   }
 
   html {
@@ -160,7 +165,7 @@
 
   ::selection {
     background-color: var(--color-accent);
-    color: #ffffff;
+    color: var(--color-on-primary);
   }
 }
 

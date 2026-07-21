@@ -82,7 +82,7 @@ const isExact = (href: string) => {
                   <path d="m6 9 6 6 6-6"></path>
                 </svg>
               </summary>
-              <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-lg">
+              <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-overlay">
                 {item.children.map((child) => (
                   <a
                     href={localizePath(child.href, lang)}
@@ -107,7 +107,7 @@ const isExact = (href: string) => {
       }
       <a
         href={localizePath('/contact', lang)}
-        class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-[#2b2b2b]"
+        class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
       >
         {t('nav.cta')}
       </a>
