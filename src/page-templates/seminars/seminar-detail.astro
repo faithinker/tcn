@@ -1,16 +1,10 @@
 ---
+// 라우트 아님(page-templates). /{lang}/seminars/[slug] 래퍼가 getStaticPaths로
+// 언어별 seminar를 골라 prop으로 주입한다.
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection, type CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
-
-export async function getStaticPaths() {
-  const seminars = (await getCollection('seminars')).filter((entry) => entry.data.lang === 'ko');
-  return seminars.map((seminar) => ({
-    params: { slug: seminar.data.slug },
-    props: { seminar },
-  }));
-}
 
 interface Props {
   seminar: CollectionEntry<'seminars'>;

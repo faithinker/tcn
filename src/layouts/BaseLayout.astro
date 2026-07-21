@@ -45,9 +45,12 @@ const pageTitle = title && title !== siteName
 const socialTitle = siteName;
 const desc = description ?? t('site.tagline');
 const siteRoot = Astro.site ?? Astro.url;
+// hreflang/canonical은 동일 URL을 가리켜야 한다(디렉터리 포맷 = trailing slash).
+// switchLangPath는 슬래시 없는 경로를 내므로 canonical(`/ko/about/`)에 맞춰 보정.
+const withSlash = (p: string) => (p.endsWith('/') ? p : `${p}/`);
 const canonical = new URL(Astro.url.pathname, siteRoot);
-const koUrl = new URL(switchLangPath(Astro.url.pathname, 'ko'), siteRoot);
-const enUrl = new URL(switchLangPath(Astro.url.pathname, 'en'), siteRoot);
+const koUrl = new URL(withSlash(switchLangPath(Astro.url.pathname, 'ko')), siteRoot);
+const enUrl = new URL(withSlash(switchLangPath(Astro.url.pathname, 'en')), siteRoot);
 const xDefaultUrl = stripLangPrefix(Astro.url.pathname) === '/' ? new URL('/', siteRoot) : enUrl;
 const socialImageURL = new URL(image, siteRoot);
 const organizationJsonLd = {
