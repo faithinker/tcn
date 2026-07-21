@@ -1,5 +1,5 @@
 ---
-// L4: Footer — 잉크블랙 밴드, 흰 텍스트. 바로가기 · 사무국 · 저작권. 연락처는 "추후 안내".
+// L4: Footer — footer/on-footer 토큰(항상 어두운 밴드·흰 텍스트, 라이트/다크 반전 안 함). 바로가기 · 사무국 · 저작권. 연락처는 "추후 안내".
 import { useTranslations, localizePath } from '../i18n/utils';
 import type { UiLang } from '../i18n/ui';
 
@@ -21,18 +21,18 @@ const nav = [
 const year = 2026;
 ---
 
-<footer class="border-t border-hairline-strong bg-[#141414] dark:bg-[#12110f] text-white">
+<footer class="border-t border-hairline-strong bg-footer text-on-footer pb-[env(safe-area-inset-bottom)]">
   <div class="mx-auto grid max-w-[75rem] grid-cols-1 gap-x-6 gap-y-9 px-4 py-12 sm:grid-cols-2 sm:px-5 sm:py-16 lg:grid-cols-[1.5fr_1fr_1fr]">
     <div class="sm:col-span-2 lg:col-span-1">
       <p class="font-serif text-[1.375rem] font-semibold">{t('site.name')}</p>
-      {lang === 'ko' && <p class="mt-1 font-sans text-body-sm text-white/70">{t('site.nameEn')}</p>}
-      <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-white/70">
+      {lang === 'ko' && <p class="mt-1 font-sans text-body-sm text-on-footer/70">{t('site.nameEn')}</p>}
+      <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-on-footer/70">
         {t('site.tagline')}
       </p>
     </div>
 
     <nav aria-label={t('common.menu')}>
-      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-white/50">
+      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-on-footer/50">
         {t('common.menu')}
       </p>
       <ul class="mt-3 space-y-1">
@@ -41,7 +41,7 @@ const year = 2026;
             <li>
               <a
                 href={localizePath(item.href, lang)}
-                class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-white/90 no-underline hover:text-white"
+                class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-on-footer/90 no-underline hover:text-on-footer"
               >
                 {t(item.key)}
               </a>
@@ -52,17 +52,17 @@ const year = 2026;
     </nav>
 
     <div>
-      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-white/50">
+      <p class="font-sans text-body-sm font-bold uppercase tracking-widest text-on-footer/50">
         {t('footer.office')}
       </p>
-      <p class="mt-3 font-sans text-body-sans text-white/90">{t('footer.officeValue')}</p>
-      <p class="mt-2 font-sans text-body-sm text-white/60">{t('footer.contactNote')}</p>
+      <p class="mt-3 font-sans text-body-sans text-on-footer/90">{t('footer.officeValue')}</p>
+      <p class="mt-2 font-sans text-body-sm text-on-footer/60">{t('footer.contactNote')}</p>
     </div>
   </div>
 
-  <div class="border-t border-white/15">
+  <div class="border-t border-on-footer/15">
     <div class="mx-auto max-w-[75rem] px-4 py-6 sm:px-5">
-      <p class="font-sans text-caption text-white/60">© {year} {t('footer.copyright')}</p>
+      <p class="font-sans text-caption text-on-footer/60">© {year} {t('footer.copyright')}</p>
     </div>
   </div>
 </footer>

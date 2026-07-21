@@ -1,0 +1,235 @@
+---
+import DocumentLayout from '../../layouts/DocumentLayout.astro';
+import { getLangFromUrl } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const copy = getContent(lang).bylaws;
+---
+
+<DocumentLayout
+  title={copy.title}
+  description={copy.description}
+  type="article"
+  eyebrow={copy.eyebrow}
+  heading={copy.heroTitle}
+  current="bylaws"
+>
+  <dl slot="meta" class="mt-5 flex flex-wrap gap-x-6 gap-y-2 font-sans text-body-sm text-body-muted">
+    <div class="flex gap-2">
+      <dt class="font-bold text-ink">{copy.adoptionLabel}</dt>
+      <dd>{copy.adoptionDate}</dd>
+    </div>
+    <div class="flex gap-2">
+      <dt class="font-bold text-ink">{copy.structureLabel}</dt>
+      <dd>{copy.structureValue}</dd>
+    </div>
+  </dl>
+
+  <Fragment slot="beforeBody">
+    <div class="mt-6 border-l-[3px] border-accent bg-canvas-soft px-5 py-4">
+      <p class="max-w-[76ch] font-serif text-body-sm text-ink-soft">
+        {copy.adoptionNotice}
+      </p>
+    </div>
+
+    <nav class="mt-6 border-t border-hairline pt-5 lg:hidden" aria-label={copy.contentsLabel}>
+      <p class="font-sans text-body-sm font-bold uppercase tracking-wide text-accent">{copy.contentsLabel}</p>
+      <ol class="mt-3 flex list-none flex-wrap gap-2 p-0">
+        {copy.chapters.map((chapter, index) => (
+          <li>
+            <a
+              href={`#${chapter.id}`}
+              class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-accent hover:text-link"
+            >
+              <span class="mr-2 tabular-nums text-accent">{index + 1}</span>{chapter.title}
+            </a>
+          </li>
+        ))}
+        <li>
+          <a
+            href={`#${copy.addenda.id}`}
+            class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-accent hover:text-link"
+          >
+            <span class="mr-2 text-accent">§</span>{copy.addenda.title}
+          </a>
+        </li>
+      </ol>
+    </nav>
+  </Fragment>
+
+  <nav slot="aside" aria-label={copy.contentsLabel}>
+    <p class="text-caption font-bold uppercase tracking-widest text-accent">{copy.contentsLabel}</p>
+    <ol class="mt-3 grid list-none gap-1 p-0">
+      {copy.chapters.map((chapter, index) => (
+        <li>
+          <a data-toc-link href={`#${chapter.id}`} class="toc-jump block py-1.5 text-body-sm font-bold text-body-muted no-underline hover:text-link">
+            <span class="mr-2 tabular-nums text-accent">{index + 1}</span>{chapter.title}
+          </a>
+        </li>
+      ))}
+      <li>
+        <a data-toc-link href={`#${copy.addenda.id}`} class="toc-jump block py-1.5 text-body-sm font-bold text-body-muted no-underline hover:text-link">
+          <span class="mr-2 text-accent">§</span>{copy.addenda.title}
+        </a>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="max-w-[74ch]">
+    {copy.chapters.map((chapter) => (
+      <section id={chapter.id} data-bylaws-section class="bylaws-chapter scroll-mt-28">
+        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t-2 border-hairline-strong pt-4">
+          <span class="font-sans text-body-sans font-bold tracking-wide text-accent">{chapter.label}</span>
+          <h2 class="font-serif text-display-md font-semibold text-ink">{chapter.title}</h2>
+        </div>
+
+        {chapter.articles.map((article) => (
+          <section class="border-b border-hairline py-7">
+            <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+              <span class="font-sans text-body-sans font-bold tracking-wide text-accent">{article.number}</span>
+              <h3 class="font-serif text-display-sm font-semibold text-ink">{article.title}</h3>
+            </div>
+            <div class="mt-4 grid gap-4 font-serif text-body-serif text-body">
+              {article.blocks.map((block) => (
+                block.type === 'paragraph' ? (
+                  <p>{block.text}</p>
+                ) : block.type === 'clauses' ? (
+                  <ol class="clause-list grid list-none gap-3 p-0">
+                    {block.items.map((item) => <li>{item}</li>)}
+                  </ol>
+                ) : (
+                  <ol class="number-list grid gap-2 pl-7">
+                    {block.items.map((item) => <li>{item}</li>)}
+                  </ol>
+                )
+              ))}
+            </div>
+          </section>
+        ))}
+      </section>
+    ))}
+
+    <section id={copy.addenda.id} data-bylaws-section class="bylaws-addenda scroll-mt-28 border border-hairline bg-canvas-soft px-5 pb-2 pt-6 sm:px-6">
+      <h2 class="font-serif text-display-sm font-semibold text-ink">{copy.addenda.title}</h2>
+      {copy.addenda.articles.map((article) => (
+        <section class="border-b border-hairline py-6 last:border-b-0">
+          <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+            <span class="font-sans text-body-sans font-bold tracking-wide text-accent">{article.number}</span>
+            <h3 class="font-serif text-display-sm font-semibold text-ink">{article.title}</h3>
+          </div>
+          <div class="mt-4 grid gap-4 font-serif text-body-serif text-body">
+            {article.blocks.map((block) => block.type === 'paragraph' && <p>{block.text}</p>)}
+          </div>
+        </section>
+      ))}
+    </section>
+  </div>
+</DocumentLayout>
+
+<script>
+  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
+  const sections = [...document.querySelectorAll<HTMLElement>('[data-bylaws-section]')];
+
+  if ('IntersectionObserver' in window) {
+    const sectionObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const link of tocLinks) {
+          const active = link.hash === `#${entry.target.id}`;
+          link.classList.toggle('is-active', active);
+          if (active) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      }
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach((section) => sectionObserver.observe(section));
+  }
+</script>
+
+<style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
+  .toc-jump {
+    transform-origin: left center;
+    transition: color 120ms ease-out, border-color 120ms ease-out, transform 100ms ease-out;
+  }
+
+  .toc-jump:active {
+    transform: scale(0.98);
+  }
+
+  .bylaws-chapter + .bylaws-chapter,
+  .bylaws-addenda {
+    margin-top: 3.25rem;
+  }
+
+  .clause-list {
+    counter-reset: clause;
+  }
+
+  .clause-list > li {
+    counter-increment: clause;
+    display: grid;
+    grid-template-columns: 1.4rem minmax(0, 1fr);
+    column-gap: 0.7rem;
+    align-items: start;
+  }
+
+  .clause-list > li::before {
+    content: counter(clause);
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-top: 0.32rem;
+    border: 1.5px solid var(--color-accent);
+    border-radius: 9999px;
+    color: var(--color-accent);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .number-list > li::marker {
+    color: var(--color-accent);
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  [data-toc-link].is-active {
+    color: var(--color-ink);
+  }
+
+  .bylaws-chapter:target > div:first-child {
+    animation: destination-feedback 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes destination-feedback {
+    from {
+      background-color: var(--color-canvas-soft);
+    }
+
+    to {
+      background-color: transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html) {
+      scroll-behavior: auto;
+    }
+
+    .toc-jump {
+      transition: none;
+    }
+
+    .bylaws-chapter:target > div:first-child {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,147 @@
+---
+// 라우트 아님(page-templates). /{lang}/seminars/[slug] 래퍼가 getStaticPaths로
+// 언어별 seminar를 골라 prop으로 주입한다.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+
+interface Props {
+  seminar: CollectionEntry<'seminars'>;
+}
+
+const { seminar } = Astro.props as Props;
+const { data } = seminar;
+const lang = getLangFromUrl(Astro.url);
+const copy = getContent(lang).seminars;
+
+const badge = data.status === 'upcoming' ? copy.upcomingBadge : copy.pastBadge;
+const hasBody = Boolean(
+  data.summary || data.abstract || data.theme || data.speaker || data.venue ||
+  (data.program && data.program.length) ||
+  (data.speakers && data.speakers.length) ||
+  (data.materials && data.materials.length),
+);
+
+// SEO: Event 구조화 데이터 — 검색 결과에 일시·장소 리치 스니펫.
+// 확보된 필드만 수록(추정 금지). 지난 행사도 Scheduled(개최됨) 유지.
+const siteRoot = Astro.site ?? Astro.url;
+const orgName = lang === 'ko' ? '초문화네트워크' : 'Transcultural Network';
+const eventJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Event',
+  name: data.title,
+  startDate: data.date,
+  eventStatus: 'https://schema.org/EventScheduled',
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  location: { '@type': 'Place', name: data.venue ? `${data.location} ${data.venue}` : data.location },
+  organizer: { '@type': 'Organization', name: orgName, url: new URL('/', siteRoot).href },
+  ...(data.summary || data.abstract ? { description: data.summary ?? data.abstract } : {}),
+};
+---
+
+<BaseLayout title={data.title} description={data.summary ?? data.abstract ?? copy.description}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(eventJsonLd)} />
+  <section class="bg-canvas px-5 py-12 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <a
+        href={localizePath('/seminars', lang)}
+        class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+      >← {copy.backToList}</a>
+
+      <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
+        <div class="flex flex-wrap items-center gap-3">
+          <p class="eyebrow !mb-0">{data.status === 'upcoming' ? copy.nextEyebrow : copy.pastEyebrow}</p>
+          <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">{badge}</span>
+        </div>
+        <h1 class="mt-4 font-serif text-display-md font-semibold text-ink sm:text-display-lg">{data.title}</h1>
+        <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">
+          {formatDate(data.date, lang)} · {data.location}
+        </p>
+      </header>
+
+      <div class="mt-10 max-w-[68ch]">
+        {data.venue && (
+          <section class="border-y border-hairline-strong bg-canvas-soft p-5 sm:p-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.overviewLabel}</p>
+            <dl class="mt-5 grid gap-4 font-sans text-body-sans md:grid-cols-[7.5rem_minmax(0,1fr)]">
+              <dt class="font-bold text-ink">{copy.dateLabel}</dt>
+              <dd class="text-body">{formatDate(data.date, lang)}</dd>
+              <dt class="font-bold text-ink">{copy.locationLabel}</dt>
+              <dd class="text-body">
+                {data.location} {data.venue}
+                {data.mapUrl && (
+                  <a
+                    href={data.mapUrl}
+                    target="_blank"
+                    rel="noopener"
+                    class="ml-2 whitespace-nowrap font-bold text-link underline hover:text-link-hover"
+                  >{copy.mapLink} ↗</a>
+                )}
+              </dd>
+              <dt class="font-bold text-ink">{copy.contentLabel}</dt>
+              <dd class="text-body">
+                {data.program && data.program.length > 0 ? (
+                  <ul class="space-y-1">
+                    {data.program.map((item) => <li>· {item}</li>)}
+                  </ul>
+                ) : (
+                  copy.contentTbd
+                )}
+              </dd>
+            </dl>
+          </section>
+        )}
+
+        {data.theme && (
+          <p class="mt-10 font-serif text-lead text-body">{data.theme}</p>
+        )}
+        {(data.summary || data.abstract) && (
+          <p class="mt-6 font-serif text-body-serif text-body">{data.summary ?? data.abstract}</p>
+        )}
+
+        {data.tags && data.tags.length > 0 && (
+          <div class="mt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.participantsLabel}</p>
+            <p class="mt-2 font-serif text-body-serif text-body">{data.tags.join(' · ')}</p>
+          </div>
+        )}
+
+        {data.program && data.program.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.programLabel}</p>
+            <ul class="mt-4 space-y-2 font-serif text-body-serif text-body">
+              {data.program.map((item) => <li>· {item}</li>)}
+            </ul>
+          </section>
+        )}
+
+        {data.speakers && data.speakers.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.speakersLabel}</p>
+            <ul class="mt-4 space-y-2 font-serif text-body-serif text-body">
+              {data.speakers.map((item) => <li>· {item}</li>)}
+            </ul>
+          </section>
+        )}
+
+        {data.materials && data.materials.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.materialsLabel}</p>
+            <ul class="mt-4 space-y-2 font-sans text-body-sans">
+              {data.materials.map((m) => (
+                <li>
+                  <a href={m.url} class="font-bold text-link underline hover:text-link-hover">{m.label}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {!hasBody && (
+          <p class="font-serif text-body-serif text-body">{copy.details}</p>
+        )}
+      </div>
+    </article>
+  </section>
+</BaseLayout>

@@ -5,22 +5,25 @@ description: A scholarly editorial interface designed for authority, trust, and 
 
 # Audience-driven design decisions:
 #  1. Type floors raised — body 16→18px, caption 12→14px — for late-50s+ eyes (WCAG AAA legibility).
-#  2. Secondary gray darkened #757575→#5a5a5a (4.6:1 → ~7:1 contrast).
+#  2. Secondary gray darkened & warmed #757575→#5d5647 (4.6:1 → ~7.3:1 contrast).
 #  3. Korean serif + sans font stacks added (Noto Serif KR / Pretendard); display weight 600, not 400 — hangul serif needs more weight than a Latin didone for equal presence.
 #  4. Warm parchment surfaces (#f7f5f0) reduce white glare and add journal warmth.
-#  5. Near-black ink (#141414) instead of pure #000 — reduces halation for large hangul blocks.
+#  5. Near-black warm ink (#171310) instead of pure #000 — reduces halation for large hangul blocks.
 #  6. Interactive corners 4px (rounded.sm) instead of hard 0 — a touch less austere while keeping editorial gravitas.
 #  7. Relaxed line-heights prevent Hangul clipping; body 1.75, display 1.12.
+#  8. Neutral text ramp warm-tinted (ink/body/muted, R>G>B) to harmonize with the warm parchment surfaces and the warm dark mode; luminance preserved so WCAG contrast is maintained or improved.
 
 colors:
-  primary: "#141414"
+  primary: "#171310"
   on-primary: "#ffffff"
-  ink: "#141414"
-  ink-soft: "#2b2b2b"
-  body: "#2b2b2b"
-  body-muted: "#5a5a5a"
+  footer: "#171310"
+  on-footer: "#ffffff"
+  ink: "#171310"
+  ink-soft: "#2e2a22"
+  body: "#2e2a22"
+  body-muted: "#5d5647"
   hairline: "#ddd9d0"
-  hairline-strong: "#141414"
+  hairline-strong: "#171310"
   canvas: "#ffffff"
   canvas-soft: "#f7f5f0"
   canvas-band: "#f2efe7"
@@ -112,6 +115,9 @@ rounded:
   none: 0px
   sm: 4px
   full: 9999px
+
+shadow:
+  overlay: "0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)"
 
 spacing:
   xxs: 2px
@@ -209,8 +215,8 @@ components:
   hairline-divider:
     borderColor: "{colors.hairline}"
   footer:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
+    backgroundColor: "{colors.footer}"
+    textColor: "{colors.on-footer}"
     typography: "{typography.body-sm}"
     padding: "{spacing.6xl} {spacing.xl}"
 
@@ -235,7 +241,7 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 ## Colors
 
 ### Brand & Accent
-- **Ink** (`{colors.ink}` — `#141414`): Wordmark, all headlines, all body. Near-black to avoid halation on large hangul blocks.
+- **Ink** (`{colors.ink}` — `#171310`): Wordmark, all headlines, all body. Near-black to avoid halation on large hangul blocks.
 - **Accent / Link** (`{colors.accent}` = `{colors.link}` — `#0b3d6b`): The society's single blue. Inline links, category eyebrows, active nav, focus rings. Deep enough for high contrast and institutional gravitas.
 - **Link Hover** (`{colors.link-hover}` — `#09507f`): Hover/pressed state for links.
 
@@ -244,21 +250,22 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 - **Canvas Soft** (`{colors.canvas-soft}` — `#f7f5f0`): Warm parchment for cards (officer cards, callouts).
 - **Canvas Band** (`{colors.canvas-band}` — `#f2efe7`): Slightly deeper parchment for alternating full-width section bands.
 - **Hairline** (`{colors.hairline}` — `#ddd9d0`): 1px warm dividers between story/officer/bylaw rows.
-- **Hairline Strong** (`{colors.hairline-strong}` — `#141414`): 1–2px black rules for the masthead underline and outline buttons.
+- **Hairline Strong** (`{colors.hairline-strong}` — `#171310`): 1–2px black rules for the masthead underline and outline buttons.
+- **Footer** (`{colors.footer}` — `#171310` → `#12110f` dark) / **On-Footer** (`{colors.on-footer}` — `#ffffff`, both modes): The footer is an always-dark slab that does NOT invert with the theme. It uses dedicated non-inverting tokens (never `ink`/`on-primary`, which flip in dark mode); white text at reduced opacity (90/70/60/50%) carries the internal hierarchy.
 
 ### Text
-- **Ink** (`#141414`): Headlines and primary body.
-- **Ink Soft / Body** (`{colors.body}` — `#2b2b2b`): Long-form paragraphs (~13:1 contrast).
-- **Body Muted** (`{colors.body-muted}` — `#5a5a5a`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1) so supporting text remains legible.
+- **Ink** (`#171310`): Headlines and primary body.
+- **Ink Soft / Body** (`{colors.body}` — `#2e2a22`): Long-form paragraphs (~13:1 contrast).
+- **Body Muted** (`{colors.body-muted}` — `#5d5647`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1) so supporting text remains legible.
 
 ### Dark Mode (Eye Protection Mode) & WCAG Compliance
 To reduce visual fatigue and ensure high legibility for senior readers under low-light conditions, the site implements a custom Dark Mode (Eye Protection) palette. Rather than stark black, it uses soft warm-charcoal and sand-white tones to prevent halation.
 
 All dark mode mappings satisfy the **WCAG 2.1 AA/AAA contrast guidelines**:
-- **Main Reading Contrast**: `{colors.body}` (`#d1cbbd`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~6.5:1** (satisfying WCAG AA 4.5:1 floor).
-- **Title Contrast**: `{colors.ink}` (`#e6e2da`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~10.5:1** (satisfying WCAG AAA 7:1 floor).
-- **Secondary Text Contrast**: `{colors.body-muted}` (`#8e8779`) on `{colors.canvas-soft}` (`#24221f`) achieves a contrast ratio of **~4.7:1** (satisfying WCAG AA floor).
-- **Accent Contrast**: `{colors.accent}` (`#8bb2d9`) on `{colors.canvas}` (`#181715`) achieves **~4.8:1** contrast.
+- **Main Reading Contrast**: `{colors.body}` (`#d1cbbd`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~11:1** (satisfying WCAG AAA 7:1 floor).
+- **Title Contrast**: `{colors.ink}` (`#e6e2da`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~13.9:1** (satisfying WCAG AAA 7:1 floor).
+- **Secondary Text Contrast**: `{colors.body-muted}` (`#928b7d`) on `{colors.canvas-soft}` (`#24221f`) achieves a contrast ratio of **~4.7:1** (satisfying WCAG AA floor).
+- **Accent Contrast**: `{colors.accent}` (`#8bb2d9`) on `{colors.canvas}` (`#181715`) achieves **~8.1:1** contrast.
 - **Boundary Contrast (Non-Text Elements)**: Under WCAG AA, UI boundaries must have a contrast ratio of **≥ 3:1** against adjacent background colors.
   - *Body to Footer transition*: Since the main canvas (`#181715`) and the dark footer background (`#12110f`) have a low contrast ratio (~1.06:1), a solid 1px top border utilizing `{colors.hairline-strong}` (which resolves to `#e6e2da` in dark mode) is mandated. This delivers a contrast ratio of **~13:1**, satisfying the WCAG AA floor and ensuring clean structural demarcation.
 
@@ -267,13 +274,15 @@ All dark mode mappings satisfy the **WCAG 2.1 AA/AAA contrast guidelines**:
 | `{colors.canvas}` | `#ffffff` | `#181715` | Main background |
 | `{colors.canvas-soft}` | `#f7f5f0` | `#24221f` | Card background |
 | `{colors.canvas-band}` | `#f2efe7` | `#1f1e1b` | Section striping background |
-| `{colors.ink}` | `#141414` | `#e6e2da` | Headlines / Monograms (AAA contrast) |
-| `{colors.ink-soft}` | `#2b2b2b` | `#d1cbbd` | Button active / hover background |
-| `{colors.body}` | `#2b2b2b` | `#d1cbbd` | Body copy (AA contrast) |
-| `{colors.body-muted}` | `#5a5a5a` | `#8e8779` | Metadata / Secondary text (AA contrast) |
+| `{colors.ink}` | `#171310` | `#e6e2da` | Headlines / Monograms (AAA contrast) |
+| `{colors.ink-soft}` | `#2e2a22` | `#d1cbbd` | Button active / hover background |
+| `{colors.body}` | `#2e2a22` | `#d1cbbd` | Body copy (AA contrast) |
+| `{colors.body-muted}` | `#5d5647` | `#928b7d` | Metadata / Secondary text (AA contrast) |
 | `{colors.accent}` | `#0b3d6b` | `#8bb2d9` | Links / Eyebrows (AA contrast) |
 | `{colors.hairline}` | `#ddd9d0` | `#383530` | Subtle inner dividers |
-| `{colors.hairline-strong}` | `#141414` | `#e6e2da` | Structural borders (masthead, footer boundary) |
+| `{colors.hairline-strong}` | `#171310` | `#e6e2da` | Structural borders (masthead, footer boundary) |
+| `{colors.footer}` | `#171310` | `#12110f` | Footer slab — non-inverting always-dark surface |
+| `{colors.on-footer}` | `#ffffff` | `#ffffff` | Footer text — non-inverting |
 
 ## Typography
 
@@ -338,8 +347,9 @@ All dark mode mappings satisfy the **WCAG 2.1 AA/AAA contrast guidelines**:
 | Level 0 — Flat | No shadow, no border. | Most surfaces. |
 | Level 1 — Hairline | 1px `{colors.hairline}`. | Row dividers, card edges, input borders. |
 | Level 2 — Black rule | 1–2px `{colors.hairline-strong}`. | Masthead underline, outline buttons, emphasis. |
+| Level 3 — Overlay | Restrained soft shadow (`{shadow.overlay}`) + hairline border. | Floating overlays only — nav dropdown, future popovers. |
 
-No drop-shadows. Surface contrast + hairlines carry all hierarchy.
+No drop-shadows on **surfaces** — surface contrast + hairlines carry all hierarchy. The one exception is **floating overlays** (menus/popovers), which lift with the single restrained `{shadow.overlay}` token; in dark mode the light hairline border carries the separation. Grounded in flat-but-elevated systems (Radix popover/dialog shadows, Geist floating layers).
 
 ## Shapes
 
@@ -386,6 +396,6 @@ No drop-shadows. Surface contrast + hairlines carry all hierarchy.
 - Don't drop below 14px anywhere, and don't use gray lighter than `{colors.body-muted}` for readable text.
 - Don't add a second brand color. One blue, one ink, paper. The seal supplies identity.
 - Don't set body copy in the sans, or button labels in the serif. Two voices, two roles.
-- Don't add drop-shadows or gradients. This is editorial, not SaaS.
+- Don't add drop-shadows to surfaces or gradients — this is editorial, not SaaS. (Floating overlays may use the single restrained `{shadow.overlay}`.)
 - Don't crowd content to look "efficient" — generous rhythm reads as institutional confidence.
-- Don't go pure `#000` on `#fff` for large hangul blocks — use `{colors.ink}` `#141414` to reduce glare.
+- Don't go pure `#000` on `#fff` for large hangul blocks — use `{colors.ink}` `#171310` to reduce glare.

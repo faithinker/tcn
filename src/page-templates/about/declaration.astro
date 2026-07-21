@@ -1,0 +1,40 @@
+---
+import DocumentLayout from '../../layouts/DocumentLayout.astro';
+import { getLangFromUrl } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const copy = getContent(lang).declaration;
+---
+
+<DocumentLayout
+  title={copy.title}
+  description={copy.description}
+  eyebrow={copy.eyebrow}
+  heading={copy.heroTitle}
+  current="declaration"
+>
+  <div class="space-y-7 font-serif text-body-serif text-body">
+    {copy.intro.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+
+  <ol class="mt-12 grid gap-4">
+    {copy.missions.map((mission) => (
+      <li class="border border-hairline bg-canvas-soft p-5 sm:p-6">
+        <p class="font-sans text-caption font-bold uppercase text-accent">{mission.label}</p>
+        <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">
+          {mission.title}
+        </h2>
+        <p class="mt-4 font-serif text-body-serif text-body">{mission.body}</p>
+      </li>
+    ))}
+  </ol>
+
+  <div class="mt-12 space-y-7 font-serif text-body-serif text-body">
+    {copy.closing.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+
+  <footer class="mt-12 border-t border-hairline pt-8">
+    <p class="font-serif text-body-serif font-semibold text-ink">{copy.signature}</p>
+  </footer>
+</DocumentLayout>

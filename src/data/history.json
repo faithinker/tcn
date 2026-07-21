@@ -28,7 +28,7 @@
     "kind": "seminar",
     "status": "upcoming",
     "title": "제2차 세미나",
-    "location": "대한민국",
+    "location": "대한민국 인천, TCN 본부",
     "participants": [],
     "description": "제2차 국제 세미나를 개최할 예정입니다."
   },
@@ -61,7 +61,7 @@
     "kind": "seminar",
     "status": "upcoming",
     "title": "Second International Seminar",
-    "location": "Republic of Korea",
+    "location": "TCN Headquarters, Incheon, Republic of Korea",
     "participants": [],
     "description": "The second international seminar is scheduled to take place."
   }

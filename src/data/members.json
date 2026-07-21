@@ -9,17 +9,21 @@
     "group": "leadership",
     "order": 1,
     "country": "대한민국",
-    "position": "김앤장 법률사무소 고문",
+    "position": "김앤장 법률사무소 고문 겸 아시아경쟁협회 이사",
     "summary": "공정거래위원회 사무처장 직무대행과 주OECD 대한민국 대표부 주재관 등을 역임했으며, 파리 제10대학교에서 경제학 박사학위를 받았다.",
     "bio": [
       "김앤장 법률사무소 고문",
+      "아시아경쟁협회 이사",
+      "前 대통령실 행정관",
       "前 공정거래위원회 사무처장 직무대행",
+      "前 성균관대학교 로스쿨·서강대학교 기술경영대학원 겸임교수",
       "경제기획원·공정거래위원회·주OECD 대한민국 대표부 근무",
       "파리 제10대학교 경제학 박사",
       "서울대학교 행정학 석사·성균관대학교 경제학 학사"
     ],
     "highlights": [
-      "공정거래위원회 경쟁정책국장·기획홍보본부장 역임",
+      "대통령실 행정관 역임",
+      "성균관대학교 로스쿨·서강대학교 기술경영대학원 겸임교수 역임",
       "서울대학교 행정학 석사·성균관대학교 경제학 학사"
     ],
     "expertise": ["경제정책", "경쟁정책", "국제협력"]
@@ -35,7 +39,7 @@
     "order": 2,
     "country": "대한민국",
     "position": "한국학중앙연구원 교수",
-    "summary": "성균관대학교에서 경제학 학사·석사·박사학위를 받았으며, 경제사와 회계사(會計史), 개성의 상업과 자본을 연구한다.",
+    "summary": "성균관대학교에서 경제학 학사·석사·박사학위를 받았으며, 경제사와 회계사, 개성의 상업과 자본을 연구한다.",
     "bio": [
       "한국학중앙연구원 교수",
       "성균관대학교 경제학 학사·석사·박사",
@@ -47,7 +51,7 @@
       "독일 프랑크푸르트 괴테대학교 객원교수",
       "네덜란드 국제사회사연구소 연구원"
     ],
-    "expertise": ["경제사", "회계사(會計史)", "상업·자본 연구"]
+    "expertise": ["경제사", "회계사", "상업·자본 연구"]
   },
   {
     "id": "director-la",
@@ -59,7 +63,7 @@
     "group": "directors",
     "order": 3,
     "country": "라오스",
-    "position": "수파누봉대학교 경제·관광학부 부교수 겸 학장대행",
+    "position": "수파누봉대학교 경제·관광학부 부교수",
     "summary": "수파누봉대학교 한국학센터를 이끌며 지속가능 관광, 지역경제와 한국학을 연구한다.",
     "bio": [
       "한국학중앙연구원 한국학대학원 경제학 박사",
@@ -106,7 +110,7 @@
     "group": "directors",
     "order": 5,
     "country": "우즈베키스탄",
-    "position": "카라칼파크스탄 국립대학교 교수·최고위원회 의장 고문",
+    "position": "카라칼파크스탄 국립대학교 교수 및 최고위원회 의장 고문",
     "summary": "중앙아시아와 한반도의 초문화 현상을 연구하며 대한민국과의 무역·투자·경제협력에 관해 자문한다.",
     "bio": [
       "한국학중앙연구원 한국학대학원 경제학 박사",
@@ -154,7 +158,7 @@
     "order": 7,
     "country": "미국",
     "position": "ACE Engineering, Inc. 최고경영자",
-    "summary": "대한민국 출신 미국 토목·건설 기업인으로, 1987년 회사를 설립해 연방정부와 군 관련 건설사업을 수행해 왔다.",
+    "summary": "미국 토목·건설 기업인으로, 1987년 회사를 설립해 연방정부와 군 관련 건설사업을 수행해 왔다.",
     "bio": [
       "미국 ACE Engineering, Inc. 최고경영자",
       "미국 연방정부·군·지방정부 건설사업 수행",
@@ -170,22 +174,26 @@
     "id": "kim-en",
     "lang": "en",
     "name": "Dr. Wonjoon Kim",
-    "role": "Chair",
+    "role": "President",
     "category": "board",
     "group": "leadership",
     "order": 1,
     "country": "Republic of Korea",
-    "position": "Advisor at Kim & Chang",
+    "position": "Senior Advisor at Kim & Chang · Asia Competition Association\u00A0Councilor",
     "summary": "He formerly served as Acting Secretary General of the Korea Fair Trade Commission and as a Counsellor at the Korean Delegation to the OECD.",
     "bio": [
-      "Advisor at Kim & Chang",
+      "Senior Advisor at Kim & Chang",
+      "Councilor, Asia Competition Association",
+      "Former Administrator at the Office of the President",
       "Former Acting Secretary General of the Korea Fair Trade Commission",
+      "Former Adjunct Professor at Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
       "Economic Planning Board, KFTC, and Korean Delegation to the OECD",
       "PhD in Economics, Paris Nanterre University",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
     "highlights": [
-      "Former Director General for Competition Policy at the KFTC",
+      "Former Administrator at the Office of the President",
+      "Former Adjunct Professor, Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
     "expertise": ["Economic policy", "Competition policy", "International cooperation"]
@@ -194,7 +202,7 @@
     "id": "jeon-en",
     "lang": "en",
     "name": "Dr. SeongHo Jun",
-    "role": "Senior Vice Chair",
+    "role": "Senior Vice President",
     "category": "board",
     "group": "leadership",
     "order": 2,
@@ -268,16 +276,16 @@
     "group": "directors",
     "order": 5,
     "country": "Uzbekistan",
-    "position": "Professor at Karakalpakstan National University and Advisor to the Chair of the Supreme Council",
+    "position": "Professor at Karakalpakstan National University and Senior Advisor to the Chair of the Supreme Council",
     "summary": "She researches transculturalism in Central Asia and Korea and advises on trade, investment, and economic relations with the Republic of Korea.",
     "bio": [
       "PhD in Economics, Graduate School of Korean Studies, AKS",
       "Professor at Karakalpakstan National University",
-      "Advisor to the Chair of the Supreme Council of Karakalpakstan",
+      "Senior Advisor to the Chair of the Supreme Council of Karakalpakstan",
       "Responsible for trade, investment, and economic relations with the Republic of Korea"
     ],
     "highlights": [
-      "Advisor on trade, investment, and economic relations with the Republic of Korea",
+      "Senior Advisor on trade, investment, and economic relations with the Republic of Korea",
       "PhD in Economics, Academy of Korean Studies, 2024"
     ],
     "expertise": ["Transculturalism", "Central Asia", "Economic cooperation"]
@@ -308,13 +316,13 @@
     "id": "advisor-us-en",
     "lang": "en",
     "name": "John O. Lee",
-    "role": "Advisor",
+    "role": "Senior Advisor",
     "category": "board",
     "group": "support",
     "order": 7,
     "country": "United States",
     "position": "CEO of ACE Engineering, Inc.",
-    "summary": "A South Korea-born civil engineering and construction executive in the United States, he founded ACE Engineering in 1987 and has led government and military construction projects.",
+    "summary": "A civil engineering and construction executive in the United States, he founded ACE Engineering in 1987 and has led government and military construction projects.",
     "bio": [
       "CEO of ACE Engineering, Inc., USA",
       "Construction projects for U.S. federal, military, state, and local government clients",

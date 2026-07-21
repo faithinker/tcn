@@ -1,0 +1,41 @@
+---
+import DocumentLayout from '../../layouts/DocumentLayout.astro';
+import InvitationContent from '../../components/InvitationContent.astro';
+import { getCollection } from 'astro:content';
+import { formatDate, getLangFromUrl } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+
+const lang = getLangFromUrl(Astro.url);
+const about = getContent(lang).about;
+
+// 창립총회 초청장(현재 1건). 언어별 첫 항목.
+const invitation = (await getCollection('invitations')).find((entry) => entry.data.lang === lang);
+const data = invitation?.data;
+---
+
+<DocumentLayout
+  title={about.foundingTitle}
+  description={data?.summary ?? about.foundingBody}
+  eyebrow={about.foundingEyebrow}
+  heading={data?.title ?? about.foundingTitle}
+  current="founding"
+>
+  {data && (
+    <p slot="meta" class="mt-5 font-sans text-body-sans font-bold text-body-muted">
+      {formatDate(data.date, lang)} {data.time}
+    </p>
+  )}
+
+  <Fragment slot="aside">
+    <p class="text-caption font-bold uppercase text-accent">{about.foundingEyebrow}</p>
+    <p class="mt-2 text-body-sm text-body-muted">
+      {data?.summary ?? about.foundingBody}
+    </p>
+  </Fragment>
+
+  {data ? (
+    <InvitationContent data={data} />
+  ) : (
+    <p class="font-serif text-body-serif text-body">{about.foundingBody}</p>
+  )}
+</DocumentLayout>
