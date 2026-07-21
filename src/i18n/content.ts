@@ -9,26 +9,26 @@ const getPeopleProfileCopy = (lang: UiLang) => {
       ? '학술적 비전과 국제 협력의 방향을 세우고 네트워크의 주요 활동을 이끕니다.'
       : 'The leadership sets the scholarly vision and direction for international collaboration.',
     boardBody: ko
-      ? '아시아와 중앙아시아 각 지역에서 연구와 교육, 국제 교류를 연결합니다.'
-      : 'Directors across Asia and Central Asia connect research, education, and international exchange.',
+      ? '네트워크의 학술적 방향을 이끌고, 각 지역에서 연구·교육·국제 교류를 연결합니다.'
+      : 'The board leads the network’s scholarly direction and connects research, education, and international exchange across regions.',
     supportEyebrow: 'Audit & Advisory',
     supportTitle: ko ? '감사와 고문' : 'Audit and Advisory',
     supportBody: ko
       ? '연구·교육과 민간 분야의 경험을 바탕으로 네트워크의 운영과 대외 협력을 지원합니다.'
       : 'Academic and private-sector experience supports the network’s governance and external collaboration.',
     layoutEyebrow: 'Layout Preview',
-    layoutTitle: ko ? '소개 방식 선택' : 'Choose a profile format',
+    layoutTitle: ko ? '구성 방식 선택' : 'Choose a structure',
     layoutBody: ko
-      ? '두 가지 구성원 소개 방식을 비교해 보세요. 선택한 방식은 이 브라우저에 유지됩니다.'
-      : 'Compare two ways of presenting our people. Your selection is remembered in this browser.',
-    layoutOne: ko ? '1번 목록형' : 'Option 1 · List',
+      ? '이사진 구성 방식을 비교해 보세요. 선택은 이 브라우저에 유지됩니다.'
+      : 'Compare two ways of structuring the board sections. Your selection is remembered in this browser.',
+    layoutOne: ko ? '1번 · 구분 유지' : 'Option 1 · Grouped',
     layoutOneBody: ko
-      ? '주요 경력과 학력을 목록으로 빠르게 확인'
-      : 'Scan key career and education details in a concise list',
-    layoutTwo: ko ? '2번 상세형' : 'Option 2 · Profile',
+      ? '임원·이사·감사/고문 3구분을 유지하고 그룹 설명문은 모두 제거'
+      : 'Keep the three groups (leadership, directors, audit & advisory); remove all group descriptions',
+    layoutTwo: ko ? '2번 · 이사진 통합' : 'Option 2 · Unified board',
     layoutTwoBody: ko
-      ? '현직과 소속, 소개, 핵심 이력과 전문분야를 함께 확인'
-      : 'See current role or affiliation, introduction, highlights, and expertise',
+      ? '회장·부회장·이사를 한 섹션으로 통합, 감사·고문은 별도 유지'
+      : 'Merge chair, vice-chair, and directors into one board section; keep audit & advisory separate',
     currentLabel: ko ? '현직·소속' : 'Current role or affiliation',
   };
 };
@@ -203,8 +203,8 @@ const content = {
       heroBody: '다양한 지역과 분야의 전문가들이 초문화 연구와 국제 학술 협력을 함께합니다.',
       leadershipEyebrow: 'Leadership',
       leadershipTitle: '임원진',
-      boardEyebrow: 'International Board',
-      boardTitle: '국제 이사진',
+      boardEyebrow: 'Board',
+      boardTitle: '이사진',
       ...getPeopleProfileCopy('ko'),
     },
     seminars: {
@@ -444,8 +444,8 @@ const content = {
       heroBody: 'Experts from diverse regions and disciplines work together to advance transcultural research and international scholarly collaboration.',
       leadershipEyebrow: 'Leadership',
       leadershipTitle: 'Executive Board',
-      boardEyebrow: 'International Board',
-      boardTitle: 'International Directors',
+      boardEyebrow: 'Board',
+      boardTitle: 'Directors',
       ...getPeopleProfileCopy('en'),
     },
     seminars: {
