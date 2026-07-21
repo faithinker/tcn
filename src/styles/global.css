@@ -102,6 +102,13 @@
     text-size-adjust: 100%;
     overflow-x: clip;
     background-color: var(--color-canvas);
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-canvas) 0 50%,
+      var(--color-footer) 50% 100%
+    );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   body {
