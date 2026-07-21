@@ -96,6 +96,7 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overflow-x: clip;
+    background-color: var(--color-canvas);
   }
 
   body {
@@ -194,9 +195,10 @@
   }
 }
 
-body.nav-open {
-  overflow: hidden;
-}
+/* 모바일 메뉴는 스크롤 시 자동으로 닫힌다(Header.astro).
+   과거 body.nav-open{overflow:hidden}은 body를 스크롤 컨테이너로 만들어
+   sticky 헤더의 고정을 해제(메뉴 열면 헤더가 화면 밖으로 튕김)했고, 정작
+   스크롤 잠금도 되지 않아 제거했다. */
 
 /* 에디토리얼 시그니처 유틸 (컴포넌트는 L4+에서 사용) */
 @layer components {

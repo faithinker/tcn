@@ -51,7 +51,7 @@ const isExact = (href: string) => {
 };
 ---
 
-<header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas">
+<header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]">
   <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5">
     <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
       <span class="hidden font-serif text-[1.375rem] font-semibold text-ink sm:inline">{t('site.name')}</span>
@@ -222,15 +222,18 @@ const isExact = (href: string) => {
   const btn = document.getElementById('navToggle');
   const menu = document.getElementById('mobileNav');
 
+  const isOpen = () => btn?.getAttribute('aria-expanded') === 'true';
+  let openScrollY = 0;
+
   const setMenuOpen = (open: boolean) => {
     if (!(btn instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) return;
     btn.setAttribute('aria-expanded', String(open));
     menu.hidden = !open;
-    document.body.classList.toggle('nav-open', open);
+    if (open) openScrollY = window.scrollY;
   };
 
   btn?.addEventListener('click', () => {
-    setMenuOpen(btn.getAttribute('aria-expanded') !== 'true');
+    setMenuOpen(!isOpen());
   });
 
   menu?.addEventListener('click', (event) => {
@@ -238,15 +241,26 @@ const isExact = (href: string) => {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') {
+    if (event.key === 'Escape' && isOpen()) {
       setMenuOpen(false);
-      btn.focus();
+      btn?.focus();
     }
   });
 
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 1280) setMenuOpen(false);
   });
+
+  // 표준 UX: 헤더에 붙은 드롭다운 메뉴는 페이지 스크롤 시 닫는다.
+  // 오픈 지점 대비 4px 초과 이동 시에만 닫아, 모바일 URL바 접힘·바운스가
+  // 유발하는 미세 스크롤로 메뉴가 열리자마자 닫히는 것을 막는다.
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (isOpen() && Math.abs(window.scrollY - openScrollY) > 4) setMenuOpen(false);
+    },
+    { passive: true },
+  );
 </script>
 
 <style>

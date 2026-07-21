@@ -65,16 +65,16 @@ const organizationJsonLd = {
 <html lang={lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
     <script is:inline>
       document.documentElement.classList.add('js');
       const savedTheme = localStorage.getItem('tcn_theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+      document.documentElement.classList.toggle('dark', isDark);
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) themeMeta.setAttribute('content', isDark ? '#181715' : '#ffffff');
     </script>
     {lang === 'ko' && preloadFonts.map((href) => (
       <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />
@@ -82,7 +82,6 @@ const organizationJsonLd = {
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={desc} />
-    <meta name="theme-color" content="#141414" />
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonical} />
     <link rel="alternate" hreflang="ko" href={koUrl} />
