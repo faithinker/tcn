@@ -1,0 +1,4 @@
+interface:
+  display_name: "TCN Academic Translation"
+  short_description: "Review Korean and English TCN institutional copy"
+  default_prompt: "Use $academic-translation to translate and independently review this TCN Korean source text."

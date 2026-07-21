@@ -1,0 +1,28 @@
+[mcp_servers.gitlab]
+enabled = false
+
+# Project-local workflow deduplication. Keep gstack installed globally, but
+# disable skills that overlap with Spec Kit or the project-local Impeccable.
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-spec/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-autoplan/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-design-consultation/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-design-review/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-design-shotgun/SKILL.md"
+enabled = false
+
+[[skills.config]]
+path = "/Users/jhkim/.codex/skills/gstack-design-html/SKILL.md"
+enabled = false
