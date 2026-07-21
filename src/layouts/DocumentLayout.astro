@@ -1,0 +1,66 @@
+---
+// L4: about 하위 문서 페이지 공통 셸 — 창립총회/선언문/정관이 공유.
+// 뒤로가기 링크·헤더(eyebrow+h1+디바이더)·관련문서 내비·맨위로 버튼을 통일 제공.
+// 본문은 기본 slot, 사이드바는 optional `aside` slot(있으면 2단, 없으면 단일단),
+// 헤더 메타(날짜·제정일 등)는 `meta` slot, 헤더/본문 사이 전폭 블록은 `beforeBody` slot.
+import BaseLayout from './BaseLayout.astro';
+import RelatedDocuments from '../components/RelatedDocuments.astro';
+import BackToTop from '../components/BackToTop.astro';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description: string;
+  type?: 'website' | 'article';
+  eyebrow: string;
+  heading: string;
+  current: 'declaration' | 'bylaws' | 'founding';
+}
+
+const { title, description, type = 'website', eyebrow, heading, current } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const hasAside = Astro.slots.has('aside');
+---
+
+<BaseLayout title={title} description={description} type={type}>
+  <section class="bg-canvas px-5 py-12 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <a
+        href={localizePath('/about', lang)}
+        class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+      >← {t('common.backToAbout')}</a>
+
+      <header>
+        <p class="eyebrow mt-4">{eyebrow}</p>
+        <div class="mt-2 border-y border-hairline-strong py-8">
+          <h1 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+            {heading}
+          </h1>
+          <slot name="meta" />
+        </div>
+      </header>
+
+      <RelatedDocuments lang={lang} current={current} />
+
+      <slot name="beforeBody" />
+
+      {hasAside ? (
+        <div class="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-14">
+          <aside class="hidden lg:block">
+            <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
+              <slot name="aside" />
+            </div>
+          </aside>
+          <div><slot /></div>
+        </div>
+      ) : (
+        <div class="mx-auto mt-10 max-w-[74ch] sm:mt-12">
+          <slot />
+        </div>
+      )}
+    </article>
+  </section>
+
+  <BackToTop label={t('common.backToTop')} />
+</BaseLayout>
