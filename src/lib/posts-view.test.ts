@@ -38,6 +38,15 @@ describe('renderPostBody', () => {
     expect(renderPostBody('')).toBe('');
     expect(renderPostBody('   ')).toBe('');
   });
+
+  it('neutralizes unsafe link and image protocols', () => {
+    expect(renderPostBody('[클릭](javascript:alert(1))')).not.toContain('javascript:');
+    expect(renderPostBody('[클릭](JaVaScRiPt:alert(1))')).not.toContain('avascript:');
+    expect(renderPostBody('![x](data:text/html;base64,PHNjcmlwdD4=)')).not.toContain('data:');
+    expect(renderPostBody('[안전](https://example.org)')).toContain('href="https://example.org"');
+    expect(renderPostBody('[메일](mailto:a@b.c)')).toContain('href="mailto:a@b.c"');
+    expect(renderPostBody('[내부](/seminars)')).toContain('href="/seminars"');
+  });
 });
 
 describe('groupMedia', () => {
