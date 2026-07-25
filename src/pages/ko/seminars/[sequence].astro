@@ -1,0 +1,21 @@
+---
+import SeminarDetail from '../../../page-templates/seminars/seminar-detail.astro';
+import { createSeminarRouteEntries, loadPublicContentFromEnvironment } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const content = await loadPublicContentFromEnvironment(import.meta.env);
+  return createSeminarRouteEntries(content, 'ko').map((entry) => ({
+    ...entry,
+    props: {
+      ...entry.props,
+      posts: content.posts.filter(
+        (post) => post.locale === 'ko' && post.seminarSequence === entry.props.seminar.sequence,
+      ),
+    },
+  }));
+}
+
+const { seminar, posts } = Astro.props;
+---
+
+<SeminarDetail seminar={seminar} posts={posts} />

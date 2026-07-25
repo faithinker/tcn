@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
+import {
+  prepareSeminarArticle,
+  type PostKind,
+  type PublicPost,
+  type PublicSeminar,
+} from '../../lib/content';
+import ContentBody from './content-body.astro';
+
+interface Props {
+  post: PublicPost;
+  seminar: PublicSeminar;
+}
+
+const { post, seminar } = Astro.props as Props;
+const lang = getLangFromUrl(Astro.url);
+const article = prepareSeminarArticle(post, seminar);
+const documentTypes: Record<PostKind, { ko: string; en: string }> = {
+  announcement: { ko: '세미나 공지', en: 'Seminar announcement' },
+  invitation: { ko: '세미나 초대', en: 'Seminar invitation' },
+  report: { ko: '세미나 결과 보고', en: 'Seminar report' },
+  activity: { ko: '세미나 결과 보고', en: 'Seminar report' },
+  materials: { ko: '세미나 자료', en: 'Seminar materials' },
+  news: { ko: '세미나 소식', en: 'Seminar news' },
+};
+const labels = lang === 'ko'
+  ? {
+      back: '세미나 목록으로',
+      series: `초문화네트워크 국제 세미나 · 제${seminar.sequence}회`,
+      archive: article.status === 'past' ? 'ARCHIVE' : 'UPCOMING',
+      status: seminar.eventStatus === 'cancelled'
+        ? '취소된 행사'
+        : seminar.eventStatus === 'postponed'
+          ? '연기된 행사'
+          : article.status === 'past'
+            ? '지난 행사'
+            : '예정 행사',
+      facts: '행사 정보',
+      date: '일시',
+      place: '장소',
+      documentType: '문서 유형',
+      map: 'Google 지도에서 위치 보기',
+      photos: '현장 사진',
+      photoCount: `사진 ${article.gallery.length}장`,
+    }
+  : {
+      back: 'Back to seminars',
+      series: `Transcultural Network International Seminar · No. ${seminar.sequence}`,
+      archive: article.status === 'past' ? 'ARCHIVE' : 'UPCOMING',
+      status: seminar.eventStatus === 'cancelled'
+        ? 'Cancelled event'
+        : seminar.eventStatus === 'postponed'
+          ? 'Postponed event'
+          : article.status === 'past'
+            ? 'Past event'
+            : 'Upcoming event',
+      facts: 'Event facts',
+      date: 'Date',
+      place: 'Place',
+      documentType: 'Document type',
+      map: 'View location in Google Maps',
+      photos: 'Event photos',
+      photoCount: `${article.gallery.length} photos`,
+    };
+const documentType = documentTypes[post.kind][lang];
+const placeLine = article.location || article.address;
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.title,
+  ...(post.excerpt ? { description: post.excerpt } : {}),
+  ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+  ...(post.hero?.src ? { image: post.hero.src } : {}),
+  isPartOf: {
+    '@type': 'Event',
+    name: seminar.title,
+    startDate: seminar.startsAt,
+  },
+};
+---
+
+<BaseLayout title={post.title} description={post.excerpt} type="article">
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(articleJsonLd)} />
+  <article class="bg-canvas">
+    <header class="px-5 pb-8 pt-10 sm:pb-10 sm:pt-16">
+      <div class="mx-auto max-w-[75rem]">
+        <a
+          href={localizePath('/seminars', lang)}
+          class="inline-flex min-h-12 items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+        >← {labels.back}</a>
+        <div class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <p class="font-sans text-caption font-bold tracking-[0.14em] text-accent">{labels.archive}</p>
+            <span class="border border-hairline-strong px-3 py-1 font-sans text-caption font-bold text-body-muted">
+              {labels.status}
+            </span>
+          </div>
+          <p class="mt-5 font-sans text-body-sm font-bold text-accent">{labels.series}</p>
+          <h1 class="mt-3 max-w-[30ch] text-balance font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+            {post.title}
+          </h1>
+          <p class="mt-5 font-sans text-body-sm font-bold text-body-muted">
+            {formatDate(article.date, lang)}{placeLine ? ` · ${placeLine}` : ''}
+          </p>
+        </div>
+      </div>
+    </header>
+
+    {post.hero?.src && (
+      <figure class="mx-auto max-w-[75rem] px-5">
+        <img
+          src={post.hero.src}
+          alt={post.hero.alt}
+          width={post.hero.width}
+          height={post.hero.height}
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          class="mx-auto h-auto max-h-[46rem] w-auto max-w-full bg-canvas-band"
+        />
+        {post.hero.caption && (
+          <figcaption class="mt-3 font-sans text-caption text-body-muted">{post.hero.caption}</figcaption>
+        )}
+      </figure>
+    )}
+
+    <div class="px-5 pb-16 pt-10 sm:pb-24 sm:pt-16">
+      <div class="mx-auto grid max-w-[75rem] gap-12 lg:grid-cols-[minmax(0,48rem)_18rem] lg:items-start lg:justify-between lg:gap-16">
+        <aside
+          class="border-y border-hairline-strong py-6 lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1"
+          aria-labelledby="article-facts-title"
+        >
+          <h2 id="article-facts-title" class="font-serif text-display-sm font-semibold text-ink">{labels.facts}</h2>
+          <dl class="mt-5">
+            <div class="border-t border-hairline py-4 first:border-t-0 first:pt-0">
+              <dt class="font-sans text-caption font-bold text-body-muted">{labels.date}</dt>
+              <dd class="mt-1 font-serif text-body-serif text-ink">{formatDate(article.date, lang)}</dd>
+            </div>
+            {(article.location || article.address) && (
+              <div class="border-t border-hairline py-4">
+                <dt class="font-sans text-caption font-bold text-body-muted">{labels.place}</dt>
+                <dd class="mt-1 font-serif text-body-serif text-ink">
+                  {article.location}
+                  {article.address && article.address !== article.location && (
+                    <span class="mt-1 block font-sans text-body-sm text-body-muted">{article.address}</span>
+                  )}
+                </dd>
+              </div>
+            )}
+            <div class="border-t border-hairline py-4">
+              <dt class="font-sans text-caption font-bold text-body-muted">{labels.documentType}</dt>
+              <dd class="mt-1 font-serif text-body-serif text-ink">{documentType}</dd>
+            </div>
+          </dl>
+          {article.mapUrl && (
+            <a
+              href={article.mapUrl}
+              target="_blank"
+              rel="noopener"
+              class="mt-4 inline-flex min-h-12 items-center font-sans text-body-sm font-bold text-link underline hover:text-link-hover"
+            >
+              {labels.map} ↗
+            </a>
+          )}
+        </aside>
+
+        <div class="min-w-0 lg:col-start-1 lg:row-start-1">
+          {post.excerpt && (
+            <p class="mb-10 border-b border-hairline-strong pb-10 font-serif text-lead text-body sm:mb-12 sm:pb-12">
+              {post.excerpt}
+            </p>
+          )}
+          <ContentBody document={article.body} />
+
+          {article.gallery.length > 0 && (
+            <section class="mt-14 border-t border-hairline-strong pt-8 sm:mt-20 sm:pt-10" aria-labelledby="article-gallery-title">
+              <div class="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="article-gallery-title" class="font-serif text-display-md font-semibold text-ink">{labels.photos}</h2>
+                <p class="font-sans text-caption font-bold text-body-muted">{labels.photoCount}</p>
+              </div>
+              <div class="mt-7 grid gap-x-6 gap-y-8 sm:grid-cols-2">
+                {article.gallery.map((image, index) => (
+                  <figure>
+                    {image.src && (
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        width={image.width}
+                        height={image.height}
+                        loading="lazy"
+                        decoding="async"
+                        class="h-auto w-full bg-canvas-band object-contain"
+                      />
+                    )}
+                    {image.caption && (
+                      <figcaption class="mt-3 font-sans text-caption text-body-muted">{image.caption}</figcaption>
+                    )}
+                    {!image.caption && (
+                      <figcaption class="sr-only">{lang === 'ko' ? `현장 사진 ${index + 1}` : `Event photo ${index + 1}`}</figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      </div>
+    </div>
+  </article>
+</BaseLayout>

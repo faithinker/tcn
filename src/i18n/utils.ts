@@ -46,9 +46,14 @@ const EN_MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-/** ISO 날짜(YYYY-MM-DD)를 언어별 표기로. Date 객체 미사용(빌드 결정성). */
+/** ISO 날짜 또는 타임스탬프의 날짜 부분을 언어별 표기로. Date 객체 미사용(빌드 결정성). */
 export function formatDate(iso: string, lang: UiLang = defaultLang): string {
-  const [y, m, d] = iso.split('-').map(Number);
-  if (!y || !m || !d) return iso;
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(iso);
+  if (!match) return iso;
+  const [, year, month, day] = match;
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) return iso;
   return lang === 'en' ? `${EN_MONTHS[m - 1]} ${d}, ${y}` : `${y}년 ${m}월 ${d}일`;
 }

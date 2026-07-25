@@ -5,6 +5,15 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      post_id:
+        description: Published post UUID whose deployment state should be tracked
+        required: false
+        type: string
+      source_revision:
+        description: Published source revision for audit logs
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -18,6 +27,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
 
     steps:
       - name: Checkout
@@ -51,3 +63,23 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=tcn --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record successful content deployment
+        if: success() && inputs.post_id != ''
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          DEPLOYMENT_POST_ID: ${{ inputs.post_id }}
+          DEPLOYMENT_STATUS: deployed
+        run: node scripts/publishing/record-deployment.mjs
+
+      - name: Record failed content deployment
+        if: failure() && inputs.post_id != ''
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          DEPLOYMENT_POST_ID: ${{ inputs.post_id }}
+          DEPLOYMENT_STATUS: failed
+          DEPLOYMENT_ERROR: GitHub Actions build or Cloudflare Pages deployment failed
+        run: node scripts/publishing/record-deployment.mjs

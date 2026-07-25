@@ -1,0 +1,26 @@
+---
+import type { ContentInlineNode } from '../../lib/content';
+
+interface Props {
+  nodes?: ContentInlineNode[];
+}
+
+const { nodes = [] } = Astro.props as Props;
+---
+
+{nodes.map((node) => {
+  if (node.type === 'hardBreak') return <br />;
+  const bold = node.marks?.some((mark) => mark.type === 'bold');
+  const italic = node.marks?.some((mark) => mark.type === 'italic');
+  const link = node.marks?.find((mark) => mark.type === 'link');
+  const content = (
+    <span class:list={{ 'font-bold': bold, italic }}>
+      {node.text}
+    </span>
+  );
+  return link?.attrs?.href ? (
+    <a href={link.attrs.href} class="font-bold text-link underline hover:text-link-hover">
+      {content}
+    </a>
+  ) : content;
+})}

@@ -1,0 +1,11 @@
+---
+import { createPostRouteEntries, loadPublicContentFromEnvironment, postPath } from '../../../../../lib/content';
+
+export async function getStaticPaths() {
+  const content = await loadPublicContentFromEnvironment(import.meta.env);
+  return createPostRouteEntries(content, 'en');
+}
+
+const { post, seminar } = Astro.props;
+return Astro.redirect(postPath('en', post.seminarSequence, post.kind, post.postNo, post.slug), 301);
+---

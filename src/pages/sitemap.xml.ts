@@ -1,29 +1,10 @@
 import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
+import { createSitemapPaths, loadPublicContentFromEnvironment } from '../lib/content';
 
 export const GET: APIRoute = async ({ site }) => {
   const siteRoot = site ?? new URL('https://tcn-ezj.pages.dev');
-  const seminarSlugs = [
-    ...new Set(
-      (await getCollection('seminars'))
-        .filter((entry) => entry.data.lang === 'ko')
-        .map((entry) => entry.data.slug),
-    ),
-  ];
-  const localizedPaths = [
-    '/',
-    '/about/',
-    '/about/founding/',
-    '/about/declaration/',
-    '/about/bylaws/',
-    '/people/',
-    '/seminars/',
-    ...seminarSlugs.map((slug) => `/seminars/${slug}/`),
-    '/contact/',
-  ];
-  const paths = ['ko', 'en'].flatMap((lang) =>
-    localizedPaths.map((path) => path === '/' ? `/${lang}/` : `/${lang}${path}`),
-  );
+  const content = await loadPublicContentFromEnvironment(import.meta.env);
+  const paths = createSitemapPaths(content);
 
   const urls = paths
     .map((path) => `  <url><loc>${new URL(path, siteRoot).href}</loc></url>`)

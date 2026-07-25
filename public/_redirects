@@ -13,6 +13,12 @@
 /seminars                                     /ko/seminars/          301
 /contact                                      /ko/contact/           301
 
+# 회차 번호가 canonical 식별자다. 기존 연도-지역 slug는 영구 별칭으로 유지한다.
+/ko/seminars/2025-laos                        /ko/seminars/1/         301
+/en/seminars/2025-laos                        /en/seminars/1/         301
+/ko/seminars/2026-korea                       /ko/seminars/2/         301
+/en/seminars/2026-korea                       /en/seminars/2/         301
+
 /en/events/*                                  /en/seminars/          301
 /events/*                                     /ko/seminars/          301
 /about/*                                      /ko/about/:splat       301

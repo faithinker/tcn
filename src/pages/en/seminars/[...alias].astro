@@ -1,0 +1,10 @@
+---
+import { createAliasRouteEntries, loadPublicContentFromEnvironment } from '../../../lib/content';
+
+export async function getStaticPaths() {
+  const content = await loadPublicContentFromEnvironment(import.meta.env);
+  return createAliasRouteEntries(content, 'en');
+}
+
+return Astro.redirect(Astro.props.target, Astro.props.status);
+---

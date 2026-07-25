@@ -64,6 +64,11 @@ describe('i18n utils', () => {
       expect(formatDate('2025-10-15', 'en')).toBe('October 15, 2025');
     });
 
+    it('should format full ISO timestamps returned by the content database', () => {
+      expect(formatDate('2025-12-26T00:00:00+00:00', 'ko')).toBe('2025년 12월 26일');
+      expect(formatDate('2025-12-26T00:00:00.000Z', 'en')).toBe('December 26, 2025');
+    });
+
     it('should return original string if date format is invalid', () => {
       expect(formatDate('invalid-date', 'ko')).toBe('invalid-date');
     });

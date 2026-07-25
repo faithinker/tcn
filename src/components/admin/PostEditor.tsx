@@ -43,6 +43,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
   const [media, setMedia] = useState<EditorMedia[]>(initialMedia);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [dragging, setDragging] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -187,13 +188,35 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
           <p className="text-caption text-body-muted">글을 먼저 저장하면 미디어를 첨부할 수 있습니다.</p>
         ) : (
           <>
-            <input
-              type="file"
-              multiple
-              accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
-              onChange={(e) => uploadFiles(e.target.files)}
-              className="mb-3 block text-caption text-body-muted"
-            />
+            <div
+              data-dropzone
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={(e) => {
+                // 자식 요소로 이동할 때 발생하는 leave는 무시
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                void uploadFiles(e.dataTransfer.files);
+              }}
+              className={`mb-3 border border-dashed p-4 text-center transition-colors ${
+                dragging ? 'border-accent bg-canvas-soft' : 'border-hairline-strong bg-canvas'
+              }`}
+            >
+              <p className="text-caption font-bold text-ink">사진·영상·문서를 여기로 드래그</p>
+              <p className="mt-1 text-caption text-body-muted">또는 파일 선택</p>
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+                onChange={(e) => uploadFiles(e.target.files)}
+                className="mx-auto mt-2 block text-caption text-body-muted"
+              />
+            </div>
             {media.length > 0 && (
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {media.map((item) => (

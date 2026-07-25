@@ -57,7 +57,7 @@ typography:
     lineHeight: 1.25
     letterSpacing: 0
   eyebrow:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 15px
     fontWeight: 700
     lineHeight: 1.3
@@ -75,19 +75,19 @@ typography:
     lineHeight: 1.75
     letterSpacing: 0
   body-sans:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 17px
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: 0
   body-sans-strong:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 17px
     fontWeight: 700
     lineHeight: 1.5
     letterSpacing: 0
   body-sm:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.6
@@ -99,17 +99,23 @@ typography:
     lineHeight: 1.6
     letterSpacing: 0
   caption:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
   button:
-    fontFamily: 'Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
     fontSize: 17px
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: 0.2px
+  code:
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
+    fontSize: 14px
+    fontWeight: 400
+    lineHeight: 1.5
+    letterSpacing: 0
 
 rounded:
   none: 0px
