@@ -16,6 +16,24 @@ const { title = 'Admin', user = null } = Astro.props;
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title} · TCN Admin</title>
+    <style is:global>
+      /* 어드민 본문 에디터(Tiptap) 내부 요소 — 공개 타입 램프가 아닌 편집기용 구조 스타일 */
+      .admin-prose { font-family: inherit; line-height: 1.6; }
+      .admin-prose h2 { font-size: 1.4em; font-weight: 600; margin: 0.9em 0 0.3em; }
+      .admin-prose h3 { font-size: 1.15em; font-weight: 600; margin: 0.8em 0 0.3em; }
+      .admin-prose p { margin: 0.5em 0; }
+      .admin-prose ul { list-style: disc; padding-left: 1.4em; margin: 0.5em 0; }
+      .admin-prose ol { list-style: decimal; padding-left: 1.4em; margin: 0.5em 0; }
+      .admin-prose blockquote {
+        border-left: 3px solid var(--color-hairline-strong);
+        padding-left: 0.9em; color: var(--color-body-muted); margin: 0.6em 0;
+      }
+      .admin-prose a { color: var(--color-link); text-decoration: underline; }
+      .admin-prose p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder); color: var(--color-body-muted);
+        float: left; height: 0; pointer-events: none;
+      }
+    </style>
   </head>
   <body class="min-h-dvh bg-canvas font-sans text-body antialiased">
     {user && (

@@ -9,6 +9,8 @@ import { loadPublicContentFromEnvironment } from './src/lib/content/adapter.ts';
 
 import cloudflare from '@astrojs/cloudflare';
 
+import react from '@astrojs/react';
+
 /**
  * DB 별칭(kind/slug 변경·legacy slug)을 진짜 HTTP 301로 승격.
  * 정적 프리렌더 redirect는 meta-refresh(200)라서, 빌드 산출물의
@@ -35,7 +37,7 @@ function contentAliasRedirects() {
 // L3: 한국어(/ko/) + 영어(/en/). 루트('/')는 Cloudflare 국가/선호 언어 분기 전용.
 export default defineConfig({
   site: 'https://tcn-ezj.pages.dev',
-  integrations: [contentAliasRedirects()],
+  integrations: [contentAliasRedirects(), react()],
 
   i18n: {
     defaultLocale: 'ko',

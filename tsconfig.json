@@ -10,5 +10,9 @@
     "coverage",
     "verify",
     "supabase/functions"
-  ]
+  ],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  }
 }
