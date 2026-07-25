@@ -4,6 +4,7 @@ import SectionTile from '../components/SectionTile.astro';
 import { getContent } from '../i18n/content';
 import { formatDate, getLangFromUrl } from '../i18n/utils';
 import { loadPublicContentFromEnvironment, postPath, seminarHubPath } from '../lib/content';
+import { getDB, listPosts, type Post } from '../lib/db';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).seminars;
@@ -29,6 +30,15 @@ const detailHref = (sequence: number) => {
     ? postPath(lang, post.seminarSequence, post.kind, post.postNo, post.slug)
     : seminarHubPath(lang, sequence);
 };
+
+// 회원이 admin에서 등록한 D1 글 (SSR 조회). 바인딩 없는 환경(정적 프리뷰 등)은
+// 섹션을 조용히 숨긴다 — 글쓰기 기능이 목록을 깨뜨리면 안 된다.
+let communityPosts: Post[] = [];
+try {
+  communityPosts = await listPosts(getDB());
+} catch {
+  communityPosts = [];
+}
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>
@@ -104,4 +114,21 @@ const detailHref = (sequence: number) => {
       )) : <p class="font-serif text-body-serif text-body">{copy.empty}</p>}
     </div>
   </SectionTile>
+
+  {communityPosts.length > 0 && (
+    <SectionTile variant="band" eyebrow="Articles" title={lang === 'ko' ? '활동 글' : 'Articles'}>
+      <div class="mt-8 grid gap-4">
+        {communityPosts.map((post) => (
+          <a href={`/${lang}/seminars/p/${post.id}`} class="group block border-t border-hairline py-7 no-underline">
+            {post.eventDate && (
+              <p class="font-sans text-caption font-bold uppercase text-accent">{formatDate(post.eventDate, lang)}</p>
+            )}
+            <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.title}</h2>
+            {post.summary && <p class="mt-3 font-sans text-body-sans text-body-muted">{post.summary}</p>}
+            <span class="mt-4 inline-flex items-center font-sans text-body-sm font-bold text-link underline">{copy.viewDetail} →</span>
+          </a>
+        ))}
+      </div>
+    </SectionTile>
+  )}
 </BaseLayout>

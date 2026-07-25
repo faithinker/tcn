@@ -1,5 +1,8 @@
 ---
 import SeminarsPage from '../../page-templates/seminars.astro';
+
+// D1 커뮤니티 글 목록을 실시간 노출하기 위해 SSR (정적 프리렌더 해제).
+export const prerender = false;
 ---
 
 <SeminarsPage />
