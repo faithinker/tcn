@@ -110,6 +110,18 @@ try {
     originalResponse.ok() && sha256(originalBody) === sha256(committedMaster),
   );
 
+  // astro dev의 4000px AVIF 즉석 변환은 CI CPU에 따라 10초 이상 걸릴 수 있다.
+  // 원본 URL의 바이트 무결성은 위에서 별도로 확인했으므로, 상호작용 검사는 같은
+  // 4000px 마스터 JPEG를 고해상도 응답으로 사용해 디코드 시간과 무관하게 만든다.
+  const leadManifestText = await page
+    .locator('[data-lightbox-manifest="founding-record"]')
+    .textContent();
+  const leadZoomUrl = JSON.parse(leadManifestText ?? '[]')[0]?.zoom;
+  if (!leadZoomUrl) throw new Error('대표 사진의 고해상도 URL이 없다');
+  await page.route(new URL(leadZoomUrl, BASE).href, (route) =>
+    route.fulfill({ status: 200, contentType: 'image/jpeg', body: committedMaster }),
+  );
+
   // The fitted image can be larger than Playwright's computed viewport while the
   // dialog is open. Trigger the same DOM click handler without a flaky scroll step.
   await image.evaluate((node) =>
@@ -121,7 +133,7 @@ try {
   );
   check('확대 사진은 브라우저 기본 끌기를 사용하지 않는다', !(await image.evaluate((node) => node.draggable)));
 
-  // 4000px AVIF 디코드가 끝나면 data-tier가 zoom으로 바뀐다. waitForFunction은
+  // 4000px 마스터 디코드가 끝나면 data-tier가 zoom으로 바뀐다. waitForFunction은
   // 런타임 버전에 따라 기본 timeout이 무제한이라, 이 검사는 명시적인 상한을 둔다.
   for (let attempt = 0; attempt < 40; attempt += 1) {
     if ((await image.getAttribute('data-tier')) === 'zoom') break;
