@@ -7,13 +7,13 @@ export const prerender = false;
 
 const STATIC_PATHS = [
   '/',
-  '/about/',
-  '/about/founding/',
-  '/about/declaration/',
-  '/about/bylaws/',
-  '/people/',
-  '/seminars/',
-  '/contact/',
+  '/about',
+  '/about/founding',
+  '/about/declaration',
+  '/about/bylaws',
+  '/people',
+  '/seminars',
+  '/contact',
 ];
 
 export const GET: APIRoute = async ({ site }) => {
@@ -21,8 +21,9 @@ export const GET: APIRoute = async ({ site }) => {
 
   let postPaths: string[] = [];
   try {
-    postPaths = (await getSeminarCollection(getDB())).chronological.map((seminar) => `${seminar.href}/`);
-  } catch {
+    postPaths = (await getSeminarCollection(getDB())).chronological.map((seminar) => seminar.href);
+  } catch (error) {
+    console.error('sitemap: failed to load seminar routes', error);
     postPaths = [];
   }
 

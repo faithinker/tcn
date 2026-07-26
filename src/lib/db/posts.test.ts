@@ -43,3 +43,45 @@ describe('listSeminarPosts', () => {
     expect(prepare).toHaveBeenCalledWith(expect.stringContaining('order by event_date asc'));
   });
 });
+
+describe('updatePost', () => {
+  it('uses optimistic concurrency and increments the revision', async () => {
+    const updated = { id: 'p1', revision: 4 };
+    const run = vi.fn().mockResolvedValue({ meta: { changes: 1 } });
+    const first = vi.fn().mockResolvedValue(updated);
+    const bind = vi.fn().mockReturnValueOnce({ run }).mockReturnValueOnce({ first });
+    const prepare = vi.fn(() => ({ bind }));
+    const db = { prepare } as unknown as D1Database;
+
+    await expect(
+      postsDb.updatePost(
+        db,
+        'p1',
+        {
+          title: 'Updated',
+          eventDate: '2025-12-26',
+          expectedRevision: 3,
+        },
+      ),
+    ).resolves.toEqual(updated);
+    expect(prepare).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('revision = revision + 1'),
+    );
+    expect(prepare).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('revision = ?8'),
+    );
+    expect(bind).toHaveBeenNthCalledWith(
+      1,
+      'p1',
+      'Updated',
+      null,
+      '2025-12-26',
+      null,
+      '',
+      null,
+      3,
+    );
+  });
+});

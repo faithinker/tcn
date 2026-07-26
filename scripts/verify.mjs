@@ -30,6 +30,11 @@ const CONTRACTS = process.env.CONTRACTS
       // 구 UUID 딥링크 → 날짜 정식 URL 영구 이전
       { path: '/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001', status: 301, location: '/seminars/2025-12-26' },
       { path: '/seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002', status: 301, location: '/seminars/2026-10-30' },
+      // slash 변형과 레거시 링크는 중간 홉 없이 정식 URL로 이동
+      { path: '/about/', status: 301, location: '/about' },
+      { path: '/seminars/2025-12-26/', status: 301, location: '/seminars/2025-12-26' },
+      { path: '/ko/seminars/2025-laos/', status: 301, location: '/seminars/2025-12-26' },
+      { path: '/events/2025/founding-ceremony-invitation/', status: 301, location: '/about/founding' },
       // 형식은 맞지만 해당 글 없음
       { path: '/seminars/2030-01-01', status: 404 },
       // 날짜 형식 오류

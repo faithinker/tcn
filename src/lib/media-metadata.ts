@@ -27,7 +27,7 @@ export function normalizeMediaMetadata(payload: MediaMetadataPayload): MediaMeta
 
 export function mediaMetadataForSave(item: MediaMetadataSource, position: number): MediaMetadata {
   return normalizeMediaMetadata({
-    caption: item.kind === 'image' ? item.caption : null,
+    caption: item.kind === 'document' ? null : item.caption,
     position,
   });
 }

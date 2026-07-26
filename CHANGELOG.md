@@ -5,15 +5,23 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-07-27]
 ### Feature
 - Added a responsive founding-assembly event record with seven photographs, a lazy-loaded short film, high-resolution lightbox zoom and pan, captions, and original-image downloads. (Branch: `feat/content`) - Implemented by Codex
+- Hardened the admin post and media lifecycle with validated payloads, optimistic revisions, streaming uploads, cleanup reconciliation, transcript-aware video publishing, and resilient editor feedback. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Fix
 - Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
 - Switched Cloudflare image derivatives to build-time generation, added a range-capable mobile preview, and kept the fitted image when high-resolution decoding fails. (Branch: `feat/content`) - Implemented by Codex
+- Standardized slashless canonical URLs and one-hop legacy redirects, separated liveness from dependency readiness, prevented static-asset redirect loops, and normalized byte-range delivery for public media. (Branch: `fix/routing-audit`) - Implemented by Codex
+- Resolved PR quality-gate findings by removing pseudorandom notification jitter and simplifying routing, payload, upload, editor, and post-update control flow. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Refactor
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
+### Security
+- Added account-and-IP login throttling with hashed identifiers, versioned session revocation, dependency audit enforcement, and bounded notification retries with timeouts. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Test
 - Added route-contract assertions and CI browser gates for canonical redirects, missing seminar pages, responsive rendering, console errors, and accessibility. (Branch: `test/route-contracts-ci`) - Implemented by Codex
 - Added data-contract and browser regression checks for master-image integrity, lazy video loading, HTTP range support, zoom and pan, keyboard focus, and mobile layout. (Branch: `feat/content`) - Implemented by Codex
 - Stabilized high-resolution lightbox interaction checks against CI image-transcoding delays by serving the verified 4000px master during the browser test. (Branch: `feat/content`) - Implemented by Codex
+- Expanded routing, authentication, API, media, concurrency, and Worker contract coverage and moved browser gates to the built Wrangler runtime. (Branch: `fix/routing-audit`) - Implemented by Codex
+### Chore
+- Added additive D1 migrations, deployment readiness smoke checks with automatic rollback, a staging configuration template, and an operations runbook covering D1 Time Travel and R2 recovery. (Branch: `fix/routing-audit`) - Implemented by Codex
 
 ## [2026-07-26]
 ### Changed (BREAKING)

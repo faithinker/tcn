@@ -60,7 +60,7 @@
   {
     "id": "ceremony-film",
     "type": "video",
-    "src": "/media/founding/founding-ceremony.mp4",
+    "src": "/media/founding/founding-ceremony",
     "poster": "founding-video-poster",
     "duration": "0:11",
     "alt": "Short film recorded during the founding assembly",

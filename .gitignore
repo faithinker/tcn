@@ -23,6 +23,7 @@ translation-output.json
 
 # local scratch (plans, mockups) — 커밋 제외
 .scratch/
+wrangler.staging.jsonc
 
 # claude runtime locks (프로세스 락 — 추적 대상 아님)
 .claude/*.lock

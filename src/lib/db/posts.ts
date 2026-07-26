@@ -3,7 +3,13 @@ import type { Post, PostInput } from './types';
 
 const COLUMNS = `id, title, summary, event_date as eventDate, address, body,
   hero_media_id as heroMediaId, author_id as authorId,
-  created_at as createdAt, updated_at as updatedAt, deleted_at as deletedAt`;
+  revision, created_at as createdAt, updated_at as updatedAt, deleted_at as deletedAt`;
+
+export class PostRevisionConflictError extends Error {
+  constructor() {
+    super('revision_conflict');
+  }
+}
 
 // 공개 목록: soft delete 제외, 개최일(없으면 생성일) 최신순.
 export async function listPosts(db: D1Database): Promise<Post[]> {
@@ -74,8 +80,8 @@ export async function updatePost(db: D1Database, id: string, input: PostInput): 
   const result = await db
     .prepare(
       `update posts set title = ?2, summary = ?3, event_date = ?4, address = ?5,
-         body = ?6, hero_media_id = ?7, updated_at = unixepoch()
-       where id = ?1 and deleted_at is null`,
+         body = ?6, hero_media_id = ?7, revision = revision + 1, updated_at = unixepoch()
+       where id = ?1 and deleted_at is null and revision = ?8`,
     )
     .bind(
       id,
@@ -85,9 +91,13 @@ export async function updatePost(db: D1Database, id: string, input: PostInput): 
       input.address ?? null,
       input.body ?? '',
       input.heroMediaId ?? null,
+      input.expectedRevision ?? 0,
     )
     .run();
-  if (!result.meta.changes) return null;
+  if (!result.meta.changes) {
+    if (await getPost(db, id)) throw new PostRevisionConflictError();
+    return null;
+  }
   return getPost(db, id);
 }
 

@@ -95,9 +95,19 @@ const showContents = renderedBody.headings.length >= 2;
               <div class="mt-4 space-y-5">
                 {grouped.videos.map((item) => (
                   <figure>
-                    {/* eslint-disable-next-line astro/jsx-a11y -- 자막 트랙 없는 회원 업로드 영상 */}
-                    <video controls preload="metadata" class="w-full border border-hairline" src={mediaSrc(item)} />
-                    {item.caption && <figcaption class="mt-2 font-sans text-caption text-body-muted">{item.caption}</figcaption>}
+                    <video
+                      controls
+                      preload="metadata"
+                      class="w-full border border-hairline"
+                      src={mediaSrc(item)}
+                      aria-describedby={`video-transcript-${item.id}`}
+                    />
+                    <figcaption
+                      id={`video-transcript-${item.id}`}
+                      class="mt-2 font-sans text-caption text-body-muted"
+                    >
+                      <strong class="text-ink">Transcript:</strong> {item.caption}
+                    </figcaption>
                   </figure>
                 ))}
               </div>

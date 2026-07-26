@@ -40,6 +40,19 @@ export function notifyPostChange(requestUrl: string, post: NotifyPost, action: N
       discordWebhookUrl: bindings.DISCORD_WEBHOOK,
       telegramToken: bindings.TELEGRAM_TOKEN,
       telegramChatId: bindings.TELEGRAM_TO,
-    }).catch(() => ({ discord: false, telegram: false })),
+    })
+      .then((result) => {
+        if (bindings.DISCORD_WEBHOOK && !result.discord) {
+          console.error('notification delivery failed', { channel: 'discord', postId: post.id, action });
+        }
+        if (bindings.TELEGRAM_TOKEN && bindings.TELEGRAM_TO && !result.telegram) {
+          console.error('notification delivery failed', { channel: 'telegram', postId: post.id, action });
+        }
+        return result;
+      })
+      .catch((error) => {
+        console.error('notification task failed', { postId: post.id, action, error });
+        return { discord: false, telegram: false };
+      }),
   );
 }

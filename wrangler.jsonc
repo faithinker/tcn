@@ -8,7 +8,10 @@
   // 정적 산출물(dist)을 ASSETS로 서빙. 빌드시 어댑터가 directory를 서버 기준 상대경로로 보정.
   "assets": {
     "binding": "ASSETS",
-    "directory": "./dist"
+    "directory": "./dist",
+    // Canonical URLs are slashless. Keep Workers Static Assets from redirecting
+    // prerendered `path/index.html` assets back to a trailing-slash URL.
+    "html_handling": "drop-trailing-slash"
   },
   "observability": {
     "enabled": true

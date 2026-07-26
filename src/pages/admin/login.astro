@@ -30,7 +30,9 @@ if (await getSessionUid(Astro.request)) return Astro.redirect('/admin');
           class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none"
         />
       </label>
-      <p id="login-error" class="hidden text-caption text-accent">Invalid username or password.</p>
+      <p id="login-error" role="alert" aria-live="polite" class="hidden text-caption text-accent">
+        Invalid username or password.
+      </p>
       <button
         type="submit"
         class="w-full bg-ink px-4 py-2 font-sans text-body-sm font-bold text-on-primary hover:opacity-90"
@@ -40,20 +42,37 @@ if (await getSessionUid(Astro.request)) return Astro.redirect('/admin');
   <script>
     const form = document.getElementById('login-form') as HTMLFormElement | null;
     const errorEl = document.getElementById('login-error');
+    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
       errorEl?.classList.add('hidden');
-      const data = new FormData(form);
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ username: data.get('username'), password: data.get('password') }),
-      });
-      if (response.ok) {
-        window.location.href = '/admin';
-        return;
+      if (submit) submit.disabled = true;
+      try {
+        const data = new FormData(form);
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username: data.get('username'), password: data.get('password') }),
+        });
+        if (response.ok) {
+          window.location.href = '/admin';
+          return;
+        }
+        if (errorEl) {
+          errorEl.textContent =
+            response.status === 429
+              ? 'Too many sign-in attempts. Wait 15 minutes and try again.'
+              : 'Invalid username or password.';
+          errorEl.classList.remove('hidden');
+        }
+      } catch {
+        if (errorEl) {
+          errorEl.textContent = 'Network unavailable. Check your connection and try again.';
+          errorEl.classList.remove('hidden');
+        }
+      } finally {
+        if (submit) submit.disabled = false;
       }
-      errorEl?.classList.remove('hidden');
     });
   </script>
 </AdminLayout>

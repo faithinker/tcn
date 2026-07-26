@@ -65,7 +65,7 @@ try {
   );
 
   const rangeResponse = await context.request.get(
-    `${BASE}/media/founding/founding-ceremony.mp4`,
+    new URL(foundingMedia.find((item) => item.type === 'video').src, BASE).href,
     { headers: { Range: 'bytes=0-1' } },
   );
   check(
@@ -210,18 +210,28 @@ try {
   await dialog.locator('[data-lb-close]').click();
   await context.close();
 
-  const failedZoomContext = await browser.newContext({
+  // The successful zoom scenario above intentionally caches the high-resolution
+  // derivative. Use a fresh browser process so the failure scenario cannot pass
+  // through that process-wide image cache without issuing the aborted request.
+  const failedZoomBrowser = await chromium.launch();
+  const failedZoomContext = await failedZoomBrowser.newContext({
     viewport: { width: 1280, height: 900 },
     deviceScaleFactor: 1,
   });
   const failedZoomPage = await failedZoomContext.newPage();
+  // Register before navigation: the optimized derivative may be discovered and
+  // fetched while the document loads, before the lightbox is opened.
+  const failedZoomTarget = new URL(leadZoomUrl, BASE).href;
+  const failedZoomPath = new URL(failedZoomTarget).pathname;
+  let failedZoomRequests = 0;
+  await failedZoomPage.route('**/*', (route) => {
+    if (new URL(route.request().url()).pathname === failedZoomPath) {
+      failedZoomRequests += 1;
+      return route.abort('failed');
+    }
+    return route.continue();
+  });
   await failedZoomPage.goto(`${BASE}/about/founding/`, { waitUntil: 'networkidle' });
-  const manifestText = await failedZoomPage
-    .locator('[data-lightbox-manifest="founding-record"]')
-    .textContent();
-  const failedZoomUrl = JSON.parse(manifestText ?? '[]')[0]?.zoom;
-  if (!failedZoomUrl) throw new Error('대표 사진의 고해상도 URL이 없다');
-  await failedZoomPage.route(new URL(failedZoomUrl, BASE).href, (route) => route.abort('failed'));
   await failedZoomPage.locator('[data-lightbox-open="founding-record"]').first().click();
   const failedZoomDialog = failedZoomPage.locator('[data-lightbox-root="founding-record"]');
   const failedZoomStage = failedZoomDialog.locator('[data-lb-stage]');
@@ -234,8 +244,10 @@ try {
     '고해상도 로딩이 실패하면 화면 맞춤 이미지를 유지한다',
     (await failedZoomImage.getAttribute('data-tier')) === 'fit' &&
       (await failedZoomDialog.locator('[data-lb-loading]').isHidden()),
+    `tier=${await failedZoomImage.getAttribute('data-tier')} loadingHidden=${await failedZoomDialog.locator('[data-lb-loading]').isHidden()} abortedRequests=${failedZoomRequests}`,
   );
   await failedZoomContext.close();
+  await failedZoomBrowser.close();
 
   const mobile = await browser.newContext({
     viewport: { width: 390, height: 844 },

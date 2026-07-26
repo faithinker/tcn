@@ -32,13 +32,13 @@ describe('mediaMetadataForSave', () => {
     });
   });
 
-  it('always clears captions for documents and videos', () => {
+  it('clears document captions but keeps the required video transcript', () => {
     expect(mediaMetadataForSave({ kind: 'document', caption: 'Legacy document caption' }, 2)).toEqual({
       caption: null,
       position: 2,
     });
-    expect(mediaMetadataForSave({ kind: 'video', caption: 'Legacy video caption' }, 3)).toEqual({
-      caption: null,
+    expect(mediaMetadataForSave({ kind: 'video', caption: '  Speaker welcomes participants.  ' }, 3)).toEqual({
+      caption: 'Speaker welcomes participants.',
       position: 3,
     });
   });

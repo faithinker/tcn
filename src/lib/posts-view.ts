@@ -89,7 +89,8 @@ export function groupMedia(items: Media[], heroMediaId: string | null): GroupedM
   return {
     hero,
     images: sorted.filter((m) => m.kind === 'image' && m.id !== hero?.id),
-    videos: sorted.filter((m) => m.kind === 'video'),
+    // 영상은 transcript가 저장되기 전까지 공개 페이지에 노출하지 않는다.
+    videos: sorted.filter((m) => m.kind === 'video' && Boolean(m.caption?.trim())),
     documents: sorted.filter((m) => m.kind === 'document'),
   };
 }

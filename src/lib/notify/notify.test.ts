@@ -79,4 +79,26 @@ describe('sendPostNotifications', () => {
     await sendPostNotifications({ ...post, title: 'A <b>&' }, 'created', config, fetchImpl);
     expect(bodies[0]).toContain('A &lt;b&gt;&amp;');
   });
+
+  it('times out stalled providers instead of leaving the background task hanging', async () => {
+    const fetchImpl = vi.fn(
+      (_url: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('Timed out', 'AbortError')),
+          );
+        }),
+    );
+
+    const result = await sendPostNotifications(
+      post,
+      'created',
+      { ...config, telegramToken: undefined },
+      fetchImpl,
+      { retryDelayMs: 0, timeoutMs: 5 },
+    );
+
+    expect(result).toEqual({ discord: false, telegram: false });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
 });

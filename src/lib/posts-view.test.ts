@@ -77,7 +77,14 @@ describe('groupMedia', () => {
     const items = [
       media({ id: 'hero', r2Key: 'p1/hero.webp' }),
       media({ id: 'img2', r2Key: 'p1/b.webp', position: 1 }),
-      media({ id: 'vid', kind: 'video', mimeType: 'video/mp4', filename: 'clip.mp4', position: 2 }),
+      media({
+        id: 'vid',
+        kind: 'video',
+        mimeType: 'video/mp4',
+        filename: 'clip.mp4',
+        position: 2,
+        caption: 'Speaker welcomes participants.',
+      }),
       media({ id: 'doc', kind: 'document', mimeType: 'application/pdf', filename: 'file.pdf', position: 3 }),
     ];
     const grouped = groupMedia(items, 'hero');
@@ -85,6 +92,20 @@ describe('groupMedia', () => {
     expect(grouped.images.map((m) => m.id)).toEqual(['img2']);
     expect(grouped.videos.map((m) => m.id)).toEqual(['vid']);
     expect(grouped.documents.map((m) => m.id)).toEqual(['doc']);
+  });
+
+  it('keeps videos private from the public page until a transcript is saved', () => {
+    const items = [
+      media({
+        id: 'vid',
+        kind: 'video',
+        mimeType: 'video/mp4',
+        filename: 'clip.mp4',
+        caption: null,
+      }),
+    ];
+
+    expect(groupMedia(items, null).videos).toEqual([]);
   });
 
   it('keeps every image in the gallery when there is no hero', () => {

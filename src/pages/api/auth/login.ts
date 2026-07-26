@@ -1,6 +1,13 @@
 import type { APIRoute } from 'astro';
 import { getDB, getUserByUsername } from '../../../lib/db';
 import { buildSessionCookie, createSessionToken, getSessionSecret, verifyPassword } from '../../../lib/auth';
+import {
+  clearLoginFailures,
+  getLoginRateLimitKeys,
+  isLoginRateLimited,
+  LOGIN_RETRY_AFTER_SECONDS,
+  recordLoginFailure,
+} from '../../../lib/auth/rate-limit';
 
 export const prerender = false;
 
@@ -20,14 +27,33 @@ export const POST: APIRoute = async ({ request, url }) => {
     return Response.json({ ok: false, error: 'missing_credentials' }, { status: 400 });
   }
 
-  const user = await getUserByUsername(getDB(), username);
+  const db = getDB();
+  const rateLimitKeys = await getLoginRateLimitKeys(request, username);
+  if (await isLoginRateLimited(db, rateLimitKeys)) {
+    return Response.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: { 'retry-after': String(LOGIN_RETRY_AFTER_SECONDS) } },
+    );
+  }
+
+  const user = await getUserByUsername(db, username);
   const valid = user ? await verifyPassword(password, user.passwordHash) : false;
   if (!user || !valid) {
+    const blocked = await recordLoginFailure(db, rateLimitKeys);
+    if (blocked) {
+      return Response.json(
+        { ok: false, error: 'rate_limited' },
+        { status: 429, headers: { 'retry-after': String(LOGIN_RETRY_AFTER_SECONDS) } },
+      );
+    }
     // 동일 응답으로 사용자 존재 여부 누설 방지.
     return Response.json({ ok: false, error: 'invalid_credentials' }, { status: 401 });
   }
 
-  const token = await createSessionToken(user.id, getSessionSecret());
+  await clearLoginFailures(db, rateLimitKeys);
+  const token = await createSessionToken(user.id, getSessionSecret(), {
+    sessionVersion: user.sessionVersion,
+  });
   return new Response(
     JSON.stringify({ ok: true, user: { id: user.id, username: user.username, displayName: user.displayName } }),
     {
