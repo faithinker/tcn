@@ -7,7 +7,6 @@ export interface HistoryEntry {
   status: 'past' | 'upcoming';
   title: string;
   location: string;
-  participants: string[];
   description: string;
 }
 
@@ -18,7 +17,6 @@ export const history: HistoryEntry[] = [
     status: 'past',
     title: 'Founding of the Transcultural Network',
     location: 'Sungkyunkwan University, Seoul, Republic of Korea',
-    participants: ['Experts from 15 countries'],
     description: 'The founding assembly reviewed the bylaws and formally declared the Network’s establishment.',
   },
   {
@@ -27,7 +25,6 @@ export const history: HistoryEntry[] = [
     status: 'past',
     title: 'First International Seminar',
     location: 'Luang Prabang, Laos',
-    participants: ['Korea', 'Vietnam', 'Laos'],
     description: 'Experts from the three countries convened for the first international seminar.',
   },
   {
@@ -36,7 +33,6 @@ export const history: HistoryEntry[] = [
     status: 'upcoming',
     title: 'Second International Seminar',
     location: 'TCN Headquarters, Incheon, Republic of Korea',
-    participants: [],
     description: 'The second international seminar is scheduled to take place.',
   },
 ];

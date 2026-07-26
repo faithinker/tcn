@@ -47,7 +47,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   </SectionTile>
 
   <SectionTile id="history" class="scroll-mt-20" variant="canvas" eyebrow={copy.historyEyebrow} title={copy.historyTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
       {copy.historyBody}
     </p>
     <ol class="mt-10 border-t border-hairline-strong">
@@ -68,18 +68,12 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
                 {entry.status === 'upcoming' ? copy.historyUpcomingLabel : copy.historyPastLabel}
               </span>
             </div>
-            <p class="mt-4 max-w-[68ch] font-serif text-body-serif text-body">
+            <p class="mt-4 text-pretty font-serif text-body-serif text-body">
               {entry.description}
             </p>
             <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
               <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
               <dd class="text-body">{entry.location}</dd>
-              {entry.participants.length > 0 && (
-                <>
-                  <dt class="font-bold text-body-muted">{copy.historyParticipantsLabel}</dt>
-                  <dd class="text-body">{entry.participants.join(' · ')}</dd>
-                </>
-              )}
             </dl>
           </div>
         </li>
@@ -88,7 +82,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   </SectionTile>
 
   <SectionTile variant="band" eyebrow={copy.foundingEyebrow} title={copy.foundingTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.foundingBody}
     </p>
     <div class="mt-8">
@@ -99,7 +93,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   </SectionTile>
 
   <SectionTile variant="canvas" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.declarationBody}
     </p>
     <div class="mt-8">
