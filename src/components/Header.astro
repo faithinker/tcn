@@ -1,34 +1,26 @@
 ---
 // L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
-// 내비=산세리프(Pretendard), 탭타깃 ≥48px, ko/en 언어 전환 제공.
-import { useTranslations, localizePath } from '../i18n/utils';
-import type { UiLang } from '../i18n/ui';
+// 내비=산세리프(Pretendard), 탭타깃 ≥48px.
+import { t } from '../i18n/ui';
 import { navItems } from '../lib/navigation';
 import ThemeToggle from './ThemeToggle.astro';
 
-interface Props {
-  lang?: UiLang;
-}
-
-const { lang = 'en' } = Astro.props;
-const t = useTranslations(lang);
-
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => {
-  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  const target = href.replace(/\/$/, '') || '/';
   if (href === '/') return here === target;
   return here === target || here.startsWith(`${target}/`);
 };
 const isExact = (href: string) => {
   if (href.includes('#')) return false;
-  const target = localizePath(href, lang).replace(/\/$/, '') || '/';
+  const target = href.replace(/\/$/, '') || '/';
   return here === target;
 };
 ---
 
 <header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]">
   <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5">
-    <a href={localizePath('/', lang)} class="flex items-baseline gap-2 no-underline">
+    <a href="/" class="flex items-baseline gap-2 no-underline">
       <span class="hidden font-serif text-[1.375rem] font-semibold text-ink sm:inline">{t('site.name')}</span>
       <span class="font-serif text-[1.125rem] font-semibold text-ink sm:hidden">TCN</span>
       <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted sm:inline">TCN</span>
@@ -60,7 +52,7 @@ const isExact = (href: string) => {
               <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-overlay">
                 {item.children.map((child) => (
                   <a
-                    href={localizePath(child.href, lang)}
+                    href={child.href}
                     aria-current={isExact(child.href) ? 'page' : undefined}
                     class="flex min-h-[44px] items-center whitespace-nowrap px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft aria-[current]:text-link"
                   >
@@ -71,7 +63,7 @@ const isExact = (href: string) => {
             </details>
           ) : (
             <a
-              href={localizePath(item.href, lang)}
+              href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
               class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
             >
@@ -81,7 +73,7 @@ const isExact = (href: string) => {
         )
       }
       <a
-        href={localizePath('/contact', lang)}
+        href="/contact"
         class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
       >
         {t('nav.cta')}
@@ -89,7 +81,7 @@ const isExact = (href: string) => {
     </nav>
 
     <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-      <ThemeToggle lang={lang} />
+      <ThemeToggle />
 
       <button id="navToggle"
         type="button"
@@ -129,7 +121,7 @@ const isExact = (href: string) => {
                   {item.children.map((child) => (
                     <li>
                       <a
-                        href={localizePath(child.href, lang)}
+                        href={child.href}
                         aria-current={isExact(child.href) ? 'page' : undefined}
                         class="flex min-h-[44px] items-center px-4 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
                       >
@@ -141,7 +133,7 @@ const isExact = (href: string) => {
               </div>
             ) : (
               <a
-                href={localizePath(item.href, lang)}
+                href={item.href}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
               >
@@ -153,7 +145,7 @@ const isExact = (href: string) => {
       }
       <li class="px-3 py-2">
         <a
-          href={localizePath('/contact', lang)}
+          href="/contact"
           class="inline-flex min-h-[48px] w-full items-center justify-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
         >
           {t('nav.cta')}

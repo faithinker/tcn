@@ -1,14 +1,6 @@
 ---
 // L4: Footer — footer/on-footer 토큰(항상 어두운 밴드·흰 텍스트, 라이트/다크 반전 안 함). 바로가기 · 사무국 · 저작권. 연락처는 "추후 안내".
-import { useTranslations, localizePath } from '../i18n/utils';
-import type { UiLang } from '../i18n/ui';
-
-interface Props {
-  lang: UiLang;
-}
-
-const { lang } = Astro.props;
-const t = useTranslations(lang);
+import { t } from '../i18n/ui';
 
 const nav = [
   { key: 'nav.about', href: '/about' },
@@ -39,7 +31,7 @@ const year = 2026;
           nav.map((item) => (
             <li>
               <a
-                href={localizePath(item.href, lang)}
+                href={item.href}
                 class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-on-footer/90 no-underline hover:text-on-footer"
               >
                 {t(item.key)}

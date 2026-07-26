@@ -1,8 +1,6 @@
 ---
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { t } from '../i18n/ui';
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
 const label = t('common.themeToggle');
 ---
 

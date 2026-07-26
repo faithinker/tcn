@@ -1,10 +1,8 @@
 ---
 import DocumentLayout from '../../layouts/DocumentLayout.astro';
-import { getLangFromUrl } from '../../i18n/utils';
-import { getContent } from '../../i18n/content';
+import { content } from '../../i18n/content';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).declaration;
+const copy = content.declaration;
 ---
 
 <DocumentLayout

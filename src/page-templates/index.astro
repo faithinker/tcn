@@ -4,14 +4,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Stat from '../components/Stat.astro';
 import Button from '../components/Button.astro';
-import { getLangFromUrl, formatDate, localizePath, useTranslations } from '../i18n/utils';
-import { getContent } from '../i18n/content';
+import { formatDate } from '../i18n/utils';
+import { t } from '../i18n/ui';
+import { content } from '../i18n/content';
 import { getDB, listPosts, type Post } from '../lib/db';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).home;
-const seminarCopy = getContent(lang).seminars;
-const t = useTranslations(lang);
+const copy = content.home;
+const seminarCopy = content.seminars;
 
 // D1 단일 원천: 차기 = 가장 이른 미래 event_date 글, 최신 = 그 외 첫 글.
 // D1 미가용(정적 프리뷰 등)이면 두 섹션 모두 조용히 숨긴다.
@@ -51,9 +50,9 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
         {copy.sublead}
       </p>
       <div class="mt-8 grid gap-3 min-[28rem]:flex min-[28rem]:flex-wrap">
-        <Button href={localizePath('/contact', lang)} variant="primary" class="w-full min-[28rem]:w-auto">{t('nav.cta')}</Button>
-        <Button href={localizePath('/about', lang)} variant="outline" class="w-full min-[28rem]:w-auto">{copy.aboutButton}</Button>
-        <Button href={localizePath('/about/declaration', lang)} variant="outline" class="w-full min-[28rem]:w-auto">{copy.declarationButton}</Button>
+        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto">{t('nav.cta')}</Button>
+        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto">{copy.aboutButton}</Button>
+        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto">{copy.declarationButton}</Button>
       </div>
     </div>
   </section>
@@ -74,7 +73,7 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
               </span>
             </div>
             <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
-              {formatDate(next.eventDate ?? '', lang)}
+              {formatDate(next.eventDate ?? '')}
             </p>
             <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.title}</p>
             <p class="mt-2 font-sans text-body-sans text-body-muted">
@@ -133,7 +132,7 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
           <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.title}</h3>
           {(featured.eventDate || featured.address) && (
             <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
-              {[featured.eventDate ? formatDate(featured.eventDate, lang) : null, featured.address].filter(Boolean).join(' · ')}
+              {[featured.eventDate ? formatDate(featured.eventDate) : null, featured.address].filter(Boolean).join(' · ')}
             </p>
           )}
           <p class="mt-4 font-serif text-body-serif text-body">
@@ -144,7 +143,7 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
               {seminarCopy.viewDetail}
             </Button>
             <a
-              href={localizePath('/seminars', lang)}
+              href="/seminars"
               class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
             >{copy.seminarButton} →</a>
           </div>
@@ -171,7 +170,7 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
         {copy.joinBody}
       </p>
       <div class="mt-8">
-        <Button href={localizePath('/contact', lang)} variant="primary">{t('nav.cta')}</Button>
+        <Button href="/contact" variant="primary">{t('nav.cta')}</Button>
       </div>
     </div>
   </SectionTile>

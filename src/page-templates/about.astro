@@ -2,12 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
-import { formatDate, getLangFromUrl, localizePath } from '../i18n/utils';
-import { getContent } from '../i18n/content';
+import { formatDate } from '../i18n/utils';
+import { content } from '../i18n/content';
 import { history as historyData } from '../data/history';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).about;
+const copy = content.about;
 // 연혁은 확정 기관 기록 — 정적 데이터. 세미나 서사는 D1 글로 이동.
 const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
 ---
@@ -50,7 +49,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
             datetime={entry.date}
             class="font-sans text-body-sans font-bold text-accent"
           >
-            {formatDate(entry.date, lang)}
+            {formatDate(entry.date)}
           </time>
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -79,7 +78,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
       {copy.foundingBody}
     </p>
     <div class="mt-8">
-      <Button href={localizePath('/about/founding', lang)} variant="outline">
+      <Button href="/about/founding" variant="outline">
         {copy.foundingButton}
       </Button>
     </div>
@@ -90,7 +89,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
       {copy.declarationBody}
     </p>
     <div class="mt-8">
-      <Button href={localizePath('/about/declaration', lang)} variant="outline">
+      <Button href="/about/declaration" variant="outline">
         {copy.declarationButton}
       </Button>
     </div>

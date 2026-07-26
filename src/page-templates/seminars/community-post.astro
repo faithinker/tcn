@@ -1,9 +1,9 @@
 ---
-// 라우트 아님(page-templates). /{lang}/seminars/p/[id] SSR 래퍼가 D1에서
+// 라우트 아님(page-templates). /seminars/p/[id] SSR 래퍼가 D1에서
 // post + media 를 조회해 prop 으로 주입한다. 본문은 마크다운 → HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
-import { getContent } from '../../i18n/content';
+import { formatDate } from '../../i18n/utils';
+import { content } from '../../i18n/content';
 import { groupMedia, renderPostBody } from '../../lib/posts-view';
 import type { Media, Post } from '../../lib/db/types';
 
@@ -13,8 +13,7 @@ interface Props {
 }
 
 const { post, media } = Astro.props as Props;
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).seminars;
+const copy = content.seminars;
 
 const bodyHtml = renderPostBody(post.body);
 const grouped = groupMedia(media, post.heroMediaId);
@@ -30,7 +29,7 @@ const formatBytes = (size: number | null) =>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <a
-        href={localizePath('/seminars', lang)}
+        href="/seminars"
         class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
       >← {copy.backToList}</a>
 
@@ -39,7 +38,7 @@ const formatBytes = (size: number | null) =>
         <h1 class="mt-4 font-serif text-display-md font-semibold text-ink sm:text-display-lg">{post.title}</h1>
         {(post.eventDate || post.address) && (
           <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">
-            {post.eventDate && formatDate(post.eventDate, lang)}
+            {post.eventDate && formatDate(post.eventDate)}
             {post.eventDate && post.address && ' · '}
             {post.address}
             {mapUrl && (

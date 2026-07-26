@@ -3,7 +3,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { getLangFromUrl, useTranslations } from '../i18n/utils';
+import { t } from '../i18n/ui';
 // perf: 마스트헤드·히어로("초문화네트워크 / Transcultural Network") 글리프를 담은
 // 폰트 @font-face 번들(수백 KB)은 렌더를 막지 않도록 별도 CSS로 비차단 로드.
 // media="print" → onload에서 all로 전환(표준 async CSS 패턴), noscript 폴백 제공.
@@ -26,8 +26,6 @@ const {
   type = 'website',
   noindex = false,
 } = Astro.props;
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
 
 const siteName = t('site.name');
 const pageTitle = title && title !== siteName ? `${title} | ${siteName}` : siteName;
@@ -49,7 +47,7 @@ const organizationJsonLd = {
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -95,11 +93,11 @@ const organizationJsonLd = {
     >
       {t('common.skipToContent')}
     </a>
-    <Header lang={lang} />
+    <Header />
     <main id="main">
       <slot />
     </main>
-    <Footer lang={lang} />
+    <Footer />
     <!-- 폰트 @font-face 번들: body 끝 로드 — 뒤 콘텐츠 없어 첫 페인트 비차단.
          텍스트는 폴백으로 즉시 그려지고 크리티컬 서브셋은 head preload가 조기 확보. -->
     <link rel="stylesheet" href={fontsCssUrl} />
