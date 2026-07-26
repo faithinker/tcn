@@ -25,14 +25,14 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Prepare local D1
         run: |
-          npx wrangler d1 migrations apply tcn-content --local
+          ./node_modules/.bin/wrangler d1 migrations apply tcn-content --local
           node scripts/seed-seminar-posts.mjs
 
       # dev 서버는 데몬으로 떠서 스텝이 끝나면 사라질 수 있다 — 기동·검증을 한 스텝에 묶는다.
