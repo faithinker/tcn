@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-07-27]
 ### Refactor
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
+### Test
+- Added route-contract assertions and CI browser gates for canonical redirects, missing seminar pages, responsive rendering, console errors, and accessibility. (Branch: `test/route-contracts-ci`) - Implemented by Codex
 
 ## [2026-07-26]
 ### Changed (BREAKING)
