@@ -1,0 +1,138 @@
+---
+// 창립총회 기록 갤러리 — 확대 사다리 Rung 1(대표컷 + 격자 썸네일).
+// 초청장 본문 아래 에필로그로 붙는다. 문서 흐름을 끊지 않는 것이 배치 원칙.
+import { Image } from 'astro:assets';
+import { content } from '../../i18n/content';
+import { foundingMedia, gridItems, isImage, leadImage } from '../../lib/founding-media';
+import MediaLightbox from './MediaLightbox.astro';
+import { buildLightboxEntries, master } from './mediaAssets';
+
+const copy = content.eventRecord;
+const viewer = content.mediaViewer;
+const lead = leadImage();
+const rest = gridItems();
+const entries = await buildLightboxEntries(foundingMedia);
+const indexOf = (id: string) => foundingMedia.findIndex((item) => item.id === id);
+const LIGHTBOX_ID = 'founding-record';
+
+// sizes 는 실측 레이아웃과 맞춰야 한다. DocumentLayout 은 lg 이상에서
+// 사이드바(16rem)+간격(3.5rem)을 빼서 본문 열이 최대 55.5rem(888px)이고,
+// 격자는 3열(정상 칸 ≈ 285px, wide 칸 ≈ 587px), md 미만에서는 2열이다.
+// 값이 실제보다 작으면 브라우저가 작은 변형을 골라 확대·업스케일된다.
+const LEAD_SIZES = '(max-width: 48rem) 100vw, (max-width: 64rem) 92vw, 56rem';
+const CELL_SIZES = '(max-width: 48rem) 47vw, (max-width: 64rem) 30vw, 19rem';
+const WIDE_CELL_SIZES = '(max-width: 48rem) 95vw, (max-width: 64rem) 61vw, 37rem';
+---
+
+<section class="event-record" aria-labelledby="event-record-heading" id="event-record">
+  <p class="font-sans text-caption font-bold uppercase text-accent">{copy.eyebrow}</p>
+  <h2
+    id="event-record-heading"
+    class="mt-2 font-serif text-display-sm font-semibold text-ink sm:text-display-md"
+  >
+    {copy.title}
+  </h2>
+  <p class="mt-4 font-sans text-body-sm font-bold text-body-muted">{copy.meta}</p>
+
+  <figure class="mt-8">
+    <button
+      type="button"
+      class="media-trigger"
+      data-lightbox-open={LIGHTBOX_ID}
+      data-lightbox-index={indexOf(lead.id)}
+      aria-label={`${viewer.enlargePrefix}: ${lead.caption}`}
+    >
+      <Image
+        src={master(lead.src)}
+        alt={lead.alt}
+        width={1792}
+        widths={[640, 960, 1280, 1792]}
+        sizes={LEAD_SIZES}
+        format="avif"
+        quality={62}
+        loading="lazy"
+        class="lead-image"
+      />
+      <span class="media-hint" aria-hidden="true">{viewer.zoomHint}</span>
+    </button>
+    <figcaption class="media-caption">{lead.caption}</figcaption>
+  </figure>
+
+  <div class="record-grid">
+    {
+      rest.map((item) => {
+        const wide = isImage(item) && item.span === 'wide';
+        return (
+          <figure class:list={['record-cell', { 'record-cell-wide': wide }]}>
+            <button
+              type="button"
+              class:list={['media-trigger', { 'media-trigger-video': !isImage(item) }]}
+              data-lightbox-open={LIGHTBOX_ID}
+              data-lightbox-index={indexOf(item.id)}
+              aria-label={
+                isImage(item)
+                  ? `${viewer.enlargePrefix}: ${item.caption}`
+                  : // 접근성 이름은 눈에 보이는 라벨("Watch · 0:11")로 시작해야 한다.
+                    // 음성 명령 사용자가 보이는 대로 말해 조작할 수 있어야 하므로
+                    // (label-content-name-mismatch) 순서를 뒤집지 않는다.
+                    `${viewer.watch} · ${item.duration} — ${item.alt}`
+              }
+            >
+              <Image
+                src={master(isImage(item) ? item.src : item.poster)}
+                alt={isImage(item) ? item.alt : ''}
+                width={wide ? 1280 : 640}
+                widths={wide ? [640, 900, 1280] : [320, 480, 640, 900]}
+                sizes={wide ? WIDE_CELL_SIZES : CELL_SIZES}
+                format="avif"
+                quality={60}
+                loading="lazy"
+                class:list={['cell-image', { 'cell-image-wide': wide }]}
+              />
+              {isImage(item) ? (
+                <span class="media-hint" aria-hidden="true">{viewer.zoomHint}</span>
+              ) : (
+                <span class="play-badge" aria-hidden="true">
+                  <span class="play-mark" />
+                  <span class="play-label">{viewer.watch} · {item.duration}</span>
+                </span>
+              )}
+            </button>
+            <figcaption class="media-caption">{item.caption}</figcaption>
+          </figure>
+        );
+      })
+    }
+  </div>
+</section>
+
+<MediaLightbox id={LIGHTBOX_ID} entries={entries} />
+
+<style>
+  .event-record {
+    margin-top: 4.5rem;
+    padding-top: 2.75rem;
+    border-top: 1px solid var(--color-hairline-strong);
+  }
+  .record-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+    margin-top: 2.25rem;
+  }
+  @media (min-width: 48rem) {
+    .record-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .record-cell-wide {
+    grid-column: span 2;
+  }
+  .media-caption {
+    margin-top: 0.6rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    line-height: 1.55;
+    color: var(--color-body-muted);
+  }
+</style>

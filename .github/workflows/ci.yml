@@ -50,6 +50,7 @@ jobs:
             sleep 1
           done
           npm run verify
+          npm run verify:founding-media
           npm run a11y
 
       - name: Upload verify screenshots

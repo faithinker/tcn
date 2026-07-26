@@ -1,0 +1,588 @@
+---
+// 확대 사다리 Rung 2~4 — 화면맞춤 / 1:1 확대·팬 / 원본 새 탭.
+// 네이티브 <dialog> 가 포커스 트랩·Esc·backdrop 을 제공하므로 그 위에 확대만 얹는다.
+// 트리거는 [data-lightbox-open="<id>"], 항목 데이터는 JSON 스크립트로 전달한다.
+import { content } from '../../i18n/content';
+import type { LightboxEntry } from './mediaAssets';
+
+interface Props {
+  id: string;
+  entries: LightboxEntry[];
+}
+
+const { id, entries } = Astro.props;
+const copy = content.mediaViewer;
+const single = entries.length < 2;
+---
+
+{/* is:inline — 번들링 대상이 아닌 데이터 블록이다(JS 아님). */}
+<script is:inline type="application/json" data-lightbox-manifest={id} set:html={JSON.stringify(entries)} />
+
+<dialog
+  class="media-lightbox"
+  data-lightbox-root={id}
+  data-zoom-announce={copy.zoomAnnounce}
+  data-fit-announce={copy.fitAnnounce}
+  aria-label={copy.viewerLabel}
+>
+  <div class="lb-shell">
+    <div class="lb-stage" data-lb-stage>
+      <p class="lb-loading" data-lb-loading hidden>{copy.loadingHighRes}</p>
+    </div>
+
+    <div class="lb-bar">
+      <p class="lb-caption" data-lb-caption></p>
+      <p class="lb-meta" data-lb-meta></p>
+      <div class="lb-controls">
+        {!single && (
+          <>
+            <button type="button" data-lb-prev aria-label={copy.previous}>←</button>
+            <span class="lb-count" data-lb-count aria-hidden="true"></span>
+            <button type="button" data-lb-next aria-label={copy.next}>→</button>
+          </>
+        )}
+        <button type="button" data-lb-zoom aria-pressed="false">{copy.zoomIn}</button>
+        <a data-lb-original href="#" target="_blank" rel="noopener">{copy.openOriginal}</a>
+        <button type="button" data-lb-close>{copy.close}</button>
+      </div>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-lb-live></p>
+</dialog>
+
+<!-- is:global 필수 — 스테이지의 img/video 는 스크립트가 런타임에 만들어서
+     Astro 스코프 속성(data-astro-cid-*)이 없다. 스코프 스타일이면 선택자가 빗나가
+     맞춤(fit) 제약이 걸리지 않고 이미지가 화면을 넘친다. 선택자는 .media-lightbox 로 한정. -->
+<style is:global>
+  .media-lightbox {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: hidden;
+    color: var(--color-on-footer);
+  }
+  .media-lightbox::backdrop {
+    background: color-mix(in srgb, var(--color-footer) 96%, transparent);
+  }
+  .lb-shell {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+  }
+  .lb-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .lb-stage img {
+    width: auto;
+    height: auto;
+    max-width: 94vw;
+    max-height: 100%;
+    /* center 여야 한다 — 팬 경계 계산(clamp)이 "확대된 상자는 레이아웃 상자의
+       중심을 유지한다"를 전제로 한다. 0 0 이면 오른쪽·아래로만 커져서 반대쪽에
+       배경이 드러난다. */
+    transform-origin: center center;
+    transition: transform 180ms ease-out;
+    will-change: transform;
+  }
+  .lb-stage[data-zoomable='true'] img {
+    cursor: zoom-in;
+  }
+  .lb-stage[data-zoomed='true'] {
+    cursor: grab;
+  }
+  .lb-stage[data-zoomed='true'][data-dragging='true'] {
+    cursor: grabbing;
+  }
+  /* 확대는 transform 으로만 한다 — 레이아웃 크기는 맞춤 상태 그대로 두어야
+     1:1 배율 계산(확대 계층 실픽셀 ÷ 맞춤 레이아웃 폭)이 안정적이다. */
+  .lb-stage[data-zoomed='true'] img {
+    cursor: inherit;
+    transition: none;
+  }
+  .lb-stage video {
+    max-width: 94vw;
+    max-height: 100%;
+  }
+  .lb-loading {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4rem 0.75rem;
+    background: color-mix(in srgb, var(--color-footer) 82%, transparent);
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .lb-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.15rem;
+    width: 100%;
+    min-width: 0;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-on-footer) 14%, transparent);
+    background: color-mix(in srgb, var(--color-footer) 88%, transparent);
+    font-family: var(--font-sans);
+  }
+  .lb-caption {
+    flex: 1 1 20rem;
+    min-width: 0;
+    font-size: var(--text-caption);
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-on-footer) 80%, transparent);
+  }
+  .lb-meta {
+    font-size: var(--text-caption);
+    letter-spacing: 0.04em;
+    color: color-mix(in srgb, var(--color-on-footer) 60%, transparent);
+  }
+  .lb-controls {
+    display: flex;
+    flex-shrink: 0;
+    min-width: 0;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .lb-controls button,
+  .lb-controls a {
+    min-height: 3rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--color-on-footer) 35%, transparent);
+    background: transparent;
+    color: var(--color-on-footer);
+    font-family: inherit;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .lb-controls button:hover,
+  .lb-controls a:hover {
+    border-color: var(--color-on-footer);
+    background: color-mix(in srgb, var(--color-on-footer) 8%, transparent);
+  }
+  .lb-controls button:focus-visible,
+  .lb-controls a:focus-visible {
+    outline: 2px solid var(--color-on-footer);
+    outline-offset: 2px;
+  }
+  .lb-controls button[aria-pressed='true'] {
+    border-color: var(--color-on-footer);
+    background: var(--color-on-footer);
+    color: var(--color-footer);
+  }
+  .lb-count {
+    padding: 0 0.15rem;
+    font-size: var(--text-caption);
+    color: color-mix(in srgb, var(--color-on-footer) 60%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+  .lb-controls [hidden] {
+    display: none;
+  }
+
+  /* 좁은 화면에서는 하단 바가 3줄로 불어나 사진 볼 자리를 먹는다.
+     해상도 표기(부가 정보)를 접고 캡션은 두 줄로 잘라 바 높이를 억제한다. */
+  @media (max-width: 30rem) {
+    .media-lightbox .lb-bar {
+      gap: 0.5rem 0.75rem;
+      padding: 0.7rem 0.9rem;
+    }
+    .media-lightbox .lb-meta {
+      display: none;
+    }
+    .media-lightbox .lb-caption {
+      flex-basis: 100%;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .media-lightbox .lb-controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      flex: 1 1 100%;
+      width: 100%;
+      gap: 0.4rem;
+    }
+    .media-lightbox .lb-controls button,
+    .media-lightbox .lb-controls a {
+      width: 100%;
+      min-width: 0;
+      padding-inline: 0.45rem;
+      text-align: center;
+    }
+    .media-lightbox [data-lb-prev] {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .media-lightbox .lb-count {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+      justify-self: center;
+    }
+    .media-lightbox [data-lb-next] {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    .media-lightbox [data-lb-close] {
+      grid-column: 4;
+      grid-row: 1;
+    }
+    .media-lightbox [data-lb-zoom] {
+      grid-column: 1 / 3;
+      grid-row: 2;
+    }
+    .media-lightbox [data-lb-original] {
+      grid-column: 3 / 5;
+      grid-row: 2;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-stage img {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  interface Entry {
+    id: string;
+    type: 'image' | 'video';
+    caption: string;
+    alt: string;
+    fit: string;
+    zoom: string | null;
+    original: string | null;
+    natural: string | null;
+    videoSrc?: string;
+    duration?: string;
+  }
+
+  const MAX_SCALE = 4;
+  const PAN_STEP = 90;
+
+  document.querySelectorAll<HTMLDialogElement>('[data-lightbox-root]').forEach((dialog) => {
+    const id = dialog.dataset.lightboxRoot!;
+    const manifest = document.querySelector(`[data-lightbox-manifest="${id}"]`);
+    if (!manifest?.textContent) return;
+
+    const entries: Entry[] = JSON.parse(manifest.textContent);
+    const labels = {
+      zoomIn: dialog.querySelector<HTMLButtonElement>('[data-lb-zoom]')?.textContent ?? '',
+    };
+    const stage = dialog.querySelector<HTMLElement>('[data-lb-stage]')!;
+    const loading = dialog.querySelector<HTMLElement>('[data-lb-loading]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+    const meta = dialog.querySelector<HTMLElement>('[data-lb-meta]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-lb-count]');
+    const zoomBtn = dialog.querySelector<HTMLButtonElement>('[data-lb-zoom]')!;
+    const originalLink = dialog.querySelector<HTMLAnchorElement>('[data-lb-original]')!;
+    const live = dialog.querySelector<HTMLElement>('[data-lb-live]')!;
+
+    let index = 0;
+    let media: HTMLImageElement | HTMLVideoElement | null = null;
+    let zoomed = false;
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+    let pointerDownX = 0;
+    let pointerDownY = 0;
+    let dragMoved = false;
+    let suppressClick = false;
+    let panFrame = 0;
+    let loadToken = 0;
+
+    const current = () => entries[index];
+
+    function applyTransform() {
+      if (!(media instanceof HTMLImageElement)) return;
+      media.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }
+
+    // pointermove 안에서 레이아웃 측정과 transform 쓰기를 연달아 하면 확대된
+    // 이미지의 hit-test가 다시 일어나 입력 처리가 멎을 수 있다. 한 프레임에 한 번만
+    // 팬을 반영해 포인터 이벤트를 먼저 반환한다.
+    function schedulePan() {
+      if (panFrame) return;
+      panFrame = requestAnimationFrame(() => {
+        panFrame = 0;
+        clampPan();
+        applyTransform();
+      });
+    }
+
+    function clampPan() {
+      if (!(media instanceof HTMLImageElement)) return;
+      const box = stage.getBoundingClientRect();
+      const width = media.offsetWidth * scale;
+      const height = media.offsetHeight * scale;
+      const maxX = Math.max(0, (width - box.width) / 2);
+      const maxY = Math.max(0, (height - box.height) / 2);
+      tx = Math.min(maxX, Math.max(-maxX, tx));
+      ty = Math.min(maxY, Math.max(-maxY, ty));
+    }
+
+    function resetZoom() {
+      zoomed = false;
+      scale = 1;
+      tx = 0;
+      ty = 0;
+      stage.dataset.zoomed = 'false';
+      zoomBtn.setAttribute('aria-pressed', 'false');
+      applyTransform();
+    }
+
+    // 1:1 배율 = 확대 계층 실픽셀 / 맞춤 레이아웃 폭.
+    // offsetWidth(변형 전 레이아웃 값)를 써야 한다 — getBoundingClientRect 는 이미
+    // 적용된 scale 이 곱해져 있어서 재진입 때 배율이 어긋난다.
+    function oneToOneScale(img: HTMLImageElement) {
+      const layoutWidth = img.offsetWidth;
+      if (!layoutWidth) return 2;
+      const zoomWidth = Number(img.dataset.zoomWidth) || img.naturalWidth;
+      return Math.min(MAX_SCALE, Math.max(1.35, zoomWidth / layoutWidth));
+    }
+
+    async function enterZoom(originX?: number, originY?: number) {
+      const entry = current();
+      if (entry.type !== 'image' || !entry.zoom || !(media instanceof HTMLImageElement)) return;
+
+      const img = media;
+      zoomed = true;
+      stage.dataset.zoomed = 'true';
+      zoomBtn.setAttribute('aria-pressed', 'true');
+      scale = oneToOneScale(img);
+
+      if (originX !== undefined && originY !== undefined) {
+        const box = stage.getBoundingClientRect();
+        tx = (box.width / 2 - (originX - box.left)) * (scale - 1);
+        ty = (box.height / 2 - (originY - box.top)) * (scale - 1);
+      }
+      clampPan();
+      applyTransform();
+      live.textContent = dialog.dataset.zoomAnnounce ?? '';
+
+      if (img.dataset.tier !== 'zoom') {
+        const token = ++loadToken;
+        loading.hidden = false;
+        const hi = new Image();
+        hi.src = entry.zoom;
+        try {
+          await hi.decode();
+        } catch {
+          // 실패한 URL로 현재 이미지를 교체하지 않는다. 화면 맞춤 이미지를
+          // 확대한 상태는 유지하되 로딩 표시는 끝낸다.
+          if (token === loadToken) loading.hidden = true;
+          return;
+        }
+        if (token === loadToken && zoomed) {
+          img.src = entry.zoom;
+          img.dataset.tier = 'zoom';
+          img.dataset.zoomWidth = String(hi.naturalWidth);
+          scale = oneToOneScale(img);
+          clampPan();
+          applyTransform();
+        }
+        if (token === loadToken) loading.hidden = true;
+      }
+    }
+
+    function exitZoom() {
+      if (!zoomed) return;
+      resetZoom();
+      live.textContent = dialog.dataset.fitAnnounce ?? '';
+    }
+
+    function render(next: number) {
+      index = (next + entries.length) % entries.length;
+      const entry = current();
+      loadToken += 1;
+      loading.hidden = true;
+      stage.querySelectorAll('img, video').forEach((node) => {
+        if (node instanceof HTMLVideoElement) node.pause();
+        node.remove();
+      });
+      resetZoom();
+
+      if (entry.type === 'video') {
+        const video = document.createElement('video');
+        video.src = entry.videoSrc!;
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        video.setAttribute('aria-label', entry.alt);
+        stage.appendChild(video);
+        media = video;
+        stage.dataset.zoomable = 'false';
+        zoomBtn.hidden = true;
+        originalLink.hidden = true;
+        meta.textContent = entry.duration ?? '';
+      } else {
+        const img = document.createElement('img');
+        img.src = entry.fit;
+        img.alt = entry.alt;
+        // 브라우저 기본 이미지 drag-and-drop이 팬 제스처를 가로채지 않게 한다.
+        img.draggable = false;
+        img.dataset.tier = 'fit';
+        stage.appendChild(img);
+        media = img;
+        const canZoom = Boolean(entry.zoom);
+        stage.dataset.zoomable = String(canZoom);
+        zoomBtn.hidden = !canZoom;
+        zoomBtn.textContent = labels.zoomIn;
+        originalLink.hidden = !entry.original;
+        if (entry.original) originalLink.href = entry.original;
+        meta.textContent = entry.natural ?? '';
+      }
+
+      caption.textContent = entry.caption;
+      if (count) count.textContent = `${index + 1} / ${entries.length}`;
+      live.textContent = `${index + 1} / ${entries.length}. ${entry.caption}`;
+    }
+
+    function open(next: number) {
+      render(next);
+      if (!dialog.open) dialog.showModal();
+    }
+
+    document
+      .querySelectorAll<HTMLElement>(`[data-lightbox-open="${id}"]`)
+      .forEach((trigger) => {
+        trigger.addEventListener('click', () => open(Number(trigger.dataset.lightboxIndex ?? 0)));
+      });
+
+    stage.addEventListener('click', (event) => {
+      if (!(event.target instanceof HTMLImageElement)) return;
+      // 드래그가 끝난 직후 브라우저가 합성하는 click은 확대 토글이 아니다.
+      if (suppressClick) {
+        suppressClick = false;
+        return;
+      }
+      if (zoomed) exitZoom();
+      else void enterZoom(event.clientX, event.clientY);
+    });
+
+    zoomBtn.addEventListener('click', () => (zoomed ? exitZoom() : void enterZoom()));
+    dialog.querySelector('[data-lb-close]')!.addEventListener('click', () => dialog.close());
+    dialog.querySelector('[data-lb-prev]')?.addEventListener('click', () => render(index - 1));
+    dialog.querySelector('[data-lb-next]')?.addEventListener('click', () => render(index + 1));
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (!zoomed || !(event.target instanceof HTMLImageElement)) return;
+      dragging = true;
+      startX = event.clientX - tx;
+      startY = event.clientY - ty;
+      pointerDownX = event.clientX;
+      pointerDownY = event.clientY;
+      dragMoved = false;
+      stage.dataset.dragging = 'true';
+      stage.setPointerCapture(event.pointerId);
+    });
+    stage.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      tx = event.clientX - startX;
+      ty = event.clientY - startY;
+      if (Math.hypot(event.clientX - pointerDownX, event.clientY - pointerDownY) > 6) {
+        dragMoved = true;
+      }
+      schedulePan();
+    });
+    const endDrag = () => {
+      if (dragging && dragMoved) {
+        suppressClick = true;
+        // click이 합성되지 않는 입력 장치에서는 다음 실제 클릭까지 막지 않는다.
+        setTimeout(() => {
+          suppressClick = false;
+        }, 0);
+      }
+      dragging = false;
+      stage.dataset.dragging = 'false';
+    };
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    stage.addEventListener(
+      'wheel',
+      (event) => {
+        if (current().type !== 'image' || !current().zoom) return;
+        event.preventDefault();
+        if (!zoomed) {
+          if (event.deltaY < 0) void enterZoom(event.clientX, event.clientY);
+          return;
+        }
+        scale = Math.min(MAX_SCALE, Math.max(1, scale - event.deltaY * 0.0035));
+        if (scale <= 1.02) {
+          exitZoom();
+          return;
+        }
+        clampPan();
+        applyTransform();
+      },
+      { passive: false },
+    );
+
+    dialog.addEventListener('close', () => {
+      loadToken += 1;
+      if (panFrame) cancelAnimationFrame(panFrame);
+      panFrame = 0;
+      loading.hidden = true;
+      stage.querySelectorAll('img, video').forEach((node) => {
+        if (node instanceof HTMLVideoElement) node.pause();
+        node.remove();
+      });
+      media = null;
+      resetZoom();
+    });
+
+    // backdrop 클릭으로 닫기 — 확대 중에는 오작동 방지를 위해 무시.
+    dialog.addEventListener('mousedown', (event) => {
+      if (event.target === dialog && !zoomed) dialog.close();
+    });
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && zoomed) {
+        event.preventDefault();
+        exitZoom();
+        return;
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        if (zoomed) {
+          tx += PAN_STEP;
+          clampPan();
+          applyTransform();
+        } else if (entries.length > 1) render(index - 1);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        if (zoomed) {
+          tx -= PAN_STEP;
+          clampPan();
+          applyTransform();
+        } else if (entries.length > 1) render(index + 1);
+      }
+      if (event.key === '+' || event.key === '=') void enterZoom();
+      if (event.key === '-' || event.key === '0') exitZoom();
+    });
+  });
+</script>
