@@ -35,7 +35,7 @@ const formatBytes = (size: number | null) =>
       >← {copy.backToList}</a>
 
       <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
-        <p class="eyebrow !mb-0">{lang === 'ko' ? '활동 글' : 'Article'}</p>
+        <p class="eyebrow !mb-0">Article</p>
         <h1 class="mt-4 font-serif text-display-md font-semibold text-ink sm:text-display-lg">{post.title}</h1>
         {(post.eventDate || post.address) && (
           <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">
@@ -72,7 +72,7 @@ const formatBytes = (size: number | null) =>
 
         {grouped.images.length > 0 && (
           <section class="mt-10 border-t border-hairline-strong pt-8">
-            <p class="font-sans text-caption font-bold uppercase text-accent">{lang === 'ko' ? '사진' : 'Photos'}</p>
+            <p class="font-sans text-caption font-bold uppercase text-accent">Photos</p>
             <div class="mt-4 grid gap-5 sm:grid-cols-2">
               {grouped.images.map((item) => (
                 <figure>
@@ -92,7 +92,7 @@ const formatBytes = (size: number | null) =>
 
         {grouped.videos.length > 0 && (
           <section class="mt-10 border-t border-hairline-strong pt-8">
-            <p class="font-sans text-caption font-bold uppercase text-accent">{lang === 'ko' ? '영상' : 'Videos'}</p>
+            <p class="font-sans text-caption font-bold uppercase text-accent">Videos</p>
             <div class="mt-4 space-y-5">
               {grouped.videos.map((item) => (
                 <figure>

@@ -1,4 +1,4 @@
-// Astro 7 Content Layer — ko/en JSON 데이터 컬렉션과 Zod 스키마.
+// Astro 7 Content Layer — 영어 단일 JSON 데이터 컬렉션과 Zod 스키마.
 // 데이터는 src/data/*.json (file 로더). 각 항목의 "id"가 엔트리 키(slug).
 import { defineCollection } from 'astro:content';
 import { file } from 'astro/loaders';
@@ -9,9 +9,7 @@ import { z } from 'astro/zod';
 const members = defineCollection({
   loader: file('src/data/members.json'),
   schema: z.object({
-    lang: z.enum(['ko', 'en']).default('ko'),
     name: z.string(),
-    nameEn: z.string().optional(),
     role: z.string(),
     category: z.enum(['board', 'advisor', 'member']),
     group: z.enum(['leadership', 'directors', 'support']).optional(),
@@ -33,7 +31,6 @@ const members = defineCollection({
 const invitations = defineCollection({
   loader: file('src/data/invitations.json'),
   schema: z.object({
-    lang: z.enum(['ko', 'en']).default('ko'),
     year: z.number(),
     slug: z.string(),
     title: z.string(),

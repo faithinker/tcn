@@ -8,8 +8,8 @@ import { getContent } from '../../i18n/content';
 const lang = getLangFromUrl(Astro.url);
 const about = getContent(lang).about;
 
-// 창립총회 초청장(현재 1건). 언어별 첫 항목.
-const invitation = (await getCollection('invitations')).find((entry) => entry.data.lang === lang);
+// 창립총회 초청장(현재 1건).
+const [invitation] = await getCollection('invitations');
 const data = invitation?.data;
 ---
 

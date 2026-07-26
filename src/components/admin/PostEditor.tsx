@@ -58,11 +58,11 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
 
   const save = async () => {
     if (!title.trim()) {
-      setStatus('제목을 입력하세요.');
+      setStatus('Please enter a title.');
       return;
     }
     setBusy(true);
-    setStatus('저장 중…');
+    setStatus('Saving…');
     // tiptap-markdown 확장의 storage 타입은 Tiptap Storage 맵에 등록되지 않아 좁혀서 캐스트.
     const markdownStorage = (editor?.storage as Record<string, unknown> | undefined)?.markdown as
       | { getMarkdown(): string }
@@ -77,7 +77,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
     const result = (await response.json()) as { ok: boolean; post?: { id: string }; error?: string };
     setBusy(false);
     if (!response.ok || !result.ok) {
-      setStatus(`저장 실패: ${result.error ?? response.status}`);
+      setStatus(`Save failed: ${result.error ?? response.status}`);
       return;
     }
     if (!post && result.post) {
@@ -85,14 +85,14 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
       window.location.href = `/admin/posts/${result.post.id}`;
       return;
     }
-    setStatus('저장됨 ✓');
+    setStatus('Saved ✓');
   };
 
   const uploadFiles = async (files: FileList | null) => {
     if (!post || !files || files.length === 0) return;
     setBusy(true);
     for (const file of Array.from(files)) {
-      setStatus(`업로드 중: ${file.name}`);
+      setStatus(`Uploading: ${file.name}`);
       let uploadFile = file;
       if (file.type.startsWith('image/')) {
         try {
@@ -100,7 +100,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
           const name = file.name.replace(/\.[^.]+$/, '') + '.webp';
           uploadFile = new File([processed.blob], name, { type: 'image/webp' });
         } catch {
-          setStatus(`이미지 처리 실패: ${file.name}`);
+          setStatus(`Image processing failed: ${file.name}`);
           continue;
         }
       }
@@ -114,11 +114,11 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
         setMedia((current) => [...current, added]);
         setHeroMediaId((current) => current ?? (added.kind === 'image' ? added.id : current));
       } else {
-        setStatus(`업로드 실패(${file.name}): ${result.error ?? response.status}`);
+        setStatus(`Upload failed (${file.name}): ${result.error ?? response.status}`);
       }
     }
     setBusy(false);
-    setStatus('업로드 완료 ✓');
+    setStatus('Upload complete ✓');
   };
 
   const removeMedia = async (id: string) => {
@@ -128,7 +128,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
   };
 
   const deletePost = async () => {
-    if (!post || !window.confirm('이 글을 삭제할까요? (숨김 처리됩니다)')) return;
+    if (!post || !window.confirm('Delete this post? (It will be hidden, not erased.)')) return;
     await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
     window.location.href = '/admin';
   };
@@ -147,26 +147,26 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
   return (
     <div className="space-y-6">
       <div>
-        <label className={labelText}>제목</label>
+        <label className={labelText}>Title</label>
         <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
       <div>
-        <label className={labelText}>요약 (선택)</label>
+        <label className={labelText}>Summary (optional)</label>
         <input className={field} value={summary ?? ''} onChange={(e) => setSummary(e.target.value)} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelText}>개최일</label>
+          <label className={labelText}>Event date</label>
           <input type="date" className={field} value={eventDate ?? ''} onChange={(e) => setEventDate(e.target.value)} />
         </div>
         <div>
-          <label className={labelText}>주소</label>
+          <label className={labelText}>Address</label>
           <input className={field} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
         </div>
       </div>
 
       <div>
-        <label className={labelText}>본문</label>
+        <label className={labelText}>Body</label>
         <div className="border border-hairline-strong bg-canvas">
           <div className="flex flex-wrap gap-1 border-b border-hairline bg-canvas-soft px-2 py-1.5">
             {toolbarButton('B', editor?.isActive('bold') ?? false, () => editor?.chain().focus().toggleBold().run())}
@@ -177,7 +177,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
             {toolbarButton('1. List', editor?.isActive('orderedList') ?? false, () => editor?.chain().focus().toggleOrderedList().run())}
             {toolbarButton('Quote', editor?.isActive('blockquote') ?? false, () => editor?.chain().focus().toggleBlockquote().run())}
             {toolbarButton('Link', editor?.isActive('link') ?? false, () => {
-              const url = window.prompt('링크 URL (https://…)');
+              const url = window.prompt('Link URL (https://…)');
               if (url) editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
               else editor?.chain().focus().unsetLink().run();
             })}
@@ -187,9 +187,9 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
       </div>
 
       <div>
-        <label className={labelText}>미디어 (사진·영상·문서)</label>
+        <label className={labelText}>Media (photos, video, documents)</label>
         {!post ? (
-          <p className="text-caption text-body-muted">글을 먼저 저장하면 미디어를 첨부할 수 있습니다.</p>
+          <p className="text-caption text-body-muted">Save the post first to attach media.</p>
         ) : (
           <>
             <div
@@ -211,8 +211,8 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
                 dragging ? 'border-accent bg-canvas-soft' : 'border-hairline-strong bg-canvas'
               }`}
             >
-              <p className="text-caption font-bold text-ink">사진·영상·문서를 여기로 드래그</p>
-              <p className="mt-1 text-caption text-body-muted">또는 파일 선택</p>
+              <p className="text-caption font-bold text-ink">Drag photos, video, or documents here</p>
+              <p className="mt-1 text-caption text-body-muted">or choose files</p>
               <input
                 type="file"
                 multiple
@@ -229,7 +229,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
                       <img src={`/media/${item.r2Key}`} alt="" className="aspect-square w-full bg-canvas-band object-cover" />
                     ) : (
                       <div className="flex aspect-square w-full items-center justify-center bg-canvas-band text-caption text-body-muted">
-                        {item.kind === 'video' ? '🎬 영상' : '📄 문서'}
+                        {item.kind === 'video' ? '🎬 Video' : '📄 Document'}
                       </div>
                     )}
                     <p className="mt-1 truncate text-caption text-body-muted">{item.filename}</p>
@@ -240,20 +240,20 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
                           onClick={() => setHeroMediaId(item.id)}
                           className={`font-bold ${heroMediaId === item.id ? 'text-accent' : 'text-link'}`}
                         >
-                          {heroMediaId === item.id ? '★ 대표' : '대표 지정'}
+                          {heroMediaId === item.id ? '★ Cover' : 'Set as cover'}
                         </button>
                       ) : (
                         <span />
                       )}
                       <button type="button" onClick={() => removeMedia(item.id)} className="font-bold text-accent">
-                        삭제
+                        Delete
                       </button>
                     </div>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="mt-2 text-caption text-body-muted">대표(hero) 변경은 저장해야 반영됩니다.</p>
+            <p className="mt-2 text-caption text-body-muted">Cover image changes take effect after saving.</p>
           </>
         )}
       </div>
@@ -265,11 +265,11 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
           disabled={busy}
           className="bg-ink px-5 py-2 font-sans text-body-sm font-bold text-on-primary hover:opacity-90 disabled:opacity-50"
         >
-          {post ? '저장' : '만들기'}
+          {post ? 'Save' : 'Create'}
         </button>
         {post && (
           <button type="button" onClick={deletePost} disabled={busy} className="text-caption font-bold text-accent underline">
-            삭제
+            Delete
           </button>
         )}
         <span className="text-caption text-body-muted">{status}</span>

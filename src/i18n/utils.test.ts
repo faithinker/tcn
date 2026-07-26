@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, getLangFromUrl, localizePath, stripLangPrefix } from './utils';
+import { formatDate, getLangFromUrl, localizePath } from './utils';
 
 // 영어 단일 심(shim) — 시그니처는 유지하되 프리픽스 없는 루트 트리를 가리킨다.
 describe('single-language i18n shim', () => {
@@ -14,13 +14,6 @@ describe('single-language i18n shim', () => {
     expect(localizePath('/about')).toBe('/about');
     expect(localizePath('about')).toBe('/about');
     expect(localizePath('/')).toBe('/');
-  });
-
-  it('stripLangPrefix removes legacy ko/en prefixes only', () => {
-    expect(stripLangPrefix('/ko/about')).toBe('/about');
-    expect(stripLangPrefix('/en/seminars/')).toBe('/seminars');
-    expect(stripLangPrefix('/about')).toBe('/about');
-    expect(stripLangPrefix('/')).toBe('/');
   });
 
   it('formatDate renders English dates from ISO date or timestamp', () => {

@@ -22,15 +22,7 @@ export function localizePath(path: string, _lang?: UiLang): string {
   return clean;
 }
 
-/** 구 /ko·/en 프리픽스 제거 — 리다이렉트·정규화용으로만 남긴다. */
-export function stripLangPrefix(pathname: string): string {
-  const parts = pathname.split('/');
-  if (parts[1] === 'ko' || parts[1] === 'en') {
-    const rest = '/' + parts.slice(2).join('/');
-    return rest === '/' ? '/' : rest.replace(/\/$/, '');
-  }
-  return pathname === '/' ? '/' : pathname.replace(/\/$/, '');
-}
+// 구 /ko·/en 프리픽스 회수는 public/_redirects의 301 규칙이 엣지에서 처리한다.
 
 const EN_MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
