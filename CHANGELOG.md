@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Feature
 - Added a responsive founding-assembly event record with seven photographs, a lazy-loaded short film, high-resolution lightbox zoom and pan, captions, and original-image downloads. (Branch: `feat/content`) - Implemented by Codex
 - Hardened the admin post and media lifecycle with validated payloads, optimistic revisions, streaming uploads, cleanup reconciliation, transcript-aware video publishing, and resilient editor feedback. (Branch: `fix/routing-audit`) - Implemented by Codex
+### Changed
+- Simplified the founding-assembly media viewer to a full-screen previous/next carousel, removing zoom, pan, original-file controls, and high-resolution zoom derivatives. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Fix
 - Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
 - Switched Cloudflare image derivatives to build-time generation, added a range-capable mobile preview, and kept the fitted image when high-resolution decoding fails. (Branch: `feat/content`) - Implemented by Codex

@@ -96,21 +96,6 @@ describe('founding-media 데이터 계약', () => {
     expect(() => parseFoundingMedia([{ ...item, role: 'lead', span: 'full' }])).toThrow(/span/);
   });
 
-  it('zoomable:false 를 명시적으로 보존한다', () => {
-    const [item] = parseFoundingMedia([
-      {
-        id: 'lead',
-        type: 'image',
-        src: 'x',
-        alt: 'a'.repeat(20),
-        caption: 'c'.repeat(20),
-        role: 'lead',
-        zoomable: false,
-      },
-    ]);
-    expect(item.type === 'image' && item.zoomable).toBe(false);
-  });
-
   it('id 중복을 잡는다', () => {
     const item = { id: 'dup', type: 'image', src: 'x', alt: 'a'.repeat(20), caption: 'c' };
     expect(() => parseFoundingMedia([{ ...item, role: 'lead' }, item])).toThrow(/중복/);
@@ -138,7 +123,6 @@ describe('founding-media 데이터 계약', () => {
           src: 'x',
           alt: 'a'.repeat(20),
           caption: 'c'.repeat(20),
-          zoomable: true,
         },
       ]),
     ).toThrow(/lead/);
