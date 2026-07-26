@@ -7,7 +7,7 @@ import react from '@astrojs/react';
 // 8단계: 영어 단일 사이트(프리픽스 없는 루트 트리). 콘텐츠는 D1 단일 원천 —
 // 구 /ko·/en 경로와 legacy slug 는 public/_redirects 의 정적 301 표가 담당한다.
 export default defineConfig({
-  site: 'https://tcn-ezj.pages.dev',
+  site: 'https://tcn.faithinker12.workers.dev',
   integrations: [react()],
 
   vite: {

@@ -16,7 +16,7 @@ const STATIC_PATHS = [
 ];
 
 export const GET: APIRoute = async ({ site }) => {
-  const siteRoot = site ?? new URL('https://tcn-ezj.pages.dev');
+  const siteRoot = site ?? new URL('https://tcn.faithinker12.workers.dev');
 
   let postPaths: string[] = [];
   try {
