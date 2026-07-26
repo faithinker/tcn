@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { getDB, listPosts } from '../lib/db';
+import { getDB } from '../lib/db';
+import { getSeminarCollection } from '../lib/seminar-service';
 
 // 영어 단일 루트 트리: 정적 페이지 + D1 공개 글. SSR(글 즉시 반영).
 export const prerender = false;
@@ -20,7 +21,7 @@ export const GET: APIRoute = async ({ site }) => {
 
   let postPaths: string[] = [];
   try {
-    postPaths = (await listPosts(getDB())).map((post) => `/seminars/p/${post.id}/`);
+    postPaths = (await getSeminarCollection(getDB())).chronological.map((seminar) => `${seminar.href}/`);
   } catch {
     postPaths = [];
   }

@@ -4,6 +4,8 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import { Markdown } from 'tiptap-markdown';
 import { useState } from 'react';
 import { processImage } from '../../lib/media/process-image';
+import { seminarHref } from '../../lib/seminar-url';
+import { formatSeminarOrdinalLabel } from '../../lib/seminars';
 
 export interface EditorMedia {
   id: string;
@@ -28,13 +30,22 @@ export interface EditorPost {
 interface Props {
   post?: EditorPost | null;
   media?: EditorMedia[];
+  seminarSequence?: number;
 }
 
 const field =
   'w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none';
 const labelText = 'mb-1 block text-caption font-bold text-body-muted';
 
-export default function PostEditor({ post = null, media: initialMedia = [] }: Props) {
+const saveErrors: Record<string, string> = {
+  event_date_required: 'Please select the seminar date.',
+  event_date_invalid: 'Please select a valid calendar date.',
+  event_date_conflict: 'Another seminar already uses this date.',
+  event_date_must_follow_latest: 'A new seminar date must be later than the latest seminar.',
+  event_date_immutable: 'The event date is locked because it determines the public URL and seminar sequence.',
+};
+
+export default function PostEditor({ post = null, media: initialMedia = [], seminarSequence = 1 }: Props) {
   const [title, setTitle] = useState(post?.title ?? '');
   const [summary, setSummary] = useState(post?.summary ?? '');
   const [eventDate, setEventDate] = useState(post?.eventDate ?? '');
@@ -44,6 +55,9 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [dragging, setDragging] = useState(false);
+  const eventDateLocked = Boolean(post?.eventDate);
+  const publicHref = seminarHref(eventDate);
+  const ordinalLabel = formatSeminarOrdinalLabel(seminarSequence);
 
   const editor = useEditor({
     extensions: [
@@ -77,7 +91,7 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
     const result = (await response.json()) as { ok: boolean; post?: { id: string }; error?: string };
     setBusy(false);
     if (!response.ok || !result.ok) {
-      setStatus(`Save failed: ${result.error ?? response.status}`);
+      setStatus(saveErrors[result.error ?? ''] ?? `Save failed: ${result.error ?? response.status}`);
       return;
     }
     if (!post && result.post) {
@@ -157,12 +171,42 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelText}>Event date</label>
-          <input type="date" className={field} value={eventDate ?? ''} onChange={(e) => setEventDate(e.target.value)} />
+          <input
+            type="date"
+            className={`${field} disabled:cursor-not-allowed disabled:bg-canvas-band disabled:text-body-muted`}
+            value={eventDate ?? ''}
+            onChange={(e) => setEventDate(e.target.value)}
+            disabled={eventDateLocked}
+            aria-describedby="event-date-help"
+          />
+          <p id="event-date-help" className="mt-1 text-caption text-body-muted">
+            {eventDateLocked
+              ? 'Locked after creation because the date determines the sequence and public URL.'
+              : 'New seminars must use a date later than the latest seminar.'}
+          </p>
         </div>
         <div>
           <label className={labelText}>Address</label>
           <input className={field} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
         </div>
+      </div>
+
+      <div className="border-y border-hairline-strong bg-canvas-soft px-4 py-4">
+        <p className="text-caption font-bold uppercase text-accent">Public seminar identity</p>
+        {publicHref ? (
+          <>
+            <p className="mt-2 font-serif text-body-serif font-semibold text-ink">{ordinalLabel}</p>
+            {post ? (
+              <a href={publicHref} className="mt-1 inline-flex min-h-[44px] items-center font-mono text-caption font-bold text-link underline">
+                {publicHref}
+              </a>
+            ) : (
+              <code className="mt-2 block font-mono text-caption font-bold text-body-muted">{publicHref}</code>
+            )}
+          </>
+        ) : (
+          <p className="mt-2 text-body-sm text-body-muted">Select an event date to preview the public URL.</p>
+        )}
       </div>
 
       <div>

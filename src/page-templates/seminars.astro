@@ -3,30 +3,26 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { getContent } from '../i18n/content';
 import { formatDate, getLangFromUrl } from '../i18n/utils';
-import { getDB, listPosts, type Post } from '../lib/db';
+import { getDB } from '../lib/db';
+import { getSeminarCollection } from '../lib/seminar-service';
+import type { SeminarView } from '../lib/seminars';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).seminars;
 
-// D1 단일 원천. 예정/지난 구분은 event_date 로 파생(작성자 선택 없음 — 확정 UX 규칙).
-// D1 미가용 환경(정적 프리뷰 등)에서는 빈 목록으로 조용히 동작한다.
-let posts: Post[] = [];
+// D1 단일 원천. 공통 도메인이 event_date 기반 순번·상태·URL을 한 번 파생한다.
+let next: SeminarView | null = null;
+let rest: SeminarView[] = [];
+let past: SeminarView[] = [];
+let loadFailed = false;
 try {
-  posts = await listPosts(getDB());
+  const seminars = await getSeminarCollection(getDB());
+  next = seminars.next;
+  rest = seminars.upcoming.slice(1);
+  past = seminars.past;
 } catch {
-  posts = [];
+  loadFailed = true;
 }
-const today = new Date().toISOString().slice(0, 10);
-const upcoming = posts
-  .filter((p) => p.eventDate && p.eventDate >= today)
-  .sort((a, b) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''));
-// 지난 행사 + 일반 활동 글(event_date 없음)을 하나의 아카이브로.
-const past = posts.filter((p) => !upcoming.includes(p));
-
-// 차기 = 가장 이른 예정 1건(히어로 전담). '예정' 목록은 나머지만.
-const next = upcoming[0];
-const rest = upcoming.slice(1);
-const detailHref = (p: Post) => `/seminars/p/${p.id}`;
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>
@@ -44,21 +40,21 @@ const detailHref = (p: Post) => `/seminars/p/${p.id}`;
     <section class="bg-canvas px-5 pb-16 sm:pb-20">
       <div class="mx-auto max-w-[75rem]">
         <a
-          href={detailHref(next)}
+          href={next.href}
           class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
         >
           <div class="flex flex-wrap items-center gap-3">
             <p class="eyebrow !mb-0">{copy.nextEyebrow}</p>
             <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
-              {copy.upcomingBadge}
+              {next.status === 'today' ? copy.todayBadge : copy.upcomingBadge}
             </span>
           </div>
           <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
-            {formatDate(next.eventDate ?? '', lang)}
+            {formatDate(next.eventDate, lang)}
           </p>
-          <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.title}</p>
+          <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.ordinalLabel}</p>
           <p class="mt-2 font-sans text-body-sans text-body-muted">
-            {[next.address, next.summary ?? copy.details].filter(Boolean).join(' · ')}
+            {[next.title !== next.ordinalLabel ? next.title : null, next.address, next.summary ?? copy.details].filter(Boolean).join(' · ')}
           </p>
           <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
             {copy.viewDetail} →
@@ -73,17 +69,18 @@ const detailHref = (p: Post) => `/seminars/p/${p.id}`;
       <div class="mt-8 grid gap-4">
         {rest.length ? rest.map((post) => (
           <a
-            href={detailHref(post)}
+            href={post.href}
             class="group block border-y border-hairline-strong bg-canvas p-5 no-underline sm:p-8"
           >
             <p class="font-sans text-caption font-bold uppercase text-accent">
-              {formatDate(post.eventDate ?? '', lang)}
+              {formatDate(post.eventDate, lang)}
             </p>
-            <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.title}</h2>
+            <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.ordinalLabel}</h2>
+            {post.title !== post.ordinalLabel && <p class="mt-2 font-serif text-body-serif text-body">{post.title}</p>}
             {post.address && <p class="mt-3 font-sans text-body-sans text-body-muted">{post.address}</p>}
             <span class="mt-4 inline-flex items-center font-sans text-body-sm font-bold text-link underline">{copy.viewDetail} →</span>
           </a>
-        )) : <p class="font-serif text-body-serif text-body">{copy.empty}</p>}
+        )) : <p class="font-serif text-body-serif text-body">{loadFailed ? copy.loadError : copy.empty}</p>}
       </div>
     </SectionTile>
   )}
@@ -91,19 +88,20 @@ const detailHref = (p: Post) => `/seminars/p/${p.id}`;
   <SectionTile variant="canvas" eyebrow={copy.pastEyebrow} title={copy.pastTitle}>
     <div class="mt-8 grid gap-4">
       {past.length ? past.map((post) => (
-        <a href={detailHref(post)} class="group block border-t border-hairline py-7 no-underline">
+        <a href={post.href} class="group block border-t border-hairline py-7 no-underline">
           {post.eventDate && (
             <p class="font-sans text-caption font-bold uppercase text-accent">
               {formatDate(post.eventDate, lang)}
             </p>
           )}
-          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.title}</h2>
+          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.ordinalLabel}</h2>
+          {post.title !== post.ordinalLabel && <p class="mt-2 font-serif text-body-serif text-body">{post.title}</p>}
           {(post.summary || post.address) && (
             <p class="mt-3 font-sans text-body-sans text-body-muted">{post.summary ?? post.address}</p>
           )}
           <span class="mt-4 inline-flex items-center font-sans text-body-sm font-bold text-link underline">{copy.viewDetail} →</span>
         </a>
-      )) : <p class="font-serif text-body-serif text-body">{copy.empty}</p>}
+      )) : <p class="font-serif text-body-serif text-body">{loadFailed ? copy.loadError : copy.empty}</p>}
     </div>
   </SectionTile>
 </BaseLayout>

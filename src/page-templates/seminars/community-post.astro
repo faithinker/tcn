@@ -1,14 +1,15 @@
 ---
-// 라우트 아님(page-templates). /{lang}/seminars/p/[id] SSR 래퍼가 D1에서
+// 라우트 아님(page-templates). /seminars/[event_date] SSR 래퍼가 D1에서
 // post + media 를 조회해 prop 으로 주입한다. 본문은 마크다운 → HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
 import { getContent } from '../../i18n/content';
 import { groupMedia, renderPostBody } from '../../lib/posts-view';
-import type { Media, Post } from '../../lib/db/types';
+import type { Media } from '../../lib/db/types';
+import type { SeminarView } from '../../lib/seminars';
 
 interface Props {
-  post: Post;
+  post: SeminarView;
   media: Media[];
 }
 
@@ -35,7 +36,7 @@ const formatBytes = (size: number | null) =>
       >← {copy.backToList}</a>
 
       <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
-        <p class="eyebrow !mb-0">Article</p>
+        <p class="eyebrow !mb-0">{post.ordinalLabel}</p>
         <h1 class="mt-4 font-serif text-display-md font-semibold text-ink sm:text-display-lg">{post.title}</h1>
         {(post.eventDate || post.address) && (
           <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">

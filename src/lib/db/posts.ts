@@ -17,6 +17,17 @@ export async function listPosts(db: D1Database): Promise<Post[]> {
   return rs.results;
 }
 
+export async function listSeminarPosts(db: D1Database): Promise<Post[]> {
+  const rs = await db
+    .prepare(
+      `select ${COLUMNS} from posts
+       where event_date is not null and deleted_at is null
+       order by event_date asc, created_at asc`,
+    )
+    .all<Post>();
+  return rs.results;
+}
+
 export async function getPost(
   db: D1Database,
   id: string,
@@ -24,6 +35,15 @@ export async function getPost(
 ): Promise<Post | null> {
   const where = opts.includeDeleted ? 'id = ?1' : 'id = ?1 and deleted_at is null';
   return (await db.prepare(`select ${COLUMNS} from posts where ${where}`).bind(id).first<Post>()) ?? null;
+}
+
+export async function getPostByEventDate(db: D1Database, eventDate: string): Promise<Post | null> {
+  return (
+    (await db
+      .prepare(`select ${COLUMNS} from posts where event_date = ?1 and deleted_at is null`)
+      .bind(eventDate)
+      .first<Post>()) ?? null
+  );
 }
 
 export async function createPost(db: D1Database, input: PostInput): Promise<Post> {

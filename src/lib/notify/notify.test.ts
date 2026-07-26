@@ -6,6 +6,7 @@ const post: NotifyPost = {
   id: 'p1',
   title: 'First International Seminar',
   summary: 'Experts convened.',
+  eventDate: '2025-12-26',
 };
 
 const config: NotifyConfig = {
@@ -31,7 +32,7 @@ describe('sendPostNotifications', () => {
     const discord = calls.find((c) => c.url.includes('discord'));
     const telegram = calls.find((c) => c.url.includes('telegram'));
     expect(discord?.body).toContain('New post');
-    expect(discord?.body).toContain('/seminars/p/p1');
+    expect(discord?.body).toContain('/seminars/2025-12-26');
     expect(telegram?.body).toContain('Updated post'.replace('Updated', 'New')); // 'New post'
     expect(telegram?.body).toContain('-100123');
   });

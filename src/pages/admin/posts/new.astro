@@ -4,10 +4,13 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
 import { getSessionUid } from '../../../lib/auth';
 import { getDB, getUserById } from '../../../lib/db';
+import { getSeminarCollection } from '../../../lib/seminar-service';
 
 const uid = await getSessionUid(Astro.request);
 if (!uid) return Astro.redirect('/admin/login');
-const user = await getUserById(getDB(), uid);
+const db = getDB();
+const [user, seminars] = await Promise.all([getUserById(db, uid), getSeminarCollection(db)]);
+const seminarSequence = seminars.chronological.length + 1;
 ---
 
 <AdminLayout title="New post" user={user}>
@@ -15,5 +18,5 @@ const user = await getUserById(getDB(), uid);
     <h1 class="font-serif text-display-sm font-semibold text-ink">New post</h1>
     <a href="/admin" class="text-caption font-bold text-link underline underline-offset-2">← Posts</a>
   </div>
-  <PostEditor client:load />
+  <PostEditor client:load seminarSequence={seminarSequence} />
 </AdminLayout>

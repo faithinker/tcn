@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
-import { getDB, softDeletePost, updatePost } from '../../../lib/db';
+import { getDB, getPost, listSeminarPosts, softDeletePost, updatePost } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
+import {
+  isSeminarDateConflictError,
+  validateSeminarDate,
+} from '../../../lib/seminar-validation';
 
 export const prerender = false;
 
@@ -26,14 +30,38 @@ export const PUT: APIRoute = async ({ request, params }) => {
   const title = payload?.title?.trim();
   if (!title) return Response.json({ ok: false, error: 'title_required' }, { status: 400 });
 
-  const post = await updatePost(getDB(), id, {
-    title,
-    summary: payload?.summary?.trim() || null,
-    eventDate: payload?.eventDate?.trim() || null,
-    address: payload?.address?.trim() || null,
-    body: payload?.body ?? '',
-    heroMediaId: payload?.heroMediaId ?? null,
+  const db = getDB();
+  const [currentPost, seminarPosts] = await Promise.all([getPost(db, id), listSeminarPosts(db)]);
+  if (!currentPost) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
+
+  const eventDate = payload?.eventDate?.trim() || null;
+  const existingDates = seminarPosts.map((post) => post.eventDate).filter((date): date is string => Boolean(date));
+  const dateError = validateSeminarDate({
+    eventDate,
+    currentEventDate: currentPost.eventDate,
+    existingDates,
   });
+  if (dateError) {
+    const status = dateError === 'event_date_required' || dateError === 'event_date_invalid' ? 400 : 409;
+    return Response.json({ ok: false, error: dateError }, { status });
+  }
+
+  let post;
+  try {
+    post = await updatePost(db, id, {
+      title,
+      summary: payload?.summary?.trim() || null,
+      eventDate,
+      address: payload?.address?.trim() || null,
+      body: payload?.body ?? '',
+      heroMediaId: payload?.heroMediaId ?? null,
+    });
+  } catch (error) {
+    if (isSeminarDateConflictError(error)) {
+      return Response.json({ ok: false, error: 'event_date_conflict' }, { status: 409 });
+    }
+    throw error;
+  }
   if (!post) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
   // 알림은 베스트에포트 백그라운드 — 저장 응답을 막지 않는다.
   notifyPostChange(request.url, post, 'updated');

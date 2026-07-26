@@ -1,0 +1,19 @@
+---
+// Public seminar detail (SSR). event_date is the stable, human-readable URL key.
+import CommunityPost from '../../page-templates/seminars/community-post.astro';
+import { getDB, listMediaForPost } from '../../lib/db';
+import { seminarHref } from '../../lib/seminar-url';
+import { getSeminarByEventDate } from '../../lib/seminar-service';
+
+export const prerender = false;
+
+const eventDate = Astro.params.date ?? '';
+if (!seminarHref(eventDate)) return new Response(null, { status: 404 });
+
+const db = getDB();
+const post = await getSeminarByEventDate(db, eventDate);
+if (!post) return new Response(null, { status: 404 });
+const media = await listMediaForPost(db, post.id);
+---
+
+<CommunityPost post={post} media={media} />
