@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
 import { getDB, softDeletePost, updatePost } from '../../../lib/db';
+import { notifyPostChange } from '../../../lib/notify';
 
 export const prerender = false;
 
@@ -34,6 +35,8 @@ export const PUT: APIRoute = async ({ request, params }) => {
     heroMediaId: payload?.heroMediaId ?? null,
   });
   if (!post) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
+  // 알림은 베스트에포트 백그라운드 — 저장 응답을 막지 않는다.
+  notifyPostChange(request.url, post, 'updated');
   return Response.json({ ok: true, post });
 };
 

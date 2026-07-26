@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
 import { createPost, getDB } from '../../../lib/db';
+import { notifyPostChange } from '../../../lib/notify';
 
 export const prerender = false;
 
@@ -31,5 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
     heroMediaId: payload?.heroMediaId ?? null,
     authorId: uid,
   });
+  // 알림은 베스트에포트 백그라운드 — 저장 응답을 막지 않는다.
+  notifyPostChange(request.url, post, 'created');
   return Response.json({ ok: true, post });
 };
