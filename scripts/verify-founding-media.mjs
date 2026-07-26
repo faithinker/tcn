@@ -114,7 +114,7 @@ try {
   );
   check(
     '상세 보기 사진을 다시 눌러도 확대 상태가 생기지 않는다',
-    !(await stage.evaluate((node) => node.hasAttribute('data-zoomed'))) &&
+    (await stage.evaluate((node) => node.dataset.zoomed === undefined)) &&
       (await image.evaluate((node) => node.style.transform)) === transformBeforeClick,
   );
 

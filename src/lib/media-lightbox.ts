@@ -9,7 +9,7 @@ export interface LightboxEntry {
 
 export function serializeLightboxEntries(entries: LightboxEntry[]): string {
   return JSON.stringify(entries)
-    .replace(/</g, '\\u003c')
-    .replace(/\u2028/g, '\\u2028')
-    .replace(/\u2029/g, '\\u2029');
+    .replaceAll('<', String.raw`\u003c`)
+    .replaceAll('\u2028', String.raw`\u2028`)
+    .replaceAll('\u2029', String.raw`\u2029`);
 }
