@@ -1,18 +1,16 @@
 ---
 // L4: Header — 종이(canvas) 배경 + 하단 블랙 헤어라인. 데스크톱 nav / 모바일 햄버거.
 // 내비=산세리프(Pretendard), 탭타깃 ≥48px, ko/en 언어 전환 제공.
-import { useTranslations, localizePath, switchLangPath } from '../i18n/utils';
+import { useTranslations, localizePath } from '../i18n/utils';
 import type { UiKey, UiLang } from '../i18n/ui';
 import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
-  lang: UiLang;
+  lang?: UiLang;
 }
 
-const { lang } = Astro.props;
+const { lang = 'en' } = Astro.props;
 const t = useTranslations(lang);
-const koPath = switchLangPath(Astro.url.pathname, 'ko');
-const enPath = switchLangPath(Astro.url.pathname, 'en');
 
 interface NavItem {
   key: UiKey;
@@ -114,26 +112,6 @@ const isExact = (href: string) => {
     </nav>
 
     <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-      <nav class="flex items-center font-sans text-caption font-bold" aria-label={t('common.language')}>
-        <a
-          href={enPath}
-          data-language-preference="en"
-          hreflang="en"
-          lang="en"
-          aria-current={lang === 'en' ? 'page' : undefined}
-          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
-        >EN</a>
-        <span aria-hidden="true" class="text-body-muted">/</span>
-        <a
-          href={koPath}
-          data-language-preference="ko"
-          hreflang="ko"
-          lang="ko"
-          aria-current={lang === 'ko' ? 'page' : undefined}
-          class="inline-flex min-h-11 items-center px-2 text-ink no-underline hover:text-link aria-[current]:text-link aria-[current]:underline"
-        >{lang === 'en' ? 'KO' : '한국어'}</a>
-      </nav>
-
       <ThemeToggle lang={lang} />
 
       <button id="navToggle"
@@ -207,16 +185,6 @@ const isExact = (href: string) => {
     </ul>
   </nav>
 </header>
-
-<script is:inline>
-  document.querySelectorAll('[data-language-preference]').forEach((link) => {
-    link.addEventListener('click', () => {
-      const language = link.getAttribute('data-language-preference');
-      if (language !== 'ko' && language !== 'en') return;
-      document.cookie = `tcn_locale=${language}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`;
-    });
-  });
-</script>
 
 <script>
   const btn = document.getElementById('navToggle');

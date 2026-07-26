@@ -1,141 +1,47 @@
 # TCN Content Architecture
 
-Updated: 2026-07-20
+Updated: 2026-07-26 (8단계 — Cloudflare D1 전면 전환, 영어 단일)
 
-Runtime: Astro 7 static build
+Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) — 정적 프리렌더 + 동적 SSR. 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`).
 
-Localized routes: Korean (`/ko/`) and English (`/en/`)
+## 1. 원칙
 
-Root routing: `/` redirects by saved `tcn_locale` preference, then by country (`KR` → `/ko/`, all others → `/en/`)
+- **콘텐츠 단일 원천 = D1** (`tcn-content`): 세미나·활동 글 전부 `posts` 테이블. 회차 개념 없음 — 미래 `event_date` 글이 곧 "차기 세미나".
+- **글 저장 = 즉시 공개**: 공개 페이지가 D1을 SSR로 조회하므로 재빌드·deploy hook 없음.
+- **영어 단일 사이트**: `/ko`·`/en` 프리픽스 없음. 구 URL은 `public/_redirects` 정적 301 표가 전담.
+- 공개 콘텐츠는 확정 사실만. 미정 정보는 명시적 폴백(`To be announced`).
 
-## 1. Source and publication policy
+## 2. 라우트
 
-Public content must be backed by the founding declaration, bylaws, invitation, or confirmed questionnaire responses. Do not invent officer names, affiliations, seminar programmes, contact channels, fees, or registration links.
-
-Missing information uses an explicit public fallback such as `추후 공개` or `To be announced`. Internal markers such as `[필요]` must never render. Officer photographs remain unpublished until both the image and consent are confirmed.
-
-## 2. Current information architecture
-
-The five top-level navigation items are Home, About, People, Seminars, and Contact. Korean and English use the same page components and route shape.
-
-| Korean route | English route | Source |
+| 경로 | 렌더 | 소스 |
 | --- | --- | --- |
-| `/ko/` | `/en/` | `content.ts`, seminar summary |
-| `/ko/about` | `/en/about` | `content.ts`, `history.json` |
-| `/ko/about/founding` | `/en/about/founding` | `content.ts`, `invitations.json` |
-| `/ko/about/declaration` | `/en/about/declaration` | `content.ts` |
-| `/ko/about/bylaws` | `/en/about/bylaws` | `content.ts`, `2512TCN정관.docx` |
-| `/ko/people` | `/en/people` | `content.ts`, `members.json` |
-| `/ko/seminars` | `/en/seminars` | `content.ts`, `seminars.json` |
-| `/ko/seminars/[slug]` | `/en/seminars/[slug]` | `seminars.json` |
-| `/ko/contact` | `/en/contact` | `content.ts`, optional `PUBLIC_MEMBERSHIP_FORM_URL` |
+| `/` | SSR | D1 (차기/최신 글) + `i18n/content.ts` 카피 |
+| `/about`, `/about/{founding,declaration,bylaws}` | 정적 | `content.ts`, `data/history.ts`, `invitations.json` |
+| `/people` | 정적 | `members.json` |
+| `/seminars` | SSR | D1 `posts` (예정/지난 = `event_date` 파생) |
+| `/seminars/p/[id]` | SSR | D1 `posts`+`media` (마크다운→HTML, `lib/posts-view`) |
+| `/contact` | 정적 | `content.ts` |
+| `/sitemap.xml` | SSR | 정적 경로 + D1 글 |
+| `/admin`, `/admin/**` | SSR (noindex) | 작성 앱 (React island + Tiptap→마크다운) |
+| `/api/{auth,posts,media}/**` | SSR | 인증·CRUD·업로드 |
+| `/media/[...key]` | SSR | R2 스트리밍 |
 
-`functions/index.js` handles only `/`; `public/_routes.json` keeps every localized page and asset on the static path. The retired `/events` tree and prefixless Korean routes permanently redirect to `/ko/` equivalents through `public/_redirects`.
+## 3. 데이터
 
-## 3. Content ownership
+- **D1 3테이블** (`migrations/0001_init.sql`): `users`(수동 발급, PBKDF2) · `posts`(title/summary/event_date/address/body-markdown/hero, soft delete) · `media`(R2 키+메타, image/video/document)
+- **R2** (`tcn-media`): 원본 파일. 이미지는 업로드 시 브라우저에서 WebP(≤2400px)+EXIF 제거, 서버 재검증.
+- **정적 데이터**: `src/data/history.ts`(연혁 확정 기록), `members.json`, `invitations.json` (Astro 컬렉션은 members·invitations만)
+- **카피**: `src/i18n/content.ts`(en 사용) + `ui.ts`. `i18n/utils.ts`는 영어 단일 심(shim).
 
-```text
-src/
-├── content.config.ts       # file-loader collections and Zod schemas
-├── data/
-│   ├── members.json        # leadership and board cards
-│   ├── seminars.json       # seminar list/detail records
-│   ├── history.json        # About timeline
-│   └── invitations.json    # founding ceremony invitation
-└── i18n/
-    ├── content.ts          # page-level Korean and English copy
-    ├── ui.ts               # shared navigation, labels, footer copy
-    └── utils.ts            # language detection, paths, dates
-```
+## 4. 권한·알림
 
-`content.ts` owns editorial page copy. `ui.ts` owns short reusable interface strings. Repeatable factual records belong in JSON and are loaded through Astro Content Layer.
+- 인증: 서명 세션 쿠키(HMAC, 1일). 계정은 `scripts/create-user.mjs`로 수동 발급 — 회원가입 UI 없음.
+- 권한 flat: 인증된 회원 누구나 등록·수정. 삭제는 soft delete만.
+- 알림: 글 등록/수정 → `waitUntil`로 Discord webhook + Telegram sendMessage (`lib/notify`). 베스트에포트 — 실패해도 글 무영향. 시크릿: `DISCORD_WEBHOOK`, `TELEGRAM_TOKEN`, `TELEGRAM_TO`.
 
-## 4. Collection schemas
+## 5. 운영
 
-All collections use `file()` from `astro/loaders` and are validated during `npm run check` and `npm run build`.
-
-### `seminars`
-
-Required fields:
-
-- `id`: unique record key; English uses the Korean key plus `-en`
-- `slug`: language-independent URL key shared by the ko/en pair
-- `lang`: `ko` or `en`
-- `title`, `date`, `status`, `location`
-
-Optional confirmed detail fields include `theme`, `summary`, `abstract`, `program`, `speakers`, `materials`, `outcomes`, and `tags`. A missing detail body renders the localized “details to be announced” fallback.
-
-List ordering is upcoming ascending and past descending. Detail routes are generated from every localized record.
-
-### `members`
-
-Required fields are `id`, `lang`, `name`, `role`, `category`, and `order`. Optional fields include `nameEn`, `affiliation`, `bio`, `country`, `photo`, `email`, and `website`.
-
-Use `tba: true` only for a confirmed seat whose person is not yet public. Korean and English records use the same order and category.
-
-### `history`
-
-Required fields are `id`, `lang`, `date`, `kind`, `status`, `title`, `location`, `participants`, and `description`. Timeline records stay concise; longer seminar material belongs in `seminars.json`.
-
-### `invitations`
-
-This collection currently holds the bilingual founding ceremony invitation rendered at `/ko/about/founding` and `/en/about/founding`. Required fields include the shared `slug`, date/status/location/venue/time, invitation paragraphs, programme, closing, issued date, and sender.
-
-The collection no longer generates `/events/[year]/[slug]` routes.
-
-## 5. Korean/English pairing rules
-
-Every repeatable record must have one Korean and one English entry.
-
-- English `id` = Korean `id` + `-en`
-- `slug`, `date`, `status`, ordering, categories, URLs, and time notation remain identical
-- parallel arrays retain the same number and order of items
-- translations may adapt wording but must not add unsupported facts
-- English source strings must not contain Hangul
-- every Korean wrapper under `src/pages/ko/` has an English wrapper under `src/pages/en/`
-
-Run `npm run i18n` after any content or route change. It checks route pairs, content/UI object shapes, JSON record invariants, parallel array lengths, and Hangul leakage into English sources.
-
-## 6. Editing workflows
-
-### Add a seminar
-
-1. Append Korean and English entries to `src/data/seminars.json`.
-2. Reuse the same URL-safe `slug`; suffix only the English `id` with `-en`.
-3. Add only confirmed optional details.
-4. Run `npm run i18n`, `npm run check`, and `npm run build`.
-
-The list and both localized detail routes are generated automatically.
-
-### Update an officer
-
-1. Update the matching ko/en records in `members.json`.
-2. Keep `order`, `category`, country, and placeholder state aligned.
-3. Do not add a photo without confirmed consent.
-4. Run the i18n and build checks.
-
-### Update the founding invitation
-
-Edit both language entries in `invitations.json`. Keep factual fields and paragraph/programme structure aligned. The result appears on the localized `/ko/about/founding` and `/en/about/founding` pages.
-
-### Update the bylaws
-
-Edit the parallel `bylaws` entries in `content.ts`, preserving the chapter, article, clause, and addenda structure. The Korean text is authoritative; the English page is a reference translation and must not introduce unsupported meaning. Verify any amendment against the approved source document before publishing, then run the full bilingual and build checks.
-
-### Change navigation or routes
-
-Update the shared page/component first, add equivalent wrappers under both `src/pages/ko/` and `src/pages/en/`, then update `public/_redirects`, `src/pages/sitemap.xml.ts`, README, and this document. Finish with the full verification sequence.
-
-## 7. Verification
-
-```bash
-npm run i18n   # ko/en source parity
-npm run locale # country routing and saved-language precedence
-npm run check  # Astro and schema diagnostics
-npm run build  # all static routes
-npm run motion # reveal, reduced-motion, fail-open behavior
-npm run verify # viewport, overflow, console, screenshots
-npm run a11y   # Lighthouse accessibility on representative routes
-```
-
-Content work is complete only when these checks pass and the Korean and English pages communicate the same confirmed facts.
+- 로컬: `npm run dev` (wrangler platformProxy로 로컬 D1/R2). 시드: `node scripts/seed-seminar-posts.mjs`. 계정: `node scripts/create-user.mjs <id> <pw> [--remote]`.
+- 시크릿: 로컬 `.dev.vars`(SESSION_SECRET), 원격 `wrangler secret put`.
+- QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run a11y`(Lighthouse) — 기본 경로에 글 상세 포함.
+- 레거시 301: `public/_redirects` — `/ko/*`·`/en/*`·구 slug(`2025-laos` 등)·구 회차 허브 전부 영구 이전.

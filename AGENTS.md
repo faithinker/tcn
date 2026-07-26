@@ -32,3 +32,4 @@ Use the lightest workflow that fits the task. Do not run overlapping methodologi
 
 - Never invoke `$qa`, `$design-review`, `$ship`, `$land-and-deploy`, or `$canary` unless the user explicitly requests the corresponding code mutation, commits, push, pull request, merge, deployment, or production verification.
 - Prefer report-only review first when the requested action is ambiguous.
+- **CRITICAL**: Before pushing a branch and creating a pull request, you MUST automatically apply the `pr-changelog` skill. Systematically record your changes in `CHANGELOG.md` by date, commit the changelog, and include the summary in the PR description.

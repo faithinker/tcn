@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tcn-ezj.pages.dev/sitemap.xml
+Sitemap: https://tcn.faithinker12.workers.dev/sitemap.xml

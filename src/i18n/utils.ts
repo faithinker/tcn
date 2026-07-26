@@ -1,44 +1,35 @@
-// L3: i18n 헬퍼 — URL에서 언어 판별, 번역 함수, 경로 지역화.
-// 라우팅: ko는 '/ko/' prefix, en은 '/en/' prefix. 루트('/')는 엣지 언어 분기 전용.
+// 8단계: 영어 단일 사이트 — i18n 헬퍼를 단일 언어 호환 심(shim)으로 축소.
+// 기존 소비 파일(레이아웃·템플릿)의 API 시그니처는 유지하되 언어는 항상 'en',
+// 경로는 프리픽스 없는 루트 트리를 가리킨다.
 
 import { ui, defaultLang, type UiLang, type UiKey } from './ui';
 
-/** URL 경로 첫 세그먼트로 언어 판별. 미매치 시 기본(ko). */
-export function getLangFromUrl(url: URL): UiLang {
-  const [, seg] = url.pathname.split('/');
-  if (seg in ui) return seg as UiLang;
+/** 영어 단일 사이트 — 항상 'en'. (시그니처 호환용으로 URL 인자는 무시) */
+export function getLangFromUrl(_url?: URL): UiLang {
   return defaultLang;
 }
 
-/** 해당 언어의 번역 함수 반환. 키 누락 시 기본 언어로 폴백. */
-export function useTranslations(lang: UiLang) {
+/** 번역 함수 — 영어 카피 고정. */
+export function useTranslations(_lang?: UiLang) {
   return function t(key: UiKey): string {
-    return ui[lang][key] ?? ui[defaultLang][key];
+    return ui[defaultLang][key];
   };
 }
 
-/**
- * 언어에 맞는 경로 생성.
- * ko: '/ko' prefix('/ko/about'), en: '/en' prefix('/en/about').
- */
-export function localizePath(path: string, lang: UiLang): string {
+/** 프리픽스 없는 루트 경로. ('/about' → '/about', '/' → '/') */
+export function localizePath(path: string, _lang?: UiLang): string {
   const clean = '/' + path.replace(/^\/+/, '');
-  return clean === '/' ? `/${lang}/` : `/${lang}${clean}`;
+  return clean;
 }
 
-/** 현재 경로에서 언어 prefix 제거 → 기준 경로('/about', 루트는 '/'). */
+/** 구 /ko·/en 프리픽스 제거 — 리다이렉트·정규화용으로만 남긴다. */
 export function stripLangPrefix(pathname: string): string {
   const parts = pathname.split('/');
-  if (parts[1] && parts[1] in ui) {
+  if (parts[1] === 'ko' || parts[1] === 'en') {
     const rest = '/' + parts.slice(2).join('/');
     return rest === '/' ? '/' : rest.replace(/\/$/, '');
   }
   return pathname === '/' ? '/' : pathname.replace(/\/$/, '');
-}
-
-/** 언어 전환용: 현재 기준 경로를 대상 언어 경로로 변환. */
-export function switchLangPath(currentPath: string, toLang: UiLang): string {
-  return localizePath(stripLangPrefix(currentPath), toLang);
 }
 
 const EN_MONTHS = [
@@ -46,9 +37,14 @@ const EN_MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-/** ISO 날짜(YYYY-MM-DD)를 언어별 표기로. Date 객체 미사용(빌드 결정성). */
-export function formatDate(iso: string, lang: UiLang = defaultLang): string {
-  const [y, m, d] = iso.split('-').map(Number);
-  if (!y || !m || !d) return iso;
-  return lang === 'en' ? `${EN_MONTHS[m - 1]} ${d}, ${y}` : `${y}년 ${m}월 ${d}일`;
+/** ISO 날짜의 날짜 부분을 영어 표기로. Date 객체 미사용(빌드 결정성). */
+export function formatDate(iso: string, _lang: UiLang = defaultLang): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(iso);
+  if (!match) return iso;
+  const [, year, month, day] = match;
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) return iso;
+  return `${EN_MONTHS[m - 1]} ${d}, ${y}`;
 }

@@ -1,0 +1,8 @@
+---
+import SeminarsPage from '../page-templates/seminars.astro';
+
+// SSR so the D1 community-post list stays live (no static prerender).
+export const prerender = false;
+---
+
+<SeminarsPage />

@@ -1,19 +1,36 @@
-# L11: prefix 없는 기존 한국어 URL과 events 트리 은퇴 경로를 /ko/로 영구 이전.
-# 구체 경로 먼저, 와일드카드 나중(위→아래 첫 매치 우선).
-# 타깃은 canonical(디렉터리 포맷=trailing slash)에 바로 착지하도록 슬래시 부여.
-/events/2025/founding-ceremony-invitation     /ko/about/founding/     301
-/en/events/2025/founding-ceremony-invitation  /en/about/founding/  301
-/en/events                                    /en/seminars/        301
-/events                                       /ko/seminars/        301
-/about/declaration                            /ko/about/declaration/ 301
-/about/founding                               /ko/about/founding/    301
-/about/bylaws                                 /ko/about/bylaws/      301
-/about                                        /ko/about/             301
-/people                                       /ko/people/            301
-/seminars                                     /ko/seminars/          301
-/contact                                      /ko/contact/           301
+# 8단계: 영어 단일 루트 트리. 구 /ko·/en 프리픽스와 레거시 slug 전부 영구 301.
+# 규칙은 위→아래 첫 매치 — 구체 경로 먼저, 와일드카드 나중.
 
-/en/events/*                                  /en/seminars/          301
-/events/*                                     /ko/seminars/          301
-/about/*                                      /ko/about/:splat       301
-/seminars/*                                   /ko/seminars/:splat    301
+# 세미나 레거시 slug → D1 글 (seed 고정 UUID)
+/ko/seminars/2025-laos   /seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001/ 301
+/en/seminars/2025-laos   /seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001/ 301
+/seminars/2025-laos      /seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001/ 301
+/ko/seminars/2026-korea  /seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002/ 301
+/en/seminars/2026-korea  /seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002/ 301
+/seminars/2026-korea     /seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002/ 301
+
+# 구 회차 허브 → 해당 글
+/ko/seminars/1           /seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001/ 301
+/en/seminars/1           /seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001/ 301
+/ko/seminars/2           /seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002/ 301
+/en/seminars/2           /seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002/ 301
+
+# 창립식 초청장 레거시
+/events/2025/founding-ceremony-invitation     /about/founding/  301
+/en/events/2025/founding-ceremony-invitation  /about/founding/  301
+
+# 글 딥링크는 프리픽스만 제거
+/ko/seminars/p/*  /seminars/p/:splat  301
+/en/seminars/p/*  /seminars/p/:splat  301
+
+# 그 외 구 세미나 트리(회차 kind 경로 등)는 목록으로
+/ko/seminars/*  /seminars/  301
+/en/seminars/*  /seminars/  301
+/events/*       /seminars/  301
+/en/events/*    /seminars/  301
+
+# 언어 프리픽스 일괄 제거 (마지막 — 위 규칙이 우선)
+/ko     /  301
+/en     /  301
+/ko/*   /:splat  301
+/en/*   /:splat  301

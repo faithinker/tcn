@@ -3,6 +3,7 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+coverage/
 
 # verify harness output (screenshots)
 verify/
@@ -12,13 +13,24 @@ verify/
 *.log
 npm-debug.log*
 
-# env
+# env / local secrets
 .env
 .env.*
 !.env.example
+.dev.vars
+translation-input.json
+translation-output.json
 
 # local scratch (plans, mockups) — 커밋 제외
 .scratch/
 
 # claude runtime locks (프로세스 락 — 추적 대상 아님)
 .claude/*.lock
+.claude/settings.local.json
+.gstack/
+
+# 테스트 커버리지 리포트 (자동 생성물)
+coverage/
+
+# 브라우저 자동화 산출물
+.playwright-mcp/

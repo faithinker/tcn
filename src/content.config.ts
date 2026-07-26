@@ -4,31 +4,8 @@ import { defineCollection } from 'astro:content';
 import { file } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-const seminars = defineCollection({
-  loader: file('src/data/seminars.json'),
-  schema: z.object({
-    lang: z.enum(['ko', 'en']).default('ko'),
-    slug: z.string(), // 언어 무관 상세 라우트 키(ko/en 공통) → /seminars/[slug]
-    title: z.string(),
-    date: z.string(), // ISO(YYYY-MM-DD) — 문자열 유지(정렬은 사전순으로 충분)
-    status: z.enum(['upcoming', 'past']),
-    location: z.string(),
-    venue: z.string().optional(), // 세부 장소(건물·호실). 있으면 상세 페이지에 행사 개요 박스 노출.
-    mapUrl: z.url().optional(),
-    speaker: z.string().optional(),
-    affiliation: z.string().optional(),
-    theme: z.string().optional(),
-    summary: z.string().optional(),
-    abstract: z.string().optional(),
-    program: z.array(z.string()).optional(),
-    speakers: z.array(z.string()).optional(),
-    materials: z.array(z.object({ label: z.string(), url: z.string() })).optional(),
-    materialsUrl: z.string().optional(),
-    outcomes: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-  }),
-});
-
+// seminars/history JSON은 Astro 컬렉션이 아니라 src/lib/content/adapter.ts가
+// 소유한다(Supabase 스냅샷의 폴백). 여기 정의하면 이중 스키마가 된다.
 const members = defineCollection({
   loader: file('src/data/members.json'),
   schema: z.object({
@@ -50,20 +27,6 @@ const members = defineCollection({
     photo: z.string().optional(),
     email: z.string().optional(),
     website: z.string().optional(),
-  }),
-});
-
-const history = defineCollection({
-  loader: file('src/data/history.json'),
-  schema: z.object({
-    lang: z.enum(['ko', 'en']).default('ko'),
-    date: z.string(),
-    kind: z.enum(['founding', 'seminar']),
-    status: z.enum(['past', 'upcoming']),
-    title: z.string(),
-    location: z.string(),
-    participants: z.array(z.string()).default([]),
-    description: z.string(),
   }),
 });
 
@@ -91,4 +54,4 @@ const invitations = defineCollection({
   }),
 });
 
-export const collections = { seminars, members, history, invitations };
+export const collections = { members, invitations };

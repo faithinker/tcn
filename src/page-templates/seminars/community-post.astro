@@ -1,0 +1,194 @@
+---
+// 라우트 아님(page-templates). /{lang}/seminars/p/[id] SSR 래퍼가 D1에서
+// post + media 를 조회해 prop 으로 주입한다. 본문은 마크다운 → HTML.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate, getLangFromUrl, localizePath } from '../../i18n/utils';
+import { getContent } from '../../i18n/content';
+import { groupMedia, renderPostBody } from '../../lib/posts-view';
+import type { Media, Post } from '../../lib/db/types';
+
+interface Props {
+  post: Post;
+  media: Media[];
+}
+
+const { post, media } = Astro.props as Props;
+const lang = getLangFromUrl(Astro.url);
+const copy = getContent(lang).seminars;
+
+const bodyHtml = renderPostBody(post.body);
+const grouped = groupMedia(media, post.heroMediaId);
+const mapUrl = post.address
+  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post.address)}`
+  : null;
+const mediaSrc = (item: Media) => `/media/${item.r2Key}`;
+const formatBytes = (size: number | null) =>
+  size == null ? '' : size >= 1048576 ? `${(size / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`;
+---
+
+<BaseLayout title={post.title} description={post.summary ?? undefined}>
+  <section class="bg-canvas px-5 py-12 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <a
+        href={localizePath('/seminars', lang)}
+        class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+      >← {copy.backToList}</a>
+
+      <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
+        <p class="eyebrow !mb-0">{lang === 'ko' ? '활동 글' : 'Article'}</p>
+        <h1 class="mt-4 font-serif text-display-md font-semibold text-ink sm:text-display-lg">{post.title}</h1>
+        {(post.eventDate || post.address) && (
+          <p class="mt-5 font-sans text-body-sans font-bold text-body-muted">
+            {post.eventDate && formatDate(post.eventDate, lang)}
+            {post.eventDate && post.address && ' · '}
+            {post.address}
+            {mapUrl && (
+              <a href={mapUrl} target="_blank" rel="noopener" class="ml-2 whitespace-nowrap font-bold text-link underline hover:text-link-hover">{copy.mapLink} ↗</a>
+            )}
+          </p>
+        )}
+      </header>
+
+      <div class="mt-10 max-w-[68ch]">
+        {grouped.hero && (
+          <figure class="mb-10">
+            <img
+              src={mediaSrc(grouped.hero)}
+              alt={grouped.hero.caption ?? post.title}
+              width={grouped.hero.width ?? undefined}
+              height={grouped.hero.height ?? undefined}
+              decoding="async"
+              class="w-full border border-hairline"
+            />
+            {grouped.hero.caption && (
+              <figcaption class="mt-2 font-sans text-caption text-body-muted">{grouped.hero.caption}</figcaption>
+            )}
+          </figure>
+        )}
+
+        {post.summary && <p class="font-serif text-lead text-body">{post.summary}</p>}
+
+        {bodyHtml && <div class="post-body mt-6" set:html={bodyHtml} />}
+
+        {grouped.images.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{lang === 'ko' ? '사진' : 'Photos'}</p>
+            <div class="mt-4 grid gap-5 sm:grid-cols-2">
+              {grouped.images.map((item) => (
+                <figure>
+                  <img
+                    src={mediaSrc(item)}
+                    alt={item.caption ?? item.filename ?? ''}
+                    loading="lazy"
+                    decoding="async"
+                    class="aspect-[3/2] w-full border border-hairline object-cover"
+                  />
+                  {item.caption && <figcaption class="mt-2 font-sans text-caption text-body-muted">{item.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {grouped.videos.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{lang === 'ko' ? '영상' : 'Videos'}</p>
+            <div class="mt-4 space-y-5">
+              {grouped.videos.map((item) => (
+                <figure>
+                  {/* eslint-disable-next-line astro/jsx-a11y -- 자막 트랙 없는 회원 업로드 영상 */}
+                  <video controls preload="metadata" class="w-full border border-hairline" src={mediaSrc(item)} />
+                  {item.caption && <figcaption class="mt-2 font-sans text-caption text-body-muted">{item.caption}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {grouped.documents.length > 0 && (
+          <section class="mt-10 border-t border-hairline-strong pt-8">
+            <p class="font-sans text-caption font-bold uppercase text-accent">{copy.materialsLabel}</p>
+            <ul class="mt-4 space-y-2 font-sans text-body-sans">
+              {grouped.documents.map((item) => (
+                <li>
+                  <a href={mediaSrc(item)} download={item.filename ?? true} class="font-bold text-link underline hover:text-link-hover">
+                    {item.caption ?? item.filename ?? 'document'}
+                  </a>
+                  {item.size != null && <span class="ml-2 text-caption text-body-muted">{formatBytes(item.size)}</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    </article>
+  </section>
+</BaseLayout>
+
+<style>
+  /* 마크다운 본문 — 공개 디자인 토큰으로 매핑 (admin-prose의 공개판) */
+  .post-body :global(p) {
+    margin-top: 1rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-body-serif);
+    line-height: var(--text-body-serif--line-height);
+    color: var(--color-body);
+  }
+  .post-body :global(h2),
+  .post-body :global(h3) {
+    margin-top: 2.5rem;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .post-body :global(h2) {
+    font-size: var(--text-display-sm);
+    line-height: var(--text-display-sm--line-height);
+  }
+  .post-body :global(h3) {
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+  }
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    margin-top: 1rem;
+    padding-left: 1.4em;
+    font-family: var(--font-serif);
+    font-size: var(--text-body-serif);
+    line-height: var(--text-body-serif--line-height);
+    color: var(--color-body);
+  }
+  .post-body :global(li) {
+    margin-top: 0.35rem;
+  }
+  /* 인용은 사이트 공통 풀쿼트 스타일(content-body.astro와 동일한 상하단 보더) */
+  .post-body :global(blockquote) {
+    margin: 3rem 0;
+    border-top: 2px solid var(--color-accent);
+    border-bottom: 2px solid var(--color-accent);
+    padding: 2rem 0;
+  }
+  .post-body :global(blockquote p) {
+    margin-top: 0;
+    font-size: var(--text-display-sm);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+  .post-body :global(blockquote p + p) {
+    margin-top: 0.75rem;
+  }
+  .post-body :global(a) {
+    font-weight: 700;
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  .post-body :global(a:hover) {
+    color: var(--color-link-hover);
+  }
+  .post-body :global(hr) {
+    margin: 2.5rem 0;
+    border: 0;
+    border-top: 1px solid var(--color-hairline);
+  }
+</style>

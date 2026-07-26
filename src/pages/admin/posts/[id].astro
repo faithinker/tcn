@@ -1,0 +1,43 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import PostEditor from '../../../components/admin/PostEditor';
+import { getSessionUid } from '../../../lib/auth';
+import { getDB, getPost, getUserById, listMediaForPost } from '../../../lib/db';
+
+const uid = await getSessionUid(Astro.request);
+if (!uid) return Astro.redirect('/admin/login');
+
+const db = getDB();
+const id = Astro.params.id!;
+const [user, post] = await Promise.all([getUserById(db, uid), getPost(db, id)]);
+if (!post) return Astro.redirect('/admin');
+const media = await listMediaForPost(db, id);
+
+const editorPost = {
+  id: post.id,
+  title: post.title,
+  summary: post.summary,
+  eventDate: post.eventDate,
+  address: post.address,
+  body: post.body,
+  heroMediaId: post.heroMediaId,
+};
+const editorMedia = media.map((item) => ({
+  id: item.id,
+  r2Key: item.r2Key,
+  kind: item.kind,
+  mimeType: item.mimeType,
+  filename: item.filename,
+  width: item.width,
+  height: item.height,
+}));
+---
+
+<AdminLayout title={post.title} user={user}>
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="font-serif text-display-sm font-semibold text-ink">Edit post</h1>
+    <a href="/admin" class="text-caption font-bold text-link underline underline-offset-2">← Posts</a>
+  </div>
+  <PostEditor client:load post={editorPost} media={editorMedia} />
+</AdminLayout>
