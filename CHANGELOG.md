@@ -18,6 +18,11 @@ All notable changes to this project will be documented in this file. AI agents (
 - Legacy content stack (`src/lib/content`, `seminars.json`, `history.json`, Pages `functions/`, `_routes.json`) and Supabase dependencies/env. - Implemented by Claude
 ### Fix
 - Unblock production deploys by raising `esbuild` to `^0.28.1`; the pinned `0.27.7` devDependency was hoisted into the production tree via `@astrojs/cloudflare`'s vite and failed the `npm audit --omit=dev --audit-level=low` gate (GHSA-g7r4-m6w7-qqqr), so every deploy since PR #25 aborted before `wrangler deploy` and production still served a pre-cleanup build. (Branch: `fix/esbuild-audit-unblock-deploy`) - Implemented by Claude
+### Security
+- Pinned all third-party GitHub Actions to commit SHAs. `appleboy/telegram-action` tracked `@master`, so each run pulled whatever that branch held while holding `TELEGRAM_TOKEN`; `cloudflare/wrangler-action` holds the deploy credentials (`CLOUDFLARE_API_TOKEN`) and sat on a mutable tag. Pins target the version already in use, so this is not a version bump. (Branch: `chore/pin-action-shas`) - Implemented by Claude
+- Dropped `github.event.head_commit.message` from the Telegram notification. `ci.yml` only triggers on `pull_request`, where that field does not exist, so it always rendered empty and would have become attacker-controlled text if a push trigger were added; replaced with `github.event.pull_request.number`. (Branch: `chore/pin-action-shas`) - Implemented by Claude
+### Chore
+- Raised `CLAUDE_CODE_EFFORT_LEVEL` to `medium` for the PR review workflow. (Branch: `chore/pin-action-shas`) - Implemented by Claude
 
 ## [2026-07-25]
 ### Added
