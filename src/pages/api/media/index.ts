@@ -12,11 +12,9 @@ export const prerender = false;
 
 function uploadError(error: unknown): Response {
   const code = error instanceof UploadError ? error.message : 'invalid_upload';
-  const status = code.endsWith('_too_large')
-    ? 413
-    : code === 'unsupported_media_type'
-      ? 415
-      : 400;
+  let status = 400;
+  if (code.endsWith('_too_large')) status = 413;
+  else if (code === 'unsupported_media_type') status = 415;
   return Response.json({ ok: false, error: code }, { status });
 }
 

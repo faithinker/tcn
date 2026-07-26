@@ -24,6 +24,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function fieldErrorName(key: string): string {
+  return key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
 function optionalString(
   record: Record<string, unknown>,
   key: string,
@@ -31,14 +35,15 @@ function optionalString(
 ): { ok: true; value: string | null } | { ok: false; error: string } {
   const value = record[key];
   if (value === undefined || value === null || value === '') return { ok: true, value: null };
-  if (typeof value !== 'string') return { ok: false, error: `invalid_${key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)}` };
+  const errorName = fieldErrorName(key);
+  if (typeof value !== 'string') return { ok: false, error: `invalid_${errorName}` };
 
   const normalized = value.trim();
   if (!normalized) return { ok: true, value: null };
   if (normalized.length > limit) {
     return {
       ok: false,
-      error: `${key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)}_too_long`,
+      error: `${errorName}_too_long`,
     };
   }
   return { ok: true, value: normalized };

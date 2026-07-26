@@ -208,11 +208,12 @@ export default function PostEditor({
           failures.push(`${file.name}: ${requestErrorMessage(error, 'upload failed')}`);
         }
       }
-      setStatus(
-        failures.length === 0
-          ? `${uploaded} ${uploaded === 1 ? 'file' : 'files'} uploaded ✓`
-          : `${uploaded} uploaded; ${failures.length} failed. ${failures.join(' · ')}`,
-      );
+      if (failures.length === 0) {
+        const noun = uploaded === 1 ? 'file' : 'files';
+        setStatus(`${uploaded} ${noun} uploaded ✓`);
+      } else {
+        setStatus(`${uploaded} uploaded; ${failures.length} failed. ${failures.join(' · ')}`);
+      }
     } finally {
       setBusy(false);
     }

@@ -1,6 +1,8 @@
 export function canonicalPath(pathname: string): string {
   if (pathname === '/') return pathname;
-  return pathname.replace(/\/+$/, '') || '/';
+  let end = pathname.length;
+  while (end > 1 && pathname[end - 1] === '/') end -= 1;
+  return pathname.slice(0, end);
 }
 
 const NON_PAGE_PREFIXES = ['/api/', '/media/', '/_astro/'];

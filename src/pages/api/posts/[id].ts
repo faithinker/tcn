@@ -18,6 +18,21 @@ import {
 
 export const prerender = false;
 
+function updateErrorResponse(error: unknown): Response | null {
+  if (error instanceof PostRevisionConflictError) {
+    return Response.json({ ok: false, error: 'revision_conflict' }, { status: 409 });
+  }
+  if (isSeminarDateConflictError(error)) {
+    return Response.json({ ok: false, error: 'event_date_conflict' }, { status: 409 });
+  }
+  return null;
+}
+
+function seminarDateErrorResponse(error: string): Response {
+  const invalid = error === 'event_date_required' || error === 'event_date_invalid';
+  return Response.json({ ok: false, error }, { status: invalid ? 400 : 409 });
+}
+
 // 글 수정(전체 저장). 인증 필요, 권한 없음(flat).
 export const PUT: APIRoute = async ({ request, params }) => {
   const uid = await getSessionUid(request);
@@ -45,8 +60,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
     existingDates,
   });
   if (dateError) {
-    const status = dateError === 'event_date_required' || dateError === 'event_date_invalid' ? 400 : 409;
-    return Response.json({ ok: false, error: dateError }, { status });
+    return seminarDateErrorResponse(dateError);
   }
 
   if (payload.heroMediaId) {
@@ -68,12 +82,8 @@ export const PUT: APIRoute = async ({ request, params }) => {
       expectedRevision: payload.revision,
     });
   } catch (error) {
-    if (error instanceof PostRevisionConflictError) {
-      return Response.json({ ok: false, error: 'revision_conflict' }, { status: 409 });
-    }
-    if (isSeminarDateConflictError(error)) {
-      return Response.json({ ok: false, error: 'event_date_conflict' }, { status: 409 });
-    }
+    const response = updateErrorResponse(error);
+    if (response) return response;
     throw error;
   }
   if (!post) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });

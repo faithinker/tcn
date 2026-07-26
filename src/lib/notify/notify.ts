@@ -26,6 +26,45 @@ export interface NotifyResult {
 
 const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+interface DeliveryAttempt {
+  finished: boolean;
+  delivered: boolean;
+  retryAfterMs: number | null;
+}
+
+function retryAfter(response: Response): number | null {
+  if (response.status !== 429) return null;
+  const seconds = Number(response.headers.get('retry-after'));
+  return Number.isFinite(seconds) && seconds >= 0
+    ? Math.min(seconds * 1_000, 30_000)
+    : null;
+}
+
+async function attemptDelivery(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<DeliveryAttempt> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchImpl(url, { ...init, signal: controller.signal });
+    if (response.ok) return { finished: true, delivered: true, retryAfterMs: null };
+    const permanentFailure =
+      response.status >= 400 && response.status < 500 && response.status !== 429;
+    return {
+      finished: permanentFailure,
+      delivered: false,
+      retryAfterMs: retryAfter(response),
+    };
+  } catch {
+    return { finished: false, delivered: false, retryAfterMs: null };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function deliver(
   fetchImpl: typeof fetch,
   url: string,
@@ -35,31 +74,12 @@ async function deliver(
 ): Promise<boolean> {
   // 최초 1회 + 재시도 2회. 4xx(설정 오류)는 재시도 무의미.
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    let retryAfterMs: number | null = null;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetchImpl(url, { ...init, signal: controller.signal });
-      if (response.ok) return true;
-      if (response.status >= 400 && response.status < 500 && response.status !== 429) return false;
-      if (response.status === 429) {
-        const seconds = Number(response.headers.get('retry-after'));
-        if (Number.isFinite(seconds) && seconds >= 0) {
-          retryAfterMs = Math.min(seconds * 1_000, 30_000);
-        }
-      }
-    } catch {
-      // 네트워크 오류 → 재시도
-    } finally {
-      clearTimeout(timeout);
-    }
-    if (attempt < 2) {
-      const baseDelay = retryAfterMs ?? retryDelayMs * (attempt + 1);
-      const jitter = baseDelay > 0 ? Math.floor(Math.random() * Math.min(250, baseDelay * 0.2)) : 0;
-      if (baseDelay + jitter > 0) {
-        await new Promise((resolve) => setTimeout(resolve, baseDelay + jitter));
-      }
-    }
+    const result = await attemptDelivery(fetchImpl, url, init, timeoutMs);
+    if (result.finished) return result.delivered;
+    if (attempt >= 2) continue;
+
+    const delay = result.retryAfterMs ?? retryDelayMs * (attempt + 1);
+    if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
   }
   return false;
 }
