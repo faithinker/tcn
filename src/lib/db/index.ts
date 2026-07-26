@@ -11,5 +11,5 @@ export {
   updatePost,
   softDeletePost,
 } from './posts';
-export { listMediaForPost, getMediaById, addMedia, deleteMedia } from './media';
+export { listMediaForPost, getMediaById, addMedia, updateMediaMetadata, deleteMedia } from './media';
 export { getUserByUsername, getUserById, createUser } from './users';
