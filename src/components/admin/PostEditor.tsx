@@ -4,6 +4,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import { Markdown } from 'tiptap-markdown';
 import { useState } from 'react';
 import { processImage } from '../../lib/media/process-image';
+import { mediaMetadataForSave } from '../../lib/media-metadata';
 import { seminarHref } from '../../lib/seminar-url';
 import { formatSeminarOrdinalLabel } from '../../lib/seminars';
 
@@ -38,6 +39,7 @@ interface Props {
 const field =
   'w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none';
 const labelText = 'mb-1 block text-caption font-bold text-body-muted';
+const mediaAction = 'inline-flex min-h-11 items-center font-bold underline';
 
 const saveErrors: Record<string, string> = {
   event_date_required: 'Please select the seminar date.',
@@ -61,7 +63,7 @@ export default function PostEditor({
     [...initialMedia].sort((a, b) => a.position - b.position),
   );
   const [openCaptions, setOpenCaptions] = useState<Set<string>>(
-    () => new Set(initialMedia.filter((item) => item.caption).map((item) => item.id)),
+    () => new Set(initialMedia.filter((item) => item.kind === 'image' && item.caption).map((item) => item.id)),
   );
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string>('');
@@ -70,6 +72,8 @@ export default function PostEditor({
   const eventDateLocked = Boolean(post?.eventDate);
   const publicHref = seminarHref(eventDate);
   const ordinalLabel = formatSeminarOrdinalLabel(seminarSequence);
+  const imageMedia = media.filter((item) => item.kind === 'image');
+  const fileMedia = media.filter((item) => item.kind !== 'image');
 
   const editor = useEditor({
     extensions: [
@@ -117,7 +121,7 @@ export default function PostEditor({
           fetch(`/api/media/${item.id}`, {
             method: 'PATCH',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ caption: item.caption, position }),
+            body: JSON.stringify(mediaMetadataForSave(item, position)),
           }),
         ),
       );
@@ -189,15 +193,26 @@ export default function PostEditor({
     );
   };
 
-  const moveMedia = (id: string, offset: -1 | 1) => {
+  const moveMediaWithinGroup = (id: string, offset: -1 | 1) => {
     setMedia((current) => {
       const index = current.findIndex((item) => item.id === id);
-      const destination = index + offset;
-      if (index < 0 || destination < 0 || destination >= current.length) return current;
+      if (index < 0) return current;
+      const isImage = current[index].kind === 'image';
+      const group = current.filter((item) => (item.kind === 'image') === isImage);
+      const groupIndex = group.findIndex((item) => item.id === id);
+      const destinationItem = group[groupIndex + offset];
+      if (!destinationItem) return current;
+      const destination = current.findIndex((item) => item.id === destinationItem.id);
       const next = [...current];
       [next[index], next[destination]] = [next[destination], next[index]];
       return next;
     });
+  };
+
+  const fileTypeLabel = (item: EditorMedia) => {
+    if (item.kind === 'video') return 'VIDEO';
+    const extension = item.filename?.split('.').pop()?.toUpperCase();
+    return extension && extension.length <= 5 ? extension : 'FILE';
   };
 
   const deletePost = async () => {
@@ -341,80 +356,143 @@ export default function PostEditor({
                 className="mx-auto mt-2 block text-caption text-body-muted"
               />
             </div>
-            {media.length > 0 && (
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {media.map((item, index) => (
-                  <li key={item.id} className="border border-hairline p-2">
-                    {item.kind === 'image' ? (
+            {imageMedia.length > 0 && (
+              <section aria-labelledby="media-images-heading">
+                <div className="flex items-center justify-between">
+                  <h3 id="media-images-heading" className="font-sans text-body-sm font-bold text-ink">
+                    Images
+                  </h3>
+                  <span className="text-caption text-body-muted">{imageMedia.length}</span>
+                </div>
+                <ul className="mt-2 grid gap-3 sm:grid-cols-2">
+                  {imageMedia.map((item, index) => (
+                    <li key={item.id} className="border border-hairline p-2">
                       <img src={`/media/${item.r2Key}`} alt="" className="aspect-square w-full bg-canvas-band object-cover" />
-                    ) : (
-                      <div className="flex aspect-square w-full items-center justify-center bg-canvas-band text-caption text-body-muted">
-                        {item.kind === 'video' ? '🎬 Video' : '📄 Document'}
-                      </div>
-                    )}
-                    <p className="mt-1 truncate text-caption text-body-muted">{item.filename}</p>
-                    {openCaptions.has(item.id) && (
-                      <div className="mt-3">
-                        <label htmlFor={`media-caption-${item.id}`} className={labelText}>
-                          Caption (optional)
-                        </label>
-                        <input
-                          id={`media-caption-${item.id}`}
-                          className={field}
-                          maxLength={500}
-                          placeholder="Describe this photo…"
-                          value={item.caption ?? ''}
-                          onChange={(event) => updateCaption(item.id, event.target.value)}
-                        />
-                        <p className="mt-1 text-caption text-body-muted">
-                          Leave empty to show the image without a visible caption.
-                        </p>
-                      </div>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-caption">
-                      {item.kind === 'image' ? (
+                      <p className="mt-1 truncate text-caption text-body-muted">{item.filename}</p>
+                      {openCaptions.has(item.id) && (
+                        <div className="mt-3">
+                          <label htmlFor={`media-caption-${item.id}`} className={labelText}>
+                            Caption (optional)
+                          </label>
+                          <input
+                            id={`media-caption-${item.id}`}
+                            className={field}
+                            maxLength={500}
+                            placeholder="Describe this photo…"
+                            value={item.caption ?? ''}
+                            onChange={(event) => updateCaption(item.id, event.target.value)}
+                          />
+                          <p className="mt-1 text-caption text-body-muted">
+                            Leave empty to show the image without a visible caption.
+                          </p>
+                        </div>
+                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 text-caption">
                         <button
                           type="button"
                           onClick={() => setHeroMediaId(item.id)}
-                          className={`font-bold ${heroMediaId === item.id ? 'text-accent' : 'text-link'}`}
+                          className={`inline-flex min-h-11 items-center font-bold ${heroMediaId === item.id ? 'text-accent' : 'text-link'}`}
                         >
                           {heroMediaId === item.id ? '★ Cover' : 'Set as cover'}
                         </button>
-                      ) : (
-                        <span />
-                      )}
-                      {item.kind === 'image' && (
-                        <button type="button" onClick={() => toggleCaption(item.id)} className="font-bold text-link underline">
+                        <button
+                          type="button"
+                          onClick={() => toggleCaption(item.id)}
+                          className={`${mediaAction} text-link`}
+                        >
                           {openCaptions.has(item.id) ? 'Hide caption field' : item.caption ? 'Edit caption' : 'Add caption'}
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => moveMedia(item.id, -1)}
-                        disabled={index === 0}
-                        className="font-bold text-link underline disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label={`Move ${item.filename ?? 'media'} earlier`}
-                      >
-                        Earlier
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveMedia(item.id, 1)}
-                        disabled={index === media.length - 1}
-                        className="font-bold text-link underline disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label={`Move ${item.filename ?? 'media'} later`}
-                      >
-                        Later
-                      </button>
-                      <button type="button" onClick={() => removeMedia(item.id)} className="font-bold text-accent">
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                        <button
+                          type="button"
+                          onClick={() => moveMediaWithinGroup(item.id, -1)}
+                          disabled={index === 0}
+                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                          aria-label={`Move ${item.filename ?? 'image'} earlier`}
+                        >
+                          Earlier
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveMediaWithinGroup(item.id, 1)}
+                          disabled={index === imageMedia.length - 1}
+                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                          aria-label={`Move ${item.filename ?? 'image'} later`}
+                        >
+                          Later
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeMedia(item.id)}
+                          className={`${mediaAction} text-accent`}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-caption text-body-muted">Cover image changes take effect after saving.</p>
+              </section>
             )}
-            <p className="mt-2 text-caption text-body-muted">Cover image changes take effect after saving.</p>
+            {fileMedia.length > 0 && (
+              <section className={imageMedia.length > 0 ? 'mt-6' : ''} aria-labelledby="media-files-heading">
+                <div className="flex items-center justify-between">
+                  <h3 id="media-files-heading" className="font-sans text-body-sm font-bold text-ink">
+                    Files
+                  </h3>
+                  <span className="text-caption text-body-muted">{fileMedia.length}</span>
+                </div>
+                <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
+                  {fileMedia.map((item, index) => (
+                    <li key={item.id} className="py-3 sm:flex sm:items-center sm:gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <span
+                          className="inline-flex h-10 w-12 shrink-0 items-center justify-center bg-canvas-band font-mono text-caption font-bold text-body-muted"
+                          aria-hidden="true"
+                        >
+                          {fileTypeLabel(item)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="break-words font-sans text-body-sm font-bold text-ink">
+                            {item.filename ?? 'Untitled file'}
+                          </p>
+                          <p className="font-sans text-caption text-body-muted">
+                            {item.kind === 'video' ? 'Video file' : 'Document'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 font-sans text-caption sm:mt-0 sm:shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveMediaWithinGroup(item.id, -1)}
+                          disabled={index === 0}
+                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                          aria-label={`Move ${item.filename ?? 'file'} earlier`}
+                        >
+                          Earlier
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveMediaWithinGroup(item.id, 1)}
+                          disabled={index === fileMedia.length - 1}
+                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                          aria-label={`Move ${item.filename ?? 'file'} later`}
+                        >
+                          Later
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeMedia(item.id)}
+                          className={`${mediaAction} text-accent`}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizeMediaMetadata } from './media-metadata';
+import { mediaMetadataForSave, normalizeMediaMetadata } from './media-metadata';
 
 describe('normalizeMediaMetadata', () => {
   it('trims an optional caption and accepts a non-negative integer position', () => {
@@ -21,5 +21,25 @@ describe('normalizeMediaMetadata', () => {
     expect(() => normalizeMediaMetadata({ caption: 'x'.repeat(501), position: 0 })).toThrow('caption_too_long');
     expect(() => normalizeMediaMetadata({ caption: null, position: -1 })).toThrow('position_invalid');
     expect(() => normalizeMediaMetadata({ caption: null, position: 1.5 })).toThrow('position_invalid');
+  });
+});
+
+describe('mediaMetadataForSave', () => {
+  it('keeps optional captions for images', () => {
+    expect(mediaMetadataForSave({ kind: 'image', caption: '  Seminar discussion  ' }, 1)).toEqual({
+      caption: 'Seminar discussion',
+      position: 1,
+    });
+  });
+
+  it('always clears captions for documents and videos', () => {
+    expect(mediaMetadataForSave({ kind: 'document', caption: 'Legacy document caption' }, 2)).toEqual({
+      caption: null,
+      position: 2,
+    });
+    expect(mediaMetadataForSave({ kind: 'video', caption: 'Legacy video caption' }, 3)).toEqual({
+      caption: null,
+      position: 3,
+    });
   });
 });
