@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Seed script `scripts/seed-seminar-posts.mjs` migrating the two seminars into D1 posts (idempotent). - Implemented by Claude
 - Workers deploy workflow `deploy-workers.yml` (check+test+build+`wrangler deploy`); retired `deploy-pages.yml`. - Implemented by Claude
 - Added a shared date-derived seminar collection that powers Home, Seminars, and About milestones, with canonical `/seminars/YYYY-MM-DD` routes, sitemap entries, and legacy UUID redirects. (Branch: `feat/people-unified-board`) - Implemented by Codex
+- Added a data-driven C-layout seminar detail page with sticky event metadata, automatic heading navigation, optional image captions, and gallery ordering from the admin editor. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
 ### Changed
 - Made seminar dates unique, append-only, and immutable after publication, with automatic sequence and URL previews in the admin editor; also removed the remaining About copy-width constraints. (Branch: `feat/people-unified-board`) - Implemented by Codex
 - Removed the remaining English-only locale shim and dead bilingual branches, unified the People board with public post data, and limited Noto webfonts to the Latin subsets used by the site. (Branch: `feat/people-unified-board`) - Implemented by Codex
