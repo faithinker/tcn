@@ -67,7 +67,6 @@ Run:
 
 ```sh
 node .agents/skills/academic-translation/scripts/terminology-audit.mjs
-npm run i18n
 npm run check
 ```
 

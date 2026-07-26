@@ -46,6 +46,5 @@
   * PR이 생성되면 다음 자동 검증 파이프라인([.github/workflows/ci.yml](file:///Users/jhkim/Desktop/work/tcn/.github/workflows/ci.yml))이 정상적으로 성공(Green)하는지 확인해야 합니다.
     * `npm run test` (유닛 테스트 및 커버리지 검증)
     * `npm run check` (Astro/TS 문법 및 타입 체크)
-    * `npm run i18n` (한·영 번역 정합성 및 누락 검사)
 * **알림 수신 확인:**
   * CI 결과에 따라 디스코드 및 텔레그램 채널로 전송되는 빌드 성공/실패 여부를 수신한 뒤 최종 머지를 실행합니다.
