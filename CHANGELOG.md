@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
 ## [2026-07-27]
+### Fix
+- Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
 ### Refactor
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
 ### Test
