@@ -8,7 +8,6 @@ export const ui = {
   en: {
     // 브랜드
     'site.name': 'Transcultural Network',
-    'site.nameEn': 'Transcultural Network',
     'site.abbr': 'TCN',
     'site.tagline': 'An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture',
     'nav.home': 'Home',
