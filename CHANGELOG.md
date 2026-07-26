@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-07-26]
 ### Changed (BREAKING)
 - English-single site: removed `/ko`·`/en` route trees; root tree serves English copy, legacy URLs 301 via `public/_redirects`. (Branch: `feat/cloudflare-migration`) - Implemented by Claude
-- Public pages now read Cloudflare D1 directly (home hero, seminars list, post detail, sitemap) — publishing a post is live immediately, no rebuild. - Implemented by Claude
+- Public pages now read Cloudflare D1 directly (home hero, seminars list, post detail, sitemap) - publishing a post is live immediately, no rebuild. - Implemented by Claude
 ### Added
 - Discord/Telegram notifications on post create/update via `waitUntil` (best-effort, per-channel retry). - Implemented by Claude
 - Seed script `scripts/seed-seminar-posts.mjs` migrating the two seminars into D1 posts (idempotent). - Implemented by Claude
