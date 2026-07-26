@@ -4,30 +4,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Stat from '../components/Stat.astro';
 import Button from '../components/Button.astro';
-import { getLangFromUrl, formatDate, localizePath, useTranslations } from '../i18n/utils';
-import { getContent } from '../i18n/content';
-import { getDB, listPosts, type Post } from '../lib/db';
+import { formatDate } from '../i18n/utils';
+import { t } from '../i18n/ui';
+import { content } from '../i18n/content';
+import { getDB } from '../lib/db';
+import { getSeminarCollection } from '../lib/seminar-service';
+import type { SeminarView } from '../lib/seminars';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).home;
-const seminarCopy = getContent(lang).seminars;
-const t = useTranslations(lang);
+const copy = content.home;
+const seminarCopy = content.seminars;
 
-// D1 단일 원천: 차기 = 가장 이른 미래 event_date 글, 최신 = 그 외 첫 글.
+// D1 단일 원천: 공통 세미나 도메인이 순번·상태·URL과 페이지 selector를 완성한다.
 // D1 미가용(정적 프리뷰 등)이면 두 섹션 모두 조용히 숨긴다.
-let posts: Post[] = [];
+let next: SeminarView | null = null;
+let featured: SeminarView | null = null;
 try {
-  posts = await listPosts(getDB());
+  const seminars = await getSeminarCollection(getDB());
+  next = seminars.next;
+  featured = seminars.latestPast;
 } catch {
-  posts = [];
+  next = null;
+  featured = null;
 }
-const today = new Date().toISOString().slice(0, 10);
-const upcoming = posts
-  .filter((p) => p.eventDate && p.eventDate >= today)
-  .sort((a, b) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''));
-const next = upcoming[0];
-const featured = posts.find((p) => p.id !== next?.id);
-const postHref = (p: Post) => `/seminars/p/${p.id}`;
 
 ---
 
@@ -51,9 +49,9 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
         {copy.sublead}
       </p>
       <div class="mt-8 grid gap-3 min-[28rem]:flex min-[28rem]:flex-wrap">
-        <Button href={localizePath('/contact', lang)} variant="primary" class="w-full min-[28rem]:w-auto">{t('nav.cta')}</Button>
-        <Button href={localizePath('/about', lang)} variant="outline" class="w-full min-[28rem]:w-auto">{copy.aboutButton}</Button>
-        <Button href={localizePath('/about/declaration', lang)} variant="outline" class="w-full min-[28rem]:w-auto">{copy.declarationButton}</Button>
+        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto">{t('nav.cta')}</Button>
+        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto">{copy.aboutButton}</Button>
+        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto">{copy.declarationButton}</Button>
       </div>
     </div>
   </section>
@@ -64,21 +62,21 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
       <section class="bg-canvas px-5 pb-12 sm:pb-20">
         <div class="mx-auto max-w-[75rem]">
           <a
-            href={postHref(next)}
+            href={next.href}
             class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
           >
             <div class="flex flex-wrap items-center gap-3">
               <p class="eyebrow !mb-0">{seminarCopy.nextEyebrow}</p>
               <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
-                {seminarCopy.upcomingBadge}
+                {next.status === 'today' ? seminarCopy.todayBadge : seminarCopy.upcomingBadge}
               </span>
             </div>
             <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
-              {formatDate(next.eventDate ?? '', lang)}
+              {formatDate(next.eventDate)}
             </p>
-            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.title}</p>
+            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.ordinalLabel}</p>
             <p class="mt-2 font-sans text-body-sans text-body-muted">
-              {[next.address, next.summary ?? seminarCopy.details].filter(Boolean).join(' · ')}
+              {[next.title !== next.ordinalLabel ? next.title : null, next.address, next.summary ?? seminarCopy.details].filter(Boolean).join(' · ')}
             </p>
             <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
               {seminarCopy.viewDetail} →
@@ -129,22 +127,22 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
     featured && (
       <SectionTile variant="soft" eyebrow={copy.seminarEyebrow}>
         <article class="mt-6 max-w-[68ch]">
-          <p class="eyebrow">{featured.eventDate && featured.eventDate >= today ? t('common.upcoming') : copy.pastEvent}</p>
-          <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.title}</h3>
+          <p class="eyebrow">{copy.pastEvent}</p>
+          <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.ordinalLabel}</h3>
           {(featured.eventDate || featured.address) && (
             <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
-              {[featured.eventDate ? formatDate(featured.eventDate, lang) : null, featured.address].filter(Boolean).join(' · ')}
+              {[formatDate(featured.eventDate), featured.address].filter(Boolean).join(' · ')}
             </p>
           )}
           <p class="mt-4 font-serif text-body-serif text-body">
-            {featured.summary ?? copy.seminarFallback}
+            {[featured.title !== featured.ordinalLabel ? featured.title : null, featured.summary ?? copy.seminarFallback].filter(Boolean).join(' · ')}
           </p>
           <div class="mt-6 flex flex-wrap items-center gap-5">
-            <Button href={postHref(featured)} variant="outline">
+            <Button href={featured.href} variant="outline">
               {seminarCopy.viewDetail}
             </Button>
             <a
-              href={localizePath('/seminars', lang)}
+              href="/seminars"
               class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
             >{copy.seminarButton} →</a>
           </div>
@@ -171,7 +169,7 @@ const postHref = (p: Post) => `/seminars/p/${p.id}`;
         {copy.joinBody}
       </p>
       <div class="mt-8">
-        <Button href={localizePath('/contact', lang)} variant="primary">{t('nav.cta')}</Button>
+        <Button href="/contact" variant="primary">{t('nav.cta')}</Button>
       </div>
     </div>
   </SectionTile>

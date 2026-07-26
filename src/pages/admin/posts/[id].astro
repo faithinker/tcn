@@ -4,15 +4,23 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
 import { getSessionUid } from '../../../lib/auth';
 import { getDB, getPost, getUserById, listMediaForPost } from '../../../lib/db';
+import { getSeminarCollection } from '../../../lib/seminar-service';
 
 const uid = await getSessionUid(Astro.request);
 if (!uid) return Astro.redirect('/admin/login');
 
 const db = getDB();
 const id = Astro.params.id!;
-const [user, post] = await Promise.all([getUserById(db, uid), getPost(db, id)]);
+const [user, post, seminars] = await Promise.all([
+  getUserById(db, uid),
+  getPost(db, id),
+  getSeminarCollection(db),
+]);
 if (!post) return Astro.redirect('/admin');
 const media = await listMediaForPost(db, id);
+const seminarSequence =
+  seminars.chronological.find((seminar) => seminar.id === post.id)?.sequence
+  ?? seminars.chronological.length + 1;
 
 const editorPost = {
   id: post.id,
@@ -39,5 +47,5 @@ const editorMedia = media.map((item) => ({
     <h1 class="font-serif text-display-sm font-semibold text-ink">Edit post</h1>
     <a href="/admin" class="text-caption font-bold text-link underline underline-offset-2">← Posts</a>
   </div>
-  <PostEditor client:load post={editorPost} media={editorMedia} />
+  <PostEditor client:load post={editorPost} media={editorMedia} seminarSequence={seminarSequence} />
 </AdminLayout>

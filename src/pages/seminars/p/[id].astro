@@ -1,14 +1,13 @@
 ---
-// D1 community post public detail (SSR). Soft-deleted/missing → 404.
-import CommunityPost from '../../../page-templates/seminars/community-post.astro';
-import { getDB, getPost, listMediaForPost } from '../../../lib/db';
+// Legacy UUID URL. Keep existing bookmarks valid while the public URL uses event_date.
+import { getDB, getPost } from '../../../lib/db';
+import { seminarHref } from '../../../lib/seminar-url';
 
 export const prerender = false;
 
-const db = getDB();
-const post = await getPost(db, Astro.params.id ?? '');
+const post = await getPost(getDB(), Astro.params.id ?? '');
 if (!post) return new Response(null, { status: 404 });
-const media = await listMediaForPost(db, post.id);
+const destination = seminarHref(post.eventDate);
+if (!destination) return new Response(null, { status: 404 });
+return Astro.redirect(destination, 301);
 ---
-
-<CommunityPost post={post} media={media} />

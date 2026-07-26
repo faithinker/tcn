@@ -1,89 +1,42 @@
-// i18n 문자열 사전 — 한국어 기본, 영어 미러.
-// 키 추가 시 ko/en을 함께 채우고 `npm run i18n`으로 구조 정합성을 검사한다.
-
-export const languages = {
-  ko: '한국어',
-  en: 'English',
-} as const;
-
-// 8단계: 영어 단일 사이트 — 기본(유일) 언어는 en.
-export const defaultLang = 'en';
-export const showDefaultLang = false; // ko 경로에 prefix 미부여
+// UI 문자열 사전 — 영어 단일. 언어 분기 없이 평평한 키-값 구조를 쓴다.
 
 export const ui = {
-  ko: {
-    // 브랜드
-    'site.name': '초문화네트워크',
-    'site.nameEn': 'Transcultural Network',
-    'site.abbr': 'TCN',
-    'site.tagline': '국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크',
-    // 내비게이션 (5페이지 IA)
-    'nav.home': '홈',
-    'nav.about': '소개',
-    'nav.aboutOverview': '학회 소개',
-    'nav.history': '주요 연혁',
-    'nav.founding': '창립총회',
-    'nav.declaration': '창립 선언문',
-    'nav.bylaws': '정관',
-    'nav.people': '구성원',
-    'nav.seminars': '세미나',
-    'nav.contact': '연락처',
-    'nav.cta': '가입·문의',
-    // 공통 라벨
-    'common.skipToContent': '본문 바로가기',
-    'common.menu': '메뉴',
-    'common.relatedDocuments': '관련 문서',
-    'common.close': '닫기',
-    'common.readMore': '자세히 보기',
-    'common.back': '뒤로',
-    'common.backToAbout': '소개로 돌아가기',
-    'common.language': '언어',
-    'common.themeToggle': '화면 어둡게 (눈 보호)',
-    'common.backToTop': '맨 위로',
-    'common.upcoming': '예정',
-    'common.past': '지난',
-    'common.tba': '추후 공개',
-    // 푸터
-    'footer.office': '사무국',
-    'footer.officeValue': '인천광역시 강화군 강화읍 국화리 286',
-    'footer.copyright': '초문화네트워크(Transcultural Network)',
-    'footer.contactNote': '연락처 추후 안내',
-  },
-  en: {
-    'site.name': 'Transcultural Network',
-    'site.nameEn': 'Transcultural Network',
-    'site.abbr': 'TCN',
-    'site.tagline': 'An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture',
-    'nav.home': 'Home',
-    'nav.about': 'About',
-    'nav.aboutOverview': 'About TCN',
-    'nav.history': 'Milestones',
-    'nav.founding': 'Founding Ceremony',
-    'nav.declaration': 'Founding Declaration',
-    'nav.bylaws': 'Bylaws',
-    'nav.people': 'People',
-    'nav.seminars': 'Seminars',
-    'nav.contact': 'Contact',
-    'nav.cta': 'Join / Contact',
-    'common.skipToContent': 'Skip to content',
-    'common.menu': 'Menu',
-    'common.relatedDocuments': 'Related documents',
-    'common.close': 'Close',
-    'common.readMore': 'Read more',
-    'common.back': 'Back',
-    'common.backToAbout': 'Back to About',
-    'common.language': 'Language',
-    'common.themeToggle': 'Eye Protection Mode',
-    'common.backToTop': 'Back to top',
-    'common.upcoming': 'Upcoming',
-    'common.past': 'Past',
-    'common.tba': 'To be announced',
-    'footer.office': 'Secretariat',
-    'footer.officeValue': '286, Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
-    'footer.copyright': 'Transcultural Network',
-    'footer.contactNote': 'Contact details to be announced',
-  },
+  // 브랜드
+  'site.name': 'Transcultural Network',
+  'site.abbr': 'TCN',
+  'site.tagline': 'An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture',
+  'nav.home': 'Home',
+  'nav.about': 'About',
+  'nav.aboutOverview': 'About TCN',
+  'nav.founding': 'Founding Ceremony',
+  'nav.declaration': 'Founding Declaration',
+  'nav.bylaws': 'Bylaws',
+  'nav.people': 'People',
+  'nav.seminars': 'Seminars',
+  'nav.contact': 'Contact',
+  'nav.cta': 'Join / Contact',
+  'common.skipToContent': 'Skip to content',
+  'common.menu': 'Menu',
+  'common.relatedDocuments': 'Related documents',
+  'common.close': 'Close',
+  'common.readMore': 'Read more',
+  'common.back': 'Back',
+  'common.backToAbout': 'Back to About',
+  'common.language': 'Language',
+  'common.themeToggle': 'Eye Protection Mode',
+  'common.backToTop': 'Back to top',
+  'common.upcoming': 'Upcoming',
+  'common.past': 'Past',
+  'common.tba': 'To be announced',
+  'footer.office': 'Secretariat',
+  'footer.officeValue': '286, Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
+  'footer.copyright': 'Transcultural Network',
+  'footer.contactNote': 'Contact details to be announced',
 } as const;
 
-export type UiLang = keyof typeof ui;
-export type UiKey = keyof (typeof ui)[typeof defaultLang];
+export type UiKey = keyof typeof ui;
+
+/** UI 문자열 조회. */
+export function t(key: UiKey): string {
+  return ui[key];
+}

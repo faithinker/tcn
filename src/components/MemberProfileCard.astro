@@ -6,17 +6,9 @@ interface Props {
   currentLabel: string;
   expertiseLabel: string;
   compact?: boolean;
-  hideDuplicateName?: boolean;
 }
 
-const {
-  member,
-  currentLabel,
-  expertiseLabel,
-  compact = false,
-  hideDuplicateName = false,
-} = Astro.props;
-const showEnglishName = member.nameEn && (!hideDuplicateName || member.nameEn !== member.name);
+const { member, currentLabel, expertiseLabel, compact = false } = Astro.props;
 ---
 
 <article class:list={['profile-card', { 'profile-card-compact': compact }]}>
@@ -27,7 +19,6 @@ const showEnglishName = member.nameEn && (!hideDuplicateName || member.nameEn !=
   <h2 class:list={['mt-3 font-serif font-semibold text-ink', compact ? 'text-[1.5rem]' : 'text-display-sm']}>
     {member.name}
   </h2>
-  {showEnglishName && <p class="mt-1 font-sans text-body-sm font-bold text-body-muted">{member.nameEn}</p>}
   {member.position && (
     <p class="mt-6 font-serif text-body-serif font-semibold text-ink">
       <span class="current-label">{currentLabel}</span>{member.position}

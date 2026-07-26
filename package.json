@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.1.0",
   "private": true,
-  "description": "초문화네트워크 / Transcultural Network (TCN) — 소개 사이트",
+  "description": "Transcultural Network (TCN)",
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
     "start": "astro dev --host 0.0.0.0",

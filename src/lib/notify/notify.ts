@@ -1,11 +1,13 @@
 // 글 등록/수정 시 Discord·Telegram 알림. outbox 없이 waitUntil 배달 —
 // 알림은 베스트에포트: 실패해도 글 저장·공개에 영향 주지 않는다.
 // 시크릿이 없는 채널은 조용히 건너뛴다(로컬 dev 기본 상태).
+import { seminarHref } from '../seminar-url';
 
 export interface NotifyPost {
   id: string;
   title: string;
   summary?: string | null;
+  eventDate?: string | null;
 }
 
 export type NotifyAction = 'created' | 'updated';
@@ -53,7 +55,8 @@ export async function sendPostNotifications(
 ): Promise<NotifyResult> {
   const retryDelayMs = options.retryDelayMs ?? 2000;
   const label = action === 'created' ? 'New post' : 'Updated post';
-  const url = `${config.siteUrl.replace(/\/$/, '')}/seminars/p/${post.id}`;
+  const path = seminarHref(post.eventDate) ?? '/seminars';
+  const url = `${config.siteUrl.replace(/\/$/, '')}${path}`;
 
   const tasks: Array<Promise<boolean>> = [];
 

@@ -2,14 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
-import { formatDate, getLangFromUrl, localizePath } from '../i18n/utils';
-import { getContent } from '../i18n/content';
-import { history as historyData } from '../data/history';
+import { formatDate } from '../i18n/utils';
+import { content } from '../i18n/content';
+import { organizationMilestones } from '../data/organization-milestones';
+import { getDB } from '../lib/db';
+import { getSeminarCollection } from '../lib/seminar-service';
+import { mergeMilestones, siteToday, type SeminarView } from '../lib/seminars';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).about;
-// 연혁은 확정 기관 기록 — 정적 데이터. 세미나 서사는 D1 글로 이동.
-const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
+const copy = content.about;
+const today = siteToday();
+let seminars: SeminarView[] = [];
+try {
+  seminars = (await getSeminarCollection(getDB(), today)).chronological;
+} catch {
+  // D1 미가용 시에도 기관 고유 기록은 유지한다.
+  seminars = [];
+}
+const history = mergeMilestones(organizationMilestones, seminars, today);
 ---
 
 <BaseLayout
@@ -19,16 +28,9 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
-      {lang === 'ko' ? (
-        <h1 class="mt-3 font-serif text-display-sm font-semibold text-ink sm:text-display-hero">
-          <span class="block sm:whitespace-nowrap">초문화 시대를 연구하는</span>
-          <span class="block sm:whitespace-nowrap">국제 학술 공동체</span>
-        </h1>
-      ) : (
-        <h1 class="mt-3 max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
-          {copy.heroTitle}
-        </h1>
-      )}
+      <h1 class="mt-3 max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+        {copy.heroTitle}
+      </h1>
       <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
         {copy.heroBody}
       </p>
@@ -47,7 +49,7 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   </SectionTile>
 
   <SectionTile id="history" class="scroll-mt-20" variant="canvas" eyebrow={copy.historyEyebrow} title={copy.historyTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
       {copy.historyBody}
     </p>
     <ol class="mt-10 border-t border-hairline-strong">
@@ -57,30 +59,33 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
             datetime={entry.date}
             class="font-sans text-body-sans font-bold text-accent"
           >
-            {formatDate(entry.date, lang)}
+            {formatDate(entry.date)}
           </time>
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
               <h3 class="font-serif text-display-sm font-semibold text-ink">
                 {entry.title}
               </h3>
-              <span class={`border px-2 py-1 font-sans text-caption font-bold ${entry.status === 'upcoming' ? 'border-accent text-accent' : 'border-hairline text-body-muted'}`}>
-                {entry.status === 'upcoming' ? copy.historyUpcomingLabel : copy.historyPastLabel}
+              <span class={`border px-2 py-1 font-sans text-caption font-bold ${entry.status !== 'held' ? 'border-accent text-accent' : 'border-hairline text-body-muted'}`}>
+                {entry.status === 'today' ? copy.historyTodayLabel : entry.status === 'upcoming' ? copy.historyUpcomingLabel : copy.historyPastLabel}
               </span>
             </div>
-            <p class="mt-4 max-w-[68ch] font-serif text-body-serif text-body">
-              {entry.description}
-            </p>
-            <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
-              <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
-              <dd class="text-body">{entry.location}</dd>
-              {entry.participants.length > 0 && (
-                <>
-                  <dt class="font-bold text-body-muted">{copy.historyParticipantsLabel}</dt>
-                  <dd class="text-body">{entry.participants.join(' · ')}</dd>
-                </>
-              )}
-            </dl>
+            {entry.description && (
+              <p class="mt-4 text-pretty font-serif text-body-serif text-body">
+                {entry.description}
+              </p>
+            )}
+            {entry.location && (
+              <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
+                <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
+                <dd class="text-body">{entry.location}</dd>
+              </dl>
+            )}
+            {entry.href && (
+              <a href={entry.href} class="mt-5 inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link underline hover:text-link-hover">
+                {copy.historyViewSeminar} →
+              </a>
+            )}
           </div>
         </li>
       ))}
@@ -88,22 +93,22 @@ const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
   </SectionTile>
 
   <SectionTile variant="band" eyebrow={copy.foundingEyebrow} title={copy.foundingTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
       {copy.foundingBody}
     </p>
     <div class="mt-8">
-      <Button href={localizePath('/about/founding', lang)} variant="outline">
+      <Button href="/about/founding" variant="outline">
         {copy.foundingButton}
       </Button>
     </div>
   </SectionTile>
 
   <SectionTile variant="canvas" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
+    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
       {copy.declarationBody}
     </p>
     <div class="mt-8">
-      <Button href={localizePath('/about/declaration', lang)} variant="outline">
+      <Button href="/about/declaration" variant="outline">
         {copy.declarationButton}
       </Button>
     </div>

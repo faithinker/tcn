@@ -1,12 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
-import { getContent } from '../i18n/content';
-import { getLangFromUrl } from '../i18n/utils';
+import { content } from '../i18n/content';
 
 const membershipFormUrl = import.meta.env.PUBLIC_MEMBERSHIP_FORM_URL?.trim();
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).contact;
+const copy = content.contact;
 ---
 
 <BaseLayout

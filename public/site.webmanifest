@@ -1,8 +1,8 @@
 {
-  "name": "초문화네트워크",
+  "name": "Transcultural Network",
   "short_name": "TCN",
-  "description": "국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크",
-  "lang": "ko",
+  "description": "An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture",
+  "lang": "en",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

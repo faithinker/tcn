@@ -2,14 +2,13 @@
 import DocumentLayout from '../../layouts/DocumentLayout.astro';
 import InvitationContent from '../../components/InvitationContent.astro';
 import { getCollection } from 'astro:content';
-import { formatDate, getLangFromUrl } from '../../i18n/utils';
-import { getContent } from '../../i18n/content';
+import { formatDate } from '../../i18n/utils';
+import { content } from '../../i18n/content';
 
-const lang = getLangFromUrl(Astro.url);
-const about = getContent(lang).about;
+const about = content.about;
 
-// 창립총회 초청장(현재 1건). 언어별 첫 항목.
-const invitation = (await getCollection('invitations')).find((entry) => entry.data.lang === lang);
+// 창립총회 초청장(현재 1건).
+const [invitation] = await getCollection('invitations');
 const data = invitation?.data;
 ---
 
@@ -22,7 +21,7 @@ const data = invitation?.data;
 >
   {data && (
     <p slot="meta" class="mt-5 font-sans text-body-sans font-bold text-body-muted">
-      {formatDate(data.date, lang)} {data.time}
+      {formatDate(data.date)} {data.time}
     </p>
   )}
 
