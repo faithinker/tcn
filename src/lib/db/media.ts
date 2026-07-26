@@ -45,6 +45,19 @@ export async function addMedia(db: D1Database, input: MediaInput): Promise<Media
   return media;
 }
 
+export async function updateMediaMetadata(
+  db: D1Database,
+  id: string,
+  input: Pick<MediaInput, 'caption' | 'position'>,
+): Promise<Media | null> {
+  const result = await db
+    .prepare('update media set caption = ?2, position = ?3 where id = ?1')
+    .bind(id, input.caption ?? null, input.position ?? 0)
+    .run();
+  if (!result.meta.changes) return null;
+  return getMediaById(db, id);
+}
+
 // 파일 레코드 실삭제(R2 객체 삭제는 호출측에서 r2Key 로 별도 처리).
 export async function deleteMedia(db: D1Database, id: string): Promise<boolean> {
   const result = await db.prepare(`delete from media where id = ?1`).bind(id).run();

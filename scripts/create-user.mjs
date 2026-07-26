@@ -11,7 +11,9 @@
 import { webcrypto as crypto } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
-const ITERATIONS = 210_000;
+// src/lib/auth/password.ts 의 ITERATIONS 와 반드시 같은 값이어야 한다.
+// Workers 무료 플랜 CPU 10ms 한도에 맞춘 값 — 배경은 password.ts 주석 참고.
+const ITERATIONS = 50_000;
 const textEncoder = new TextEncoder();
 const toBase64 = (bytes) => Buffer.from(bytes).toString('base64');
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-07-27]
+### Refactor
+- Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
+
 ## [2026-07-26]
 ### Changed (BREAKING)
 - English-single site: removed `/ko`·`/en` route trees; root tree serves English copy, legacy URLs 301 via `public/_redirects`. (Branch: `feat/cloudflare-migration`) - Implemented by Claude
@@ -11,6 +15,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Seed script `scripts/seed-seminar-posts.mjs` migrating the two seminars into D1 posts (idempotent). - Implemented by Claude
 - Workers deploy workflow `deploy-workers.yml` (check+test+build+`wrangler deploy`); retired `deploy-pages.yml`. - Implemented by Claude
 - Added a shared date-derived seminar collection that powers Home, Seminars, and About milestones, with canonical `/seminars/YYYY-MM-DD` routes, sitemap entries, and legacy UUID redirects. (Branch: `feat/people-unified-board`) - Implemented by Codex
+- Added a data-driven C-layout seminar detail page with sticky event metadata, automatic heading navigation, optional image captions, and gallery ordering from the admin editor. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
 ### Changed
 - Made seminar dates unique, append-only, and immutable after publication, with automatic sequence and URL previews in the admin editor; also removed the remaining About copy-width constraints. (Branch: `feat/people-unified-board`) - Implemented by Codex
 - Removed the remaining English-only locale shim and dead bilingual branches, unified the People board with public post data, and limited Noto webfonts to the Latin subsets used by the site. (Branch: `feat/people-unified-board`) - Implemented by Codex
@@ -23,6 +28,8 @@ All notable changes to this project will be documented in this file. AI agents (
 - Dropped `github.event.head_commit.message` from the Telegram notification. `ci.yml` only triggers on `pull_request`, where that field does not exist, so it always rendered empty and would have become attacker-controlled text if a push trigger were added; replaced with `github.event.pull_request.number`. (Branch: `chore/pin-action-shas`) - Implemented by Claude
 ### Chore
 - Raised `CLAUDE_CODE_EFFORT_LEVEL` to `medium` for the PR review workflow. (Branch: `chore/pin-action-shas`) - Implemented by Claude
+### Fix
+- Restored admin login, which returned `invalid_credentials` for every account in production. PBKDF2 ran 210,000 iterations (~16-25 ms CPU) while the Workers Free plan allows 10 ms per request, so `deriveBits` was cut short; `verifyPassword` caught the failure and returned `false`, making a runtime limit look like a wrong password. Lowered the work factor to 50,000 (~4 ms, leaving room for the D1 lookup and session HMAC) in both `password.ts` and `create-user.mjs`, and stopped swallowing non-parse errors so a real failure surfaces instead of masquerading as a bad credential. Existing accounts must be recreated because their stored hashes still carry the 210,000 factor. (Branch: `fix/pbkdf2-cpu-limit`) - Implemented by Claude
 
 ## [2026-07-25]
 ### Added
