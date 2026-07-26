@@ -60,13 +60,20 @@ export function formatSeminarOrdinalLabel(sequence: number): string {
   const word = ORDINAL_WORDS[sequence - 1];
   if (word) return `${word} International Seminar`;
   const mod100 = sequence % 100;
-  const suffix =
-    mod100 >= 11 && mod100 <= 13 ? 'th' : sequence % 10 === 1 ? 'st' : sequence % 10 === 2 ? 'nd' : sequence % 10 === 3 ? 'rd' : 'th';
+  const mod10 = sequence % 10;
+  let suffix = 'th';
+  if (mod100 < 11 || mod100 > 13) {
+    if (mod10 === 1) suffix = 'st';
+    if (mod10 === 2) suffix = 'nd';
+    if (mod10 === 3) suffix = 'rd';
+  }
   return `${sequence}${suffix} International Seminar`;
 }
 
 export function seminarStatus(eventDate: string, today: string): SeminarStatus {
-  return eventDate < today ? 'held' : eventDate === today ? 'today' : 'upcoming';
+  if (eventDate < today) return 'held';
+  if (eventDate === today) return 'today';
+  return 'upcoming';
 }
 
 export function deriveSeminarCollection(posts: Post[], today: string): SeminarCollection {
@@ -77,17 +84,17 @@ export function deriveSeminarCollection(posts: Post[], today: string): SeminarCo
   if (duplicate) throw new Error(`Duplicate seminar event date: ${duplicate.eventDate}`);
 
   const chronological = dated.map((post, index) => {
-      const sequence = index + 1;
-      const href = seminarHref(post.eventDate);
-      if (!href) throw new Error(`Invalid seminar event date: ${post.eventDate}`);
-      return {
-        ...post,
-        sequence,
-        status: seminarStatus(post.eventDate, today),
-        ordinalLabel: formatSeminarOrdinalLabel(sequence),
-        href,
-      } satisfies SeminarView;
-    });
+    const sequence = index + 1;
+    const href = seminarHref(post.eventDate);
+    if (!href) throw new Error(`Invalid seminar event date: ${post.eventDate}`);
+    return {
+      ...post,
+      sequence,
+      status: seminarStatus(post.eventDate, today),
+      ordinalLabel: formatSeminarOrdinalLabel(sequence),
+      href,
+    } satisfies SeminarView;
+  });
   const upcoming = chronological.filter((seminar) => seminar.status !== 'held');
   const past = chronological.filter((seminar) => seminar.status === 'held').toReversed();
 

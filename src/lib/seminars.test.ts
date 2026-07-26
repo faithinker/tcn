@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('./db/client', () => ({ newId: vi.fn(() => 'new-id') }));
 
 import type { Post } from './db/types';
-import { deriveSeminarCollection, siteToday, type SeminarView } from './seminars';
+import {
+  deriveSeminarCollection,
+  formatSeminarOrdinalLabel,
+  siteToday,
+  type SeminarView,
+} from './seminars';
 import * as seminarDomain from './seminars';
 import * as seminarService from './seminar-service';
 
@@ -88,6 +93,15 @@ describe('deriveSeminarCollection', () => {
 
     expect(result.chronological.map((seminar) => seminar.id)).toEqual(['later']);
     expect(source.map((item) => item.id)).toEqual(originalIds);
+  });
+});
+
+describe('formatSeminarOrdinalLabel', () => {
+  it('uses English numeric suffixes after the named ordinals', () => {
+    expect(formatSeminarOrdinalLabel(11)).toBe('11th International Seminar');
+    expect(formatSeminarOrdinalLabel(21)).toBe('21st International Seminar');
+    expect(formatSeminarOrdinalLabel(22)).toBe('22nd International Seminar');
+    expect(formatSeminarOrdinalLabel(23)).toBe('23rd International Seminar');
   });
 });
 

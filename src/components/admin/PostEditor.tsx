@@ -45,7 +45,11 @@ const saveErrors: Record<string, string> = {
   event_date_immutable: 'The event date is locked because it determines the public URL and seminar sequence.',
 };
 
-export default function PostEditor({ post = null, media: initialMedia = [], seminarSequence = 1 }: Props) {
+export default function PostEditor({
+  post = null,
+  media: initialMedia = [],
+  seminarSequence = 1,
+}: Readonly<Props>) {
   const [title, setTitle] = useState(post?.title ?? '');
   const [summary, setSummary] = useState(post?.summary ?? '');
   const [eventDate, setEventDate] = useState(post?.eventDate ?? '');
@@ -161,17 +165,18 @@ export default function PostEditor({ post = null, media: initialMedia = [], semi
   return (
     <div className="space-y-6">
       <div>
-        <label className={labelText}>Title</label>
-        <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
+        <label htmlFor="post-title" className={labelText}>Title</label>
+        <input id="post-title" className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
       <div>
-        <label className={labelText}>Summary (optional)</label>
-        <input className={field} value={summary ?? ''} onChange={(e) => setSummary(e.target.value)} />
+        <label htmlFor="post-summary" className={labelText}>Summary (optional)</label>
+        <input id="post-summary" className={field} value={summary ?? ''} onChange={(e) => setSummary(e.target.value)} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelText}>Event date</label>
+          <label htmlFor="post-event-date" className={labelText}>Event date</label>
           <input
+            id="post-event-date"
             type="date"
             className={`${field} disabled:cursor-not-allowed disabled:bg-canvas-band disabled:text-body-muted`}
             value={eventDate ?? ''}
@@ -186,8 +191,8 @@ export default function PostEditor({ post = null, media: initialMedia = [], semi
           </p>
         </div>
         <div>
-          <label className={labelText}>Address</label>
-          <input className={field} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
+          <label htmlFor="post-address" className={labelText}>Address</label>
+          <input id="post-address" className={field} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
         </div>
       </div>
 
@@ -210,7 +215,7 @@ export default function PostEditor({ post = null, media: initialMedia = [], semi
       </div>
 
       <div>
-        <label className={labelText}>Body</label>
+        <p className={labelText}>Body</p>
         <div className="border border-hairline-strong bg-canvas">
           <div className="flex flex-wrap gap-1 border-b border-hairline bg-canvas-soft px-2 py-1.5">
             {toolbarButton('B', editor?.isActive('bold') ?? false, () => editor?.chain().focus().toggleBold().run())}
@@ -231,7 +236,7 @@ export default function PostEditor({ post = null, media: initialMedia = [], semi
       </div>
 
       <div>
-        <label className={labelText}>Media (photos, video, documents)</label>
+        <p className={labelText}>Media (photos, video, documents)</p>
         {!post ? (
           <p className="text-caption text-body-muted">Save the post first to attach media.</p>
         ) : (
