@@ -1,7 +1,7 @@
 import { base64UrlDecode, base64UrlEncode, textEncoder, timingSafeEqual } from './_crypto';
 
 // 세션 테이블 없이 HMAC-SHA256 서명 토큰. 형식: `<payloadB64url>.<sigB64url>`.
-// payload = { uid, exp(unix seconds) }. 하루 유효.
+// payload = { uid, exp(unix seconds), sv(session version) }. 하루 유효.
 export const SESSION_TTL_SECONDS = 60 * 60 * 24;
 
 function nowSeconds(): number {
@@ -20,8 +20,17 @@ async function sign(secret: string, data: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await crypto.subtle.sign('HMAC', key, data as BufferSource));
 }
 
-export async function createSessionToken(uid: string, secret: string, issuedAt = nowSeconds()): Promise<string> {
-  const payload = JSON.stringify({ uid, exp: issuedAt + SESSION_TTL_SECONDS });
+export async function createSessionToken(
+  uid: string,
+  secret: string,
+  options: { issuedAt?: number; sessionVersion?: number } = {},
+): Promise<string> {
+  const issuedAt = options.issuedAt ?? nowSeconds();
+  const payload = JSON.stringify({
+    uid,
+    exp: issuedAt + SESSION_TTL_SECONDS,
+    sv: options.sessionVersion ?? 1,
+  });
   const payloadPart = base64UrlEncode(textEncoder.encode(payload));
   const signature = await sign(secret, textEncoder.encode(payloadPart));
   return `${payloadPart}.${base64UrlEncode(signature)}`;
@@ -31,7 +40,7 @@ export async function verifySessionToken(
   token: string,
   secret: string,
   at = nowSeconds(),
-): Promise<{ uid: string } | null> {
+): Promise<{ uid: string; sessionVersion: number } | null> {
   try {
     const [payloadPart, signaturePart] = token.split('.');
     if (!payloadPart || !signaturePart) return null;
@@ -42,10 +51,18 @@ export async function verifySessionToken(
     const payload = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadPart))) as {
       uid?: unknown;
       exp?: unknown;
+      sv?: unknown;
     };
-    if (typeof payload.uid !== 'string' || typeof payload.exp !== 'number') return null;
+    if (
+      typeof payload.uid !== 'string' ||
+      typeof payload.exp !== 'number' ||
+      !Number.isSafeInteger(payload.sv) ||
+      Number(payload.sv) < 1
+    ) {
+      return null;
+    }
     if (at >= payload.exp) return null;
-    return { uid: payload.uid };
+    return { uid: payload.uid, sessionVersion: Number(payload.sv) };
   } catch {
     return null;
   }

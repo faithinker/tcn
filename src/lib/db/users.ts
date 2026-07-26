@@ -2,7 +2,7 @@ import { newId } from './client';
 import type { User } from './types';
 
 const COLUMNS = `id, username, password_hash as passwordHash, display_name as displayName,
-  created_at as createdAt`;
+  session_version as sessionVersion, created_at as createdAt`;
 
 // 로그인용 조회(비번 해시 포함). 인증 비교는 auth 레이어(5단계)에서.
 export async function getUserByUsername(db: D1Database, username: string): Promise<User | null> {
@@ -28,4 +28,11 @@ export async function createUser(
   const user = await getUserById(db, id);
   if (!user) throw new Error('createUser: insert did not persist');
   return user;
+}
+
+export async function revokeUserSessions(db: D1Database, id: string): Promise<void> {
+  await db
+    .prepare('update users set session_version = session_version + 1 where id = ?1')
+    .bind(id)
+    .run();
 }

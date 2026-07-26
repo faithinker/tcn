@@ -386,8 +386,14 @@ const single = entries.length < 2;
         const token = ++loadToken;
         loading.hidden = false;
         const hi = new Image();
-        hi.src = entry.zoom;
         try {
+          await new Promise<void>((resolve, reject) => {
+            hi.addEventListener('load', () => resolve(), { once: true });
+            hi.addEventListener('error', () => reject(new Error('High-resolution image failed')), {
+              once: true,
+            });
+            hi.src = entry.zoom!;
+          });
           await hi.decode();
         } catch {
           // 실패한 URL로 현재 이미지를 교체하지 않는다. 화면 맞춤 이미지를

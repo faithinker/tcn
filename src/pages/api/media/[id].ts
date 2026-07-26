@@ -1,6 +1,14 @@
 import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
-import { deleteMedia, getBucket, getDB, getMediaById, updateMediaMetadata } from '../../../lib/db';
+import {
+  completeMediaCleanup,
+  deleteMediaAndQueueCleanup,
+  getBucket,
+  getDB,
+  getMediaById,
+  recordMediaCleanupFailure,
+  updateMediaMetadata,
+} from '../../../lib/db';
 import { normalizeMediaMetadata, type MediaMetadataPayload } from '../../../lib/media-metadata';
 
 export const prerender = false;
@@ -28,7 +36,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
   return Response.json({ ok: true, media });
 };
 
-// 미디어 삭제: 인증 필요. R2 객체 + media 행 실삭제(글의 soft delete 와 별개).
+// D1에서 공개 레코드와 cleanup 작업을 원자적으로 기록한 뒤 R2 삭제를 시도한다.
 export const DELETE: APIRoute = async ({ request, params }) => {
   const uid = await getSessionUid(request);
   if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
@@ -40,7 +48,18 @@ export const DELETE: APIRoute = async ({ request, params }) => {
   const media = await getMediaById(db, id);
   if (!media) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
 
-  await getBucket().delete(media.r2Key);
-  await deleteMedia(db, id);
-  return Response.json({ ok: true });
+  if (!(await deleteMediaAndQueueCleanup(db, id, media.r2Key))) {
+    return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
+  }
+
+  try {
+    await getBucket().delete(media.r2Key);
+    await completeMediaCleanup(db, media.r2Key);
+    return Response.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'R2 cleanup failed';
+    console.error('media delete: R2 cleanup queued', { key: media.r2Key, error });
+    await recordMediaCleanupFailure(db, media.r2Key, message);
+    return Response.json({ ok: true, cleanupPending: true }, { status: 202 });
+  }
 };

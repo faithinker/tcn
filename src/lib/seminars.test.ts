@@ -21,6 +21,7 @@ const post = (id: string, eventDate: string): Post => ({
   body: '',
   heroMediaId: null,
   authorId: null,
+  revision: 1,
   createdAt: 0,
   updatedAt: 0,
   deletedAt: null,

@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { getDB, getUserById } from '../db';
 import { readSessionToken } from './cookie';
 import { verifySessionToken } from './session';
 
@@ -14,7 +15,9 @@ export async function getSessionUid(request: Request): Promise<string | null> {
   const token = readSessionToken(request);
   if (!token) return null;
   const result = await verifySessionToken(token, secret);
-  return result?.uid ?? null;
+  if (!result) return null;
+  const user = await getUserById(getDB(), result.uid);
+  return user?.sessionVersion === result.sessionVersion ? result.uid : null;
 }
 
 export function getSessionSecret(): string {

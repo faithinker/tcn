@@ -2,9 +2,11 @@ import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { Markdown } from 'tiptap-markdown';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { ApiRequestError, requestJson } from '../../lib/admin-api';
 import { processImage } from '../../lib/media/process-image';
 import { mediaMetadataForSave } from '../../lib/media-metadata';
+import { POST_LIMITS } from '../../lib/post-payload';
 import { seminarHref } from '../../lib/seminar-url';
 import { formatSeminarOrdinalLabel } from '../../lib/seminars';
 
@@ -28,6 +30,7 @@ export interface EditorPost {
   address: string | null;
   body: string;
   heroMediaId: string | null;
+  revision: number;
 }
 
 interface Props {
@@ -47,7 +50,21 @@ const saveErrors: Record<string, string> = {
   event_date_conflict: 'Another seminar already uses this date.',
   event_date_must_follow_latest: 'A new seminar date must be later than the latest seminar.',
   event_date_immutable: 'The event date is locked because it determines the public URL and seminar sequence.',
+  hero_media_invalid: 'The cover image is no longer available. Choose another image and try again.',
+  title_too_long: `The title must be ${POST_LIMITS.title} characters or fewer.`,
+  summary_too_long: `The summary must be ${POST_LIMITS.summary} characters or fewer.`,
+  address_too_long: `The location must be ${POST_LIMITS.address} characters or fewer.`,
+  body_too_long: 'The body is too long to save.',
+  revision_conflict: 'Another editor saved changes first. Reload this page before editing again.',
 };
+
+function requestErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof ApiRequestError)) return fallback;
+  if (error.code === 'network_error') return 'Network unavailable. Check your connection and try again.';
+  if (error.code === 'invalid_response') return `The server returned an unreadable response (${error.status}). Try again.`;
+  if (error.code === 'unauthorized') return 'Your session has expired. Sign in again before retrying.';
+  return saveErrors[error.code] ?? `${fallback} (${error.code})`;
+}
 
 export default function PostEditor({
   post = null,
@@ -59,6 +76,7 @@ export default function PostEditor({
   const [eventDate, setEventDate] = useState(post?.eventDate ?? '');
   const [address, setAddress] = useState(post?.address ?? '');
   const [heroMediaId, setHeroMediaId] = useState<string | null>(post?.heroMediaId ?? null);
+  const [revision, setRevision] = useState<number | null>(post?.revision ?? null);
   const [media, setMedia] = useState<EditorMedia[]>(() =>
     [...initialMedia].sort((a, b) => a.position - b.position),
   );
@@ -69,6 +87,7 @@ export default function PostEditor({
   const [status, setStatus] = useState<string>('');
   const [dragging, setDragging] = useState(false);
   const [bodyHasContent, setBodyHasContent] = useState(Boolean(post?.body.trim()));
+  const mediaManagerRef = useRef<HTMLDivElement>(null);
   const eventDateLocked = Boolean(post?.eventDate);
   const publicHref = seminarHref(eventDate);
   const ordinalLabel = formatSeminarOrdinalLabel(seminarSequence);
@@ -84,10 +103,16 @@ export default function PostEditor({
     content: post?.body ?? '',
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => setBodyHasContent(Boolean(currentEditor.getText().trim())),
-    editorProps: { attributes: { class: 'admin-prose min-h-[16rem] px-3 py-3 focus:outline-none' } },
+    editorProps: {
+      attributes: {
+        class: 'admin-prose min-h-[16rem] px-3 py-3 focus:outline-none',
+        'aria-labelledby': 'post-body-label',
+      },
+    },
   });
 
   const save = async () => {
+    if (busy) return;
     if (!title.trim()) {
       setStatus('Please enter a title.');
       return;
@@ -99,83 +124,115 @@ export default function PostEditor({
       | { getMarkdown(): string }
       | undefined;
     const body = markdownStorage?.getMarkdown() ?? '';
-    const payload = { title, summary, eventDate, address, body, heroMediaId };
+    const payload = { title, summary, eventDate, address, body, heroMediaId, revision };
     try {
-      const response = await fetch(post ? `/api/posts/${post.id}` : '/api/posts', {
+      const result = await requestJson<{ ok: true; post?: { id: string; revision: number } }>(
+        post ? `/api/posts/${post.id}` : '/api/posts',
+        {
         method: post ? 'PUT' : 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
-      });
-      const result = (await response.json()) as { ok: boolean; post?: { id: string }; error?: string };
-      if (!response.ok || !result.ok) {
-        setStatus(saveErrors[result.error ?? ''] ?? `Save failed: ${result.error ?? response.status}`);
-        return;
-      }
+        },
+      );
       if (!post && result.post) {
         // 새 글은 저장 후 편집 화면으로 이동 → 미디어 첨부 가능
         window.location.href = `/admin/posts/${result.post.id}`;
         return;
       }
-      const metadataResponses = await Promise.all(
+      if (result.post) setRevision(result.post.revision);
+      const metadataResults = await Promise.allSettled(
         media.map((item, position) =>
-          fetch(`/api/media/${item.id}`, {
+          requestJson(`/api/media/${item.id}`, {
             method: 'PATCH',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify(mediaMetadataForSave(item, position)),
           }),
         ),
       );
-      if (metadataResponses.some((metadataResponse) => !metadataResponse.ok)) {
-        setStatus('Post saved, but some photo details could not be saved.');
+      const failedMetadata = metadataResults.filter((result) => result.status === 'rejected').length;
+      if (failedMetadata > 0) {
+        setStatus(
+          `Post saved, but ${failedMetadata} media ${failedMetadata === 1 ? 'item' : 'items'} could not be updated. Retry Save.`,
+        );
         return;
       }
       setMedia((current) => current.map((item, position) => ({ ...item, position })));
       setStatus('Saved ✓');
+    } catch (error) {
+      setStatus(requestErrorMessage(error, 'Save failed. Try again.'));
     } finally {
       setBusy(false);
     }
   };
 
   const uploadFiles = async (files: FileList | null) => {
-    if (!post || !files || files.length === 0) return;
+    if (busy || !post || !files || files.length === 0) return;
     setBusy(true);
     let nextPosition = media.length;
-    for (const file of Array.from(files)) {
-      setStatus(`Uploading: ${file.name}`);
-      let uploadFile = file;
-      if (file.type.startsWith('image/')) {
+    let uploaded = 0;
+    const failures: string[] = [];
+    try {
+      for (const file of Array.from(files)) {
+        setStatus(`Uploading: ${file.name}`);
+        let uploadFile = file;
+        if (file.type.startsWith('image/')) {
+          try {
+            const processed = await processImage(file);
+            const name = file.name.replace(/\.[^.]+$/, '') + '.webp';
+            uploadFile = new File([processed.blob], name, { type: 'image/webp' });
+          } catch {
+            failures.push(`${file.name}: image processing failed`);
+            continue;
+          }
+        }
+        const uploadQuery = new URLSearchParams({
+          postId: post.id,
+          filename: uploadFile.name,
+          position: String(nextPosition),
+        });
         try {
-          const processed = await processImage(file);
-          const name = file.name.replace(/\.[^.]+$/, '') + '.webp';
-          uploadFile = new File([processed.blob], name, { type: 'image/webp' });
-        } catch {
-          setStatus(`Image processing failed: ${file.name}`);
-          continue;
+          const result = await requestJson<{ ok: true; media: EditorMedia }>(
+            `/api/media?${uploadQuery}`,
+            {
+            method: 'POST',
+            headers: { 'content-type': uploadFile.type },
+            body: uploadFile,
+            },
+          );
+          const added = result.media;
+          setMedia((current) => [...current, added]);
+          setHeroMediaId((current) => current ?? (added.kind === 'image' ? added.id : current));
+          nextPosition += 1;
+          uploaded += 1;
+        } catch (error) {
+          failures.push(`${file.name}: ${requestErrorMessage(error, 'upload failed')}`);
         }
       }
-      const form = new FormData();
-      form.append('postId', post.id);
-      form.append('file', uploadFile);
-      form.append('position', String(nextPosition));
-      const response = await fetch('/api/media', { method: 'POST', body: form });
-      const result = (await response.json()) as { ok: boolean; media?: EditorMedia; error?: string };
-      if (response.ok && result.media) {
-        const added = result.media;
-        setMedia((current) => [...current, added]);
-        setHeroMediaId((current) => current ?? (added.kind === 'image' ? added.id : current));
-        nextPosition += 1;
-      } else {
-        setStatus(`Upload failed (${file.name}): ${result.error ?? response.status}`);
-      }
+      setStatus(
+        failures.length === 0
+          ? `${uploaded} ${uploaded === 1 ? 'file' : 'files'} uploaded ✓`
+          : `${uploaded} uploaded; ${failures.length} failed. ${failures.join(' · ')}`,
+      );
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    setStatus('Upload complete ✓');
   };
 
   const removeMedia = async (id: string) => {
-    await fetch(`/api/media/${id}`, { method: 'DELETE' });
-    setMedia((current) => current.filter((item) => item.id !== id));
-    setHeroMediaId((current) => (current === id ? null : current));
+    if (busy) return;
+    setBusy(true);
+    setStatus('Deleting media…');
+    try {
+      await requestJson(`/api/media/${id}`, { method: 'DELETE' });
+      setMedia((current) => current.filter((item) => item.id !== id));
+      setHeroMediaId((current) => (current === id ? null : current));
+      setStatus('Media deleted ✓');
+      queueMicrotask(() => mediaManagerRef.current?.focus());
+    } catch (error) {
+      setStatus(requestErrorMessage(error, 'Media could not be deleted. Try again.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const toggleCaption = (id: string) => {
@@ -216,9 +273,16 @@ export default function PostEditor({
   };
 
   const deletePost = async () => {
-    if (!post || !window.confirm('Delete this post? (It will be hidden, not erased.)')) return;
-    await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
-    window.location.href = '/admin';
+    if (busy || !post || !window.confirm('Delete this post? (It will be hidden, not erased.)')) return;
+    setBusy(true);
+    setStatus('Deleting post…');
+    try {
+      await requestJson(`/api/posts/${post.id}`, { method: 'DELETE' });
+      window.location.href = '/admin';
+    } catch (error) {
+      setStatus(requestErrorMessage(error, 'Post could not be deleted. Try again.'));
+      setBusy(false);
+    }
   };
 
   const toolbarButton = (label: string, active: boolean, onClick: () => void) => (
@@ -226,6 +290,7 @@ export default function PostEditor({
       type="button"
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
+      aria-pressed={active}
       className={`px-2 py-1 text-caption font-bold ${active ? 'bg-ink text-on-primary' : 'text-ink hover:bg-canvas-soft'}`}
     >
       {label}
@@ -239,6 +304,7 @@ export default function PostEditor({
     ['Cover image', Boolean(heroMediaId)],
     ['Body content', bodyHasContent],
     ['Photos or materials', media.length > 0],
+    ['Video transcripts', fileMedia.filter((item) => item.kind === 'video').every((item) => Boolean(item.caption?.trim()))],
   ] as const;
   const readinessCount = readiness.filter(([, complete]) => complete).length;
 
@@ -247,14 +313,14 @@ export default function PostEditor({
       <div className="min-w-0 space-y-6">
       <div>
         <label htmlFor="post-title" className={labelText}>Seminar title / featured presentation</label>
-        <input id="post-title" className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input id="post-title" className={field} maxLength={POST_LIMITS.title} value={title} onChange={(e) => setTitle(e.target.value)} />
         <p className="mt-1 text-caption text-body-muted">
           The seminar number and public heading are generated from the event date.
         </p>
       </div>
       <div>
         <label htmlFor="post-summary" className={labelText}>Summary (optional)</label>
-        <input id="post-summary" className={field} value={summary ?? ''} onChange={(e) => setSummary(e.target.value)} />
+        <input id="post-summary" className={field} maxLength={POST_LIMITS.summary} value={summary ?? ''} onChange={(e) => setSummary(e.target.value)} />
         <p className="mt-1 text-caption text-body-muted">Displayed as the lead paragraph on the public page.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -277,7 +343,7 @@ export default function PostEditor({
         </div>
         <div>
           <label htmlFor="post-address" className={labelText}>Location</label>
-          <input id="post-address" className={field} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
+          <input id="post-address" className={field} maxLength={POST_LIMITS.address} value={address ?? ''} onChange={(e) => setAddress(e.target.value)} />
           <p className="mt-1 text-caption text-body-muted">Used as one complete location and for the map link.</p>
         </div>
       </div>
@@ -301,9 +367,13 @@ export default function PostEditor({
       </div>
 
       <div>
-        <p className={labelText}>Body</p>
+        <p id="post-body-label" className={labelText}>Body</p>
         <div className="border border-hairline-strong bg-canvas">
-          <div className="flex flex-wrap gap-1 border-b border-hairline bg-canvas-soft px-2 py-1.5">
+          <div
+            role="toolbar"
+            aria-labelledby="post-body-label"
+            className="flex flex-wrap gap-1 border-b border-hairline bg-canvas-soft px-2 py-1.5"
+          >
             {toolbarButton('B', editor?.isActive('bold') ?? false, () => editor?.chain().focus().toggleBold().run())}
             {toolbarButton('I', editor?.isActive('italic') ?? false, () => editor?.chain().focus().toggleItalic().run())}
             {toolbarButton('H2', editor?.isActive('heading', { level: 2 }) ?? false, () => editor?.chain().focus().toggleHeading({ level: 2 }).run())}
@@ -321,7 +391,7 @@ export default function PostEditor({
         </div>
       </div>
 
-      <div>
+      <div ref={mediaManagerRef} tabIndex={-1}>
         <p className={labelText}>Media (photos, video, documents)</p>
         {!post ? (
           <p className="text-caption text-body-muted">Save the post first to attach media.</p>
@@ -351,6 +421,7 @@ export default function PostEditor({
               <input
                 type="file"
                 multiple
+                disabled={busy}
                 accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
                 onChange={(e) => uploadFiles(e.target.files)}
                 className="mx-auto mt-2 block text-caption text-body-muted"
@@ -391,6 +462,7 @@ export default function PostEditor({
                         <button
                           type="button"
                           onClick={() => setHeroMediaId(item.id)}
+                          disabled={busy}
                           className={`inline-flex min-h-11 items-center font-bold ${heroMediaId === item.id ? 'text-accent' : 'text-link'}`}
                         >
                           {heroMediaId === item.id ? '★ Cover' : 'Set as cover'}
@@ -398,6 +470,7 @@ export default function PostEditor({
                         <button
                           type="button"
                           onClick={() => toggleCaption(item.id)}
+                          disabled={busy}
                           className={`${mediaAction} text-link`}
                         >
                           {openCaptions.has(item.id) ? 'Hide caption field' : item.caption ? 'Edit caption' : 'Add caption'}
@@ -405,7 +478,7 @@ export default function PostEditor({
                         <button
                           type="button"
                           onClick={() => moveMediaWithinGroup(item.id, -1)}
-                          disabled={index === 0}
+                          disabled={busy || index === 0}
                           className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
                           aria-label={`Move ${item.filename ?? 'image'} earlier`}
                         >
@@ -414,7 +487,7 @@ export default function PostEditor({
                         <button
                           type="button"
                           onClick={() => moveMediaWithinGroup(item.id, 1)}
-                          disabled={index === imageMedia.length - 1}
+                          disabled={busy || index === imageMedia.length - 1}
                           className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
                           aria-label={`Move ${item.filename ?? 'image'} later`}
                         >
@@ -423,6 +496,7 @@ export default function PostEditor({
                         <button
                           type="button"
                           onClick={() => removeMedia(item.id)}
+                          disabled={busy}
                           className={`${mediaAction} text-accent`}
                         >
                           Delete
@@ -444,50 +518,75 @@ export default function PostEditor({
                 </div>
                 <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
                   {fileMedia.map((item, index) => (
-                    <li key={item.id} className="py-3 sm:flex sm:items-center sm:gap-4">
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <span
-                          className="inline-flex h-10 w-12 shrink-0 items-center justify-center bg-canvas-band font-mono text-caption font-bold text-body-muted"
-                          aria-hidden="true"
-                        >
-                          {fileTypeLabel(item)}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="break-words font-sans text-body-sm font-bold text-ink">
-                            {item.filename ?? 'Untitled file'}
-                          </p>
-                          <p className="font-sans text-caption text-body-muted">
-                            {item.kind === 'video' ? 'Video file' : 'Document'}
-                          </p>
+                    <li key={item.id} className="py-3">
+                      <div className="sm:flex sm:items-center sm:gap-4">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
+                          <span
+                            className="inline-flex h-10 w-12 shrink-0 items-center justify-center bg-canvas-band font-mono text-caption font-bold text-body-muted"
+                            aria-hidden="true"
+                          >
+                            {fileTypeLabel(item)}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="break-words font-sans text-body-sm font-bold text-ink">
+                              {item.filename ?? 'Untitled file'}
+                            </p>
+                            <p className="font-sans text-caption text-body-muted">
+                              {item.kind === 'video' ? 'Video file' : 'Document'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 font-sans text-caption sm:mt-0 sm:shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveMediaWithinGroup(item.id, -1)}
+                            disabled={busy || index === 0}
+                            className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                            aria-label={`Move ${item.filename ?? 'file'} earlier`}
+                          >
+                            Earlier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveMediaWithinGroup(item.id, 1)}
+                            disabled={busy || index === fileMedia.length - 1}
+                            className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
+                            aria-label={`Move ${item.filename ?? 'file'} later`}
+                          >
+                            Later
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeMedia(item.id)}
+                            disabled={busy}
+                            className={`${mediaAction} text-accent`}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3 font-sans text-caption sm:mt-0 sm:shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => moveMediaWithinGroup(item.id, -1)}
-                          disabled={index === 0}
-                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                          aria-label={`Move ${item.filename ?? 'file'} earlier`}
-                        >
-                          Earlier
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveMediaWithinGroup(item.id, 1)}
-                          disabled={index === fileMedia.length - 1}
-                          className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                          aria-label={`Move ${item.filename ?? 'file'} later`}
-                        >
-                          Later
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => removeMedia(item.id)}
-                          className={`${mediaAction} text-accent`}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      {item.kind === 'video' && (
+                        <div className="mt-3">
+                          <label htmlFor={`video-transcript-${item.id}`} className={labelText}>
+                            Video transcript (required for public display)
+                          </label>
+                          <textarea
+                            id={`video-transcript-${item.id}`}
+                            className={field}
+                            rows={4}
+                            maxLength={500}
+                            value={item.caption ?? ''}
+                            onChange={(event) => updateCaption(item.id, event.target.value)}
+                            aria-describedby={`video-transcript-help-${item.id}`}
+                          />
+                          <p
+                            id={`video-transcript-help-${item.id}`}
+                            className="mt-1 text-caption text-body-muted"
+                          >
+                            This video remains hidden from the public page until the transcript is saved.
+                          </p>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -511,7 +610,7 @@ export default function PostEditor({
             Delete
           </button>
         )}
-        <span className="text-caption text-body-muted">{status}</span>
+        <span role="status" aria-live="polite" className="text-caption text-body-muted">{status}</span>
       </div>
       </div>
 

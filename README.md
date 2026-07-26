@@ -160,6 +160,7 @@ npm run dev            # 개발 서버 (wrangler platformProxy로 로컬 D1/R2 �
 npm run test           # Vitest 유닛 테스트 (커버리지)
 npm run check          # astro check (타입·스키마)
 npm run build          # dist/ 빌드
+npm run audit          # 개발 도구를 포함한 전체 의존성 High 이상 감사
 npm run verify         # Playwright 스크린샷 검증 (375/768/1280, 서버 필요)
 npm run a11y           # Lighthouse 접근성 (서버 필요)
 npm run audit:prod     # 운영 의존성 보안 감사
@@ -184,7 +185,7 @@ node scripts/seed-seminar-posts.mjs --remote
 
 ### 배포
 
-`main`에 머지되면 `deploy-workers.yml`이 check·test·build 후 `wrangler deploy`를 실행합니다. 수동 배포는:
+`main`에 머지되면 `deploy-workers.yml`이 전체 의존성 감사, check·test·build, D1 Time Travel bookmark와 migration 적용 후 Worker를 배포합니다. 배포 후 readiness smoke가 실패하면 Worker는 직전 버전으로 자동 rollback됩니다. 운영 절차와 복구 기준은 [`docs/operations-runbook.md`](docs/operations-runbook.md)를 따릅니다. 수동 배포는:
 
 ```bash
 npm run build && npx wrangler deploy

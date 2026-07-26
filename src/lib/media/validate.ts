@@ -3,9 +3,12 @@ import type { MediaKind } from '../db/types';
 // 서버측 업로드 검증. 이미지는 클라이언트가 WebP로 정제(옵션 A)해서 올린다는 전제 → WebP 강제.
 // 문서/영상은 MIME 허용목록 + 용량. 인증된 내부 사용자 전제라 체크섬까지는 요구하지 않음.
 
-const IMAGE_MAX = 10 * 1024 * 1024; // 10MB
-const DOCUMENT_MAX = 20 * 1024 * 1024; // 20MB
-const VIDEO_MAX = 200 * 1024 * 1024; // 200MB
+export const UPLOAD_LIMITS = {
+  image: 10 * 1024 * 1024,
+  document: 20 * 1024 * 1024,
+  // Free/Pro Workers의 100MB 요청 제한보다 여유를 두어 헤더·런타임 차이를 흡수한다.
+  video: 90 * 1024 * 1024,
+} as const;
 const IMAGE_MAX_EDGE = 2400;
 
 const DOCUMENT_MIME: Record<string, string> = {
@@ -59,28 +62,36 @@ export function webpDimensions(bytes: Uint8Array): { width: number; height: numb
   return null;
 }
 
-export function validateUpload(mime: string, bytes: Uint8Array): ValidatedUpload {
-  if (bytes.byteLength <= 0) throw new UploadError('empty_file');
+export function classifyUpload(mime: string, size: number): ValidatedUpload {
+  if (!Number.isSafeInteger(size) || size < 0) throw new UploadError('invalid_file_size');
+  if (size === 0) throw new UploadError('empty_file');
 
   if (mime === 'image/webp') {
-    if (bytes.byteLength > IMAGE_MAX) throw new UploadError('image_too_large');
-    const dimensions = webpDimensions(bytes);
-    if (!dimensions) throw new UploadError('invalid_webp');
-    if (Math.max(dimensions.width, dimensions.height) > IMAGE_MAX_EDGE) {
-      throw new UploadError('image_dimensions_too_large');
-    }
-    return { kind: 'image', extension: 'webp', width: dimensions.width, height: dimensions.height };
+    if (size > UPLOAD_LIMITS.image) throw new UploadError('image_too_large');
+    return { kind: 'image', extension: 'webp', width: null, height: null };
   }
 
   if (DOCUMENT_MIME[mime]) {
-    if (bytes.byteLength > DOCUMENT_MAX) throw new UploadError('document_too_large');
+    if (size > UPLOAD_LIMITS.document) throw new UploadError('document_too_large');
     return { kind: 'document', extension: DOCUMENT_MIME[mime], width: null, height: null };
   }
 
   if (VIDEO_MIME[mime]) {
-    if (bytes.byteLength > VIDEO_MAX) throw new UploadError('video_too_large');
+    if (size > UPLOAD_LIMITS.video) throw new UploadError('video_too_large');
     return { kind: 'video', extension: VIDEO_MIME[mime], width: null, height: null };
   }
 
   throw new UploadError('unsupported_media_type');
+}
+
+export function validateUpload(mime: string, bytes: Uint8Array): ValidatedUpload {
+  const classified = classifyUpload(mime, bytes.byteLength);
+  if (classified.kind !== 'image') return classified;
+
+  const dimensions = webpDimensions(bytes);
+  if (!dimensions) throw new UploadError('invalid_webp');
+  if (Math.max(dimensions.width, dimensions.height) > IMAGE_MAX_EDGE) {
+    throw new UploadError('image_dimensions_too_large');
+  }
+  return { ...classified, width: dimensions.width, height: dimensions.height };
 }

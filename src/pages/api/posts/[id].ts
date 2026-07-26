@@ -1,22 +1,22 @@
 import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
-import { getDB, getPost, listSeminarPosts, softDeletePost, updatePost } from '../../../lib/db';
+import {
+  getDB,
+  getMediaById,
+  getPost,
+  listSeminarPosts,
+  PostRevisionConflictError,
+  softDeletePost,
+  updatePost,
+} from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
+import { parsePostPayload } from '../../../lib/post-payload';
 import {
   isSeminarDateConflictError,
   validateSeminarDate,
 } from '../../../lib/seminar-validation';
 
 export const prerender = false;
-
-interface PostPayload {
-  title?: string;
-  summary?: string;
-  eventDate?: string;
-  address?: string;
-  body?: string;
-  heroMediaId?: string | null;
-}
 
 // 글 수정(전체 저장). 인증 필요, 권한 없음(flat).
 export const PUT: APIRoute = async ({ request, params }) => {
@@ -26,15 +26,18 @@ export const PUT: APIRoute = async ({ request, params }) => {
   const id = params.id;
   if (!id) return Response.json({ ok: false, error: 'missing_id' }, { status: 400 });
 
-  const payload = (await request.json().catch(() => null)) as PostPayload | null;
-  const title = payload?.title?.trim();
-  if (!title) return Response.json({ ok: false, error: 'title_required' }, { status: 400 });
+  const parsed = parsePostPayload(await request.json().catch(() => null));
+  if (!parsed.ok) return Response.json({ ok: false, error: parsed.error }, { status: 400 });
+  const payload = parsed.value;
+  if (!payload.revision) {
+    return Response.json({ ok: false, error: 'invalid_revision' }, { status: 400 });
+  }
 
   const db = getDB();
   const [currentPost, seminarPosts] = await Promise.all([getPost(db, id), listSeminarPosts(db)]);
   if (!currentPost) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
 
-  const eventDate = payload?.eventDate?.trim() || null;
+  const eventDate = payload.eventDate;
   const existingDates = seminarPosts.map((post) => post.eventDate).filter((date): date is string => Boolean(date));
   const dateError = validateSeminarDate({
     eventDate,
@@ -46,17 +49,28 @@ export const PUT: APIRoute = async ({ request, params }) => {
     return Response.json({ ok: false, error: dateError }, { status });
   }
 
+  if (payload.heroMediaId) {
+    const hero = await getMediaById(db, payload.heroMediaId);
+    if (!hero || hero.postId !== id || hero.kind !== 'image') {
+      return Response.json({ ok: false, error: 'hero_media_invalid' }, { status: 400 });
+    }
+  }
+
   let post;
   try {
     post = await updatePost(db, id, {
-      title,
-      summary: payload?.summary?.trim() || null,
+      title: payload.title,
+      summary: payload.summary,
       eventDate,
-      address: payload?.address?.trim() || null,
-      body: payload?.body ?? '',
-      heroMediaId: payload?.heroMediaId ?? null,
+      address: payload.address,
+      body: payload.body,
+      heroMediaId: payload.heroMediaId,
+      expectedRevision: payload.revision,
     });
   } catch (error) {
+    if (error instanceof PostRevisionConflictError) {
+      return Response.json({ ok: false, error: 'revision_conflict' }, { status: 409 });
+    }
     if (isSeminarDateConflictError(error)) {
       return Response.json({ ok: false, error: 'event_date_conflict' }, { status: 409 });
     }

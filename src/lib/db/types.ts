@@ -12,6 +12,7 @@ export interface Post {
   body: string; // 마크다운
   heroMediaId: string | null;
   authorId: string | null;
+  revision: number;
   createdAt: number; // unix seconds
   updatedAt: number;
   deletedAt: number | null; // null = 노출
@@ -25,6 +26,7 @@ export interface PostInput {
   body?: string;
   heroMediaId?: string | null;
   authorId?: string | null;
+  expectedRevision?: number;
 }
 
 export interface Media {
@@ -62,5 +64,6 @@ export interface User {
   username: string;
   passwordHash: string;
   displayName: string | null;
+  sessionVersion: number;
   createdAt: number;
 }

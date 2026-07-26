@@ -41,7 +41,8 @@ jobs:
           set -euo pipefail
           # 공개 라우트는 세션을 안 쓰지만, 게이트가 인증 경로를 밟아도 죽지 않도록 더미 시크릿을 둔다.
           printf 'SESSION_SECRET=%s\n' "$(openssl rand -hex 32)" > .dev.vars
-          npm run dev > /tmp/tcn-dev.log 2>&1 &
+          npm run build
+          ./node_modules/.bin/wrangler dev --port 4321 --local > /tmp/tcn-dev.log 2>&1 &
           dev_pid=$!
           trap 'kill "$dev_pid" 2>/dev/null || true' EXIT
           for i in $(seq 1 60); do
@@ -80,8 +81,21 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Audit all dependencies
+        run: npm run audit
+
+      - name: Apply migrations to local D1
+        run: ./node_modules/.bin/wrangler d1 migrations apply tcn-content --local
+
       - name: Test
         run: npm run test
+
+      - name: Check Astro and TypeScript
+        run: npm run check
+
+      # Workers Static Assets가 _redirects/_headers를 실제로 파싱하는지 PR에서 검증한다.
+      - name: Build production Worker
+        run: npm run build
 
       - name: Codecov
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4

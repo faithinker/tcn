@@ -31,17 +31,35 @@ async function deliver(
   url: string,
   init: RequestInit,
   retryDelayMs: number,
+  timeoutMs: number,
 ): Promise<boolean> {
   // 최초 1회 + 재시도 2회. 4xx(설정 오류)는 재시도 무의미.
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    let retryAfterMs: number | null = null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(url, init);
+      const response = await fetchImpl(url, { ...init, signal: controller.signal });
       if (response.ok) return true;
       if (response.status >= 400 && response.status < 500 && response.status !== 429) return false;
+      if (response.status === 429) {
+        const seconds = Number(response.headers.get('retry-after'));
+        if (Number.isFinite(seconds) && seconds >= 0) {
+          retryAfterMs = Math.min(seconds * 1_000, 30_000);
+        }
+      }
     } catch {
       // 네트워크 오류 → 재시도
+    } finally {
+      clearTimeout(timeout);
     }
-    if (attempt < 2 && retryDelayMs > 0) await new Promise((r) => setTimeout(r, retryDelayMs * (attempt + 1)));
+    if (attempt < 2) {
+      const baseDelay = retryAfterMs ?? retryDelayMs * (attempt + 1);
+      const jitter = baseDelay > 0 ? Math.floor(Math.random() * Math.min(250, baseDelay * 0.2)) : 0;
+      if (baseDelay + jitter > 0) {
+        await new Promise((resolve) => setTimeout(resolve, baseDelay + jitter));
+      }
+    }
   }
   return false;
 }
@@ -51,9 +69,10 @@ export async function sendPostNotifications(
   action: NotifyAction,
   config: NotifyConfig,
   fetchImpl: typeof fetch = fetch,
-  options: { retryDelayMs?: number } = {},
+  options: { retryDelayMs?: number; timeoutMs?: number } = {},
 ): Promise<NotifyResult> {
   const retryDelayMs = options.retryDelayMs ?? 2000;
+  const timeoutMs = options.timeoutMs ?? 8_000;
   const label = action === 'created' ? 'New post' : 'Updated post';
   const path = seminarHref(post.eventDate) ?? '/seminars';
   const url = `${config.siteUrl.replace(/\/$/, '')}${path}`;
@@ -80,6 +99,7 @@ export async function sendPostNotifications(
           }),
         },
         retryDelayMs,
+        timeoutMs,
       ),
     );
   } else {
@@ -101,6 +121,7 @@ export async function sendPostNotifications(
           }),
         },
         retryDelayMs,
+        timeoutMs,
       ),
     );
   } else {

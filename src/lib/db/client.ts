@@ -7,6 +7,7 @@ import { env } from 'cloudflare:workers';
 interface Bindings {
   DB?: D1Database;
   MEDIA?: R2Bucket;
+  ASSETS?: Fetcher;
 }
 
 export function getDB(): D1Database {
@@ -19,6 +20,12 @@ export function getBucket(): R2Bucket {
   const bucket = (env as unknown as Bindings).MEDIA;
   if (!bucket) throw new Error('R2 binding "MEDIA" is not available');
   return bucket;
+}
+
+export function getAssets(): Fetcher {
+  const assets = (env as unknown as Bindings).ASSETS;
+  if (!assets) throw new Error('Assets binding "ASSETS" is not available');
+  return assets;
 }
 
 export function newId(): string {

@@ -12,6 +12,7 @@
     "preview:mobile": "astro dev --host 0.0.0.0 --port 4341",
     "astro": "astro",
     "check": "astro check",
+    "audit": "npm audit --audit-level=high",
     "audit:prod": "npm audit --omit=dev --audit-level=low",
     "verify": "node scripts/verify.mjs",
     "verify:founding-media": "node scripts/verify-founding-media.mjs",
