@@ -3,6 +3,7 @@
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { isImage, type FoundingMediaItem } from '../../lib/founding-media';
+import type { LightboxEntry } from '../../lib/media-lightbox';
 
 const masters = import.meta.glob<{ default: ImageMetadata }>('../../assets/founding/*.jpg', {
   eager: true,
@@ -11,17 +12,6 @@ export function master(name: string): ImageMetadata {
   const entry = masters[`../../assets/founding/${name}.jpg`];
   if (!entry) throw new Error(`founding-media: 마스터 자산이 없다 — ${name}.jpg`);
   return entry.default;
-}
-
-export interface LightboxEntry {
-  id: string;
-  type: 'image' | 'video';
-  caption: string;
-  alt: string;
-  /** 화면 맞춤 단계에서 라이트박스가 처음 띄우는 URL. */
-  fit: string;
-  videoSrc?: string;
-  duration?: string;
 }
 
 const FIT_WIDTH = 2000;
@@ -37,8 +27,7 @@ export async function buildLightboxEntries(
           type: 'video',
           caption: item.caption,
           alt: item.alt,
-          fit: item.src,
-          videoSrc: item.src,
+          src: item.src,
           duration: item.duration,
         };
       }
@@ -56,7 +45,7 @@ export async function buildLightboxEntries(
         type: 'image',
         caption: item.caption,
         alt: item.alt,
-        fit: fit.src,
+        src: fit.src,
       };
     }),
   );

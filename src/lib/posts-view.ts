@@ -4,6 +4,7 @@
 import { Marked, type Token, type Tokens } from 'marked';
 
 import type { Media } from './db/types';
+import type { LightboxEntry } from './media-lightbox';
 
 // 링크·이미지 프로토콜 화이트리스트 — 에디터가 만드는 것(http/https/mailto)과
 // 사이트 내부 경로·앵커만. javascript:/data: 등은 무해한 '#'으로 치환.
@@ -81,6 +82,23 @@ export interface GroupedMedia {
   images: Media[];
   videos: Media[];
   documents: Media[];
+}
+
+export function seminarLightboxEntries(
+  grouped: GroupedMedia,
+  seminarLabel: string,
+): LightboxEntry[] {
+  const images = grouped.hero ? [grouped.hero, ...grouped.images] : grouped.images;
+  return images.map((item, index) => {
+    const alt = mediaAlt(item, seminarLabel, index + 1);
+    return {
+      id: item.id,
+      type: 'image',
+      src: `/media/${item.r2Key}`,
+      alt,
+      caption: item.caption?.trim() || alt,
+    };
+  });
 }
 
 export function groupMedia(items: Media[], heroMediaId: string | null): GroupedMedia {

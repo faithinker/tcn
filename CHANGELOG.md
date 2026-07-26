@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Feature
 - Added a responsive founding-assembly event record with seven photographs, a lazy-loaded short film, high-resolution lightbox zoom and pan, captions, and original-image downloads. (Branch: `feat/content`) - Implemented by Codex
 - Hardened the admin post and media lifecycle with validated payloads, optimistic revisions, streaming uploads, cleanup reconciliation, transcript-aware video publishing, and resilient editor feedback. (Branch: `fix/routing-audit`) - Implemented by Codex
+- Applied the shared full-screen previous/next media carousel to seminar hero and gallery photographs, including keyboard navigation and focus restoration. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Changed
 - Simplified the founding-assembly media viewer to a full-screen previous/next carousel, removing zoom, pan, original-file controls, and high-resolution zoom derivatives. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Fix
@@ -15,6 +16,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Resolved PR quality-gate findings by removing pseudorandom notification jitter and simplifying routing, payload, upload, editor, and post-update control flow. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Refactor
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
+- Moved carousel entries and safe manifest serialization into a shared media contract used by founding and seminar pages. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Security
 - Added account-and-IP login throttling with hashed identifiers, versioned session revocation, dependency audit enforcement, and bounded notification retries with timeouts. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Test
@@ -22,6 +24,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Added data-contract and browser regression checks for master-image integrity, lazy video loading, HTTP range support, zoom and pan, keyboard focus, and mobile layout. (Branch: `feat/content`) - Implemented by Codex
 - Stabilized high-resolution lightbox interaction checks against CI image-transcoding delays by serving the verified 4000px master during the browser test. (Branch: `feat/content`) - Implemented by Codex
 - Expanded routing, authentication, API, media, concurrency, and Worker contract coverage and moved browser gates to the built Wrangler runtime. (Branch: `fix/routing-audit`) - Implemented by Codex
+- Added local-only seminar media fixtures and CI browser checks for hero-first ordering, fallback captions, wraparound navigation, live announcements, and focus restoration. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Chore
 - Added additive D1 migrations, deployment readiness smoke checks with automatic rollback, a staging configuration template, and an operations runbook covering D1 Time Travel and R2 recovery. (Branch: `fix/routing-audit`) - Implemented by Codex
 

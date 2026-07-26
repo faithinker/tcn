@@ -27,14 +27,38 @@ const POSTS = [
 ];
 
 const remote = process.argv.includes('--remote');
+const browserMedia = process.env.TCN_SEED_BROWSER_MEDIA === '1';
+if (remote && browserMedia) {
+  throw new Error('TCN_SEED_BROWSER_MEDIA is local-only');
+}
 const lit = (v) => (v == null ? 'null' : `'${String(v).replace(/'/g, "''")}'`);
-const sql = POSTS.map(
+const postSql = POSTS.map(
   (p) =>
     `insert or ignore into posts (id, title, summary, event_date, address, body) values ` +
     `(${lit(p.id)}, ${lit(p.title)}, ${lit(p.summary)}, ${lit(p.eventDate)}, ${lit(p.address)}, ${lit(p.body)});`,
 ).join('\n');
+const mediaSql = browserMedia
+  ? `
+insert or replace into posts
+  (id, title, summary, event_date, address, body)
+values
+  ('ci-seminar-carousel', 'Carousel Browser Fixture', 'Local browser fixture.', '2099-12-31', 'Test venue', 'Browser fixture.');
+insert or replace into media
+  (id, post_id, r2_key, kind, mime_type, filename, size, width, height, position, caption)
+values
+  ('ci-seminar-hero', 'ci-seminar-carousel', 'ci/seminar-hero.jpg', 'image', 'image/jpeg', 'seminar-hero.jpg', 1024, 1600, 1200, 0, 'Seminar opening');
+insert or replace into media
+  (id, post_id, r2_key, kind, mime_type, filename, size, width, height, position, caption)
+values
+  ('ci-seminar-discussion', 'ci-seminar-carousel', 'ci/seminar-discussion.jpg', 'image', 'image/jpeg', 'seminar-discussion.jpg', 1024, 1600, 1200, 1, null);
+update posts set hero_media_id = 'ci-seminar-hero' where id = 'ci-seminar-carousel';
+`
+  : '';
+const sql = `${postSql}\n${mediaSql}`;
 
 execFileSync('npx', ['wrangler', 'd1', 'execute', 'tcn-content', remote ? '--remote' : '--local', '--command', sql], {
   stdio: 'inherit',
 });
-console.log(`\n✅ seminar posts seeded on ${remote ? 'remote' : 'local'} D1 (idempotent)`);
+console.log(
+  `\n✅ seminar posts${browserMedia ? ' + browser media rows' : ''} seeded on ${remote ? 'remote' : 'local'} D1 (idempotent)`,
+);

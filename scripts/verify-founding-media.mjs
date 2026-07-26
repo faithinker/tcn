@@ -74,8 +74,15 @@ try {
   const stage = dialog.locator('[data-lb-stage]');
   const image = stage.locator('img');
   const count = dialog.locator('[data-lb-count]');
+  const manifestText = await page
+    .locator('[data-lightbox-manifest="founding-record"]')
+    .textContent();
+  const manifest = JSON.parse(manifestText ?? '[]');
   check('대표 사진을 누르면 라이트박스가 열린다', await dialog.evaluate((node) => node.open));
-  check('최초에는 화면 맞춤 이미지를 사용한다', (await image.getAttribute('data-tier')) === 'fit');
+  check(
+    '최초에는 대표 사진의 화면 맞춤 이미지를 사용한다',
+    (await image.getAttribute('src')) === manifest[0]?.src,
+  );
 
   await dialog.locator('[data-lb-next]').click();
   check('다음 버튼은 다음 미디어로 이동한다', (await count.textContent())?.trim() === '2 / 8');
@@ -92,10 +99,6 @@ try {
   await page.keyboard.press('ArrowRight');
   check('오른쪽 화살표는 대표 사진으로 순환한다', (await count.textContent())?.trim() === '1 / 8');
 
-  const manifestText = await page
-    .locator('[data-lightbox-manifest="founding-record"]')
-    .textContent();
-  const manifest = JSON.parse(manifestText ?? '[]');
   check(
     '상세 보기 데이터에는 확대·원본 계층이 없다',
     manifest.every((entry) => !('zoom' in entry) && !('original' in entry)),

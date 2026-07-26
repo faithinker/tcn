@@ -16,6 +16,7 @@
     "audit:prod": "npm audit --omit=dev --audit-level=low",
     "verify": "node scripts/verify.mjs",
     "verify:founding-media": "node scripts/verify-founding-media.mjs",
+    "verify:seminar-carousel": "node scripts/verify-seminar-carousel.mjs",
     "motion": "node scripts/motion.mjs",
     "a11y": "node scripts/a11y.mjs",
     "test": "vitest run --coverage",

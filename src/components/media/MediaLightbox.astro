@@ -3,7 +3,10 @@
 // 네이티브 <dialog> 가 포커스 트랩·Esc·backdrop 을 담당한다.
 // 트리거는 [data-lightbox-open="<id>"], 항목 데이터는 JSON 스크립트로 전달한다.
 import { content } from '../../i18n/content';
-import type { LightboxEntry } from './mediaAssets';
+import {
+  serializeLightboxEntries,
+  type LightboxEntry,
+} from '../../lib/media-lightbox';
 
 interface Props {
   id: string;
@@ -16,7 +19,12 @@ const single = entries.length < 2;
 ---
 
 {/* is:inline — 번들링 대상이 아닌 데이터 블록이다(JS 아님). */}
-<script is:inline type="application/json" data-lightbox-manifest={id} set:html={JSON.stringify(entries)} />
+<script
+  is:inline
+  type="application/json"
+  data-lightbox-manifest={id}
+  set:html={serializeLightboxEntries(entries)}
+/>
 
 <dialog class="media-lightbox" data-lightbox-root={id} aria-label={copy.viewerLabel}>
   <div class="lb-shell">
@@ -195,14 +203,14 @@ const single = entries.length < 2;
     type: 'image' | 'video';
     caption: string;
     alt: string;
-    fit: string;
-    videoSrc?: string;
+    src: string;
     duration?: string;
   }
 
   document.querySelectorAll<HTMLDialogElement>('[data-lightbox-root]').forEach((dialog) => {
     const id = dialog.dataset.lightboxRoot!;
-    const manifest = document.querySelector(`[data-lightbox-manifest="${id}"]`);
+    const manifest = [...document.querySelectorAll<HTMLElement>('[data-lightbox-manifest]')]
+      .find((node) => node.dataset.lightboxManifest === id);
     if (!manifest?.textContent) return;
 
     const entries: Entry[] = JSON.parse(manifest.textContent);
@@ -224,7 +232,7 @@ const single = entries.length < 2;
 
       if (entry.type === 'video') {
         const video = document.createElement('video');
-        video.src = entry.videoSrc!;
+        video.src = entry.src;
         video.controls = true;
         video.playsInline = true;
         video.preload = 'metadata';
@@ -233,9 +241,8 @@ const single = entries.length < 2;
         meta.textContent = entry.duration ?? '';
       } else {
         const img = document.createElement('img');
-        img.src = entry.fit;
+        img.src = entry.src;
         img.alt = entry.alt;
-        img.dataset.tier = 'fit';
         stage.appendChild(img);
         meta.textContent = '';
       }
@@ -251,8 +258,9 @@ const single = entries.length < 2;
     }
 
     document
-      .querySelectorAll<HTMLElement>(`[data-lightbox-open="${id}"]`)
+      .querySelectorAll<HTMLElement>('[data-lightbox-open]')
       .forEach((trigger) => {
+        if (trigger.dataset.lightboxOpen !== id) return;
         trigger.addEventListener('click', () => open(Number(trigger.dataset.lightboxIndex ?? 0)));
       });
 
