@@ -1,7 +1,8 @@
 // scripts/verify.mjs — TCN 루프 검증 하네스
 // 목적: 각 라우트를 375/768/1280에서 렌더 → (1)콘솔/페이지 에러 (2)가로 오버플로 (3)HTTP 상태 검사 + 스크린샷 저장.
+//       + 라우트 계약(301·404) 검사 — 리다이렉트를 따라가지 않고 상태코드 자체를 단언한다.
 // 전제: preview/dev 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
-// 사용: BASE_URL=http://localhost:4321 ROUTES=/ko/,/ko/about,/ko/about/founding,/ko/about/bylaws,/en/about/bylaws,/ko/people,/ko/seminars,/ko/seminars/1,/ko/seminars/1/activities/1-seminar1-2025,/ko/contact,/en/ node scripts/verify.mjs
+// 사용: BASE_URL=http://localhost:4321 ROUTES=/,/about,/people node scripts/verify.mjs
 // 종료코드: 실패 1건 이상이면 1 (루프 Done 게이트). 통과 시 0.
 // 산출물: verify/<route>-<width>.png  → 에이전트가 Read로 육안 확인.
 // 폰트/네트워크 로드 대기 후 촬영. 셀프호스팅 폰트라 외부 요청 없음.
@@ -17,8 +18,23 @@ try {
 }
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/bylaws,/people,/seminars,/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001,/contact').split(',').map(s => s.trim()).filter(Boolean);
+// 공개 라우트 — 전부 200 렌더를 전제한다. 세미나 상세는 정식 URL(날짜)로 검사한다.
+const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact').split(',').map(s => s.trim()).filter(Boolean);
 const WIDTHS = (process.env.WIDTHS || '375,768,1280').split(',').map(Number);
+
+// 라우트 계약 — ROUTES는 "전부 200"이라 301·404를 넣을 수 없다. 여기서 따로 단언한다.
+// location은 경로만 비교(절대/상대 URL 양쪽 허용).
+const CONTRACTS = process.env.CONTRACTS
+  ? JSON.parse(process.env.CONTRACTS)
+  : [
+      // 구 UUID 딥링크 → 날짜 정식 URL 영구 이전
+      { path: '/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001', status: 301, location: '/seminars/2025-12-26' },
+      { path: '/seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002', status: 301, location: '/seminars/2026-10-30' },
+      // 형식은 맞지만 해당 글 없음
+      { path: '/seminars/2030-01-01', status: 404 },
+      // 날짜 형식 오류
+      { path: '/seminars/not-a-date', status: 404 },
+    ];
 
 mkdirSync('verify', { recursive: true });
 const browser = await chromium.launch();
@@ -64,6 +80,30 @@ for (const route of ROUTES) {
   }
 }
 
+// 계약 검사 — maxRedirects:0 이라 301을 따라가지 않고 상태·Location을 그대로 본다.
+const api = await browser.newContext();
+for (const c of CONTRACTS) {
+  let status = 0, location = null, note = '';
+  try {
+    const resp = await api.request.get(BASE + c.path, { maxRedirects: 0, timeout: 20000 });
+    status = resp.status();
+    const raw = resp.headers()['location'] ?? null;
+    location = raw ? new URL(raw, BASE).pathname.replace(/\/$/, '') || '/' : null;
+  } catch (e) {
+    note = 'REQUEST_FAIL: ' + e.message;
+  }
+  const wantLoc = c.location ? c.location.replace(/\/$/, '') || '/' : null;
+  const bad = status !== c.status || (wantLoc !== null && location !== wantLoc);
+  const line = `${bad ? '❌' : '✅'} ${c.path}  status=${status} (want ${c.status})`
+    + (wantLoc !== null ? `  location=${location} (want ${wantLoc})` : '')
+    + (note ? `  ${note}` : '');
+  results.push(line);
+  console.log(line);
+  if (bad) fail++;
+}
+await api.close();
+
 await browser.close();
-console.log('\n' + (fail ? `FAIL: ${fail}/${ROUTES.length * WIDTHS.length} check(s) — 위 ❌ 확인` : `PASS: all ${ROUTES.length}×${WIDTHS.length} route/width checks`));
+const total = ROUTES.length * WIDTHS.length + CONTRACTS.length;
+console.log('\n' + (fail ? `FAIL: ${fail}/${total} check(s) — 위 ❌ 확인` : `PASS: all ${ROUTES.length}×${WIDTHS.length} route/width + ${CONTRACTS.length} contract checks`));
 process.exit(fail ? 1 : 0);

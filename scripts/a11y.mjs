@@ -7,7 +7,8 @@ import { launch } from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/bylaws,/people,/seminars,/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001,/contact')
+// 세미나 상세는 정식 URL(날짜)로 측정한다. 구 UUID는 301이라 리다이렉트 목적지를 재게 된다.
+const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const MIN = Number(process.env.MIN_A11Y || 90);
 

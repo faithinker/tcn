@@ -7,6 +7,60 @@ permissions:
   contents: read
 
 jobs:
+  # 브라우저 게이트 — 렌더/오버플로/콘솔에러 + 라우트 계약(301·404) + 접근성.
+  # `run` 잡과 병렬. 로컬 D1(.wrangler/state)에 마이그레이션·시드를 넣고 dev 서버를 띄운다.
+  browser-gates:
+    name: Browser Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Prepare local D1
+        run: |
+          npx wrangler d1 migrations apply tcn-content --local
+          node scripts/seed-seminar-posts.mjs
+
+      # dev 서버는 데몬으로 떠서 스텝이 끝나면 사라질 수 있다 — 기동·검증을 한 스텝에 묶는다.
+      - name: Render, contract, and accessibility gates
+        run: |
+          set -euo pipefail
+          # 공개 라우트는 세션을 안 쓰지만, 게이트가 인증 경로를 밟아도 죽지 않도록 더미 시크릿을 둔다.
+          printf 'SESSION_SECRET=%s\n' "$(openssl rand -hex 32)" > .dev.vars
+          npm run dev > /tmp/tcn-dev.log 2>&1 &
+          dev_pid=$!
+          trap 'kill "$dev_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if curl -sfo /dev/null http://localhost:4321/; then echo "dev server ready (${i}s)"; break; fi
+            if [ "$i" -eq 60 ]; then echo "::error::dev server did not become ready"; cat /tmp/tcn-dev.log; exit 1; fi
+            sleep 1
+          done
+          npm run verify
+          npm run a11y
+
+      - name: Upload verify screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-screenshots
+          path: verify/
+          retention-days: 7
+          if-no-files-found: ignore
+
   run:
     name: CI Run
     runs-on: ubuntu-latest
