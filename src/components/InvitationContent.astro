@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { formatDate, getLangFromUrl } from '../i18n/utils';
-import { getContent } from '../i18n/content';
+import { formatDate } from '../i18n/utils';
+import { content } from '../i18n/content';
 
 interface Props {
   data: CollectionEntry<'invitations'>['data'];
@@ -9,8 +9,7 @@ interface Props {
 }
 
 const { data, compact = false } = Astro.props;
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).foundingInvitation;
+const copy = content.foundingInvitation;
 ---
 
 <div class={compact ? 'max-w-[74ch] pt-7' : 'max-w-[74ch]'}>
@@ -22,7 +21,7 @@ const copy = getContent(lang).foundingInvitation;
     <p class="font-sans text-caption font-bold uppercase text-accent">{copy.overview}</p>
     <dl class="mt-5 grid gap-4 font-sans text-body-sans md:grid-cols-[7.5rem_minmax(0,1fr)]">
       <dt class="font-bold text-ink">{copy.date}</dt>
-      <dd class="text-body">{formatDate(data.date, lang)} {data.time}</dd>
+      <dd class="text-body">{formatDate(data.date)} {data.time}</dd>
       <dt class="font-bold text-ink">{copy.location}</dt>
       <dd class="text-body">{data.location} {data.venue}</dd>
       <dt class="font-bold text-ink">{copy.program}</dt>

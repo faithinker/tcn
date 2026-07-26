@@ -1,14 +1,11 @@
 ---
-import { localizePath, useTranslations } from '../i18n/utils';
-import type { UiLang } from '../i18n/ui';
+import { t } from '../i18n/ui';
 
 interface Props {
-  lang: UiLang;
   current: 'declaration' | 'bylaws' | 'founding';
 }
 
-const { lang, current } = Astro.props;
-const t = useTranslations(lang);
+const { current } = Astro.props;
 const documents = [
   { id: 'declaration', label: t('nav.declaration'), href: '/about/declaration' },
   { id: 'bylaws', label: t('nav.bylaws'), href: '/about/bylaws' },
@@ -22,7 +19,7 @@ const documents = [
     const isCurrent = document.id === current;
     return (
       <a
-        href={localizePath(document.href, lang)}
+        href={document.href}
         aria-current={isCurrent ? 'page' : undefined}
         class:list={[
           'font-bold no-underline transition-colors',

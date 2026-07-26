@@ -3,11 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import MemberProfileCard from '../components/MemberProfileCard.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { getCollection } from 'astro:content';
-import { getLangFromUrl } from '../i18n/utils';
-import { getContent } from '../i18n/content';
+import { content } from '../i18n/content';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).people;
+const copy = content.people;
 const members = (await getCollection('members'))
   .filter((member) => member.data.category === 'board' && !member.data.tba)
   .sort((a, b) => a.data.order - b.data.order);

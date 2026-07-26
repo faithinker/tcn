@@ -31,7 +31,7 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 - **D1 3테이블** (`migrations/0001_init.sql`): `users`(수동 발급, PBKDF2) · `posts`(title/summary/event_date/address/body-markdown/hero, soft delete) · `media`(R2 키+메타, image/video/document)
 - **R2** (`tcn-media`): 원본 파일. 이미지는 업로드 시 브라우저에서 WebP(≤2400px)+EXIF 제거, 서버 재검증.
 - **정적 데이터**: `src/data/history.ts`(연혁 확정 기록), `members.json`, `invitations.json` (Astro 컬렉션은 members·invitations만)
-- **카피**: `src/i18n/content.ts`(en 사용) + `ui.ts`. `i18n/utils.ts`는 영어 단일 심(shim).
+- **카피**: `src/i18n/content.ts`(페이지 본문 카피) + `ui.ts`(UI 문자열 사전 + `t()`). `i18n/utils.ts`는 `formatDate`만 - 영어 단일이라 언어 분기 없음.
 
 ## 4. 권한·알림
 

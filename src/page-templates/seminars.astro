@@ -1,14 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
-import { getContent } from '../i18n/content';
-import { formatDate, getLangFromUrl } from '../i18n/utils';
+import { content } from '../i18n/content';
+import { formatDate } from '../i18n/utils';
 import { getDB } from '../lib/db';
 import { getSeminarCollection } from '../lib/seminar-service';
 import type { SeminarView } from '../lib/seminars';
 
-const lang = getLangFromUrl(Astro.url);
-const copy = getContent(lang).seminars;
+const copy = content.seminars;
 
 // D1 단일 원천. 공통 도메인이 event_date 기반 순번·상태·URL을 한 번 파생한다.
 let next: SeminarView | null = null;
@@ -50,7 +49,7 @@ try {
             </span>
           </div>
           <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
-            {formatDate(next.eventDate, lang)}
+            {formatDate(next.eventDate)}
           </p>
           <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.ordinalLabel}</p>
           <p class="mt-2 font-sans text-body-sans text-body-muted">
@@ -73,7 +72,7 @@ try {
             class="group block border-y border-hairline-strong bg-canvas p-5 no-underline sm:p-8"
           >
             <p class="font-sans text-caption font-bold uppercase text-accent">
-              {formatDate(post.eventDate, lang)}
+              {formatDate(post.eventDate)}
             </p>
             <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.ordinalLabel}</h2>
             {post.title !== post.ordinalLabel && <p class="mt-2 font-serif text-body-serif text-body">{post.title}</p>}
@@ -91,7 +90,7 @@ try {
         <a href={post.href} class="group block border-t border-hairline py-7 no-underline">
           {post.eventDate && (
             <p class="font-sans text-caption font-bold uppercase text-accent">
-              {formatDate(post.eventDate, lang)}
+              {formatDate(post.eventDate)}
             </p>
           )}
           <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">{post.ordinalLabel}</h2>

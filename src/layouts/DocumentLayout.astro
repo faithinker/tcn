@@ -6,7 +6,7 @@
 import BaseLayout from './BaseLayout.astro';
 import RelatedDocuments from '../components/RelatedDocuments.astro';
 import BackToTop from '../components/BackToTop.astro';
-import { getLangFromUrl, useTranslations, localizePath } from '../i18n/utils';
+import { t } from '../i18n/ui';
 
 interface Props {
   title: string;
@@ -18,8 +18,6 @@ interface Props {
 }
 
 const { title, description, type = 'website', eyebrow, heading, current } = Astro.props;
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
 const hasAside = Astro.slots.has('aside');
 ---
 
@@ -27,7 +25,7 @@ const hasAside = Astro.slots.has('aside');
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <a
-        href={localizePath('/about', lang)}
+        href="/about"
         class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
       >← {t('common.backToAbout')}</a>
 
@@ -41,7 +39,7 @@ const hasAside = Astro.slots.has('aside');
         </div>
       </header>
 
-      <RelatedDocuments lang={lang} current={current} />
+      <RelatedDocuments current={current} />
 
       <slot name="beforeBody" />
 
