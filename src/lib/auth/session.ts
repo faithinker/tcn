@@ -16,7 +16,8 @@ async function sign(secret: string, data: Uint8Array): Promise<Uint8Array> {
     false,
     ['sign'],
   );
-  return new Uint8Array(await crypto.subtle.sign('HMAC', key, data));
+  // TS 5.9 제네릭 타입드어레이 강화 대응 캐스트(런타임 무관).
+  return new Uint8Array(await crypto.subtle.sign('HMAC', key, data as BufferSource));
 }
 
 export async function createSessionToken(uid: string, secret: string, issuedAt = nowSeconds()): Promise<string> {

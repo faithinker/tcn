@@ -6,7 +6,8 @@ export const languages = {
   en: 'English',
 } as const;
 
-export const defaultLang = 'ko';
+// 8단계: 영어 단일 사이트 — 기본(유일) 언어는 en.
+export const defaultLang = 'en';
 export const showDefaultLang = false; // ko 경로에 prefix 미부여
 
 export const ui = {

@@ -63,7 +63,11 @@ export default function PostEditor({ post = null, media: initialMedia = [] }: Pr
     }
     setBusy(true);
     setStatus('저장 중…');
-    const body = editor?.storage.markdown.getMarkdown() ?? '';
+    // tiptap-markdown 확장의 storage 타입은 Tiptap Storage 맵에 등록되지 않아 좁혀서 캐스트.
+    const markdownStorage = (editor?.storage as Record<string, unknown> | undefined)?.markdown as
+      | { getMarkdown(): string }
+      | undefined;
+    const body = markdownStorage?.getMarkdown() ?? '';
     const payload = { title, summary, eventDate, address, body, heroMediaId };
     const response = await fetch(post ? `/api/posts/${post.id}` : '/api/posts', {
       method: post ? 'PUT' : 'POST',

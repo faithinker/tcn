@@ -17,7 +17,7 @@ try {
 }
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-const ROUTES = (process.env.ROUTES || '/ko/,/ko/about,/ko/about/founding,/ko/about/bylaws,/en/about/bylaws,/ko/people,/ko/seminars,/ko/seminars/1,/ko/seminars/1/activities/1-seminar1-2025,/ko/contact,/en/').split(',').map(s => s.trim()).filter(Boolean);
+const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/bylaws,/people,/seminars,/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001,/contact').split(',').map(s => s.trim()).filter(Boolean);
 const WIDTHS = (process.env.WIDTHS || '375,768,1280').split(',').map(Number);
 
 mkdirSync('verify', { recursive: true });

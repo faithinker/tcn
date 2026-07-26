@@ -4,14 +4,12 @@ import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
 import { formatDate, getLangFromUrl, localizePath } from '../i18n/utils';
 import { getContent } from '../i18n/content';
-import { loadPublicContentFromEnvironment } from '../lib/content';
+import { history as historyData } from '../data/history';
 
 const lang = getLangFromUrl(Astro.url);
 const copy = getContent(lang).about;
-const publicContent = await loadPublicContentFromEnvironment(import.meta.env);
-const history = publicContent.history
-  .filter((entry) => entry.locale === lang)
-  .sort((a, b) => a.date.localeCompare(b.date));
+// 연혁은 확정 기관 기록 — 정적 데이터. 세미나 서사는 D1 글로 이동.
+const history = [...historyData].sort((a, b) => a.date.localeCompare(b.date));
 ---
 
 <BaseLayout
