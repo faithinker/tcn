@@ -1,6 +1,7 @@
 ---
 import DocumentLayout from '../../layouts/DocumentLayout.astro';
 import InvitationContent from '../../components/InvitationContent.astro';
+import EventGallery from '../../components/media/EventGallery.astro';
 import { getCollection } from 'astro:content';
 import { formatDate } from '../../i18n/utils';
 import { content } from '../../i18n/content';
@@ -37,4 +38,6 @@ const data = invitation?.data;
   ) : (
     <p class="font-serif text-body-serif text-body">{about.foundingBody}</p>
   )}
+
+  <EventGallery />
 </DocumentLayout>

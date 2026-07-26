@@ -226,6 +226,102 @@
   .hairline {
     border-color: var(--color-hairline);
   }
+  .media-trigger {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-in;
+    text-align: left;
+  }
+  .media-trigger-video {
+    background: var(--color-footer);
+    cursor: pointer;
+  }
+  .media-trigger img {
+    display: block;
+    width: 100%;
+    background: var(--color-canvas-soft);
+    object-fit: cover;
+  }
+  .media-trigger-video img {
+    opacity: 0.84;
+  }
+  .lead-image {
+    aspect-ratio: 3 / 2;
+  }
+  .cell-image {
+    aspect-ratio: 4 / 3;
+  }
+  .cell-image-wide {
+    aspect-ratio: 8 / 3;
+  }
+  .media-hint {
+    position: absolute;
+    right: 0.55rem;
+    bottom: 0.55rem;
+    padding: 0.25rem 0.5rem;
+    background: color-mix(in srgb, var(--color-footer) 84%, transparent);
+    color: var(--color-on-footer);
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 160ms ease-out;
+  }
+  .media-trigger:hover .media-hint,
+  .media-trigger:focus-visible .media-hint {
+    opacity: 1;
+  }
+  .play-badge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    color: var(--color-on-footer);
+    font-family: var(--font-sans);
+  }
+  .play-mark {
+    display: flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-on-footer);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-on-footer) 16%, transparent);
+  }
+  .play-mark::after {
+    content: '';
+    margin-left: 0.25rem;
+    border-style: solid;
+    border-width: 0.5rem 0 0.5rem 0.85rem;
+    border-color: transparent transparent transparent var(--color-on-footer);
+  }
+  .play-label {
+    font-size: var(--text-caption);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+}
+
+@media (hover: none) {
+  .media-hint {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-hint {
+    transition: none;
+  }
 }
 
 /* ============================================================

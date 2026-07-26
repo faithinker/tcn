@@ -1,0 +1,69 @@
+[
+  {
+    "id": "myeongnyundang",
+    "type": "image",
+    "src": "founding-07",
+    "role": "lead",
+    "zoomable": true,
+    "alt": "Members and guests of the Transcultural Network standing before Myeongnyundang, the historic lecture hall at Sungkyunkwan",
+    "caption": "Founding members before Myeongnyundang. Delegates and guests gathered at the historic lecture hall of Sungkyunkwan on the day of the founding assembly."
+  },
+  {
+    "id": "opening-of-proceedings",
+    "type": "image",
+    "src": "founding-02",
+    "span": "wide",
+    "zoomable": true,
+    "alt": "Two speakers at the lectern as the founding invitation is projected onto the screen of the lecture hall",
+    "caption": "The proceedings open. The founding invitation is projected in Toegye Hall of Humanities as the assembly is called to order."
+  },
+  {
+    "id": "founding-address",
+    "type": "image",
+    "src": "founding-01",
+    "zoomable": true,
+    "alt": "A speaker reads the founding address from the lectern while members listen from the tiered desks",
+    "caption": "The founding address, read from the lectern before the assembled membership."
+  },
+  {
+    "id": "members-in-session",
+    "type": "image",
+    "src": "founding-03",
+    "zoomable": true,
+    "alt": "Members seated at the tiered desks of the lecture hall during the founding assembly",
+    "caption": "Members in session. Delegates follow the proceedings in the lecture hall."
+  },
+  {
+    "id": "remarks-from-the-floor",
+    "type": "image",
+    "src": "founding-04",
+    "zoomable": true,
+    "alt": "A member speaks from the floor, holding the printed programme, as another speaker listens from the lectern",
+    "caption": "Remarks from the floor during the discussion of the bylaws."
+  },
+  {
+    "id": "on-the-steps",
+    "type": "image",
+    "src": "founding-06",
+    "zoomable": true,
+    "alt": "About thirty-five members and guests seated and standing on the stone steps of a traditional hall at Myeongnyun Campus",
+    "caption": "Members and guests on the stone steps at Myeongnyun Campus, photographed after the assembly."
+  },
+  {
+    "id": "assembly-hall",
+    "type": "image",
+    "src": "founding-05",
+    "zoomable": true,
+    "alt": "Group photograph of members and guests in the lecture hall beneath the Sungkyunkwan University lettering",
+    "caption": "The assembly hall. Members and guests gather beneath the university lettering as proceedings close."
+  },
+  {
+    "id": "ceremony-film",
+    "type": "video",
+    "src": "/media/founding/founding-ceremony.mp4",
+    "poster": "founding-video-poster",
+    "duration": "0:11",
+    "alt": "Short film recorded during the founding assembly",
+    "caption": "Scenes from the founding assembly. Film, 11 seconds."
+  }
+]
