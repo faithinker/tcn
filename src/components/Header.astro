@@ -19,26 +19,26 @@ const isExact = (href: string) => {
 ---
 
 <header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]">
-  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5">
-    <a href="/" class="flex items-baseline gap-2 no-underline">
-      <span class="hidden font-serif text-[1.375rem] font-semibold text-ink sm:inline">{t('site.name')}</span>
+  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 min-[72rem]:gap-4 min-[72rem]:px-5">
+    <a href="/" class="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap no-underline min-[72rem]:gap-2">
+      <span class="hidden font-serif text-[1.125rem] font-semibold text-ink sm:inline min-[72rem]:text-[1.375rem]">{t('site.name')}</span>
       <span class="font-serif text-[1.125rem] font-semibold text-ink sm:hidden">TCN</span>
-      <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted sm:inline">TCN</span>
+      <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted min-[72rem]:inline">TCN</span>
     </a>
 
-    <nav class="order-3 hidden items-center gap-1 xl:flex" aria-label={t('common.menu')}>
+    <nav class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1" aria-label={t('common.menu')}>
       {
         navItems.map((item) =>
           item.children ? (
             <details class="group relative">
               <summary
                 aria-current={isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined}
-                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1.5 px-3 font-sans text-body-sans font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link"
+                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
               >
                 {t(item.key)}
                 <svg
                   aria-hidden="true"
-                  class="h-[18px] w-[18px] shrink-0"
+                  class="h-4 w-4 shrink-0 min-[72rem]:h-[18px] min-[72rem]:w-[18px]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -65,7 +65,7 @@ const isExact = (href: string) => {
             <a
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
-              class="flex min-h-[48px] items-center px-3 font-sans text-body-sans font-bold text-ink no-underline hover:text-link aria-[current]:text-link"
+              class="flex min-h-[48px] items-center whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink no-underline hover:text-link aria-[current]:text-link min-[72rem]:px-3 min-[72rem]:text-body-sans"
             >
               {t(item.key)}
             </a>
@@ -74,7 +74,7 @@ const isExact = (href: string) => {
       }
       <a
         href="/contact"
-        class="ml-2 inline-flex min-h-[48px] items-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
+        class="ml-1 inline-flex min-h-[48px] items-center whitespace-nowrap rounded-sm bg-ink px-3 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-ink-soft min-[72rem]:ml-2 min-[72rem]:px-5 min-[72rem]:text-button"
       >
         {t('nav.cta')}
       </a>
@@ -85,7 +85,7 @@ const isExact = (href: string) => {
 
       <button id="navToggle"
         type="button"
-        class="flex h-12 w-12 shrink-0 items-center justify-center text-ink xl:hidden"
+        class="flex h-12 w-12 shrink-0 items-center justify-center text-ink min-[56rem]:hidden"
         aria-expanded="false"
         aria-controls="mobileNav"
         aria-label={t('common.menu')}
@@ -101,7 +101,7 @@ const isExact = (href: string) => {
 
   <nav
     id="mobileNav"
-    class="max-h-[calc(100dvh-73px)] overflow-y-auto overscroll-contain border-t border-hairline bg-canvas xl:hidden"
+    class="max-h-[calc(100dvh-73px)] overflow-y-auto overscroll-contain border-t border-hairline bg-canvas min-[56rem]:hidden"
     aria-label={t('common.menu')}
     hidden
   >
@@ -185,7 +185,7 @@ const isExact = (href: string) => {
   });
 
   window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1280) setMenuOpen(false);
+    if (window.innerWidth >= 896) setMenuOpen(false);
   });
 
   // 표준 UX: 헤더에 붙은 드롭다운 메뉴는 페이지 스크롤 시 닫는다.
