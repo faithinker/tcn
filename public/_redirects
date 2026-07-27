@@ -35,17 +35,6 @@
 /en/events/2025/founding-ceremony-invitation   /about/founding  301
 /en/events/2025/founding-ceremony-invitation/  /about/founding  301
 
-# 현재 정적 페이지는 slash 없는 URL로 통일. 동적 Worker 경로는 middleware가 동일하게 처리.
-/about/              /about  301
-/about/founding/     /about/founding  301
-/about/declaration/  /about/declaration  301
-/about/bylaws/       /about/bylaws  301
-/people/             /people  301
-/seminars/           /seminars  301
-/contact/            /contact  301
-/admin/              /admin  301
-/admin/login/        /admin/login  301
-
 # 글 딥링크는 프리픽스만 제거
 /ko/seminars/p/*  /seminars/p/:splat  301
 /en/seminars/p/*  /seminars/p/:splat  301

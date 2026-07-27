@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import astroConfig from '../../astro.config.mjs';
 import { canonicalPath, canonicalRedirectTarget } from './canonical-url';
 
 function redirectRules(): Map<string, { destination: string; status: number }> {
@@ -19,6 +20,10 @@ function redirectRules(): Map<string, { destination: string; status: number }> {
 }
 
 describe('canonicalPath', () => {
+  it('builds slashless static routes as HTML files instead of redirecting index pages', () => {
+    expect(astroConfig.build?.format).toBe('file');
+  });
+
   it('uses one slashless canonical form for every non-root page', () => {
     expect(canonicalPath('/')).toBe('/');
     expect(canonicalPath('/about')).toBe('/about');
@@ -90,12 +95,16 @@ describe('legacy redirects', () => {
   });
 
   it.each([
-    ['/about/', '/about'],
-    ['/about/founding/', '/about/founding'],
-    ['/people/', '/people'],
-    ['/seminars/', '/seminars'],
-    ['/contact/', '/contact'],
-  ])('normalizes static page %s to %s at the asset edge', (source, destination) => {
-    expect(redirectRules().get(source)).toEqual({ destination, status: 301 });
+    '/about/',
+    '/about/founding/',
+    '/about/declaration/',
+    '/about/bylaws/',
+    '/people/',
+    '/seminars/',
+    '/contact/',
+    '/admin/',
+    '/admin/login/',
+  ])('leaves canonical trailing-slash handling outside _redirects: %s', (source) => {
+    expect(redirectRules().get(source)).toBeUndefined();
   });
 });
