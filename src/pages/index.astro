@@ -1,9 +1,206 @@
 ---
-import HomePage from '../page-templates/index.astro';
+// L7: Home — Hero · 차기 세미나 안내 · 미션 · 핵심활동 · 최신 세미나 · 하이라이트 · 가입 CTA.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SectionTile from '../components/SectionTile.astro';
+import Stat from '../components/Stat.astro';
+import Button from '../components/Button.astro';
+import { formatDate } from '../i18n/utils';
+import { t } from '../i18n/ui';
+import { content } from '../i18n/content';
+import { getDB } from '../lib/db';
+import { getSeminarCollection } from '../lib/seminar-service';
+import type { SeminarView } from '../lib/seminars';
 
 // 차기 세미나·최신 글이 D1에서 실시간으로 나오도록 SSR.
 // (프리렌더하면 빌드 시 D1 바인딩이 없어 히어로가 조용히 사라진다)
 export const prerender = false;
+
+const copy = content.home;
+const seminarCopy = content.seminars;
+
+// D1 단일 원천: 공통 세미나 도메인이 순번·상태·URL과 페이지 selector를 완성한다.
+// D1 미가용(정적 프리뷰 등)이면 두 섹션 모두 조용히 숨긴다.
+let next: SeminarView | null = null;
+let featured: SeminarView | null = null;
+try {
+  const seminars = await getSeminarCollection(getDB());
+  next = seminars.next;
+  featured = seminars.latestPast;
+} catch {
+  next = null;
+  featured = null;
+}
 ---
 
-<HomePage />
+<BaseLayout title={copy.title}>
+  <!-- 1. Hero -->
+  <section class="bg-canvas px-5 pt-12 pb-12 sm:pt-24 sm:pb-20">
+    <div class="mx-auto max-w-[75rem]">
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <h1
+        class="mt-3 font-serif font-semibold text-ink text-[1.75rem] leading-[1.2] sm:text-[2rem]"
+      >
+        {copy.name}
+      </h1>
+      {
+        copy.alternateName && (
+          <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
+            {copy.alternateName}
+          </p>
+        )
+      }
+      <p class="mt-6 max-w-[60ch] font-serif text-[1.3125rem] leading-[1.6] text-body">
+        {copy.lead}
+      </p>
+      <p class="mt-4 max-w-[60ch] font-sans text-body-sans text-body-muted">
+        {copy.sublead}
+      </p>
+      <div class="mt-8 grid gap-3 min-[28rem]:flex min-[28rem]:flex-wrap">
+        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto"
+          >{t('nav.cta')}</Button
+        >
+        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto"
+          >{copy.aboutButton}</Button
+        >
+        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto"
+          >{copy.declarationButton}</Button
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- 1.5 차기 세미나 안내 -->
+  {
+    next && (
+      <section class="bg-canvas px-5 pb-12 sm:pb-20">
+        <div class="mx-auto max-w-[75rem]">
+          <a
+            href={next.href}
+            class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
+          >
+            <div class="flex flex-wrap items-center gap-3">
+              <p class="eyebrow !mb-0">{seminarCopy.nextEyebrow}</p>
+              <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
+                {next.status === 'today' ? seminarCopy.todayBadge : seminarCopy.upcomingBadge}
+              </span>
+            </div>
+            <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
+              {formatDate(next.eventDate)}
+            </p>
+            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">
+              {next.ordinalLabel}
+            </p>
+            <p class="mt-2 font-sans text-body-sans text-body-muted">
+              {[
+                next.title !== next.ordinalLabel ? next.title : null,
+                next.address,
+                next.summary ?? seminarCopy.details,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
+              {seminarCopy.viewDetail} →
+            </span>
+          </a>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 2. 미션 -->
+  <SectionTile variant="band" eyebrow={copy.missionEyebrow} title={copy.missionTitle}>
+    <p class="mt-6 max-w-[68ch] font-serif text-lead text-body">
+      {copy.missionBody}
+    </p>
+    <div class="mt-10 grid gap-8 border-t border-hairline pt-8 sm:grid-cols-2">
+      <div>
+        <p class="eyebrow">{copy.visionLabel}</p>
+        <p class="mt-2 font-serif text-body-serif text-body">
+          {copy.visionBody}
+        </p>
+      </div>
+      <div>
+        <p class="eyebrow">{copy.missionLabel}</p>
+        <p class="mt-2 font-serif text-body-serif text-body">
+          {copy.missionShort}
+        </p>
+      </div>
+    </div>
+  </SectionTile>
+
+  <!-- 3. 핵심 활동 -->
+  <SectionTile variant="canvas" eyebrow={copy.activitiesEyebrow} title={copy.activitiesTitle}>
+    <ol class="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+      {
+        copy.activities.map((a, i) => (
+          <li class="border-t border-hairline pt-4">
+            <span class="eyebrow">{String(i + 1).padStart(2, '0')}</span>
+            <p class="mt-1 font-serif text-display-sm font-semibold text-ink">{a}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </SectionTile>
+
+  <!-- 4. 최신 세미나 -->
+  {
+    featured && (
+      <SectionTile variant="soft" eyebrow={copy.seminarEyebrow}>
+        <article class="mt-6 max-w-[68ch]">
+          <p class="eyebrow">{copy.pastEvent}</p>
+          <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">
+            {featured.ordinalLabel}
+          </h3>
+          {(featured.eventDate || featured.address) && (
+            <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
+              {[formatDate(featured.eventDate), featured.address].filter(Boolean).join(' · ')}
+            </p>
+          )}
+          <p class="mt-4 font-serif text-body-serif text-body">
+            {[
+              featured.title !== featured.ordinalLabel ? featured.title : null,
+              featured.summary ?? copy.seminarFallback,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          <div class="mt-6 flex flex-wrap items-center gap-5">
+            <Button href={featured.href} variant="outline">
+              {seminarCopy.viewDetail}
+            </Button>
+            <a
+              href="/seminars"
+              class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+            >
+              {copy.seminarButton} →
+            </a>
+          </div>
+        </article>
+      </SectionTile>
+    )
+  }
+
+  <!-- 5. 하이라이트 -->
+  <SectionTile variant="band" eyebrow={copy.highlightsEyebrow}>
+    <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+      {copy.highlights.map((h) => <Stat value={h.value} label={h.label} />)}
+    </div>
+  </SectionTile>
+
+  <!-- 6. 가입 CTA -->
+  <SectionTile variant="canvas">
+    <div class="max-w-[68ch]">
+      <p class="eyebrow">{copy.joinEyebrow}</p>
+      <h2 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+        {copy.joinTitle}
+      </h2>
+      <p class="mt-4 font-serif text-body-serif text-body">
+        {copy.joinBody}
+      </p>
+      <div class="mt-8">
+        <Button href="/contact" variant="primary">{t('nav.cta')}</Button>
+      </div>
+    </div>
+  </SectionTile>
+</BaseLayout>
