@@ -51,6 +51,19 @@ curl --fail --request POST \
 
 Alert if queued rows remain for more than 24 hours or attempts exceed 10.
 
+## Media delivery load
+
+Public media is served with `Cache-Control: public, max-age=0, must-revalidate`, so every view revalidates: one Worker invocation, one D1 read to confirm the item is still public, and one conditional R2 GET. Bodies are usually answered `304`, so the pressure is on request count rather than bandwidth — a gallery page with ten photographs costs ten requests each time it is opened.
+
+This is deliberate. The content rule is that a photograph must stop being served the moment consent is withdrawn, with no grace window in browsers that already loaded it. R2 keys are unique per upload, so content never changes; caching is withheld only to keep revocation immediate.
+
+Review the policy when either signal appears:
+
+- Worker requests stay above roughly half the free-plan allowance (100k/day).
+- D1 rows read approach their limit, with `/media/[...key]` as the dominant reader.
+
+The mitigation is a short `max-age` (around 300s) in `src/pages/media/[...key].ts`, accepting that a deletion takes up to that long to disappear everywhere. If that delay is unacceptable, build a purge path on delete before adding cache time.
+
 ## Incident rollback
 
 ```bash

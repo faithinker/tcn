@@ -11,6 +11,22 @@ function responseHeaders(object: R2Object, contentLength: number): Headers {
   headers.set('etag', object.httpEtag);
   headers.set('accept-ranges', 'bytes');
   headers.set('content-length', String(contentLength));
+  // ── 캐시 정책: 의도적으로 매 뷰 재검증(2026-07-27 결정) ─────────────────────
+  // max-age=0 + must-revalidate → 브라우저가 캐시본을 갖고 있어도 매번 물어본다.
+  //
+  // 왜: "동의 없는 사진 미노출"이 콘텐츠 원칙이다. 사진 삭제나 글 soft delete가
+  //     즉시 전역에 적용되어야 하고, 이미 본 브라우저에도 유예 구간이 없어야 한다.
+  //     (R2 키는 업로드마다 유일 = 내용은 불변이라, 캐시를 막는 유일한 이유가 '취소'다.)
+  //
+  // 비용: 뷰 1건당 Worker 호출 1 + D1 조회 1(공개 여부) + R2 조건부 GET 1.
+  //     본문은 대개 304로 안 나가므로 대역폭이 아니라 '요청 수'가 부하 지점이다.
+  //     갤러리 1페이지에 사진 10장이면 열 때마다 10건.
+  //
+  // 재검토 신호(둘 중 하나라도 보이면 이 주석으로 돌아올 것):
+  //     - Workers 요청 수가 무료 한도(10만/일)의 절반을 상시 넘김
+  //     - D1 읽기 행 수가 한도에 근접 (이 경로가 D1 읽기의 최대 소비자)
+  // 그때의 완화책: max-age를 300s 정도로 두어 '삭제 반영이 최대 5분 지연'을 감수한다.
+  //     지연을 감수하지 못하면 캐시 대신 사진 삭제 시 퍼지(purge) 경로를 먼저 만들어야 한다.
   headers.set('cache-control', 'public, max-age=0, must-revalidate');
   return headers;
 }
