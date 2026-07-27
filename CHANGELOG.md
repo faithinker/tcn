@@ -20,6 +20,10 @@ All notable changes to this project will be documented in this file. AI agents (
 - Resolved PR quality-gate findings by removing pseudorandom notification jitter and simplifying routing, payload, upload, editor, and post-update control flow. (Branch: `fix/routing-audit`) - Implemented by Codex
 - Fixed Cloudflare static-page self-redirect loops by building slashless routes as `.html` files and delegating trailing-slash normalization to Workers Static Assets and middleware. (Branch: `fix/static-redirect-loop`) - Implemented by Codex
 ### Refactor
+- Collapsed the eight 1:1 page-template wrappers into `src/pages` (a `/ko`·`/en`-era indirection), moved the one real prop-receiving template to `src/components/seminars/CommunityPost.astro`, and kept the prerender set identical. (Branch: `refactor/structure-slices`) - Implemented by Claude
+- Normalized `src/lib` into domain folders (`media/`, `seminars/`, `posts/` with barrels matching the `db`/`auth`/`notify` convention) and collected the six route-contract test suites under `lib/routes/`; coverage identical to baseline proves the move-only slice. (Branch: `refactor/structure-slices`) - Implemented by Claude
+- Extracted the PostEditor save-error copy into a unit-tested `editor-messages.ts` module and deleted the orphaned 1,613-line `admin.css` that nothing imported. (Branch: `refactor/structure-slices`) - Implemented by Claude
+- Moved the three hardcoded seminar-detail labels into `i18n/content.ts` per the content-source rule, and synced `CONTENT_ARCHITECTURE.md` and `README.md` with the measured route/data reality. (Branch: `refactor/structure-slices`) - Implemented by Claude
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
 - Moved carousel entries and safe manifest serialization into a shared media contract used by founding and seminar pages. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Security
@@ -27,6 +31,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Stopped resolving the `wrangler` binary through `PATH` in the seed and create-user scripts by pointing `execFileSync` at the repository's own `node_modules/.bin/wrangler`, resolved from the script location so both still run from any working directory. (Branch: `fix/script-binary-paths`) - Implemented by Claude
 - Added account-and-IP login throttling with hashed identifiers, versioned session revocation, dependency audit enforcement, and bounded notification retries with timeouts. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Test
+- Locked vitest coverage thresholds to the measured baseline (84/73/85/88) so refactoring slices cannot silently lower coverage, and added unit tests for the admin editor error-message mapping. (Branch: `refactor/structure-slices`) - Implemented by Claude
 - Added route-contract assertions and CI browser gates for canonical redirects, missing seminar pages, responsive rendering, console errors, and accessibility. (Branch: `test/route-contracts-ci`) - Implemented by Codex
 - Added data-contract and browser regression checks for master-image integrity, lazy video loading, HTTP range support, zoom and pan, keyboard focus, and mobile layout. (Branch: `feat/content`) - Implemented by Codex
 - Stabilized high-resolution lightbox interaction checks against CI image-transcoding delays by serving the verified 4000px master during the browser test. (Branch: `feat/content`) - Implemented by Codex
