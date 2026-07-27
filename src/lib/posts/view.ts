@@ -35,8 +35,10 @@ function headingSlug(text: string, fallbackIndex: number): string {
   const slug = text
     .normalize('NFKC')
     .toLocaleLowerCase('en')
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '');
+    .replaceAll(/[^\p{L}\p{N}]+/gu, '-')
+    // 위 치환이 비영숫자 연속을 '-' 하나로 접으므로 '--'는 생길 수 없다 →
+    // 양끝은 최대 한 글자. 수량자 없는 패턴이라 백트래킹도 없다.
+    .replaceAll(/^-|-$/g, '');
   return slug || `section-${fallbackIndex}`;
 }
 
@@ -44,7 +46,7 @@ export function renderPostContent(markdown: string): RenderedPostContent {
   const source = markdown.trim();
   if (!source) return { html: '', headings: [] };
   // marked는 기본적으로 raw HTML을 통과시키므로 먼저 이스케이프한다.
-  const escaped = source.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const escaped = source.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   const headings: PostHeading[] = [];
   const slugCounts = new Map<string, number>();
   const marked = new Marked({ gfm: true, async: false });

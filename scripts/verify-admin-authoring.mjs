@@ -6,13 +6,15 @@
 // 멱등: 계정은 시작 시 삭제 후 재생성, 글은 마지막에 soft delete(가시 event_date 유니크
 // 인덱스는 visible 행만 대상이라 재실행 충돌 없음).
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
 const USERNAME = 'verify-admin-gate';
-const PASSWORD = 'verify-Admin-2100!gate';
+// 실행마다 새로 만든다 — 저장소에 고정 자격이 남지 않고, 계정도 이 실행 안에서만 존재한다.
+const PASSWORD = `gate-${randomUUID()}`;
 // 시드 최대 개최일(browser-media 시드 2099-12-31)보다 뒤 — event_date_must_follow_latest 회피.
 const EVENT_DATE = '2100-01-15';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -168,7 +170,7 @@ try {
     .locator('aside[aria-label="Public page readiness"] p.font-serif')
     .first()
     .textContent();
-  const readinessPercent = Number((readinessText ?? '').replace(/[^0-9]/g, ''));
+  const readinessPercent = Number((readinessText ?? '').replaceAll(/\D/g, ''));
   check(
     `readiness 퍼센트가 충족 항목을 반영한다 (${readinessPercent}% ≥ 71%)`,
     readinessPercent >= 71,

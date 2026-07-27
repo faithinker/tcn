@@ -5,6 +5,12 @@ import { field, labelText, mediaAction } from './classnames';
 import { fileTypeLabel } from './media-order';
 import type { EditorMedia } from './types';
 
+// 캡션 토글 버튼 문구: 열려 있으면 닫기, 닫혀 있으면 기존 캡션 유무에 따라 편집/추가.
+function captionButtonLabel(open: boolean, caption: string | null): string {
+  if (open) return 'Hide caption field';
+  return caption ? 'Edit caption' : 'Add caption';
+}
+
 interface Props {
   hasPost: boolean;
   busy: boolean;
@@ -127,11 +133,7 @@ export default function MediaManager({
                         disabled={busy}
                         className={`${mediaAction} text-link`}
                       >
-                        {openCaptions.has(item.id)
-                          ? 'Hide caption field'
-                          : item.caption
-                            ? 'Edit caption'
-                            : 'Add caption'}
+                        {captionButtonLabel(openCaptions.has(item.id), item.caption)}
                       </button>
                       <button
                         type="button"

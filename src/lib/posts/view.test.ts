@@ -75,6 +75,21 @@ describe('renderPostContent', () => {
 
     expect(content.headings.map((heading) => heading.id)).toEqual(['세미나-개요', 'section-2']);
   });
+
+  it('trims separators at both ends and never emits doubled separators', () => {
+    // 비영숫자 연속이 '-' 하나로 접히므로 양끝 정리는 한 글자만 다루면 충분하다
+    // (이 불변식이 깨지면 슬러그에 '--' 또는 앞뒤 '-'가 남는다).
+    const content = renderPostContent(
+      '## -- Hello,   World! --\n\n### ...Trailing dots...\n\n#### skipped',
+    );
+
+    expect(content.headings.map((heading) => heading.id)).toEqual(['hello-world', 'trailing-dots']);
+    for (const heading of content.headings) {
+      expect(heading.id.startsWith('-')).toBe(false);
+      expect(heading.id.endsWith('-')).toBe(false);
+      expect(heading.id).not.toContain('--');
+    }
+  });
 });
 
 describe('groupMedia', () => {
