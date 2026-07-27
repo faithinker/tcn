@@ -196,6 +196,18 @@ npm run generate-types # wrangler types (D1/R2 바인딩 타입 생성)
 
 > ⚠️ npm 패키지를 바꾼 뒤 dev 서버가 500을 내면 vite 캐시가 스테일된 것입니다. `npx astro dev stop` 후 재시작하세요.
 
+### AI 에이전트 설정
+
+Codex CLI로 이 저장소를 작업할 때는 프로필을 지정해서 실행합니다.
+
+```bash
+codex --profile tcn
+```
+
+저장소 로컬 설정은 `.codex/config.toml`에 있습니다. 이 프로젝트가 유일한 웹·Cloudflare 저장소이므로 Cloudflare MCP 5종(`cloudflare-api`·`docs`·`bindings`·`builds`·`observability`)을 켜고, Apple 계열 도구(`apple-docs`·`XcodeBuildMCP`·`mobile-mcp`)는 전역에 남겨둔 채 이 저장소에서만 끕니다. Spec Kit·프로젝트 로컬 Impeccable과 겹치는 gstack 스킬도 여기서 비활성화합니다.
+
+Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 워크플로 정책을 따릅니다.
+
 ### 콘텐츠 운영 (작성자 계정·시드)
 
 회원가입 UI가 없습니다. 최고관리자가 계정을 수동 발급합니다.
