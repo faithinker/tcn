@@ -13,18 +13,18 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 
 ## 2. 라우트
 
-| 경로 | 렌더 | 소스 |
-| --- | --- | --- |
-| `/` | SSR | D1 (차기/최신 글) + `i18n/content.ts` 카피 |
-| `/about`, `/about/{founding,declaration,bylaws}` | 정적 | `content.ts`, `data/history.ts`, `invitations.json` |
-| `/people` | 정적 | `members.json` |
-| `/seminars` | SSR | D1 `posts` (예정/지난 = `event_date` 파생) |
-| `/seminars/p/[id]` | SSR | D1 `posts`+`media` (마크다운→HTML, `lib/posts-view`) |
-| `/contact` | 정적 | `content.ts` |
-| `/sitemap.xml` | SSR | 정적 경로 + D1 글 |
-| `/admin`, `/admin/**` | SSR (noindex) | 작성 앱 (React island + Tiptap→마크다운) |
-| `/api/{auth,posts,media}/**` | SSR | 인증·CRUD·업로드 |
-| `/media/[...key]` | SSR | R2 스트리밍 |
+| 경로                                             | 렌더          | 소스                                                 |
+| ------------------------------------------------ | ------------- | ---------------------------------------------------- |
+| `/`                                              | SSR           | D1 (차기/최신 글) + `i18n/content.ts` 카피           |
+| `/about`, `/about/{founding,declaration,bylaws}` | 정적          | `content.ts`, `data/history.ts`, `invitations.json`  |
+| `/people`                                        | 정적          | `members.json`                                       |
+| `/seminars`                                      | SSR           | D1 `posts` (예정/지난 = `event_date` 파생)           |
+| `/seminars/p/[id]`                               | SSR           | D1 `posts`+`media` (마크다운→HTML, `lib/posts-view`) |
+| `/contact`                                       | 정적          | `content.ts`                                         |
+| `/sitemap.xml`                                   | SSR           | 정적 경로 + D1 글                                    |
+| `/admin`, `/admin/**`                            | SSR (noindex) | 작성 앱 (React island + Tiptap→마크다운)             |
+| `/api/{auth,posts,media}/**`                     | SSR           | 인증·CRUD·업로드                                     |
+| `/media/[...key]`                                | SSR           | R2 스트리밍                                          |
 
 ## 3. 데이터
 

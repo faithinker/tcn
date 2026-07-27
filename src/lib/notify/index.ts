@@ -43,10 +43,18 @@ export function notifyPostChange(requestUrl: string, post: NotifyPost, action: N
     })
       .then((result) => {
         if (bindings.DISCORD_WEBHOOK && !result.discord) {
-          console.error('notification delivery failed', { channel: 'discord', postId: post.id, action });
+          console.error('notification delivery failed', {
+            channel: 'discord',
+            postId: post.id,
+            action,
+          });
         }
         if (bindings.TELEGRAM_TOKEN && bindings.TELEGRAM_TO && !result.telegram) {
-          console.error('notification delivery failed', { channel: 'telegram', postId: post.id, action });
+          console.error('notification delivery failed', {
+            channel: 'telegram',
+            postId: post.id,
+            action,
+          });
         }
         return result;
       })

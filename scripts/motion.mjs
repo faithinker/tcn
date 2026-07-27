@@ -43,13 +43,15 @@ const VP = { width: 1280, height: 500 };
   await page.evaluate(() =>
     document.querySelectorAll('main > section')[1].scrollIntoView({ block: 'center' }),
   );
-  await page.waitForFunction(
-    () => {
-      const el = document.querySelectorAll('main > section')[1];
-      return el && getComputedStyle(el).opacity === '1';
-    },
-    { timeout: 2000 },
-  ).catch(() => {});
+  await page
+    .waitForFunction(
+      () => {
+        const el = document.querySelectorAll('main > section')[1];
+        return el && getComputedStyle(el).opacity === '1';
+      },
+      { timeout: 2000 },
+    )
+    .catch(() => {});
   const afterScroll = await op(page, 'main > section', 1);
   check(afterScroll === '1', `2번째 섹션 스크롤 후 표시 (opacity=${afterScroll})`);
 

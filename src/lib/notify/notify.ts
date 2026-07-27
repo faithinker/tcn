@@ -24,7 +24,8 @@ export interface NotifyResult {
   telegram: boolean;
 }
 
-const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 interface DeliveryAttempt {
   finished: boolean;
@@ -35,9 +36,7 @@ interface DeliveryAttempt {
 function retryAfter(response: Response): number | null {
   if (response.status !== 429) return null;
   const seconds = Number(response.headers.get('retry-after'));
-  return Number.isFinite(seconds) && seconds >= 0
-    ? Math.min(seconds * 1_000, 30_000)
-    : null;
+  return Number.isFinite(seconds) && seconds >= 0 ? Math.min(seconds * 1_000, 30_000) : null;
 }
 
 async function attemptDelivery(

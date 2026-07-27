@@ -13,13 +13,21 @@ let chromium;
 try {
   ({ chromium } = await import('playwright'));
 } catch {
-  console.error('❌ playwright 미설치. `npm i -D playwright@latest`(node26은 ≥1.60.0 필수) + `npx playwright install chromium`. 폴백: puppeteer-core@25.3.0 + 설치된 Chrome(executablePath/channel:chrome).');
+  console.error(
+    '❌ playwright 미설치. `npm i -D playwright@latest`(node26은 ≥1.60.0 필수) + `npx playwright install chromium`. 폴백: puppeteer-core@25.3.0 + 설치된 Chrome(executablePath/channel:chrome).',
+  );
   process.exit(2);
 }
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
 // 공개 라우트 — 전부 200 렌더를 전제한다. 세미나 상세는 정식 URL(날짜)로 검사한다.
-const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact').split(',').map(s => s.trim()).filter(Boolean);
+const ROUTES = (
+  process.env.ROUTES ||
+  '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const WIDTHS = (process.env.WIDTHS || '375,768,1280').split(',').map(Number);
 
 // 라우트 계약 — ROUTES는 "전부 200"이라 301·404를 넣을 수 없다. 여기서 따로 단언한다.
@@ -28,13 +36,25 @@ const CONTRACTS = process.env.CONTRACTS
   ? JSON.parse(process.env.CONTRACTS)
   : [
       // 구 UUID 딥링크 → 날짜 정식 URL 영구 이전
-      { path: '/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001', status: 301, location: '/seminars/2025-12-26' },
-      { path: '/seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002', status: 301, location: '/seminars/2026-10-30' },
+      {
+        path: '/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001',
+        status: 301,
+        location: '/seminars/2025-12-26',
+      },
+      {
+        path: '/seminars/p/5a1c9d1e-0002-4d1e-8f00-000000000002',
+        status: 301,
+        location: '/seminars/2026-10-30',
+      },
       // slash 변형과 레거시 링크는 중간 홉 없이 정식 URL로 이동
       { path: '/about/', status: 301, location: '/about' },
       { path: '/seminars/2025-12-26/', status: 301, location: '/seminars/2025-12-26' },
       { path: '/ko/seminars/2025-laos/', status: 301, location: '/seminars/2025-12-26' },
-      { path: '/events/2025/founding-ceremony-invitation/', status: 301, location: '/about/founding' },
+      {
+        path: '/events/2025/founding-ceremony-invitation/',
+        status: 301,
+        location: '/about/founding',
+      },
       // 형식은 맞지만 해당 글 없음
       { path: '/seminars/2030-01-01', status: 404 },
       // 날짜 형식 오류
@@ -48,13 +68,20 @@ const results = [];
 
 for (const route of ROUTES) {
   for (const w of WIDTHS) {
-    const ctx = await browser.newContext({ viewport: { width: w, height: 900 }, deviceScaleFactor: 2 });
+    const ctx = await browser.newContext({
+      viewport: { width: w, height: 900 },
+      deviceScaleFactor: 2,
+    });
     const page = await ctx.newPage();
     const errors = [];
-    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
-    page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+    page.on('pageerror', (e) => errors.push('PAGEERROR: ' + e.message));
 
-    let status = 0, overflow = false, note = '';
+    let status = 0,
+      overflow = false,
+      note = '';
     try {
       // CI에서는 이미지·Worker asset 하나가 오래 유지되면 networkidle이 오지 않아
       // 정상 렌더된 페이지도 timeout 처리된다. DOM 응답을 기준으로 진행하고,
@@ -72,8 +99,11 @@ for (const route of ROUTES) {
         window.scrollTo(0, 0);
       });
       await page.waitForTimeout(800); // 폰트/모션 전환 안정화
-      overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
-      const name = (route === '/' ? 'home' : route.replace(/^\//, '').replace(/\//g, '_')) + '-' + w;
+      overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth + 1,
+      );
+      const name =
+        (route === '/' ? 'home' : route.replace(/^\//, '').replace(/\//g, '_')) + '-' + w;
       await page.screenshot({ path: `verify/${name}.png`, fullPage: true });
       note = `screenshot=verify/${name}.png`;
     } catch (e) {
@@ -92,7 +122,9 @@ for (const route of ROUTES) {
 // 계약 검사 — maxRedirects:0 이라 301을 따라가지 않고 상태·Location을 그대로 본다.
 const api = await browser.newContext();
 for (const c of CONTRACTS) {
-  let status = 0, location = null, note = '';
+  let status = 0,
+    location = null,
+    note = '';
   try {
     const resp = await api.request.get(BASE + c.path, { maxRedirects: 0, timeout: 20000 });
     status = resp.status();
@@ -103,9 +135,10 @@ for (const c of CONTRACTS) {
   }
   const wantLoc = c.location ? c.location.replace(/\/$/, '') || '/' : null;
   const bad = status !== c.status || (wantLoc !== null && location !== wantLoc);
-  const line = `${bad ? '❌' : '✅'} ${c.path}  status=${status} (want ${c.status})`
-    + (wantLoc !== null ? `  location=${location} (want ${wantLoc})` : '')
-    + (note ? `  ${note}` : '');
+  const line =
+    `${bad ? '❌' : '✅'} ${c.path}  status=${status} (want ${c.status})` +
+    (wantLoc !== null ? `  location=${location} (want ${wantLoc})` : '') +
+    (note ? `  ${note}` : '');
   results.push(line);
   console.log(line);
   if (bad) fail++;
@@ -114,5 +147,10 @@ await api.close();
 
 await browser.close();
 const total = ROUTES.length * WIDTHS.length + CONTRACTS.length;
-console.log('\n' + (fail ? `FAIL: ${fail}/${total} check(s) — 위 ❌ 확인` : `PASS: all ${ROUTES.length}×${WIDTHS.length} route/width + ${CONTRACTS.length} contract checks`));
+console.log(
+  '\n' +
+    (fail
+      ? `FAIL: ${fail}/${total} check(s) — 위 ❌ 확인`
+      : `PASS: all ${ROUTES.length}×${WIDTHS.length} route/width + ${CONTRACTS.length} contract checks`),
+);
 process.exit(fail ? 1 : 0);

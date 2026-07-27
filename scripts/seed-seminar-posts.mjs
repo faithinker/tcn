@@ -21,7 +21,8 @@ const POSTS = [
     title: 'Second International Seminar',
     summary: 'The second international seminar of the Transcultural Network.',
     eventDate: '2026-10-30',
-    address: 'TCN Headquarters, 286 Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
+    address:
+      'TCN Headquarters, 286 Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
     body: 'The theme and programme will be announced.',
   },
 ];
@@ -56,9 +57,13 @@ update posts set hero_media_id = 'ci-seminar-hero' where id = 'ci-seminar-carous
   : '';
 const sql = `${postSql}\n${mediaSql}`;
 
-execFileSync('npx', ['wrangler', 'd1', 'execute', 'tcn-content', remote ? '--remote' : '--local', '--command', sql], {
-  stdio: 'inherit',
-});
+execFileSync(
+  'npx',
+  ['wrangler', 'd1', 'execute', 'tcn-content', remote ? '--remote' : '--local', '--command', sql],
+  {
+    stdio: 'inherit',
+  },
+);
 console.log(
   `\n✅ seminar posts${browserMedia ? ' + browser media rows' : ''} seeded on ${remote ? 'remote' : 'local'} D1 (idempotent)`,
 );

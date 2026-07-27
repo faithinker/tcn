@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  getLoginRateLimitKeys,
-  isLoginRateLimited,
-  recordLoginFailure,
-} from './rate-limit';
+import { getLoginRateLimitKeys, isLoginRateLimited, recordLoginFailure } from './rate-limit';
 
 describe('login rate limiting', () => {
   it('hashes normalized account and IP identifiers before persistence', async () => {
@@ -25,9 +21,7 @@ describe('login rate limiting', () => {
     const prepare = vi.fn(() => ({ bind }));
     const db = { prepare } as unknown as D1Database;
 
-    await expect(
-      isLoginRateLimited(db, ['account:key', 'ip:key'], 1_000),
-    ).resolves.toBe(true);
+    await expect(isLoginRateLimited(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(true);
     expect(bind).toHaveBeenCalledWith('account:key', 'ip:key', 1_000);
   });
 
@@ -42,9 +36,7 @@ describe('login rate limiting', () => {
     const batch = vi.fn().mockResolvedValue([]);
     const db = { prepare, batch } as unknown as D1Database;
 
-    await expect(
-      recordLoginFailure(db, ['account:key', 'ip:key'], 1_000),
-    ).resolves.toBe(false);
+    await expect(recordLoginFailure(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(false);
     expect(batch).toHaveBeenCalledWith([
       { args: ['account:key', 1_000] },
       { args: ['ip:key', 1_000] },

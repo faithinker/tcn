@@ -21,7 +21,8 @@ export function validateSeminarDate({
   if (!eventDate) return 'event_date_required';
   if (!isSeminarEventDate(eventDate)) return 'event_date_invalid';
   if (currentEventDate && eventDate !== currentEventDate) return 'event_date_immutable';
-  if (eventDate !== currentEventDate && existingDates.includes(eventDate)) return 'event_date_conflict';
+  if (eventDate !== currentEventDate && existingDates.includes(eventDate))
+    return 'event_date_conflict';
   if (!currentEventDate) {
     const latest = existingDates.toSorted((a, b) => a.localeCompare(b)).at(-1);
     if (latest && eventDate <= latest) return 'event_date_must_follow_latest';

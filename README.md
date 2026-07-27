@@ -12,34 +12,34 @@
 
 ### 단체 소개
 
-| 항목 | 내용 |
-| --- | --- |
-| 한글명 | 초문화네트워크 |
-| 영문명 | Transcultural Network |
-| 약칭 | TCN |
-| 정의 | 국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크 |
-| 사무국 | 인천광역시 강화군 강화읍 국화리 286 |
-| 창립 | 2025-12-12, 성균관대 명륜캠퍼스 (창립국 15개국) |
-| 회장 | 김원준 (Dr. Wonjoon Kim) |
-| 수석부회장 | 전성호 교수 |
-| 제1차 세미나 | 2025-12-26, 라오스 루앙프라방 |
-| 제2차 세미나 | 2026-10-30, TCN 본부 (인천 강화) |
+| 항목         | 내용                                                                              |
+| ------------ | --------------------------------------------------------------------------------- |
+| 한글명       | 초문화네트워크                                                                    |
+| 영문명       | Transcultural Network                                                             |
+| 약칭         | TCN                                                                               |
+| 정의         | 국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크 |
+| 사무국       | 인천광역시 강화군 강화읍 국화리 286                                               |
+| 창립         | 2025-12-12, 성균관대 명륜캠퍼스 (창립국 15개국)                                   |
+| 회장         | 김원준 (Dr. Wonjoon Kim)                                                          |
+| 수석부회장   | 전성호 교수                                                                       |
+| 제1차 세미나 | 2025-12-26, 라오스 루앙프라방                                                     |
+| 제2차 세미나 | 2026-10-30, TCN 본부 (인천 강화)                                                  |
 
 ### 공개 페이지 구조
 
 영어 단일 루트 트리입니다. `about`/`people`/`contact` 등 소개 페이지는 정적, 세미나·글 관련 페이지는 D1을 조회하는 SSR입니다.
 
-| 경로 | 렌더 | 내용 |
-| --- | --- | --- |
-| `/` | SSR | 히어로, 차기 세미나(미래 개최일 글), 미션, 핵심 활동, 최신 글 |
-| `/about`, `/about/{founding,declaration,bylaws}` | 정적 | 소개·연혁, 창립총회, 창립 선언문, 정관 |
-| `/people` | 정적 | 임원진·이사 카드 (실명 미확보 시 "추후 공개") |
-| `/seminars` | SSR | 예정/지난 글 목록 (개최일로 자동 분류) |
-| `/seminars/p/[id]` | SSR | 글 상세 - 마크다운 본문, 사진·영상·문서, 주소→지도 링크 |
-| `/contact` | 정적 | 사무국 연락처 |
-| `/sitemap.xml` | SSR | 정적 경로 + 공개 글 |
-| `/admin`, `/admin/**` | SSR (noindex) | 작성자 전용 CMS (로그인 필요) |
-| `/api/**`, `/media/[key]` | SSR | 인증·CRUD·업로드 / R2 미디어 스트리밍 |
+| 경로                                             | 렌더          | 내용                                                          |
+| ------------------------------------------------ | ------------- | ------------------------------------------------------------- |
+| `/`                                              | SSR           | 히어로, 차기 세미나(미래 개최일 글), 미션, 핵심 활동, 최신 글 |
+| `/about`, `/about/{founding,declaration,bylaws}` | 정적          | 소개·연혁, 창립총회, 창립 선언문, 정관                        |
+| `/people`                                        | 정적          | 임원진·이사 카드 (실명 미확보 시 "추후 공개")                 |
+| `/seminars`                                      | SSR           | 예정/지난 글 목록 (개최일로 자동 분류)                        |
+| `/seminars/p/[id]`                               | SSR           | 글 상세 - 마크다운 본문, 사진·영상·문서, 주소→지도 링크       |
+| `/contact`                                       | 정적          | 사무국 연락처                                                 |
+| `/sitemap.xml`                                   | SSR           | 정적 경로 + 공개 글                                           |
+| `/admin`, `/admin/**`                            | SSR (noindex) | 작성자 전용 CMS (로그인 필요)                                 |
+| `/api/**`, `/media/[key]`                        | SSR           | 인증·CRUD·업로드 / R2 미디어 스트리밍                         |
 
 구 URL(`/ko/*`·`/en/*`·연도-지역 slug·구 회차 허브 등)은 `public/_redirects`에서 새 경로로 301 이전됩니다.
 
@@ -51,13 +51,13 @@
 
 ### 콘텐츠 데이터 위치
 
-| 종류 | 위치 |
-| --- | --- |
-| 세미나·활동 글, 미디어 | Cloudflare **D1** `posts`·`media` (작성자가 `/admin`에서 입력) |
-| 연혁 (확정 기관 기록) | `src/data/history.ts` (정적) |
-| 임원·구성원 | `src/data/members.json` |
-| 창립총회 초청장 | `src/data/invitations.json` |
-| 페이지 카피 / UI 문자열 | `src/i18n/content.ts` / `src/i18n/ui.ts` |
+| 종류                    | 위치                                                           |
+| ----------------------- | -------------------------------------------------------------- |
+| 세미나·활동 글, 미디어  | Cloudflare **D1** `posts`·`media` (작성자가 `/admin`에서 입력) |
+| 연혁 (확정 기관 기록)   | `src/data/history.ts` (정적)                                   |
+| 임원·구성원             | `src/data/members.json`                                        |
+| 창립총회 초청장         | `src/data/invitations.json`                                    |
+| 페이지 카피 / UI 문자열 | `src/i18n/content.ts` / `src/i18n/ui.ts`                       |
 
 - 새 세미나·글: 개발자 관여 없이 **작성자가 `/admin`에서 직접 등록** → 목록·홈·상세에 즉시 반영.
 - 소개 페이지 카피 수정: `src/i18n/content.ts`.
@@ -71,31 +71,38 @@
 계층별 실제 구성입니다. 코드는 `src/` 기준 TypeScript 38 · Astro 37 · CSS 3 · React(TSX) 1 파일로, **로직은 TypeScript, 화면은 Astro, 글쓰기 에디터만 React**입니다.
 
 **① 프레임워크·언어**
+
 - **Astro 7.1** - 하이브리드 렌더. 소개 페이지는 정적 프리렌더, 글·목록·홈·`/admin`·`/api`는 `export const prerender = false`로 SSR.
 - **TypeScript 5.9** - DB·인증·미디어·알림 등 핵심 로직 전부. `.astro` 컴포넌트 스크립트도 TS.
 - **React 19 + `@astrojs/react` 6** - 어드민 글쓰기 에디터(`PostEditor.tsx`) **단 하나**만 아일랜드로 하이드레이션. 공개 페이지에는 React 번들이 실리지 않음.
 
 **② 런타임·배포 (Cloudflare)**
+
 - **Cloudflare Workers** - `@astrojs/cloudflare 14.1` 어댑터로 SSR을 Worker에서 실행. 공개 페이지·API·어드민이 전부 이 워커 하나.
 - 배포는 `wrangler 4` (`wrangler deploy`). `compatibility_flags: ["nodejs_compat"]`.
 - 바인딩(`wrangler.jsonc`): `DB`(D1), `MEDIA`(R2), `ASSETS`(정적 산출물). 코드에서는 `import { env } from 'cloudflare:workers'`로 접근.
 
 **③ 데이터·스토리지**
+
 - **Cloudflare D1** (SQLite) `tcn-content` - 3테이블 `users`·`posts`·`media`. 스키마 `migrations/0001_init.sql`. 데이터레이어 `src/lib/db/`.
 - **Cloudflare R2** `tcn-media` - 사진·영상·문서 원본. 공개는 `/media/[...key]`로 스트리밍.
 
 **④ 에디터·콘텐츠 렌더**
+
 - **Tiptap 3.28** (`@tiptap/core`·`@tiptap/react`) + **tiptap-markdown 0.9** - 위지윅 작성 → **마크다운으로 저장**.
 - **marked 18** - 저장된 마크다운을 공개 상세에서 HTML로 렌더(`src/lib/posts-view.ts`, 링크/이미지 프로토콜 화이트리스트).
 
 **⑤ 인증 (외부 라이브러리 없이 WebCrypto)**
+
 - 비밀번호 **PBKDF2** 해시, 세션은 **HMAC 서명 쿠키**(1일). `src/lib/auth/`. 회원가입 UI 없음 - `scripts/create-user.mjs`로 수동 발급.
 
 **⑥ 스타일·폰트**
+
 - **Tailwind CSS 4** (`@tailwindcss/vite`) + 디자인 토큰(`src/styles/global.css`).
 - **Noto Serif KR**(`@fontsource`, 명조 본문·헤드라인) · **Pretendard**(내비·메타). 셀프호스팅.
 
 **⑦ 알림·검증·품질**
+
 - 알림: **Discord 웹훅 · Telegram 봇 API** - 글 등록/수정 시 `waitUntil` 백그라운드 발송(`src/lib/notify/`).
 - 검증: `astro check`(타입·스키마) · **Vitest 4**(유닛) · **Playwright**(스크린샷) · **Lighthouse**(접근성).
 - 품질·보안 게이트(CI): Codecov · SonarCloud · GitGuardian.
@@ -193,11 +200,11 @@ npm run build && npx wrangler deploy
 
 원격 시크릿은 `wrangler secret put`으로 설정합니다.
 
-| 시크릿 | 용도 |
-| --- | --- |
-| `SESSION_SECRET` | 세션 쿠키 서명 (직접 생성: `openssl rand -hex 32`) |
-| `DISCORD_WEBHOOK` | 글 알림 - 디스코드 웹훅 URL |
-| `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID |
+| 시크릿                           | 용도                                               |
+| -------------------------------- | -------------------------------------------------- |
+| `SESSION_SECRET`                 | 세션 쿠키 서명 (직접 생성: `openssl rand -hex 32`) |
+| `DISCORD_WEBHOOK`                | 글 알림 - 디스코드 웹훅 URL                        |
+| `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID                        |
 
 로컬은 `.dev.vars`(`SESSION_SECRET`)를 사용하며 커밋에서 제외합니다. 알림 시크릿이 없으면 해당 채널만 조용히 건너뛰고 글 저장·공개에는 영향이 없습니다.
 

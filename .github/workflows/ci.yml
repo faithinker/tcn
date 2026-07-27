@@ -125,4 +125,4 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
-          title: "TCN CI Workflow Status"
+          title: 'TCN CI Workflow Status'

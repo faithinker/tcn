@@ -8,7 +8,9 @@ describe('validateSeminarDate', () => {
   });
 
   it('rejects a malformed or impossible calendar date', () => {
-    expect(validateSeminarDate({ eventDate: '2026-02-31', existingDates: [] })).toBe('event_date_invalid');
+    expect(validateSeminarDate({ eventDate: '2026-02-31', existingDates: [] })).toBe(
+      'event_date_invalid',
+    );
   });
 
   it('rejects a date already used by another visible seminar', () => {

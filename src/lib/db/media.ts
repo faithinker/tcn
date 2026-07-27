@@ -14,7 +14,9 @@ export async function listMediaForPost(db: D1Database, postId: string): Promise<
 }
 
 export async function getMediaById(db: D1Database, id: string): Promise<Media | null> {
-  return (await db.prepare(`select ${COLUMNS} from media where id = ?1`).bind(id).first<Media>()) ?? null;
+  return (
+    (await db.prepare(`select ${COLUMNS} from media where id = ?1`).bind(id).first<Media>()) ?? null
+  );
 }
 
 export async function getPublicMediaByKey(db: D1Database, r2Key: string): Promise<Media | null> {

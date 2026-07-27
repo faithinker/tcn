@@ -7,10 +7,7 @@ describe('requestJson', () => {
   });
 
   it('returns a successful JSON payload', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(Response.json({ ok: true, value: 3 })),
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ ok: true, value: 3 })));
 
     await expect(requestJson<{ ok: true; value: number }>('/api/example')).resolves.toEqual({
       ok: true,
@@ -45,7 +42,9 @@ describe('requestJson', () => {
   it('preserves an API error code and status', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(Response.json({ ok: false, error: 'unauthorized' }, { status: 401 })),
+      vi
+        .fn()
+        .mockResolvedValue(Response.json({ ok: false, error: 'unauthorized' }, { status: 401 })),
     );
 
     await expect(requestJson('/api/example')).rejects.toMatchObject({

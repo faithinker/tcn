@@ -16,9 +16,7 @@ export interface ValidPostPayload {
   revision: number | null;
 }
 
-type ParseResult =
-  | { ok: true; value: ValidPostPayload }
-  | { ok: false; error: string };
+type ParseResult = { ok: true; value: ValidPostPayload } | { ok: false; error: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -88,7 +86,8 @@ export function parsePostPayload(input: unknown): ParseResult {
       address: address.value,
       body: bodyValue,
       heroMediaId: heroMediaId.value,
-      revision: revisionValue === undefined || revisionValue === null ? null : Number(revisionValue),
+      revision:
+        revisionValue === undefined || revisionValue === null ? null : Number(revisionValue),
     },
   };
 }

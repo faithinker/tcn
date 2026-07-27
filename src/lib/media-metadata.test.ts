@@ -18,9 +18,15 @@ describe('normalizeMediaMetadata', () => {
   });
 
   it('rejects captions over 500 characters and invalid positions', () => {
-    expect(() => normalizeMediaMetadata({ caption: 'x'.repeat(501), position: 0 })).toThrow('caption_too_long');
-    expect(() => normalizeMediaMetadata({ caption: null, position: -1 })).toThrow('position_invalid');
-    expect(() => normalizeMediaMetadata({ caption: null, position: 1.5 })).toThrow('position_invalid');
+    expect(() => normalizeMediaMetadata({ caption: 'x'.repeat(501), position: 0 })).toThrow(
+      'caption_too_long',
+    );
+    expect(() => normalizeMediaMetadata({ caption: null, position: -1 })).toThrow(
+      'position_invalid',
+    );
+    expect(() => normalizeMediaMetadata({ caption: null, position: 1.5 })).toThrow(
+      'position_invalid',
+    );
   });
 });
 
@@ -33,11 +39,15 @@ describe('mediaMetadataForSave', () => {
   });
 
   it('clears document captions but keeps the required video transcript', () => {
-    expect(mediaMetadataForSave({ kind: 'document', caption: 'Legacy document caption' }, 2)).toEqual({
+    expect(
+      mediaMetadataForSave({ kind: 'document', caption: 'Legacy document caption' }, 2),
+    ).toEqual({
       caption: null,
       position: 2,
     });
-    expect(mediaMetadataForSave({ kind: 'video', caption: '  Speaker welcomes participants.  ' }, 3)).toEqual({
+    expect(
+      mediaMetadataForSave({ kind: 'video', caption: '  Speaker welcomes participants.  ' }, 3),
+    ).toEqual({
       caption: 'Speaker welcomes participants.',
       position: 3,
     });

@@ -33,8 +33,11 @@
   --color-footer: #171310;
   --color-on-footer: #ffffff;
 
-  --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, -apple-system, sans-serif;
+  --font-serif:
+    'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans:
+    'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui,
+    -apple-system, sans-serif;
 
   --text-caption: 0.875rem;
   --text-caption--line-height: 1.5;
@@ -133,20 +136,29 @@
     word-break: normal;
   }
 
-  main, footer {
+  main,
+  footer {
     overflow-wrap: break-word;
   }
 
-  img, video, canvas {
+  img,
+  video,
+  canvas {
     max-width: 100%;
     height: auto;
   }
 
-  button, a {
+  button,
+  a {
     touch-action: manipulation;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-serif);
     font-weight: 600;
     color: var(--color-ink);
@@ -202,7 +214,9 @@
     letter-spacing: 0.08em;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     overflow-wrap: anywhere;
   }
 }

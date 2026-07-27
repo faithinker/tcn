@@ -24,9 +24,7 @@ function makeCanvas(width: number, height: number): Canvas {
 function drawTo(source: CanvasImageSource, width: number, height: number): Canvas {
   const canvas = makeCanvas(width, height);
   const ctx = canvas.getContext('2d') as
-    | OffscreenCanvasRenderingContext2D
-    | CanvasRenderingContext2D
-    | null;
+    OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D | null;
   if (!ctx) throw new Error('canvas_unavailable');
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';

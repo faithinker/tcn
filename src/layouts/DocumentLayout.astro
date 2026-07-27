@@ -27,7 +27,8 @@ const hasAside = Astro.slots.has('aside');
       <a
         href="/about"
         class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
-      >← {t('common.backToAbout')}</a>
+        >← {t('common.backToAbout')}</a
+      >
 
       <header>
         <p class="eyebrow mt-4">{eyebrow}</p>
@@ -43,20 +44,24 @@ const hasAside = Astro.slots.has('aside');
 
       <slot name="beforeBody" />
 
-      {hasAside ? (
-        <div class="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-14">
-          <aside class="hidden lg:block">
-            <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
-              <slot name="aside" />
+      {
+        hasAside ? (
+          <div class="mt-10 grid gap-10 sm:mt-12 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-14">
+            <aside class="hidden lg:block">
+              <div class="sticky top-28 border-l-2 border-hairline-strong pl-5 font-sans">
+                <slot name="aside" />
+              </div>
+            </aside>
+            <div>
+              <slot />
             </div>
-          </aside>
-          <div><slot /></div>
-        </div>
-      ) : (
-        <div class="mx-auto mt-10 max-w-[74ch] sm:mt-12">
-          <slot />
-        </div>
-      )}
+          </div>
+        ) : (
+          <div class="mx-auto mt-10 max-w-[74ch] sm:mt-12">
+            <slot />
+          </div>
+        )
+      }
     </article>
   </section>
 

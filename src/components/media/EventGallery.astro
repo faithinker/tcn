@@ -90,11 +90,15 @@ const WIDE_CELL_SIZES = '(max-width: 48rem) 95vw, (max-width: 64rem) 61vw, 37rem
                 class:list={['cell-image', { 'cell-image-wide': wide }]}
               />
               {isImage(item) ? (
-                <span class="media-hint" aria-hidden="true">{viewer.viewHint}</span>
+                <span class="media-hint" aria-hidden="true">
+                  {viewer.viewHint}
+                </span>
               ) : (
                 <span class="play-badge" aria-hidden="true">
                   <span class="play-mark" />
-                  <span class="play-label">{viewer.watch} · {item.duration}</span>
+                  <span class="play-label">
+                    {viewer.watch} · {item.duration}
+                  </span>
                 </span>
               )}
             </button>

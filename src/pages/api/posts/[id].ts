@@ -11,10 +11,7 @@ import {
 } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
 import { parsePostPayload } from '../../../lib/post-payload';
-import {
-  isSeminarDateConflictError,
-  validateSeminarDate,
-} from '../../../lib/seminar-validation';
+import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminar-validation';
 
 export const prerender = false;
 
@@ -53,7 +50,9 @@ export const PUT: APIRoute = async ({ request, params }) => {
   if (!currentPost) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
 
   const eventDate = payload.eventDate;
-  const existingDates = seminarPosts.map((post) => post.eventDate).filter((date): date is string => Boolean(date));
+  const existingDates = seminarPosts
+    .map((post) => post.eventDate)
+    .filter((date): date is string => Boolean(date));
   const dateError = validateSeminarDate({
     eventDate,
     currentEventDate: currentPost.eventDate,

@@ -8,8 +8,13 @@ import lighthouse from 'lighthouse';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
 // 세미나 상세는 정식 URL(날짜)로 측정한다. 구 UUID는 301이라 리다이렉트 목적지를 재게 된다.
-const ROUTES = (process.env.ROUTES || '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact')
-  .split(',').map((s) => s.trim()).filter(Boolean);
+const ROUTES = (
+  process.env.ROUTES ||
+  '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact'
+)
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 const MIN = Number(process.env.MIN_A11Y || 90);
 
 const chrome = await launch({ chromeFlags: ['--headless=new', '--no-sandbox'] });
@@ -40,7 +45,10 @@ try {
   chrome.kill();
 }
 
-console.log('\n' + (fail
-  ? `FAIL: ${fail}/${ROUTES.length} route(s) < ${MIN} — 위 fail audit 수정 필요`
-  : `PASS: all ${ROUTES.length} routes ≥ ${MIN} accessibility`));
+console.log(
+  '\n' +
+    (fail
+      ? `FAIL: ${fail}/${ROUTES.length} route(s) < ${MIN} — 위 fail audit 수정 필요`
+      : `PASS: all ${ROUTES.length} routes ≥ ${MIN} accessibility`),
+);
 process.exit(fail ? 1 : 0);

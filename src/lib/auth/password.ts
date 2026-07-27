@@ -12,9 +12,13 @@ const KEY_BITS = 256;
 const SALT_BYTES = 16;
 
 async function derive(plain: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
-  const keyMaterial = await crypto.subtle.importKey('raw', textEncoder.encode(plain), 'PBKDF2', false, [
-    'deriveBits',
-  ]);
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    textEncoder.encode(plain),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
   const bits = await crypto.subtle.deriveBits(
     // TS 5.9 제네릭 타입드어레이 강화로 Uint8Array<ArrayBufferLike>가 BufferSource에
     // 바로 안 붙는다 — 런타임 무관, 명시 캐스트.

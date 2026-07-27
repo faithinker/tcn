@@ -46,7 +46,12 @@ describe('POST /api/maintenance/media-cleanup', () => {
     } as never);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ ok: true, attempted: 2, completed: 2, failed: 0 });
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      attempted: 2,
+      completed: 2,
+      failed: 0,
+    });
     expect(bucket.delete).toHaveBeenCalledTimes(2);
     expect(completeMediaCleanup).toHaveBeenCalledTimes(2);
   });
@@ -58,7 +63,12 @@ describe('POST /api/maintenance/media-cleanup', () => {
       request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
     } as never);
 
-    await expect(response.json()).resolves.toEqual({ ok: true, attempted: 2, completed: 1, failed: 1 });
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      attempted: 2,
+      completed: 1,
+      failed: 1,
+    });
     expect(recordMediaCleanupFailure).toHaveBeenCalledWith(
       expect.anything(),
       'a.webp',

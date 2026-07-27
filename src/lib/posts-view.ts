@@ -103,7 +103,9 @@ export function seminarLightboxEntries(
 
 export function groupMedia(items: Media[], heroMediaId: string | null): GroupedMedia {
   const sorted = [...items].sort((a, b) => a.position - b.position);
-  const hero = heroMediaId ? sorted.find((m) => m.id === heroMediaId && m.kind === 'image') : undefined;
+  const hero = heroMediaId
+    ? sorted.find((m) => m.id === heroMediaId && m.kind === 'image')
+    : undefined;
   return {
     hero,
     images: sorted.filter((m) => m.kind === 'image' && m.id !== hero?.id),

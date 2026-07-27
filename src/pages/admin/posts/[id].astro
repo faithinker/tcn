@@ -19,8 +19,8 @@ const [user, post, seminars] = await Promise.all([
 if (!post) return Astro.redirect('/admin');
 const media = await listMediaForPost(db, id);
 const seminarSequence =
-  seminars.chronological.find((seminar) => seminar.id === post.id)?.sequence
-  ?? seminars.chronological.length + 1;
+  seminars.chronological.find((seminar) => seminar.id === post.id)?.sequence ??
+  seminars.chronological.length + 1;
 
 const editorPost = {
   id: post.id,
@@ -48,7 +48,9 @@ const editorMedia = media.map((item) => ({
 <AdminLayout title={post.title} user={user}>
   <div class="mb-6 flex items-center justify-between">
     <h1 class="font-serif text-display-sm font-semibold text-ink">Edit post</h1>
-    <a href="/admin" class="text-caption font-bold text-link underline underline-offset-2">← Posts</a>
+    <a href="/admin" class="text-caption font-bold text-link underline underline-offset-2"
+      >← Posts</a
+    >
   </div>
   <PostEditor client:load post={editorPost} media={editorMedia} seminarSequence={seminarSequence} />
 </AdminLayout>

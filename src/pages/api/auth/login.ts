@@ -1,6 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getDB, getUserByUsername } from '../../../lib/db';
-import { buildSessionCookie, createSessionToken, getSessionSecret, verifyPassword } from '../../../lib/auth';
+import {
+  buildSessionCookie,
+  createSessionToken,
+  getSessionSecret,
+  verifyPassword,
+} from '../../../lib/auth';
 import {
   clearLoginFailures,
   getLoginRateLimitKeys,
@@ -14,11 +19,17 @@ export const prerender = false;
 async function readCredentials(request: Request): Promise<{ username: string; password: string }> {
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
-    const body = (await request.json().catch(() => ({}))) as { username?: unknown; password?: unknown };
+    const body = (await request.json().catch(() => ({}))) as {
+      username?: unknown;
+      password?: unknown;
+    };
     return { username: String(body.username ?? ''), password: String(body.password ?? '') };
   }
   const form = await request.formData().catch(() => new FormData());
-  return { username: String(form.get('username') ?? ''), password: String(form.get('password') ?? '') };
+  return {
+    username: String(form.get('username') ?? ''),
+    password: String(form.get('password') ?? ''),
+  };
 }
 
 export const POST: APIRoute = async ({ request, url }) => {
@@ -55,7 +66,10 @@ export const POST: APIRoute = async ({ request, url }) => {
     sessionVersion: user.sessionVersion,
   });
   return new Response(
-    JSON.stringify({ ok: true, user: { id: user.id, username: user.username, displayName: user.displayName } }),
+    JSON.stringify({
+      ok: true,
+      user: { id: user.id, username: user.username, displayName: user.displayName },
+    }),
     {
       status: 200,
       headers: {

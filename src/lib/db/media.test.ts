@@ -24,10 +24,7 @@ describe('updateMediaMetadata', () => {
     const updated = { id: 'm1', caption: 'Seminar discussion', position: 2 };
     const run = vi.fn().mockResolvedValue({ meta: { changes: 1 } });
     const first = vi.fn().mockResolvedValue(updated);
-    const bind = vi
-      .fn()
-      .mockReturnValueOnce({ run })
-      .mockReturnValueOnce({ first });
+    const bind = vi.fn().mockReturnValueOnce({ run }).mockReturnValueOnce({ first });
     const prepare = vi.fn(() => ({ bind }));
     const db = { prepare } as unknown as D1Database;
     const updateMediaMetadata = (
@@ -71,7 +68,9 @@ describe('updateMediaMetadata', () => {
     expect(updateMediaMetadata).toBeTypeOf('function');
     if (!updateMediaMetadata) return;
 
-    await expect(updateMediaMetadata(db, 'missing', { caption: null, position: 0 })).resolves.toBeNull();
+    await expect(
+      updateMediaMetadata(db, 'missing', { caption: null, position: 0 }),
+    ).resolves.toBeNull();
   });
 });
 
@@ -81,14 +80,12 @@ describe('deleteMediaAndQueueCleanup', () => {
       return this;
     });
     const prepare = vi.fn(() => ({ bind }));
-    const batch = vi
-      .fn()
-      .mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 1 } }]);
+    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 1 } }]);
     const db = { prepare, batch } as unknown as D1Database;
 
-    await expect(
-      mediaDb.deleteMediaAndQueueCleanup(db, 'm1', 'post-1/file.webp'),
-    ).resolves.toBe(true);
+    await expect(mediaDb.deleteMediaAndQueueCleanup(db, 'm1', 'post-1/file.webp')).resolves.toBe(
+      true,
+    );
     expect(batch).toHaveBeenCalledOnce();
     expect(prepare).toHaveBeenCalledWith(expect.stringContaining('media_cleanup_queue'));
     expect(prepare).toHaveBeenCalledWith(expect.stringContaining('delete from media'));

@@ -40,7 +40,9 @@ export async function getPost(
   opts: { includeDeleted?: boolean } = {},
 ): Promise<Post | null> {
   const where = opts.includeDeleted ? 'id = ?1' : 'id = ?1 and deleted_at is null';
-  return (await db.prepare(`select ${COLUMNS} from posts where ${where}`).bind(id).first<Post>()) ?? null;
+  return (
+    (await db.prepare(`select ${COLUMNS} from posts where ${where}`).bind(id).first<Post>()) ?? null
+  );
 }
 
 export async function getPostByEventDate(db: D1Database, eventDate: string): Promise<Post | null> {
@@ -76,7 +78,11 @@ export async function createPost(db: D1Database, input: PostInput): Promise<Post
 }
 
 // 부분 수정이 아니라 전체 필드 갱신(폼 전체 저장 전제). 반환 null = 없거나 이미 삭제됨.
-export async function updatePost(db: D1Database, id: string, input: PostInput): Promise<Post | null> {
+export async function updatePost(
+  db: D1Database,
+  id: string,
+  input: PostInput,
+): Promise<Post | null> {
   const result = await db
     .prepare(
       `update posts set title = ?2, summary = ?3, event_date = ?4, address = ?5,

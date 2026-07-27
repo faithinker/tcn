@@ -33,11 +33,7 @@ describe('canonicalPath', () => {
 
   it.each([
     ['GET', 'https://tcn.example/about/?ref=legacy', 'https://tcn.example/about?ref=legacy'],
-    [
-      'HEAD',
-      'https://tcn.example/seminars/2025-12-26/',
-      'https://tcn.example/seminars/2025-12-26',
-    ],
+    ['HEAD', 'https://tcn.example/seminars/2025-12-26/', 'https://tcn.example/seminars/2025-12-26'],
   ])('redirects %s page requests to the canonical URL', (method, source, destination) => {
     expect(canonicalRedirectTarget(new Request(source, { method }))?.href).toBe(destination);
   });

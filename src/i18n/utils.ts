@@ -3,8 +3,18 @@
 // 구 /ko·/en 프리픽스 회수는 public/_redirects의 301 규칙이 엣지에서 처리한다.
 
 const EN_MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 /** ISO 날짜의 날짜 부분을 영어 표기로. Date 객체 미사용(빌드 결정성). */
