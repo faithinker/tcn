@@ -74,6 +74,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # Sonar의 신규 코드 판정·blame은 전체 히스토리를 요구한다(shallow clone이면 경고 후 부정확).
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -95,6 +98,33 @@ jobs:
 
       - name: Check Astro and TypeScript
         run: npm run check
+
+      # SonarCloud CI 분석. Test 다음에 두어야 coverage/lcov.info 가 존재한다
+      # (Automatic Analysis 는 sonar-project.properties 를 무시해 커버리지가 0%로 보인다).
+      #
+      # 두 가지 수동 준비가 끝나기 전에는 건너뛴다 — 파이프라인을 깨지 않기 위한 가드:
+      #   1) SONAR_TOKEN 리포지터리 시크릿 등록
+      #   2) SonarCloud 프로젝트에서 Automatic Analysis 끄기
+      #      (CI 분석과 상호 배타 — 켜둔 채로 스캔하면 실패한다)
+      # 토큰은 이 두 스텝에만 노출한다(잡 전역 env 로 두면 npm 스텝까지 읽을 수 있다).
+      - name: Detect Sonar token
+        id: sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::SONAR_TOKEN 미설정 — SonarCloud CI 분석을 건너뜁니다.'
+          fi
+
+      - name: SonarCloud scan
+        if: steps.sonar.outputs.present == 'true'
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
       # Workers Static Assets가 _redirects/_headers를 실제로 파싱하는지 PR에서 검증한다.
       - name: Build production Worker
