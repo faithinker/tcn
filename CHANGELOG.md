@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Changed
 - Simplified the founding-assembly media viewer to a full-screen previous/next carousel, removing zoom, pan, original-file controls, and high-resolution zoom derivatives. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Fix
+- Lowered the desktop navigation breakpoint from 1280px to 896px and added a 1152px tier that compresses logo and item spacing, so tablets and small laptops show the horizontal nav instead of the hamburger while keeping 48px touch targets and no horizontal overflow. (Branch: `fix/header-nav-breakpoint`) - Implemented by Codex
 - Hardened browser route verification by treating DOM readiness as the navigation gate and making `networkidle` an optional stabilization wait for CI. (Branch: `feat/media-carousel`) - Implemented by Codex
 - Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
 - Switched Cloudflare image derivatives to build-time generation, added a range-capable mobile preview, and kept the fitted image when high-resolution decoding fails. (Branch: `feat/content`) - Implemented by Codex
@@ -31,6 +32,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Added additive D1 migrations, deployment readiness smoke checks with automatic rollback, a staging configuration template, and an operations runbook covering D1 Time Travel and R2 recovery. (Branch: `fix/routing-audit`) - Implemented by Codex
 - Added Prettier with the Astro plugin, configured from the existing sources (2-space indent, single quotes, semicolons, trailing commas, printWidth 100) so adopting it does not rewrite the house style, and left the 78 already-differing files unformatted for a separate reviewable change. (Branch: `chore/prettier-setup`) - Implemented by Claude
 - Removed a dangling `[mcp_servers.gitlab]` override from the project Codex config that declared no transport and aborted config loading with "invalid transport". (Branch: `chore/prettier-setup`) - Implemented by Claude
+- Added `IDEA.md` recording the project definition, target users, goals, content and product principles, the priority order for conflicting decisions, scope boundaries, and the definition of done. (Branch: `fix/header-nav-breakpoint`)
 
 ## [2026-07-26]
 ### Changed (BREAKING)
