@@ -26,7 +26,6 @@ try {
   next = null;
   featured = null;
 }
-
 ---
 
 <BaseLayout title={copy.title}>
@@ -34,14 +33,18 @@ try {
   <section class="bg-canvas px-5 pt-12 pb-12 sm:pt-24 sm:pb-20">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
-      <h1 class="mt-3 font-serif font-semibold text-ink text-[1.75rem] leading-[1.2] sm:text-[2rem]">
+      <h1
+        class="mt-3 font-serif font-semibold text-ink text-[1.75rem] leading-[1.2] sm:text-[2rem]"
+      >
         {copy.name}
       </h1>
-      {copy.alternateName && (
-        <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
-          {copy.alternateName}
-        </p>
-      )}
+      {
+        copy.alternateName && (
+          <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
+            {copy.alternateName}
+          </p>
+        )
+      }
       <p class="mt-6 max-w-[60ch] font-serif text-[1.3125rem] leading-[1.6] text-body">
         {copy.lead}
       </p>
@@ -49,9 +52,15 @@ try {
         {copy.sublead}
       </p>
       <div class="mt-8 grid gap-3 min-[28rem]:flex min-[28rem]:flex-wrap">
-        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto">{t('nav.cta')}</Button>
-        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto">{copy.aboutButton}</Button>
-        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto">{copy.declarationButton}</Button>
+        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto"
+          >{t('nav.cta')}</Button
+        >
+        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto"
+          >{copy.aboutButton}</Button
+        >
+        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto"
+          >{copy.declarationButton}</Button
+        >
       </div>
     </div>
   </section>
@@ -74,9 +83,17 @@ try {
             <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
               {formatDate(next.eventDate)}
             </p>
-            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.ordinalLabel}</p>
+            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">
+              {next.ordinalLabel}
+            </p>
             <p class="mt-2 font-sans text-body-sans text-body-muted">
-              {[next.title !== next.ordinalLabel ? next.title : null, next.address, next.summary ?? seminarCopy.details].filter(Boolean).join(' · ')}
+              {[
+                next.title !== next.ordinalLabel ? next.title : null,
+                next.address,
+                next.summary ?? seminarCopy.details,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
             <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link underline group-hover:text-link-hover">
               {seminarCopy.viewDetail} →
@@ -128,14 +145,21 @@ try {
       <SectionTile variant="soft" eyebrow={copy.seminarEyebrow}>
         <article class="mt-6 max-w-[68ch]">
           <p class="eyebrow">{copy.pastEvent}</p>
-          <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">{featured.ordinalLabel}</h3>
+          <h3 class="mt-2 font-serif text-display-md font-semibold text-ink">
+            {featured.ordinalLabel}
+          </h3>
           {(featured.eventDate || featured.address) && (
             <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
               {[formatDate(featured.eventDate), featured.address].filter(Boolean).join(' · ')}
             </p>
           )}
           <p class="mt-4 font-serif text-body-serif text-body">
-            {[featured.title !== featured.ordinalLabel ? featured.title : null, featured.summary ?? copy.seminarFallback].filter(Boolean).join(' · ')}
+            {[
+              featured.title !== featured.ordinalLabel ? featured.title : null,
+              featured.summary ?? copy.seminarFallback,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
           <div class="mt-6 flex flex-wrap items-center gap-5">
             <Button href={featured.href} variant="outline">
@@ -144,7 +168,9 @@ try {
             <a
               href="/seminars"
               class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
-            >{copy.seminarButton} →</a>
+            >
+              {copy.seminarButton} →
+            </a>
           </div>
         </article>
       </SectionTile>

@@ -32,30 +32,57 @@ const expertiseLabel = 'Areas of expertise';
   {/* 회장·부회장·이사를 한 섹션으로 통합, 감사·고문은 별도 섹션 */}
   <SectionTile variant="band" eyebrow={copy.boardEyebrow} title={copy.boardTitle}>
     <p class="mt-5 font-serif text-body-serif text-body-muted">{copy.boardBody}</p>
-    <div class="profile-grid mt-8 grid gap-px border-t border-hairline-strong bg-hairline lg:grid-cols-2">
-      {leadership.map((member) => (
-        <MemberProfileCard member={member.data} currentLabel={copy.currentLabel} expertiseLabel={expertiseLabel} />
-      ))}
+    <div
+      class="profile-grid mt-8 grid gap-px border-t border-hairline-strong bg-hairline lg:grid-cols-2"
+    >
+      {
+        leadership.map((member) => (
+          <MemberProfileCard
+            member={member.data}
+            currentLabel={copy.currentLabel}
+            expertiseLabel={expertiseLabel}
+          />
+        ))
+      }
     </div>
-    <div class="directors-grid profile-grid grid gap-px border-y border-hairline-strong bg-hairline md:grid-cols-2 lg:grid-cols-3">
-      {directors.map((member) => (
-        <MemberProfileCard member={member.data} currentLabel={copy.currentLabel} expertiseLabel={expertiseLabel} compact />
-      ))}
+    <div
+      class="directors-grid profile-grid grid gap-px border-y border-hairline-strong bg-hairline md:grid-cols-2 lg:grid-cols-3"
+    >
+      {
+        directors.map((member) => (
+          <MemberProfileCard
+            member={member.data}
+            currentLabel={copy.currentLabel}
+            expertiseLabel={expertiseLabel}
+            compact
+          />
+        ))
+      }
     </div>
   </SectionTile>
 
   <SectionTile variant="soft" eyebrow={copy.supportEyebrow} title={copy.supportTitle}>
     <p class="mt-5 font-serif text-body-serif text-body-muted">{copy.supportBody}</p>
-    <div class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
-      {support.map((member) => (
-        <MemberProfileCard member={member.data} currentLabel={copy.currentLabel} expertiseLabel={expertiseLabel} />
-      ))}
+    <div
+      class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2"
+    >
+      {
+        support.map((member) => (
+          <MemberProfileCard
+            member={member.data}
+            currentLabel={copy.currentLabel}
+            expertiseLabel={expertiseLabel}
+          />
+        ))
+      }
     </div>
   </SectionTile>
 </BaseLayout>
 
 <style>
   @media (min-width: 48rem) and (max-width: 63.999rem) {
-    :global(.directors-grid > .profile-card:last-child:nth-child(odd)) { grid-column: 1 / -1; }
+    :global(.directors-grid > .profile-card:last-child:nth-child(odd)) {
+      grid-column: 1 / -1;
+    }
   }
 </style>

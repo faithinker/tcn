@@ -34,6 +34,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Added Prettier with the Astro plugin, configured from the existing sources (2-space indent, single quotes, semicolons, trailing commas, printWidth 100) so adopting it does not rewrite the house style, and left the 78 already-differing files unformatted for a separate reviewable change. (Branch: `chore/prettier-setup`) - Implemented by Claude
 - Removed a dangling `[mcp_servers.gitlab]` override from the project Codex config that declared no transport and aborted config loading with "invalid transport". (Branch: `chore/prettier-setup`) - Implemented by Claude
 - Added `IDEA.md` recording the project definition, target users, goals, content and product principles, the priority order for conflicting decisions, scope boundaries, and the definition of done. (Branch: `fix/header-nav-breakpoint`)
+- Applied Prettier across the repository (79 files), a mechanical reformat with no behavioural change: every file matches `prettier --write` applied to its previous content exactly. (Branch: `chore/format-repo`) - Implemented by Claude
 
 ## [2026-07-26]
 ### Changed (BREAKING)

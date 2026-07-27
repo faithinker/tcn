@@ -17,30 +17,38 @@ const [user, posts] = await Promise.all([getUserById(db, uid), listPosts(db)]);
     <a
       href="/admin/posts/new"
       class="bg-ink px-4 py-2 font-sans text-caption font-bold text-on-primary hover:opacity-90"
-    >New post</a>
+      >New post</a
+    >
   </div>
 
-  {posts.length === 0 ? (
-    <p class="text-body-sm text-body-muted">No posts yet. Create the first one.</p>
-  ) : (
-    <ul class="divide-y divide-hairline border-y border-hairline">
-      {posts.map((post) => (
-        <li class="flex items-center justify-between gap-4 py-4">
-          <div class="min-w-0">
+  {
+    posts.length === 0 ? (
+      <p class="text-body-sm text-body-muted">No posts yet. Create the first one.</p>
+    ) : (
+      <ul class="divide-y divide-hairline border-y border-hairline">
+        {posts.map((post) => (
+          <li class="flex items-center justify-between gap-4 py-4">
+            <div class="min-w-0">
+              <a
+                href={`/admin/posts/${post.id}`}
+                class="font-serif text-body font-semibold text-ink hover:text-link"
+              >
+                {post.title}
+              </a>
+              <p class="mt-0.5 truncate text-caption text-body-muted">
+                {post.eventDate ?? 'no date'}
+                {post.address ? ` · ${post.address}` : ''}
+              </p>
+            </div>
             <a
               href={`/admin/posts/${post.id}`}
-              class="font-serif text-body font-semibold text-ink hover:text-link"
-            >{post.title}</a>
-            <p class="mt-0.5 truncate text-caption text-body-muted">
-              {post.eventDate ?? 'no date'}{post.address ? ` · ${post.address}` : ''}
-            </p>
-          </div>
-          <a
-            href={`/admin/posts/${post.id}`}
-            class="shrink-0 text-caption font-bold text-link underline underline-offset-2"
-          >Edit</a>
-        </li>
-      ))}
-    </ul>
-  )}
+              class="shrink-0 text-caption font-bold text-link underline underline-offset-2"
+            >
+              Edit
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 </AdminLayout>

@@ -28,7 +28,9 @@ const media = (overrides: Partial<Media>): Media => ({
 
 describe('renderPostBody', () => {
   it('renders markdown to HTML (headings, bold, lists, links)', () => {
-    const html = renderPostBody('## 제목\n\n**굵게** 그리고 [링크](https://example.org)\n\n- 하나\n- 둘');
+    const html = renderPostBody(
+      '## 제목\n\n**굵게** 그리고 [링크](https://example.org)\n\n- 하나\n- 둘',
+    );
     expect(html).toContain('<h2 id="제목">제목</h2>');
     expect(html).toContain('<strong>굵게</strong>');
     expect(html).toContain('<a href="https://example.org">링크</a>');
@@ -91,7 +93,13 @@ describe('groupMedia', () => {
         position: 2,
         caption: 'Speaker welcomes participants.',
       }),
-      media({ id: 'doc', kind: 'document', mimeType: 'application/pdf', filename: 'file.pdf', position: 3 }),
+      media({
+        id: 'doc',
+        kind: 'document',
+        mimeType: 'application/pdf',
+        filename: 'file.pdf',
+        position: 3,
+      }),
     ];
     const grouped = groupMedia(items, 'hero');
     expect(grouped.hero?.id).toBe('hero');
@@ -153,9 +161,19 @@ describe('groupMedia', () => {
 
 describe('mediaAlt', () => {
   it('uses an optional caption when present and a seminar-scoped fallback otherwise', () => {
-    expect(mediaAlt(media({ caption: 'Presenter speaking at the seminar.' }), 'First International Seminar', 1))
-      .toBe('Presenter speaking at the seminar.');
-    expect(mediaAlt(media({ caption: null, filename: '1st_seminar_03.jpeg' }), 'First International Seminar', 3))
-      .toBe('Photo 3 from the First International Seminar.');
+    expect(
+      mediaAlt(
+        media({ caption: 'Presenter speaking at the seminar.' }),
+        'First International Seminar',
+        1,
+      ),
+    ).toBe('Presenter speaking at the seminar.');
+    expect(
+      mediaAlt(
+        media({ caption: null, filename: '1st_seminar_03.jpeg' }),
+        'First International Seminar',
+        3,
+      ),
+    ).toBe('Photo 3 from the First International Seminar.');
   });
 });

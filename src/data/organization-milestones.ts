@@ -13,6 +13,7 @@ export const organizationMilestones: OrganizationMilestone[] = [
     date: '2025-12-12',
     title: 'Founding of the Transcultural Network',
     location: 'Sungkyunkwan University, Seoul, Republic of Korea',
-    description: 'The founding assembly reviewed the bylaws and formally declared the Network’s establishment.',
+    description:
+      'The founding assembly reviewed the bylaws and formally declared the Network’s establishment.',
   },
 ];

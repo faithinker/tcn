@@ -12,14 +12,21 @@ export const content = {
     declarationButton: 'Founding Declaration',
     missionEyebrow: 'Mission',
     missionTitle: 'Why We Were Founded',
-    missionBody: 'Cultural exchange and the creation of new cultures continue to flourish in a borderless digital and AI era. The Transcultural Network seeks to understand these processes and contribute to a better culture for all.',
+    missionBody:
+      'Cultural exchange and the creation of new cultures continue to flourish in a borderless digital and AI era. The Transcultural Network seeks to understand these processes and contribute to a better culture for all.',
     visionLabel: 'Vision',
-    visionBody: 'We aspire to create cultures in which humanity coexists and every person is respected.',
+    visionBody:
+      'We aspire to create cultures in which humanity coexists and every person is respected.',
     missionLabel: 'Mission',
     missionShort: 'Experts from around the world share their knowledge and experience.',
     activitiesEyebrow: 'What We Do',
     activitiesTitle: 'Core Activities',
-    activities: ['International Seminars', 'Collaborative Research', 'Academic Exchange', 'Policy Recommendations'],
+    activities: [
+      'International Seminars',
+      'Collaborative Research',
+      'Academic Exchange',
+      'Policy Recommendations',
+    ],
     seminarEyebrow: 'Seminar',
     pastEvent: 'Past event',
     seminarFallback: 'The theme and speakers will be announced.',
@@ -33,14 +40,16 @@ export const content = {
     ],
     joinEyebrow: 'Get Involved',
     joinTitle: 'Membership & Enquiries',
-    joinBody: 'Contact us if you would like to take part in the Transcultural Network’s research and international scholarly collaboration.',
+    joinBody:
+      'Contact us if you would like to take part in the Transcultural Network’s research and international scholarly collaboration.',
   },
   about: {
     title: 'About',
     description: 'The purpose and vision of the Transcultural Network',
     eyebrow: 'About TCN',
     heroTitle: 'An international scholarly community for the transcultural era',
-    heroBody: 'The Transcultural Network studies cultural phenomena being reshaped across national, ethnic, linguistic, and cultural boundaries amid digital transformation and the spread of artificial intelligence.',
+    heroBody:
+      'The Transcultural Network studies cultural phenomena being reshaped across national, ethnic, linguistic, and cultural boundaries amid digital transformation and the spread of artificial intelligence.',
     missionEyebrow: 'Mission & Vision',
     missionTitle: 'A scholarly network for intersection, convergence, and creation',
     missionBodies: [
@@ -49,7 +58,8 @@ export const content = {
     ],
     historyEyebrow: 'History',
     historyTitle: 'Milestones',
-    historyBody: 'A record of the Transcultural Network’s major activities, from its founding to its international seminars.',
+    historyBody:
+      'A record of the Transcultural Network’s major activities, from its founding to its international seminars.',
     historyLocationLabel: 'Location',
     historyPastLabel: 'Held',
     historyUpcomingLabel: 'Upcoming',
@@ -57,11 +67,13 @@ export const content = {
     historyViewSeminar: 'View seminar',
     declarationEyebrow: 'Founding Declaration',
     declarationTitle: 'Founding Declaration',
-    declarationBody: 'The declaration sets out the Network’s founding purpose and four missions for transcultural research and international scholarly collaboration in the digital and AI era.',
+    declarationBody:
+      'The declaration sets out the Network’s founding purpose and four missions for transcultural research and international scholarly collaboration in the digital and AI era.',
     declarationButton: 'Read the Founding Declaration',
     foundingEyebrow: 'Founding Ceremony',
     foundingTitle: 'Founding Ceremony',
-    foundingBody: 'The full invitation and event overview from the founding ceremony held on 12 December 2025 at Sungkyunkwan University, Myeongnyun Campus.',
+    foundingBody:
+      'The full invitation and event overview from the founding ceremony held on 12 December 2025 at Sungkyunkwan University, Myeongnyun Campus.',
     foundingButton: 'View the invitation',
     foundingBack: 'Back to About',
   },
@@ -78,10 +90,29 @@ export const content = {
     ],
     backToTopLabel: 'Back to top',
     missions: [
-      { label: 'First', title: 'We will build an academic foundation for the systematic study of transcultural phenomena.', body: 'We will take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to develop new theories and methods of transcultural research.' },
-      { label: 'Second', title: 'We will create a forum for academic cooperation centred on an international research network.', body: 'With our secretariat in Ganghwa, Incheon, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.' },
-      { label: 'Third', title: 'We will become an intellectual community that explores the future of new cultural creation.', body: 'For us, transcultural research does more than examine differences between cultures. It explores the third cultures and new creative possibilities that emerge where cultures meet and intersect. The Transcultural Network will study these processes of creative formation and connect scholarly inquiry with social practice.' },
-      { label: 'Fourth', title: 'We will extend academic discourse into real-world change and policy proposals.', body: 'We will help transcultural perspectives produce meaningful change in education, cultural policy, international cultural exchange, the platform economy, and other areas of the digital and AI era.' },
+      {
+        label: 'First',
+        title:
+          'We will build an academic foundation for the systematic study of transcultural phenomena.',
+        body: 'We will take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to develop new theories and methods of transcultural research.',
+      },
+      {
+        label: 'Second',
+        title:
+          'We will create a forum for academic cooperation centred on an international research network.',
+        body: 'With our secretariat in Ganghwa, Incheon, the Transcultural Network will work closely with experts across Asia, Central Asia, Europe, and beyond to establish a network-centred model of knowledge creation that moves beyond nation-centred research frameworks.',
+      },
+      {
+        label: 'Third',
+        title:
+          'We will become an intellectual community that explores the future of new cultural creation.',
+        body: 'For us, transcultural research does more than examine differences between cultures. It explores the third cultures and new creative possibilities that emerge where cultures meet and intersect. The Transcultural Network will study these processes of creative formation and connect scholarly inquiry with social practice.',
+      },
+      {
+        label: 'Fourth',
+        title: 'We will extend academic discourse into real-world change and policy proposals.',
+        body: 'We will help transcultural perspectives produce meaningful change in education, cultural policy, international cultural exchange, the platform economy, and other areas of the digital and AI era.',
+      },
     ],
     closing: [
       'Distinguished guests, today we are doing more than establishing another academic association. We are building an intellectual foundation suited to a new era. The Transcultural Network is committed not to the interests of any particular nation or group, but to public knowledge that advances cultural understanding and creativity for all humanity.',
@@ -106,59 +137,289 @@ export const content = {
     backToTopLabel: 'Back to top',
     chapters: [
       {
-        id: 'general', label: 'Chapter 1', title: 'General Provisions', articles: [
-          { number: 'Article 1', title: 'Name', blocks: [{ type: 'paragraph', text: 'The name of this organization shall be the Transcultural Network (TCN).' }] },
-          { number: 'Article 2', title: 'Purpose', blocks: [{ type: 'paragraph', text: 'This organization aims to study transcultural phenomena that cross boundaries in a digitized world; provide a forum for academic, cultural, and policy exchange among countries; and contribute to international academic cooperation through research and policy recommendations concerning the creation of future cultures.' }] },
-          { number: 'Article 3', title: 'Location of the Principal Office', blocks: [{ type: 'paragraph', text: 'The principal office (Secretariat) of this organization shall be located in the Republic of Korea. Where necessary, divisions and branches may be established in Korea or abroad by resolution of the Board of Directors.' }] },
-          { number: 'Article 4', title: 'Activities', blocks: [
-            { type: 'paragraph', text: 'To achieve the purpose set out in Article 2, this organization shall undertake the following activities:' },
-            { type: 'list', items: ['Holding academic conferences, seminars, and symposia', 'Supporting international joint research and policy development', 'Promoting academic and information exchange among members and publishing activities', 'Providing education, training, and talent development in related fields', 'Cooperating with research institutes, universities, public institutions, and other bodies in Korea and abroad', 'Undertaking other activities necessary to achieve the purpose of the Network'] },
-          ] },
+        id: 'general',
+        label: 'Chapter 1',
+        title: 'General Provisions',
+        articles: [
+          {
+            number: 'Article 1',
+            title: 'Name',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'The name of this organization shall be the Transcultural Network (TCN).',
+              },
+            ],
+          },
+          {
+            number: 'Article 2',
+            title: 'Purpose',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'This organization aims to study transcultural phenomena that cross boundaries in a digitized world; provide a forum for academic, cultural, and policy exchange among countries; and contribute to international academic cooperation through research and policy recommendations concerning the creation of future cultures.',
+              },
+            ],
+          },
+          {
+            number: 'Article 3',
+            title: 'Location of the Principal Office',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'The principal office (Secretariat) of this organization shall be located in the Republic of Korea. Where necessary, divisions and branches may be established in Korea or abroad by resolution of the Board of Directors.',
+              },
+            ],
+          },
+          {
+            number: 'Article 4',
+            title: 'Activities',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'To achieve the purpose set out in Article 2, this organization shall undertake the following activities:',
+              },
+              {
+                type: 'list',
+                items: [
+                  'Holding academic conferences, seminars, and symposia',
+                  'Supporting international joint research and policy development',
+                  'Promoting academic and information exchange among members and publishing activities',
+                  'Providing education, training, and talent development in related fields',
+                  'Cooperating with research institutes, universities, public institutions, and other bodies in Korea and abroad',
+                  'Undertaking other activities necessary to achieve the purpose of the Network',
+                ],
+              },
+            ],
+          },
         ],
       },
       {
-        id: 'members', label: 'Chapter 2', title: 'Members', articles: [
-          { number: 'Article 5', title: 'Eligibility and Admission', blocks: [
-            { type: 'paragraph', text: 'Members of this organization shall be persons or entities that support the purpose set out in Article 2, agree to comply with these Bylaws, complete the prescribed application procedure, including submission by email or application form, and receive approval from the Board of Directors. Membership shall consist of regular members, associate members, and institutional members.' },
-            { type: 'list', items: ['Regular members shall hold a master’s degree or higher, or possess equivalent qualifications.', 'Associate members shall be enrolled in a master’s degree programme, or possess equivalent qualifications.', 'Institutional members shall be companies, organizations, and research institutes in Korea or abroad.'] },
-          ] },
-          { number: 'Article 6', title: 'Rights, Duties, and Expulsion of Members', blocks: [{ type: 'clauses', items: ['Regular members and institutional members have the right to participate in the activities of this organization and the right to vote on resolutions and in elections at the General Assembly.', 'Members shall pay membership fees when determined by the Board of Directors and shall comply with these Bylaws and other regulations.', 'A member who damages the reputation of this organization or violates these Bylaws may be expelled by resolution of the Board of Directors.'] }] },
-          { number: 'Article 7', title: 'Finances and Fiscal Year', blocks: [{ type: 'paragraph', text: 'The finances of this organization shall be funded by membership fees, contributions from members or non-members, subsidies, programme income, and other sources. The fiscal year shall run from 1 January through 31 December each year.' }] },
+        id: 'members',
+        label: 'Chapter 2',
+        title: 'Members',
+        articles: [
+          {
+            number: 'Article 5',
+            title: 'Eligibility and Admission',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'Members of this organization shall be persons or entities that support the purpose set out in Article 2, agree to comply with these Bylaws, complete the prescribed application procedure, including submission by email or application form, and receive approval from the Board of Directors. Membership shall consist of regular members, associate members, and institutional members.',
+              },
+              {
+                type: 'list',
+                items: [
+                  'Regular members shall hold a master’s degree or higher, or possess equivalent qualifications.',
+                  'Associate members shall be enrolled in a master’s degree programme, or possess equivalent qualifications.',
+                  'Institutional members shall be companies, organizations, and research institutes in Korea or abroad.',
+                ],
+              },
+            ],
+          },
+          {
+            number: 'Article 6',
+            title: 'Rights, Duties, and Expulsion of Members',
+            blocks: [
+              {
+                type: 'clauses',
+                items: [
+                  'Regular members and institutional members have the right to participate in the activities of this organization and the right to vote on resolutions and in elections at the General Assembly.',
+                  'Members shall pay membership fees when determined by the Board of Directors and shall comply with these Bylaws and other regulations.',
+                  'A member who damages the reputation of this organization or violates these Bylaws may be expelled by resolution of the Board of Directors.',
+                ],
+              },
+            ],
+          },
+          {
+            number: 'Article 7',
+            title: 'Finances and Fiscal Year',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'The finances of this organization shall be funded by membership fees, contributions from members or non-members, subsidies, programme income, and other sources. The fiscal year shall run from 1 January through 31 December each year.',
+              },
+            ],
+          },
         ],
       },
       {
-        id: 'organization', label: 'Chapter 3', title: 'Organization and Officers', articles: [
-          { number: 'Article 8', title: 'Composition and Appointment of Officers', blocks: [
-            { type: 'paragraph', text: 'This organization shall have the following officers. The officers shall constitute the Board of Directors and be responsible for operating this organization.' },
-            { type: 'clauses', items: ['President: one person, who represents this organization and chairs the General Assembly and the Board of Directors.', 'Vice Presidents: one person from each country, who assists the President and acts on the President’s behalf in the President’s absence.', 'Directors: participate in decisions concerning the principal activities and operation of this organization.', 'Auditor: one person may be appointed when necessary to audit the finances and operation of this organization.', 'The President and Auditor shall be elected by the General Assembly.', 'The President may appoint a Senior Vice President from among the Vice Presidents to oversee executive, research, planning, or other duties.', 'The Honorary President, Vice Presidents, Directors, and Advisors shall be nominated by the President from among regular members and elected by the General Assembly.', 'The term of office shall be two years, and officers may serve consecutive terms.'] },
-          ] },
-          { number: 'Article 9', title: 'Divisional Committees', blocks: [{ type: 'paragraph', text: 'This organization may establish country-based divisional committees under the Board of Directors for particular research fields or activities. Each committee shall consist of members in the relevant field. The President shall appoint its chair and members following a resolution of the Board of Directors. Each committee shall plan and carry out activities in its field and may meet as needed. The Board of Directors shall separately determine matters concerning the establishment and operation of the committees.' }] },
-          { number: 'Article 10', title: 'Secretariat', blocks: [{ type: 'paragraph', text: 'The Secretariat shall handle the day-to-day administration of this organization, membership management, meeting preparation, external cooperation, and other operational matters. It may have one Secretary-General and additional staff as necessary. The President shall appoint the Secretary-General following a resolution of the Board of Directors, and shall appoint Secretariat staff upon the recommendation of the Secretary-General. The Board of Directors shall determine detailed matters concerning the organization and operation of the Secretariat.' }] },
-          { number: 'Article 11', title: 'Honorary President and Advisors', blocks: [{ type: 'paragraph', text: 'This organization may have an Honorary President and Advisors by resolution of the Board of Directors.' }] },
+        id: 'organization',
+        label: 'Chapter 3',
+        title: 'Organization and Officers',
+        articles: [
+          {
+            number: 'Article 8',
+            title: 'Composition and Appointment of Officers',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'This organization shall have the following officers. The officers shall constitute the Board of Directors and be responsible for operating this organization.',
+              },
+              {
+                type: 'clauses',
+                items: [
+                  'President: one person, who represents this organization and chairs the General Assembly and the Board of Directors.',
+                  'Vice Presidents: one person from each country, who assists the President and acts on the President’s behalf in the President’s absence.',
+                  'Directors: participate in decisions concerning the principal activities and operation of this organization.',
+                  'Auditor: one person may be appointed when necessary to audit the finances and operation of this organization.',
+                  'The President and Auditor shall be elected by the General Assembly.',
+                  'The President may appoint a Senior Vice President from among the Vice Presidents to oversee executive, research, planning, or other duties.',
+                  'The Honorary President, Vice Presidents, Directors, and Advisors shall be nominated by the President from among regular members and elected by the General Assembly.',
+                  'The term of office shall be two years, and officers may serve consecutive terms.',
+                ],
+              },
+            ],
+          },
+          {
+            number: 'Article 9',
+            title: 'Divisional Committees',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'This organization may establish country-based divisional committees under the Board of Directors for particular research fields or activities. Each committee shall consist of members in the relevant field. The President shall appoint its chair and members following a resolution of the Board of Directors. Each committee shall plan and carry out activities in its field and may meet as needed. The Board of Directors shall separately determine matters concerning the establishment and operation of the committees.',
+              },
+            ],
+          },
+          {
+            number: 'Article 10',
+            title: 'Secretariat',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'The Secretariat shall handle the day-to-day administration of this organization, membership management, meeting preparation, external cooperation, and other operational matters. It may have one Secretary-General and additional staff as necessary. The President shall appoint the Secretary-General following a resolution of the Board of Directors, and shall appoint Secretariat staff upon the recommendation of the Secretary-General. The Board of Directors shall determine detailed matters concerning the organization and operation of the Secretariat.',
+              },
+            ],
+          },
+          {
+            number: 'Article 11',
+            title: 'Honorary President and Advisors',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'This organization may have an Honorary President and Advisors by resolution of the Board of Directors.',
+              },
+            ],
+          },
         ],
       },
       {
-        id: 'meetings', label: 'Chapter 4', title: 'Meetings', articles: [
-          { number: 'Article 12', title: 'General Assembly', blocks: [{ type: 'clauses', items: ['The General Assembly shall consist of the members.', 'The General Assembly shall decide amendments to these Bylaws, election of officers, approval of activity plans and budgets and accounts, and other major matters concerning the operation of this organization.', 'The General Assembly shall hold regular and extraordinary meetings. The President shall convene a regular meeting each year. An extraordinary meeting may be convened at the request of the President or the Board of Directors. Decisions may be made in writing or through online meetings.', 'The President shall give all members written or electronic notice stating the agenda, date, time, and place at least seven days before a General Assembly meeting. Decisions shall be made by a majority of the members present. A member unable to attend may authorize another member, in writing or electronically, to exercise the member’s voting right by proxy.', 'The President shall chair the General Assembly. If the President is unable to serve, the Senior Vice President, followed by a Vice President, shall act as chair.'] }] },
-          { number: 'Article 13', title: 'Meetings of the Board of Directors', blocks: [
-            { type: 'clauses', items: ['The Board of Directors shall consist of the President, Vice Presidents, and Directors, and the President shall chair the Board.', 'The chair shall convene the Board when deemed necessary or when requested by at least one-third of its members or by the Auditor.', 'The Board shall decide the following matters by a majority vote of the members present. In the event of a tie, the chair shall have the deciding vote. Decisions may be made in writing or through online meetings.'] },
-            { type: 'list', items: ['Approval of admission or expulsion of members', 'Determination of membership fees', 'The budget and accounts of this organization, acquisition and disposal of property, and other major activities'] },
-          ] },
-          { number: 'Article 14', title: 'Meetings of Divisional Committees', blocks: [{ type: 'paragraph', text: 'The chair of each divisional committee shall convene meetings as needed. A committee may discuss its own agenda and carry out activities, but important matters require approval from the Board of Directors. The results of committee activities shall be reported to the regular General Assembly or the Board of Directors.' }] },
+        id: 'meetings',
+        label: 'Chapter 4',
+        title: 'Meetings',
+        articles: [
+          {
+            number: 'Article 12',
+            title: 'General Assembly',
+            blocks: [
+              {
+                type: 'clauses',
+                items: [
+                  'The General Assembly shall consist of the members.',
+                  'The General Assembly shall decide amendments to these Bylaws, election of officers, approval of activity plans and budgets and accounts, and other major matters concerning the operation of this organization.',
+                  'The General Assembly shall hold regular and extraordinary meetings. The President shall convene a regular meeting each year. An extraordinary meeting may be convened at the request of the President or the Board of Directors. Decisions may be made in writing or through online meetings.',
+                  'The President shall give all members written or electronic notice stating the agenda, date, time, and place at least seven days before a General Assembly meeting. Decisions shall be made by a majority of the members present. A member unable to attend may authorize another member, in writing or electronically, to exercise the member’s voting right by proxy.',
+                  'The President shall chair the General Assembly. If the President is unable to serve, the Senior Vice President, followed by a Vice President, shall act as chair.',
+                ],
+              },
+            ],
+          },
+          {
+            number: 'Article 13',
+            title: 'Meetings of the Board of Directors',
+            blocks: [
+              {
+                type: 'clauses',
+                items: [
+                  'The Board of Directors shall consist of the President, Vice Presidents, and Directors, and the President shall chair the Board.',
+                  'The chair shall convene the Board when deemed necessary or when requested by at least one-third of its members or by the Auditor.',
+                  'The Board shall decide the following matters by a majority vote of the members present. In the event of a tie, the chair shall have the deciding vote. Decisions may be made in writing or through online meetings.',
+                ],
+              },
+              {
+                type: 'list',
+                items: [
+                  'Approval of admission or expulsion of members',
+                  'Determination of membership fees',
+                  'The budget and accounts of this organization, acquisition and disposal of property, and other major activities',
+                ],
+              },
+            ],
+          },
+          {
+            number: 'Article 14',
+            title: 'Meetings of Divisional Committees',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'The chair of each divisional committee shall convene meetings as needed. A committee may discuss its own agenda and carry out activities, but important matters require approval from the Board of Directors. The results of committee activities shall be reported to the regular General Assembly or the Board of Directors.',
+              },
+            ],
+          },
         ],
       },
       {
-        id: 'amendment', label: 'Chapter 5', title: 'Amendment and Dissolution', articles: [
-          { number: 'Article 15', title: 'Amendment of the Bylaws', blocks: [{ type: 'paragraph', text: 'An amendment to these Bylaws requires approval by at least two-thirds of the members present at a General Assembly meeting.' }] },
-          { number: 'Article 16', title: 'Dissolution', blocks: [{ type: 'paragraph', text: 'Dissolution of this organization requires a resolution of the General Assembly approved by at least two-thirds of the total number of regular and institutional members.' }] },
-          { number: 'Article 17', title: 'Application Mutatis Mutandis and Other Matters', blocks: [{ type: 'paragraph', text: 'Matters not provided for in these Bylaws shall be determined by the Board of Directors. The customary practices of nonprofit organizations and applicable laws and regulations shall apply mutatis mutandis. Detailed rules necessary for the operation of this organization may be established separately by resolution of the Board of Directors.' }] },
+        id: 'amendment',
+        label: 'Chapter 5',
+        title: 'Amendment and Dissolution',
+        articles: [
+          {
+            number: 'Article 15',
+            title: 'Amendment of the Bylaws',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'An amendment to these Bylaws requires approval by at least two-thirds of the members present at a General Assembly meeting.',
+              },
+            ],
+          },
+          {
+            number: 'Article 16',
+            title: 'Dissolution',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'Dissolution of this organization requires a resolution of the General Assembly approved by at least two-thirds of the total number of regular and institutional members.',
+              },
+            ],
+          },
+          {
+            number: 'Article 17',
+            title: 'Application Mutatis Mutandis and Other Matters',
+            blocks: [
+              {
+                type: 'paragraph',
+                text: 'Matters not provided for in these Bylaws shall be determined by the Board of Directors. The customary practices of nonprofit organizations and applicable laws and regulations shall apply mutatis mutandis. Detailed rules necessary for the operation of this organization may be established separately by resolution of the Board of Directors.',
+              },
+            ],
+          },
         ],
       },
     ],
     addenda: {
-      id: 'addenda', title: 'Supplementary Provisions', articles: [
-        { number: 'Article 1', title: 'Special Provision for Admission of Founding Members', blocks: [{ type: 'paragraph', text: 'Persons who attended the founding assembly and agreed to the proposed Bylaws for the purpose of establishing this organization shall be confirmed as founding members without approval from the Board of Directors. The list attached to the minutes of the founding assembly shall serve as the register of founding members. This provision shall cease to have effect once the Board of Directors is constituted following the founding assembly.' }] },
-        { number: 'Article 2', title: 'Entry into Force', blocks: [{ type: 'paragraph', text: 'These Bylaws shall take effect on the date of their adoption by the founding assembly.' }] },
+      id: 'addenda',
+      title: 'Supplementary Provisions',
+      articles: [
+        {
+          number: 'Article 1',
+          title: 'Special Provision for Admission of Founding Members',
+          blocks: [
+            {
+              type: 'paragraph',
+              text: 'Persons who attended the founding assembly and agreed to the proposed Bylaws for the purpose of establishing this organization shall be confirmed as founding members without approval from the Board of Directors. The list attached to the minutes of the founding assembly shall serve as the register of founding members. This provision shall cease to have effect once the Board of Directors is constituted following the founding assembly.',
+            },
+          ],
+        },
+        {
+          number: 'Article 2',
+          title: 'Entry into Force',
+          blocks: [
+            {
+              type: 'paragraph',
+              text: 'These Bylaws shall take effect on the date of their adoption by the founding assembly.',
+            },
+          ],
+        },
       ],
     },
   },
@@ -167,13 +428,16 @@ export const content = {
     description: 'Leadership and international members of the Transcultural Network',
     eyebrow: 'People',
     heroTitle: 'Our People',
-    heroBody: 'Experts from diverse regions and disciplines work together to advance transcultural research and international scholarly collaboration.',
+    heroBody:
+      'Experts from diverse regions and disciplines work together to advance transcultural research and international scholarly collaboration.',
     boardEyebrow: 'Board',
     boardTitle: 'Directors',
-    boardBody: 'The board leads the network’s scholarly direction and connects research, education, and international exchange across regions.',
+    boardBody:
+      'The board leads the network’s scholarly direction and connects research, education, and international exchange across regions.',
     supportEyebrow: 'Audit & Advisory',
     supportTitle: 'Audit and Advisory',
-    supportBody: 'Academic and private-sector experience supports the network’s governance and external collaboration.',
+    supportBody:
+      'Academic and private-sector experience supports the network’s governance and external collaboration.',
     currentLabel: 'Current role or affiliation',
   },
   seminars: {
@@ -181,7 +445,8 @@ export const content = {
     description: 'Upcoming and past international seminars from the Transcultural Network',
     eyebrow: 'Seminars',
     heroTitle: 'International Seminars',
-    heroBody: 'A forum for scholarly exchange where new perspectives on transcultural research meet the experience of experts from around the world.',
+    heroBody:
+      'A forum for scholarly exchange where new perspectives on transcultural research meet the experience of experts from around the world.',
     upcomingEyebrow: 'Upcoming',
     upcomingTitle: 'Upcoming Seminars',
     pastEyebrow: 'Archive',
@@ -209,31 +474,56 @@ export const content = {
   },
   contact: {
     title: 'Membership & Enquiries',
-    description: 'Membership opportunities, activities, and application process for the Transcultural Network',
+    description:
+      'Membership opportunities, activities, and application process for the Transcultural Network',
     eyebrow: 'Join TCN',
     heroTitle: 'Membership & Enquiries',
-    heroBody: 'We welcome researchers, educators, and professionals interested in transcultural research and international scholarly collaboration.',
+    heroBody:
+      'We welcome researchers, educators, and professionals interested in transcultural research and international scholarly collaboration.',
     benefitsEyebrow: 'Membership',
     benefitsTitle: 'Ways to Get Involved',
-    benefits: ['Take part in international seminars and scholarly events', 'Join collaborative research and academic exchange', 'Connect with a network of transcultural researchers and experts', 'Contribute to policy research and knowledge sharing'],
+    benefits: [
+      'Take part in international seminars and scholarly events',
+      'Join collaborative research and academic exchange',
+      'Connect with a network of transcultural researchers and experts',
+      'Contribute to policy research and knowledge sharing',
+    ],
     applicationEyebrow: 'Application',
     applicationTitle: 'How to Apply',
     steps: [
-      { title: 'Express your interest', body: 'Once the online application opens, submit your basic information and areas of research or professional activity.' },
-      { title: 'Board review', body: 'The board will review each application in light of the Network’s founding purpose and programme of activities.' },
-      { title: 'Decision and next steps', body: 'We will contact you with the outcome and information about relevant events and research activities.' },
+      {
+        title: 'Express your interest',
+        body: 'Once the online application opens, submit your basic information and areas of research or professional activity.',
+      },
+      {
+        title: 'Board review',
+        body: 'The board will review each application in light of the Network’s founding purpose and programme of activities.',
+      },
+      {
+        title: 'Decision and next steps',
+        body: 'We will contact you with the outcome and information about relevant events and research activities.',
+      },
     ],
     onlineTitle: 'Online Membership Application',
-    onlineBody: 'Applications will open after membership categories, fees, and the personal-data policy have been finalised.',
+    onlineBody:
+      'Applications will open after membership categories, fees, and the personal-data policy have been finalised.',
     onlineOpen: 'Open application form',
     onlinePending: 'Application form coming soon',
     beforeEyebrow: 'Before Applying',
     beforeTitle: 'Information to Prepare',
-    beforeBody: 'We plan to request only the information needed to review your interests and respond to your application.',
-    details: ['Full name and preferred English name', 'Affiliation, position, and country of activity', 'Research field or area of expertise', 'Reason for joining and activities of interest', 'Email address for our response'],
+    beforeBody:
+      'We plan to request only the information needed to review your interests and respond to your application.',
+    details: [
+      'Full name and preferred English name',
+      'Affiliation, position, and country of activity',
+      'Research field or area of expertise',
+      'Reason for joining and activities of interest',
+      'Email address for our response',
+    ],
     contactEyebrow: 'Contact',
     contactTitle: 'Secretariat Enquiries',
-    contactBody: 'The Secretariat’s telephone number and email address will be published once our communication channels are finalised.',
+    contactBody:
+      'The Secretariat’s telephone number and email address will be published once our communication channels are finalised.',
     phone: 'Telephone',
     email: 'Email',
     unavailable: 'Not yet available',

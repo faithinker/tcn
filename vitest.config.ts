@@ -13,7 +13,7 @@ export default defineConfig({
         '**/*.test.ts',
         '**/*.config.*',
         '.astro/**',
-      ]
-    }
-  }
+      ],
+    },
+  },
 });

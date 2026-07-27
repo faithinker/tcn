@@ -24,11 +24,7 @@
       "Former Adjunct Professor, Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
-    "expertise": [
-      "Economic policy",
-      "Competition policy",
-      "International cooperation"
-    ]
+    "expertise": ["Economic policy", "Competition policy", "International cooperation"]
   },
   {
     "id": "jeon",
@@ -51,11 +47,7 @@
       "Visiting Professor at Goethe University Frankfurt",
       "Researcher at the International Institute of Social History"
     ],
-    "expertise": [
-      "Economic history",
-      "Accounting history",
-      "Commerce and capital"
-    ]
+    "expertise": ["Economic history", "Accounting history", "Commerce and capital"]
   },
   {
     "id": "director-la",
@@ -76,11 +68,7 @@
       "Director of the Center for Korean Studies",
       "PhD in Economics, Academy of Korean Studies, 2017"
     ],
-    "expertise": [
-      "Sustainable tourism",
-      "Regional development",
-      "Korean studies"
-    ]
+    "expertise": ["Sustainable tourism", "Regional development", "Korean studies"]
   },
   {
     "id": "director-cn",
@@ -102,11 +90,7 @@
       "Former Postdoctoral Researcher at SUSTech",
       "PhD in Economics, Academy of Korean Studies, 2019"
     ],
-    "expertise": [
-      "East Asian economic history",
-      "Traditional accounting",
-      "Trade networks"
-    ]
+    "expertise": ["East Asian economic history", "Traditional accounting", "Trade networks"]
   },
   {
     "id": "director-uz",
@@ -128,11 +112,7 @@
       "Senior Advisor on trade, investment, and economic relations with the Republic of Korea",
       "PhD in Economics, Academy of Korean Studies, 2024"
     ],
-    "expertise": [
-      "Transculturalism",
-      "Central Asia",
-      "Economic cooperation"
-    ]
+    "expertise": ["Transculturalism", "Central Asia", "Economic cooperation"]
   },
   {
     "id": "auditor-vn",
@@ -153,11 +133,7 @@
       "Comparative research on Korean and Vietnamese human resource development",
       "PhD in Economics, Academy of Korean Studies, 2020"
     ],
-    "expertise": [
-      "Human resource development",
-      "Business administration",
-      "Economic growth"
-    ]
+    "expertise": ["Human resource development", "Business administration", "Economic growth"]
   },
   {
     "id": "advisor-us",
@@ -178,10 +154,6 @@
       "BS in Civil Engineering, Sungkyunkwan University, 1980",
       "Construction projects for U.S. federal, military, state, and local government clients"
     ],
-    "expertise": [
-      "Civil engineering",
-      "Construction",
-      "Government projects"
-    ]
+    "expertise": ["Civil engineering", "Construction", "Government projects"]
   }
 ]

@@ -113,10 +113,7 @@ describe('DELETE /api/media/[id]', () => {
       'post-1/file.webp',
     );
     expect(bucket.delete).toHaveBeenCalledWith('post-1/file.webp');
-    expect(completeMediaCleanup).toHaveBeenCalledWith(
-      expect.anything(),
-      'post-1/file.webp',
-    );
+    expect(completeMediaCleanup).toHaveBeenCalledWith(expect.anything(), 'post-1/file.webp');
   });
 
   it('keeps a retry record when R2 deletion fails', async () => {

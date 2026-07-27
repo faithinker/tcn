@@ -52,10 +52,7 @@ function rangeNotSatisfiable(size?: number): Response {
   return new Response(null, { status: 416, headers });
 }
 
-function resolvedRange(
-  value: string,
-  size: number,
-): { offset: number; length: number } | null {
+function resolvedRange(value: string, size: number): { offset: number; length: number } | null {
   const match = /^bytes=(\d*)-(\d*)$/.exec(value);
   if (!match) return null;
 

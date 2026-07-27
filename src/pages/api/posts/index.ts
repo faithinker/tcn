@@ -3,10 +3,7 @@ import { getSessionUid } from '../../../lib/auth';
 import { createPost, getDB, listSeminarPosts } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
 import { parsePostPayload } from '../../../lib/post-payload';
-import {
-  isSeminarDateConflictError,
-  validateSeminarDate,
-} from '../../../lib/seminar-validation';
+import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminar-validation';
 
 export const prerender = false;
 
@@ -24,10 +21,13 @@ export const POST: APIRoute = async ({ request }) => {
 
   const db = getDB();
   const eventDate = payload.eventDate;
-  const existingDates = (await listSeminarPosts(db)).map((post) => post.eventDate).filter((date): date is string => Boolean(date));
+  const existingDates = (await listSeminarPosts(db))
+    .map((post) => post.eventDate)
+    .filter((date): date is string => Boolean(date));
   const dateError = validateSeminarDate({ eventDate, existingDates });
   if (dateError) {
-    const status = dateError === 'event_date_required' || dateError === 'event_date_invalid' ? 400 : 409;
+    const status =
+      dateError === 'event_date_required' || dateError === 'event_date_invalid' ? 400 : 409;
     return Response.json({ ok: false, error: dateError }, { status });
   }
 

@@ -11,20 +11,18 @@
     "directory": "./dist",
     // Canonical URLs are slashless. Keep Workers Static Assets from redirecting
     // prerendered `path/index.html` assets back to a trailing-slash URL.
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "drop-trailing-slash",
   },
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "tcn-content",
       "database_id": "15252162-0f50-4f5a-ab1a-c4385a4cef3d",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
-  "r2_buckets": [
-    { "binding": "MEDIA", "bucket_name": "tcn-media" }
-  ]
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "tcn-media" }],
 }

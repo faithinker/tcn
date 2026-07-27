@@ -95,7 +95,10 @@ try {
   await dialog.locator('[data-lb-prev]').click();
   check('이전 버튼은 앞 미디어로 돌아간다', (await count.textContent())?.trim() === '1 / 8');
   await page.keyboard.press('ArrowLeft');
-  check('첫 항목에서 왼쪽 화살표는 마지막 항목으로 순환한다', (await count.textContent())?.trim() === '8 / 8');
+  check(
+    '첫 항목에서 왼쪽 화살표는 마지막 항목으로 순환한다',
+    (await count.textContent())?.trim() === '8 / 8',
+  );
   await page.keyboard.press('ArrowRight');
   check('오른쪽 화살표는 대표 사진으로 순환한다', (await count.textContent())?.trim() === '1 / 8');
 
@@ -174,7 +177,6 @@ try {
     mobileLayout ? JSON.stringify(mobileLayout) : '하단 바 없음',
   );
   await mobile.close();
-
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
   console.error('❌ 검사 실행 오류:', error);

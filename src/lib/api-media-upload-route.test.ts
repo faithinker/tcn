@@ -61,11 +61,9 @@ describe('POST /api/media', () => {
     const response = await POST!(context());
 
     expect(response.status).toBe(200);
-    expect(bucket.put).toHaveBeenCalledWith(
-      'post-1/media-id.mp4',
-      expect.any(ReadableStream),
-      { httpMetadata: { contentType: 'video/mp4' } },
-    );
+    expect(bucket.put).toHaveBeenCalledWith('post-1/media-id.mp4', expect.any(ReadableStream), {
+      httpMetadata: { contentType: 'video/mp4' },
+    });
     expect(addMedia).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({

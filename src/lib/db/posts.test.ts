@@ -19,7 +19,9 @@ describe('getPostByEventDate', () => {
     if (!getPostByEventDate) return;
 
     await expect(getPostByEventDate(db, '2025-12-26')).resolves.toEqual(post);
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('event_date = ?1 and deleted_at is null'));
+    expect(prepare).toHaveBeenCalledWith(
+      expect.stringContaining('event_date = ?1 and deleted_at is null'),
+    );
     expect(bind).toHaveBeenCalledWith('2025-12-26');
   });
 });
@@ -54,34 +56,14 @@ describe('updatePost', () => {
     const db = { prepare } as unknown as D1Database;
 
     await expect(
-      postsDb.updatePost(
-        db,
-        'p1',
-        {
-          title: 'Updated',
-          eventDate: '2025-12-26',
-          expectedRevision: 3,
-        },
-      ),
+      postsDb.updatePost(db, 'p1', {
+        title: 'Updated',
+        eventDate: '2025-12-26',
+        expectedRevision: 3,
+      }),
     ).resolves.toEqual(updated);
-    expect(prepare).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining('revision = revision + 1'),
-    );
-    expect(prepare).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining('revision = ?8'),
-    );
-    expect(bind).toHaveBeenNthCalledWith(
-      1,
-      'p1',
-      'Updated',
-      null,
-      '2025-12-26',
-      null,
-      '',
-      null,
-      3,
-    );
+    expect(prepare).toHaveBeenNthCalledWith(1, expect.stringContaining('revision = revision + 1'));
+    expect(prepare).toHaveBeenNthCalledWith(1, expect.stringContaining('revision = ?8'));
+    expect(bind).toHaveBeenNthCalledWith(1, 'p1', 'Updated', null, '2025-12-26', null, '', null, 3);
   });
 });

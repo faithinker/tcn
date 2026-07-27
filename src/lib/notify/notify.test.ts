@@ -49,7 +49,12 @@ describe('sendPostNotifications', () => {
 
   it('skips channels whose secrets are missing without failing the other', async () => {
     const fetchImpl = vi.fn(async () => ok());
-    const result = await sendPostNotifications(post, 'created', { ...config, telegramToken: undefined }, fetchImpl);
+    const result = await sendPostNotifications(
+      post,
+      'created',
+      { ...config, telegramToken: undefined },
+      fetchImpl,
+    );
     expect(result).toEqual({ discord: true, telegram: false });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
@@ -64,7 +69,9 @@ describe('sendPostNotifications', () => {
       return ok();
     });
 
-    const result = await sendPostNotifications(post, 'created', config, fetchImpl, { retryDelayMs: 0 });
+    const result = await sendPostNotifications(post, 'created', config, fetchImpl, {
+      retryDelayMs: 0,
+    });
 
     expect(discordAttempts).toBe(3); // 1 + 2 재시도
     expect(result).toEqual({ discord: false, telegram: true });

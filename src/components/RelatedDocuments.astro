@@ -13,21 +13,26 @@ const documents = [
 ];
 ---
 
-<nav class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2 font-sans text-body-sm" aria-label={t('common.relatedDocuments')}>
+<nav
+  class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2 font-sans text-body-sm"
+  aria-label={t('common.relatedDocuments')}
+>
   <span class="font-bold text-ink">{t('common.relatedDocuments')}</span>
-  {documents.map((document) => {
-    const isCurrent = document.id === current;
-    return (
-      <a
-        href={document.href}
-        aria-current={isCurrent ? 'page' : undefined}
-        class:list={[
-          'font-bold no-underline transition-colors',
-          isCurrent ? 'text-accent' : 'text-body-muted hover:text-link',
-        ]}
-      >
-        {document.label}
-      </a>
-    );
-  })}
+  {
+    documents.map((document) => {
+      const isCurrent = document.id === current;
+      return (
+        <a
+          href={document.href}
+          aria-current={isCurrent ? 'page' : undefined}
+          class:list={[
+            'font-bold no-underline transition-colors',
+            isCurrent ? 'text-accent' : 'text-body-muted hover:text-link',
+          ]}
+        >
+          {document.label}
+        </a>
+      );
+    })
+  }
 </nav>

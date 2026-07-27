@@ -47,11 +47,15 @@ function le24(bytes: Uint8Array, start: number): number {
 
 // WebP 최소 파서: RIFF/WEBP 헤더에서 dimension 추출(아니면 null → 위조 차단).
 export function webpDimensions(bytes: Uint8Array): { width: number; height: number } | null {
-  if (bytes.length < 30 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP') return null;
+  if (bytes.length < 30 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP')
+    return null;
   const chunk = ascii(bytes, 12, 4);
   if (chunk === 'VP8X') return { width: le24(bytes, 24) + 1, height: le24(bytes, 27) + 1 };
   if (chunk === 'VP8 ' && bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a) {
-    return { width: (bytes[26] | (bytes[27] << 8)) & 0x3fff, height: (bytes[28] | (bytes[29] << 8)) & 0x3fff };
+    return {
+      width: (bytes[26] | (bytes[27] << 8)) & 0x3fff,
+      height: (bytes[28] | (bytes[29] << 8)) & 0x3fff,
+    };
   }
   if (chunk === 'VP8L' && bytes[20] === 0x2f) {
     return {

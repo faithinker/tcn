@@ -16,9 +16,7 @@ export function master(name: string): ImageMetadata {
 
 const FIT_WIDTH = 2000;
 
-export async function buildLightboxEntries(
-  items: FoundingMediaItem[],
-): Promise<LightboxEntry[]> {
+export async function buildLightboxEntries(items: FoundingMediaItem[]): Promise<LightboxEntry[]> {
   return Promise.all(
     items.map(async (item): Promise<LightboxEntry> => {
       if (!isImage(item)) {

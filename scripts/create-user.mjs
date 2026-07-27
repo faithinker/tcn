@@ -19,9 +19,13 @@ const toBase64 = (bytes) => Buffer.from(bytes).toString('base64');
 
 async function hashPassword(plain) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const keyMaterial = await crypto.subtle.importKey('raw', textEncoder.encode(plain), 'PBKDF2', false, [
-    'deriveBits',
-  ]);
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    textEncoder.encode(plain),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
   const bits = await crypto.subtle.deriveBits(
     { name: 'PBKDF2', salt, iterations: ITERATIONS, hash: 'SHA-256' },
     keyMaterial,
@@ -44,7 +48,9 @@ function parseArgs(argv) {
 
 const { username, password, remote, displayName } = parseArgs(process.argv.slice(2));
 if (!username || !password) {
-  console.error('usage: node scripts/create-user.mjs <username> <password> [--remote] [--display "Name"]');
+  console.error(
+    'usage: node scripts/create-user.mjs <username> <password> [--remote] [--display "Name"]',
+  );
   process.exit(1);
 }
 

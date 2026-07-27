@@ -41,7 +41,10 @@ try {
       (await triggers.first().getAttribute('aria-label'))?.startsWith('View: ') === true,
     );
     await triggers.first().click();
-    check('대표 사진을 누르면 세미나 상세 보기가 열린다', await dialog.evaluate((node) => node.open));
+    check(
+      '대표 사진을 누르면 세미나 상세 보기가 열린다',
+      await dialog.evaluate((node) => node.open),
+    );
     check('대표 사진이 첫 번째 항목이다', (await count.textContent())?.trim() === '1 / 2');
     check(
       '세미나 상세 보기에도 확대 컨트롤이 없다',
@@ -63,7 +66,10 @@ try {
     );
 
     await page.keyboard.press('ArrowRight');
-    check('마지막 사진에서 오른쪽 화살표는 대표 사진으로 순환한다', (await count.textContent())?.trim() === '1 / 2');
+    check(
+      '마지막 사진에서 오른쪽 화살표는 대표 사진으로 순환한다',
+      (await count.textContent())?.trim() === '1 / 2',
+    );
     await page.keyboard.press('Escape');
     check('Escape는 세미나 상세 보기를 닫는다', !(await dialog.evaluate((node) => node.open)));
     check(

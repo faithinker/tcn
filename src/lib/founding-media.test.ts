@@ -131,7 +131,14 @@ describe('founding-media 데이터 계약', () => {
   it('영상 src 는 절대 경로여야 한다', () => {
     expect(() =>
       parseFoundingMedia([
-        { id: 'lead', type: 'image', src: 'x', alt: 'a'.repeat(20), caption: 'c'.repeat(20), role: 'lead' },
+        {
+          id: 'lead',
+          type: 'image',
+          src: 'x',
+          alt: 'a'.repeat(20),
+          caption: 'c'.repeat(20),
+          role: 'lead',
+        },
         {
           id: 'v',
           type: 'video',

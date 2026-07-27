@@ -42,11 +42,7 @@ describe('deriveSeminarCollection', () => {
 
   it('derives today, upcoming, and held projections from one today value', () => {
     const result = deriveSeminarCollection(
-      [
-        post('held', '2025-12-26'),
-        post('today', '2026-07-26'),
-        post('next', '2026-10-30'),
-      ],
+      [post('held', '2025-12-26'), post('today', '2026-07-26'), post('next', '2026-10-30')],
       '2026-07-26',
     );
 
@@ -79,15 +75,15 @@ describe('deriveSeminarCollection', () => {
 
   it('rejects duplicate event dates instead of assigning ambiguous sequence and URLs', () => {
     expect(() =>
-      deriveSeminarCollection(
-        [post('a', '2026-10-30'), post('b', '2026-10-30')],
-        '2026-01-01',
-      ),
+      deriveSeminarCollection([post('a', '2026-10-30'), post('b', '2026-10-30')], '2026-01-01'),
     ).toThrow('Duplicate seminar event date: 2026-10-30');
   });
 
   it('excludes undated posts and does not mutate the source array', () => {
-    const source = [post('later', '2026-10-30'), { ...post('undated', '2026-01-01'), eventDate: null }];
+    const source = [
+      post('later', '2026-10-30'),
+      { ...post('undated', '2026-01-01'), eventDate: null },
+    ];
     const originalIds = source.map((item) => item.id);
 
     const result = deriveSeminarCollection(source, '2026-01-01');
@@ -118,7 +114,10 @@ describe('getSeminarCollection', () => {
     const db = { prepare: () => ({ all }) } as unknown as D1Database;
     const getSeminarCollection = (
       seminarService as {
-        getSeminarCollection?: (db: D1Database, today: string) => Promise<{ chronological: Post[] }>;
+        getSeminarCollection?: (
+          db: D1Database,
+          today: string,
+        ) => Promise<{ chronological: Post[] }>;
       }
     ).getSeminarCollection;
 
@@ -161,10 +160,21 @@ describe('mergeMilestones', () => {
     const mergeMilestones = (
       seminarDomain as {
         mergeMilestones?: (
-          organization: Array<{ date: string; title: string; location: string; description: string }>,
+          organization: Array<{
+            date: string;
+            title: string;
+            location: string;
+            description: string;
+          }>,
           seminars: SeminarView[],
           today: string,
-        ) => Array<{ kind: string; date: string; title: string; href: string | null; status: string }>;
+        ) => Array<{
+          kind: string;
+          date: string;
+          title: string;
+          href: string | null;
+          status: string;
+        }>;
       }
     ).mergeMilestones;
 
@@ -172,12 +182,14 @@ describe('mergeMilestones', () => {
     if (!mergeMilestones) return;
 
     const result = mergeMilestones(
-      [{
-        date: '2025-12-12',
-        title: 'Founding',
-        location: 'Seoul',
-        description: 'Founded.',
-      }],
+      [
+        {
+          date: '2025-12-12',
+          title: 'Founding',
+          location: 'Seoul',
+          description: 'Founded.',
+        },
+      ],
       collection.chronological,
       '2025-12-20',
     );

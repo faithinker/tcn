@@ -11,9 +11,7 @@ export function isSeminarEventDate(value: string | null | undefined): value is s
   return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-export function seminarHref(
-  eventDate: string | null | undefined,
-): `/seminars/${string}` | null {
+export function seminarHref(eventDate: string | null | undefined): `/seminars/${string}` | null {
   if (!isSeminarEventDate(eventDate)) return null;
   return `/seminars/${eventDate}`;
 }

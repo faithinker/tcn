@@ -7,12 +7,17 @@ const COLUMNS = `id, username, password_hash as passwordHash, display_name as di
 // 로그인용 조회(비번 해시 포함). 인증 비교는 auth 레이어(5단계)에서.
 export async function getUserByUsername(db: D1Database, username: string): Promise<User | null> {
   return (
-    (await db.prepare(`select ${COLUMNS} from users where username = ?1`).bind(username).first<User>()) ?? null
+    (await db
+      .prepare(`select ${COLUMNS} from users where username = ?1`)
+      .bind(username)
+      .first<User>()) ?? null
   );
 }
 
 export async function getUserById(db: D1Database, id: string): Promise<User | null> {
-  return (await db.prepare(`select ${COLUMNS} from users where id = ?1`).bind(id).first<User>()) ?? null;
+  return (
+    (await db.prepare(`select ${COLUMNS} from users where id = ?1`).bind(id).first<User>()) ?? null
+  );
 }
 
 // 계정 발급(수동 스크립트에서 사용). passwordHash 는 이미 해시된 값이어야 한다.
@@ -22,7 +27,9 @@ export async function createUser(
 ): Promise<User> {
   const id = newId();
   await db
-    .prepare(`insert into users (id, username, password_hash, display_name) values (?1, ?2, ?3, ?4)`)
+    .prepare(
+      `insert into users (id, username, password_hash, display_name) values (?1, ?2, ?3, ?4)`,
+    )
     .bind(id, input.username, input.passwordHash, input.displayName ?? null)
     .run();
   const user = await getUserById(db, id);

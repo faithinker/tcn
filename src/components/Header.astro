@@ -18,21 +18,39 @@ const isExact = (href: string) => {
 };
 ---
 
-<header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]">
-  <div class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 min-[72rem]:gap-4 min-[72rem]:px-5">
-    <a href="/" class="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap no-underline min-[72rem]:gap-2">
-      <span class="hidden font-serif text-[1.125rem] font-semibold text-ink sm:inline min-[72rem]:text-[1.375rem]">{t('site.name')}</span>
+<header
+  class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]"
+>
+  <div
+    class="mx-auto flex max-w-[75rem] items-center justify-between gap-2 px-4 py-3 min-[72rem]:gap-4 min-[72rem]:px-5"
+  >
+    <a
+      href="/"
+      class="flex shrink-0 items-baseline gap-1.5 whitespace-nowrap no-underline min-[72rem]:gap-2"
+    >
+      <span
+        class="hidden font-serif text-[1.125rem] font-semibold text-ink sm:inline min-[72rem]:text-[1.375rem]"
+        >{t('site.name')}</span
+      >
       <span class="font-serif text-[1.125rem] font-semibold text-ink sm:hidden">TCN</span>
-      <span class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted min-[72rem]:inline">TCN</span>
+      <span
+        class="hidden font-sans text-body-sm font-bold uppercase tracking-widest text-body-muted min-[72rem]:inline"
+        >TCN</span
+      >
     </a>
 
-    <nav class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1" aria-label={t('common.menu')}>
+    <nav
+      class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1"
+      aria-label={t('common.menu')}
+    >
       {
         navItems.map((item) =>
           item.children ? (
             <details class="group relative">
               <summary
-                aria-current={isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined}
+                aria-current={
+                  isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
+                }
                 class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
               >
                 {t(item.key)}
@@ -46,7 +64,7 @@ const isExact = (href: string) => {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="m6 9 6 6 6-6"></path>
+                  <path d="m6 9 6 6 6-6" />
                 </svg>
               </summary>
               <div class="absolute left-0 top-full min-w-48 border border-hairline-strong bg-canvas p-2 shadow-overlay">
@@ -83,14 +101,23 @@ const isExact = (href: string) => {
     <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
       <ThemeToggle />
 
-      <button id="navToggle"
+      <button
+        id="navToggle"
         type="button"
         class="flex h-12 w-12 shrink-0 items-center justify-center text-ink min-[56rem]:hidden"
         aria-expanded="false"
         aria-controls="mobileNav"
         aria-label={t('common.menu')}
       >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -112,7 +139,9 @@ const isExact = (href: string) => {
             {item.children ? (
               <div class="border-b border-hairline py-2">
                 <p
-                  aria-current={isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined}
+                  aria-current={
+                    isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
+                  }
                   class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted aria-[current]:text-link"
                 >
                   {t(item.key)}

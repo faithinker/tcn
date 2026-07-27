@@ -15,11 +15,7 @@ import * as mediaRoute from '../pages/media/[...key]';
 
 const key = 'post-1/video.mp4';
 
-function context(
-  method: 'GET' | 'HEAD',
-  headers?: HeadersInit,
-  requestKey = key,
-) {
+function context(method: 'GET' | 'HEAD', headers?: HeadersInit, requestKey = key) {
   return {
     request: new Request(`http://localhost/media/${requestKey}`, { method, headers }),
     params: { key: requestKey },
