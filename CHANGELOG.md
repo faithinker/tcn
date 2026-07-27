@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-07-28]
+### Changed
+- Corrected the board profiles on `/people`: removed the Asia Competition Association attaché title from Dr. Wonjoon Kim's current role, restated Dr. Zhang Wen's research summary around East Asian economic history, modern banking history, and traditional accounting in China and Korea (realigning her expertise tags to match), gave her SUSTech post its term (Sep 2019 – Nov 2021), and added Dr. Le Lan Huong's doctoral thesis title. (Branch: `content/people-profile-updates`) - Implemented by Claude
+- Unified the doctorate notation as `Ph.D` across all thirteen mentions, and surfaced the degree line for Dr. Wonjoon Kim and Dr. SeongHo Jun — both doctorates existed only in the unrendered `bio` field, so the site had never shown them. (Branch: `content/people-profile-updates`) - Implemented by Claude
+- Recast all seven profile summaries as pronoun-free prose rather than switching to a `Research interests:` label: four of the seven describe roles and career facts a research label cannot hold, and for the two that would fit, the label restates the expertise chips directly beneath it. (Branch: `content/people-profile-updates`) - Implemented by Claude
+- Refreshed the README facts (linked deployment URLs, dropped the founding-country count, named the first seminar venue), documented that Codex runs as `codex --profile tcn` against this repository, and scoped `.codex/config.toml` to enable the five Cloudflare MCP servers while switching off the Apple-native ones the global config keeps on for iOS work. (Branch: `content/people-profile-updates`) - Implemented by Claude
+- Recorded the outstanding first-seminar content in `CONTENT_ARCHITECTURE.md`: Dr. SeongHo Jun's presentation is still to come, and that copy lives in D1 rather than in this repository. (Branch: `content/people-profile-updates`) - Implemented by Claude
+### Refactor
+- Removed the orphaned `bio` field from `members.json` and the collection schema. It was rendered by the list variant of `/people`, which `ed2a026` deleted when the profile-card layout became the only layout; nothing had read it since. Three facts that lived nowhere else were promoted into the rendered highlights first, and the `officer-card` entry in `DESIGN.md` — which described a "serif bio" and an avatar on a component that does not exist — was replaced with the anatomy `MemberProfileCard` actually ships. (Branch: `content/people-profile-updates`) - Implemented by Claude
+
 ## [2026-07-27]
 ### Feature
 - Added a responsive founding-assembly event record with seven photographs, a lazy-loaded short film, high-resolution lightbox zoom and pan, captions, and original-image downloads. (Branch: `feat/content`) - Implemented by Codex
