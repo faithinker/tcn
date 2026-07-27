@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Moved carousel entries and safe manifest serialization into a shared media contract used by founding and seminar pages. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Security
 - Stopped dependency lifecycle scripts from running in the CI Run and production deploy jobs by adding `--ignore-scripts` to their `npm ci`, matching the Browser Gates job that already installed this way; the deploy job holds `CLOUDFLARE_API_TOKEN`, so a malicious `postinstall` in any transitive dependency had access to it. (Branch: `fix/ci-ignore-scripts`) - Implemented by Claude
+- Stopped resolving the `wrangler` binary through `PATH` in the seed and create-user scripts by pointing `execFileSync` at the repository's own `node_modules/.bin/wrangler`, resolved from the script location so both still run from any working directory. (Branch: `fix/script-binary-paths`) - Implemented by Claude
 - Added account-and-IP login throttling with hashed identifiers, versioned session revocation, dependency audit enforcement, and bounded notification retries with timeouts. (Branch: `fix/routing-audit`) - Implemented by Codex
 ### Test
 - Added route-contract assertions and CI browser gates for canonical redirects, missing seminar pages, responsive rendering, console errors, and accessibility. (Branch: `test/route-contracts-ci`) - Implemented by Codex

@@ -10,6 +10,18 @@
 // 해싱은 src/lib/auth/password.ts 와 동일 알고리즘·포맷(pbkdf2$iter$salt$hash)이라 로그인 검증과 호환된다.
 import { webcrypto as crypto } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// PATH 조회를 거치지 않도록 저장소 안의 실행 파일을 직접 가리킨다(경로가 쓰기 가능하면 하이재킹된다).
+// 스크립트 위치 기준이라 어느 디렉터리에서 실행해도 동작한다.
+const WRANGLER = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'node_modules',
+  '.bin',
+  'wrangler',
+);
 
 // src/lib/auth/password.ts 의 ITERATIONS 와 반드시 같은 값이어야 한다.
 // Workers 무료 플랜 CPU 10ms 한도에 맞춘 값 — 배경은 password.ts 주석 참고.
@@ -63,7 +75,7 @@ const sql =
 
 const target = remote ? '--remote' : '--local';
 try {
-  execFileSync('npx', ['wrangler', 'd1', 'execute', 'tcn-content', target, '--command', sql], {
+  execFileSync(WRANGLER, ['d1', 'execute', 'tcn-content', target, '--command', sql], {
     stdio: 'inherit',
   });
   console.log(`\n✅ user '${username}' created on ${remote ? 'remote' : 'local'} D1 (id=${id})`);
