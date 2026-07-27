@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Changed
 - Simplified the founding-assembly media viewer to a full-screen previous/next carousel, removing zoom, pan, original-file controls, and high-resolution zoom derivatives. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Fix
+- Matched the related-document links to the About menu order: Founding Ceremony, Founding Declaration, then Bylaws. (Branch: `fix/related-documents-order`) - Implemented by Codex
 - Lowered the desktop navigation breakpoint from 1280px to 896px and added a 1152px tier that compresses logo and item spacing, so tablets and small laptops show the horizontal nav instead of the hamburger while keeping 48px touch targets and no horizontal overflow. (Branch: `fix/header-nav-breakpoint`) - Implemented by Codex
 - Hardened browser route verification by treating DOM readiness as the navigation gate and making `networkidle` an optional stabilization wait for CI. (Branch: `feat/media-carousel`) - Implemented by Codex
 - Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
