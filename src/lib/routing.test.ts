@@ -38,6 +38,15 @@ describe('canonicalPath', () => {
     expect(canonicalRedirectTarget(new Request(source, { method }))?.href).toBe(destination);
   });
 
+  it('does not turn prerendered pages into redirect documents during the build', () => {
+    expect(
+      canonicalRedirectTarget(
+        new Request('https://tcn.faithinker12.workers.dev/about/founding/'),
+        true,
+      ),
+    ).toBeNull();
+  });
+
   it.each([
     ['GET', 'https://tcn.example/'],
     ['POST', 'https://tcn.example/about/'],
