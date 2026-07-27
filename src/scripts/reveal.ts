@@ -1,6 +1,4 @@
-// L13: 스크롤 진입 리빌 — 단일 IntersectionObserver, 1회성.
 // 대상: main 직속 2번째 섹션부터(히어로 제외). 초기 은닉은 global.css(html.js).
-// 메모리: 노출 즉시 unobserve, 전부 끝나면 disconnect -> 참조 해제(누수 없음).
 
 const SELECTOR = 'main > section:not(:first-of-type)';
 
@@ -8,7 +6,7 @@ function reveal(): void {
   const targets = document.querySelectorAll<HTMLElement>(SELECTOR);
   if (targets.length === 0) return;
 
-  // 모션 비선호 또는 IO 미지원 -> 즉시 전부 표시(관찰자 생성 안 함).
+  // 모션 비선호 또는 IO 미지원 환경에서는 콘텐츠를 숨기지 않는다.
   const noMotion =
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
     !('IntersectionObserver' in window);

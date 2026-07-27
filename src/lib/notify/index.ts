@@ -14,18 +14,17 @@ interface NotifyBindings {
 }
 
 function backgroundWait(promise: Promise<unknown>): void {
-  // cloudflare:workers 의 waitUntil(컴팟 2025+). dev/테스트 등 미제공 환경에서는
-  // fire-and-forget 으로 폴백한다.
+  // waitUntil이 없는 개발·테스트 환경에서는 fire-and-forget으로 폴백한다.
   const maybe = (globalThis as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil;
   try {
-    // 동적 접근 — 모듈이 waitUntil 을 export 하지 않는 버전에서도 빌드가 깨지지 않게.
+    // 정적 export에 의존하지 않아 waitUntil이 없는 런타임에서도 로드할 수 있다.
     const wu = (env as unknown as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil ?? maybe;
     if (wu) {
       wu(promise);
       return;
     }
   } catch {
-    // 폴백으로 진행
+    // 아래의 fire-and-forget 폴백으로 계속한다.
   }
   void promise.catch(() => {});
 }

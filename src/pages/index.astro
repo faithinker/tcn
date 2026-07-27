@@ -1,5 +1,4 @@
 ---
-// L7: Home — Hero · 차기 세미나 안내 · 미션 · 핵심활동 · 최신 세미나 · 하이라이트 · 가입 CTA.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Stat from '../components/Stat.astro';
@@ -10,15 +9,12 @@ import { content } from '../i18n/content';
 import { getDB } from '../lib/db';
 import { getSeminarCollection, type SeminarView } from '../lib/seminars';
 
-// 차기 세미나·최신 글이 D1에서 실시간으로 나오도록 SSR.
-// (프리렌더하면 빌드 시 D1 바인딩이 없어 히어로가 조용히 사라진다)
+// Runtime D1 data requires SSR because prerender builds have no D1 binding.
 export const prerender = false;
 
 const copy = content.home;
 const seminarCopy = content.seminars;
 
-// D1 단일 원천: 공통 세미나 도메인이 순번·상태·URL과 페이지 selector를 완성한다.
-// D1 미가용(정적 프리뷰 등)이면 두 섹션 모두 조용히 숨긴다.
 let next: SeminarView | null = null;
 let featured: SeminarView | null = null;
 try {
@@ -32,7 +28,6 @@ try {
 ---
 
 <BaseLayout title={copy.title}>
-  <!-- 1. Hero -->
   <section class="bg-canvas px-5 pt-12 pb-12 sm:pt-24 sm:pb-20">
     <div class="mx-auto max-w-[75rem]">
       <p class="eyebrow">{copy.eyebrow}</p>
@@ -68,7 +63,6 @@ try {
     </div>
   </section>
 
-  <!-- 1.5 차기 세미나 안내 -->
   {
     next && (
       <section class="bg-canvas px-5 pb-12 sm:pb-20">
@@ -107,7 +101,6 @@ try {
     )
   }
 
-  <!-- 2. 미션 -->
   <SectionTile variant="band" eyebrow={copy.missionEyebrow} title={copy.missionTitle}>
     <p class="mt-6 max-w-[68ch] font-serif text-lead text-body">
       {copy.missionBody}
@@ -128,7 +121,6 @@ try {
     </div>
   </SectionTile>
 
-  <!-- 3. 핵심 활동 -->
   <SectionTile variant="canvas" eyebrow={copy.activitiesEyebrow} title={copy.activitiesTitle}>
     <ol class="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
       {
@@ -142,7 +134,6 @@ try {
     </ol>
   </SectionTile>
 
-  <!-- 4. 최신 세미나 -->
   {
     featured && (
       <SectionTile variant="soft" eyebrow={copy.seminarEyebrow}>
@@ -180,14 +171,12 @@ try {
     )
   }
 
-  <!-- 5. 하이라이트 -->
   <SectionTile variant="band" eyebrow={copy.highlightsEyebrow}>
     <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
       {copy.highlights.map((h) => <Stat value={h.value} label={h.label} />)}
     </div>
   </SectionTile>
 
-  <!-- 6. 가입 CTA -->
   <SectionTile variant="canvas">
     <div class="max-w-[68ch]">
       <p class="eyebrow">{copy.joinEyebrow}</p>

@@ -1,8 +1,7 @@
 import { env } from 'cloudflare:workers';
 
-// Cloudflare 바인딩 접근자. Astro 7에서 바인딩은 cloudflare:workers 의 env 로 노출된다
-// (Astro.locals.runtime.env 는 제거됨). 데이터레이어 함수는 D1Database 를 인자로 받으므로
-// 페이지/엔드포인트에서 getDB() 로 꺼내 넘긴다(테스트 시 모의 D1 주입 가능).
+// Astro 7의 Cloudflare 바인딩은 cloudflare:workers의 env로 접근한다.
+// 데이터레이어는 D1Database를 인자로 받아 테스트에서 모의 D1을 주입할 수 있다.
 
 interface Bindings {
   DB?: D1Database;

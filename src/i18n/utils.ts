@@ -1,7 +1,3 @@
-// 영어 단일 사이트 — 남은 i18n 헬퍼는 날짜 포맷 하나뿐이다.
-// UI 문자열은 i18n/ui.ts의 t(), 페이지 카피는 i18n/content.ts에서 바로 가져온다.
-// 구 /ko·/en 프리픽스 회수는 public/_redirects의 301 규칙이 엣지에서 처리한다.
-
 const EN_MONTHS = [
   'January',
   'February',

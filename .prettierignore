@@ -7,5 +7,6 @@ public
 package-lock.json
 .agents/skills
 .claude/skills
+.impeccable/
 migrations
 CHANGELOG.md

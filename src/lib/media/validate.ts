@@ -1,6 +1,6 @@
 import type { MediaKind } from '../db/types';
 
-// 서버측 업로드 검증. 이미지는 클라이언트가 WebP로 정제(옵션 A)해서 올린다는 전제 → WebP 강제.
+// 서버측 업로드 검증. 이미지는 클라이언트가 WebP로 정제해서 올리므로 WebP를 강제한다.
 // 문서/영상은 MIME 허용목록 + 용량. 인증된 내부 사용자 전제라 체크섬까지는 요구하지 않음.
 
 export const UPLOAD_LIMITS = {

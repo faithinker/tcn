@@ -1,6 +1,4 @@
 ---
-// 라우트 아님(prop 받는 컴포넌트). /seminars/[date] 라우트가 D1에서
-// post + media 를 조회해 prop 으로 주입한다. 본문은 마크다운 → HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MediaLightbox from '../../components/media/MediaLightbox.astro';
 import { formatDate } from '../../i18n/utils';
@@ -321,7 +319,6 @@ const showContents = renderedBody.headings.length >= 2;
 </BaseLayout>
 
 <style>
-  /* 마크다운 본문 — 공개 디자인 토큰으로 매핑 (admin-prose의 공개판) */
   .post-body :global(p) {
     margin-top: 1rem;
     font-family: var(--font-serif);
@@ -357,7 +354,6 @@ const showContents = renderedBody.headings.length >= 2;
   .post-body :global(li) {
     margin-top: 0.35rem;
   }
-  /* 인용은 사이트 공통 풀쿼트 스타일(content-body.astro와 동일한 상하단 보더) */
   .post-body :global(blockquote) {
     margin: 3rem 0;
     border-top: 2px solid var(--color-accent);

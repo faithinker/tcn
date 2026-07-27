@@ -1,5 +1,3 @@
-// 페이지 본문 카피 — 영어 단일. 언어 분기 없이 페이지 단위로 바로 읽는다.
-
 export const content = {
   home: {
     title: 'Transcultural Network',

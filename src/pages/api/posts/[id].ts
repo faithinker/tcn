@@ -91,7 +91,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
   return Response.json({ ok: true, post });
 };
 
-// soft delete: deleted_at 만 세팅(실삭제 아님).
 export const DELETE: APIRoute = async ({ request, params }) => {
   const uid = await getSessionUid(request);
   if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });

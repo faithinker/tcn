@@ -44,8 +44,6 @@ const field =
 const labelText = 'mb-1 block text-caption font-bold text-body-muted';
 const mediaAction = 'inline-flex min-h-11 items-center font-bold underline';
 
-// 저장 오류 문구 매핑은 editor-messages.ts (순수 로직, 단위 테스트 대상).
-
 export default function PostEditor({
   post = null,
   media: initialMedia = [],
@@ -118,7 +116,6 @@ export default function PostEditor({
         },
       );
       if (!post && result.post) {
-        // 새 글은 저장 후 편집 화면으로 이동 → 미디어 첨부 가능
         window.location.href = `/admin/posts/${result.post.id}`;
         return;
       }

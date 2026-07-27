@@ -1,14 +1,9 @@
-/* 셀프호스팅 폰트 @font-face 전용 번들 — BaseLayout에서 비차단(async) 로드.
-   @font-face 선언을 렌더블로킹 CSS에서 분리해 첫 페인트를 앞당긴다.
-   텍스트는 시스템 폴백으로 즉시 그려진다(font-display: swap).
-
-   Noto Serif KR: 라틴 서브셋만 — 사이트·글 모두 영어 전용이라 한글 서브셋
+/* Noto Serif KR: 라틴 서브셋만 — 사이트·글 모두 영어 전용이라 한글 서브셋
    (가중치당 120개·합계 ~6.6MB)은 싣지 않는다. 본문 400 + 헤드라인 600만
    (700 미사용 — byline은 600).
    latin-ext는 일부러 뺐다: Fontsource의 서브셋별 CSS에는 unicode-range가
    없어서 같은 family/weight로 latin과 함께 import하면 뒤 선언이 앞 선언을
    통째로 덮어쓴다(latin-ext에는 ASCII 글리프가 없어 본문이 폴백됨).
-   현재 콘텐츠의 비ASCII 문자는 é(U+00E9)·en dash(U+2013)뿐이라 latin이 모두 덮는다.
 
    Pretendard: dynamic-subset(93개 서브셋) — latin 전용 빌드가 없지만
    unicode-range가 있어 영어 페이지에서 한글 청크를 내려받지 않는다. */

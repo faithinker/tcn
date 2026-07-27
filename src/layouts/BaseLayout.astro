@@ -1,15 +1,9 @@
 ---
-// L4: 공통 셸 — head/meta, 스킵링크, Header, main, Footer. 단일 밝은 테마(ThemeToggle 없음).
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { t } from '../i18n/ui';
 import { canonicalPath } from '../lib/canonical-url';
-// perf: 마스트헤드·히어로("초문화네트워크 / Transcultural Network") 글리프를 담은
-// 폰트 @font-face 번들(수백 KB)은 렌더를 막지 않도록 별도 CSS로 비차단 로드.
-// media="print" → onload에서 all로 전환(표준 async CSS 패턴), noscript 폴백 제공.
-// (영어 단일 전환으로 Noto Serif KR preload는 제거 — fonts.css는 라틴 서브셋만
-//  싣는다. 한글은 Pretendard의 unicode-range 청크가 필요할 때만 내려온다.)
 import fontsCssUrl from '../styles/fonts.css?url';
 
 interface Props {
@@ -33,7 +27,6 @@ const pageTitle = title && title !== siteName ? `${title} | ${siteName}` : siteN
 const socialTitle = siteName;
 const desc = description ?? t('site.tagline');
 const siteRoot = Astro.site ?? Astro.url;
-// 영어 단일 사이트 — hreflang 대안 없음. slash 유무와 무관하게 하나의 canonical만 유지.
 const canonical = new URL(canonicalPath(Astro.url.pathname), siteRoot);
 const socialImageURL = new URL(image, siteRoot);
 const organizationJsonLd = {
@@ -99,8 +92,6 @@ const organizationJsonLd = {
       <slot />
     </main>
     <Footer />
-    <!-- 폰트 @font-face 번들: body 끝 로드 — 뒤 콘텐츠 없어 첫 페인트 비차단.
-         텍스트는 폴백으로 즉시 그려지고 크리티컬 서브셋은 head preload가 조기 확보. -->
     <link rel="stylesheet" href={fontsCssUrl} />
     <script>
       import '../scripts/reveal.ts';

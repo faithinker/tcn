@@ -1,13 +1,12 @@
-// scripts/a11y.mjs — L13 접근성 측정 게이트 (Lighthouse accessibility 카테고리만).
+// Lighthouse accessibility 점수 검사.
 // 전제: preview 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
 // 사용: BASE_URL=http://localhost:4321 node scripts/a11y.mjs
-// 종료코드: 한 라우트라도 MIN_A11Y 미만이면 1 (루프 Done 게이트). 통과 시 0.
+// 종료코드: 한 라우트라도 MIN_A11Y 미만이면 1, 모두 통과하면 0.
 
 import { launch } from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
-// 세미나 상세는 정식 URL(날짜)로 측정한다. 구 UUID는 301이라 리다이렉트 목적지를 재게 된다.
 const ROUTES = (
   process.env.ROUTES ||
   '/,/about,/about/founding,/about/declaration,/about/bylaws,/people,/seminars,/seminars/2025-12-26,/contact'

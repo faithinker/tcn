@@ -107,14 +107,12 @@ export const foundingMedia: FoundingMediaItem[] = parseFoundingMedia(rawMedia);
 
 export const isImage = (item: FoundingMediaItem): item is FoundingImage => item.type === 'image';
 
-/** 대표컷 — 갤러리 최상단 전폭 배치. */
 export function leadImage(items: FoundingMediaItem[] = foundingMedia): FoundingImage {
   const lead = items.find((item) => isImage(item) && item.role === 'lead');
   if (!lead || !isImage(lead)) throw new Error('founding-media: lead 사진이 없다');
   return lead;
 }
 
-/** 대표컷을 뺀 나머지 — 격자에 순서대로 들어간다. */
 export function gridItems(items: FoundingMediaItem[] = foundingMedia): FoundingMediaItem[] {
   return items.filter((item) => !(isImage(item) && item.role === 'lead'));
 }

@@ -1,5 +1,3 @@
-// PostEditor 저장 오류 → 운영자용 영어 문구 매핑.
-// React와 무관한 순수 로직이라 분리해 단위 테스트를 붙인다.
 import { ApiRequestError } from '../../lib/admin-api';
 import { POST_LIMITS } from '../../lib/posts';
 
