@@ -7,7 +7,8 @@ export function canonicalPath(pathname: string): string {
 
 const NON_PAGE_PREFIXES = ['/api/', '/media/', '/_astro/'];
 
-export function canonicalRedirectTarget(request: Request): URL | null {
+export function canonicalRedirectTarget(request: Request, isPrerendered = false): URL | null {
+  if (isPrerendered) return null;
   if (request.method !== 'GET' && request.method !== 'HEAD') return null;
 
   const url = new URL(request.url);
