@@ -5,6 +5,8 @@ import { Markdown } from 'tiptap-markdown';
 import { useRef, useState } from 'react';
 import { requestJson } from '../../lib/admin-api';
 import { requestErrorMessage } from './editor-messages';
+import { fileTypeLabel, moveWithinGroup } from './media-order';
+import { postReadiness, readinessPercent } from './readiness';
 import { processImage } from '../../lib/media/process-image';
 import { mediaMetadataForSave } from '../../lib/media/metadata';
 import { POST_LIMITS } from '../../lib/posts/payload';
@@ -233,27 +235,8 @@ export default function PostEditor({
     );
   };
 
-  const moveMediaWithinGroup = (id: string, offset: -1 | 1) => {
-    setMedia((current) => {
-      const index = current.findIndex((item) => item.id === id);
-      if (index < 0) return current;
-      const isImage = current[index].kind === 'image';
-      const group = current.filter((item) => (item.kind === 'image') === isImage);
-      const groupIndex = group.findIndex((item) => item.id === id);
-      const destinationItem = group[groupIndex + offset];
-      if (!destinationItem) return current;
-      const destination = current.findIndex((item) => item.id === destinationItem.id);
-      const next = [...current];
-      [next[index], next[destination]] = [next[destination], next[index]];
-      return next;
-    });
-  };
-
-  const fileTypeLabel = (item: EditorMedia) => {
-    if (item.kind === 'video') return 'VIDEO';
-    const extension = item.filename?.split('.').pop()?.toUpperCase();
-    return extension && extension.length <= 5 ? extension : 'FILE';
-  };
+  const moveMediaWithinGroup = (id: string, offset: -1 | 1) =>
+    setMedia((current) => moveWithinGroup(current, id, offset));
 
   const deletePost = async () => {
     if (busy || !post || !window.confirm('Delete this post? (It will be hidden, not erased.)'))
@@ -281,21 +264,15 @@ export default function PostEditor({
     </button>
   );
 
-  const readiness = [
-    ['Event date and public URL', Boolean(eventDate)],
-    ['Location and map link', Boolean(address.trim())],
-    ['Lead summary', Boolean(summary.trim())],
-    ['Cover image', Boolean(heroMediaId)],
-    ['Body content', bodyHasContent],
-    ['Photos or materials', media.length > 0],
-    [
-      'Video transcripts',
-      fileMedia
-        .filter((item) => item.kind === 'video')
-        .every((item) => Boolean(item.caption?.trim())),
-    ],
-  ] as const;
-  const readinessCount = readiness.filter(([, complete]) => complete).length;
+  const readiness = postReadiness({
+    eventDate,
+    address,
+    summary,
+    heroMediaId,
+    bodyHasContent,
+    mediaCount: media.length,
+    videoCaptions: fileMedia.filter((item) => item.kind === 'video').map((item) => item.caption),
+  });
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -696,7 +673,7 @@ export default function PostEditor({
             Public page readiness
           </p>
           <p className="mt-2 font-serif text-display-sm font-semibold text-ink">
-            {Math.round((readinessCount / readiness.length) * 100)}%
+            {readinessPercent(readiness)}%
           </p>
           <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
             {readiness.map(([label, complete]) => (
