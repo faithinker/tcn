@@ -4,8 +4,8 @@ import { defineCollection } from 'astro:content';
 import { file } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// seminars/history JSON은 Astro 컬렉션이 아니라 src/lib/content/adapter.ts가
-// 소유한다(Supabase 스냅샷의 폴백). 여기 정의하면 이중 스키마가 된다.
+// 세미나·게시글은 컬렉션이 아니라 D1(src/lib/db/posts.ts)이 소유한다. 여기 정의하면 이중 스키마가 된다.
+// (구 src/lib/content 어댑터와 Supabase 스냅샷 폴백은 제거됨 — CHANGELOG 참조.)
 const members = defineCollection({
   loader: file('src/data/members.json'),
   schema: z.object({
