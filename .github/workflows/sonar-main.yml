@@ -1,0 +1,65 @@
+name: Sonar (main)
+
+# main 브랜치 분석. ci.yml 은 pull_request 에서만 돌기 때문에 이 워크플로가 없으면
+# SonarCloud Automatic Analysis 를 끈 뒤로 main 이 다시 분석되지 않는다 —
+# 그러면 PR 의 "New Code" 판정 기준선이 마지막 자동 분석 시점에 얼어붙는다.
+#
+# 브라우저 게이트는 여기서 돌리지 않는다(PR 에서 이미 통과한 커밋이고, 목적은 분석 기준선뿐).
+# 테스트는 커버리지(lcov)를 만들기 위해 다시 실행한다.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze main
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # 신규 코드 판정·blame 은 전체 히스토리를 요구한다.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Apply migrations to local D1
+        run: ./node_modules/.bin/wrangler d1 migrations apply tcn-content --local
+
+      - name: Test
+        run: npm run test
+
+      # 토큰은 이 두 스텝에만 노출한다(잡 전역 env 로 두면 npm 스텝까지 읽을 수 있다).
+      - name: Detect Sonar token
+        id: sonar
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::SONAR_TOKEN 미설정 — main 분석을 건너뜁니다.'
+          fi
+
+      - name: SonarCloud scan
+        if: steps.sonar.outputs.present == 'true'
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
