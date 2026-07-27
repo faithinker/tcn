@@ -7,21 +7,21 @@
     "group": "leadership",
     "order": 1,
     "country": "Republic of Korea",
-    "position": "Senior Advisor at Kim & Chang · Asia Competition Association Attaché",
+    "position": "Senior Advisor at Kim & Chang",
     "summary": "He formerly served as Acting Secretary General of the Korea Fair Trade Commission and as an Attaché at the Korean Delegation to the OECD.",
     "bio": [
       "Senior Advisor at Kim & Chang",
-      "Attaché, Asia Competition Association",
       "Former Administrator at the Office of the President",
       "Former Acting Secretary General of the Korea Fair Trade Commission",
       "Former Adjunct Professor at Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
       "Economic Planning Board, KFTC, and Korean Delegation to the OECD",
-      "PhD in Economics, Paris Nanterre University",
+      "PhD in Economics, Paris Nanterre University (Paris X)",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
     "highlights": [
       "Former Administrator at the Office of the President",
       "Former Adjunct Professor, Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
+      "PhD in Economics, Paris Nanterre University (Paris X)",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
     "expertise": ["Economic policy", "Competition policy", "International cooperation"]
@@ -79,18 +79,18 @@
     "order": 4,
     "country": "China",
     "position": "Center for Economic Research, Shandong University",
-    "summary": "She researches East Asian economic history, traditional accounting, commercial networks, and trade relations.",
+    "summary": "Her research interests include East Asian economic history, modern banking history, and traditional accounting in China and Korea.",
     "bio": [
       "PhD in Economics, Graduate School of Korean Studies, AKS",
       "Center for Economic Research, Shandong University",
-      "Former Postdoctoral Researcher, School of Business, Southern University of Science and Technology",
+      "Postdoctoral Researcher, School of Business, Southern University of Science and Technology, Sep 2019 – Nov 2021",
       "Former Researcher at the China Accounting Museum"
     ],
     "highlights": [
-      "Former Postdoctoral Researcher at SUSTech",
+      "Postdoctoral Researcher at SUSTech, Sep 2019 – Nov 2021",
       "PhD in Economics, Academy of Korean Studies, 2019"
     ],
-    "expertise": ["East Asian economic history", "Traditional accounting", "Trade networks"]
+    "expertise": ["East Asian economic history", "Modern banking history", "Traditional accounting"]
   },
   {
     "id": "director-uz",
@@ -131,7 +131,8 @@
     ],
     "highlights": [
       "Comparative research on Korean and Vietnamese human resource development",
-      "PhD in Economics, Academy of Korean Studies, 2020"
+      "PhD in Economics, Academy of Korean Studies, 2020",
+      "Doctoral thesis: “Human Resource Development in Korea and Vietnam: Focusing on Manpower Planning Reforms”"
     ],
     "expertise": ["Human resource development", "Business administration", "Economic growth"]
   },
