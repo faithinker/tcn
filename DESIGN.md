@@ -390,7 +390,7 @@ No drop-shadows on **surfaces** - surface contrast + hairlines carry all hierarc
 
 - **`story-card-large` / `story-card`** - feature news/event cards; serif heading + serif lead + sans byline.
 - **`story-row`** - bylined list row with hairline bottom border; for 공지/뉴스/논문 lists.
-- **`officer-card`** - parchment card for 임원진: serif name (`display-sm`), accent eyebrow role (`eyebrow`), serif bio (`body-serif`), optional circular avatar.
+- **`profile-card`** - canvas card for 임원진·이사진 (`MemberProfileCard.astro`, the only card on `/people`): accent caps role and muted country on one row, serif name (`display-sm`; `1.5rem` in the `compact` 3-up directors grid), a muted caps "current role" label above the serif position, then hairline-separated summary, `·`-marked highlight bullets, and bordered sans expertise chips. No avatar.
 
 ### Signature
 
