@@ -1,7 +1,7 @@
 // 글 등록/수정 시 Discord·Telegram 알림. outbox 없이 waitUntil 배달 —
 // 알림은 베스트에포트: 실패해도 글 저장·공개에 영향 주지 않는다.
 // 시크릿이 없는 채널은 조용히 건너뛴다(로컬 dev 기본 상태).
-import { seminarHref } from '../seminar-url';
+import { seminarHref } from '../seminars/url';
 
 export interface NotifyPost {
   id: string;

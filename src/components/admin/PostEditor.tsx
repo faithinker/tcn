@@ -1,73 +1,30 @@
+// 글 작성 컨테이너. 모든 상태와 API 호출은 여기 산다 — 하위 컴포넌트
+// (PostFields·BodyEditor·MediaManager·ReadinessAside)는 값·콜백만 받는 표현 계층이다.
+// 행동 계약은 scripts/verify-admin-authoring.mjs 브라우저 게이트가 잠근다.
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { useEditor } from '@tiptap/react';
 import { Markdown } from 'tiptap-markdown';
 import { useRef, useState } from 'react';
-import { ApiRequestError, requestJson } from '../../lib/admin-api';
+import { requestJson } from '../../lib/admin-api';
+import { requestErrorMessage } from './editor-messages';
+import { moveWithinGroup } from './media-order';
+import { postReadiness } from './readiness';
 import { processImage } from '../../lib/media/process-image';
-import { mediaMetadataForSave } from '../../lib/media-metadata';
-import { POST_LIMITS } from '../../lib/post-payload';
-import { seminarHref } from '../../lib/seminar-url';
-import { formatSeminarOrdinalLabel } from '../../lib/seminars';
+import { mediaMetadataForSave } from '../../lib/media/metadata';
+import { formatSeminarOrdinalLabel, seminarHref } from '../../lib/seminars';
+import BodyEditor from './BodyEditor';
+import MediaManager from './MediaManager';
+import PostFields from './PostFields';
+import ReadinessAside from './ReadinessAside';
+import type { EditorMedia, EditorPost } from './types';
 
-export interface EditorMedia {
-  id: string;
-  r2Key: string;
-  kind: 'image' | 'video' | 'document';
-  mimeType: string | null;
-  filename: string | null;
-  width: number | null;
-  height: number | null;
-  position: number;
-  caption: string | null;
-}
-
-export interface EditorPost {
-  id: string;
-  title: string;
-  summary: string | null;
-  eventDate: string | null;
-  address: string | null;
-  body: string;
-  heroMediaId: string | null;
-  revision: number;
-}
+export type { EditorMedia, EditorPost } from './types';
 
 interface Props {
   post?: EditorPost | null;
   media?: EditorMedia[];
   seminarSequence?: number;
-}
-
-const field =
-  'w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none';
-const labelText = 'mb-1 block text-caption font-bold text-body-muted';
-const mediaAction = 'inline-flex min-h-11 items-center font-bold underline';
-
-const saveErrors: Record<string, string> = {
-  event_date_required: 'Please select the seminar date.',
-  event_date_invalid: 'Please select a valid calendar date.',
-  event_date_conflict: 'Another seminar already uses this date.',
-  event_date_must_follow_latest: 'A new seminar date must be later than the latest seminar.',
-  event_date_immutable:
-    'The event date is locked because it determines the public URL and seminar sequence.',
-  hero_media_invalid: 'The cover image is no longer available. Choose another image and try again.',
-  title_too_long: `The title must be ${POST_LIMITS.title} characters or fewer.`,
-  summary_too_long: `The summary must be ${POST_LIMITS.summary} characters or fewer.`,
-  address_too_long: `The location must be ${POST_LIMITS.address} characters or fewer.`,
-  body_too_long: 'The body is too long to save.',
-  revision_conflict: 'Another editor saved changes first. Reload this page before editing again.',
-};
-
-function requestErrorMessage(error: unknown, fallback: string): string {
-  if (!(error instanceof ApiRequestError)) return fallback;
-  if (error.code === 'network_error')
-    return 'Network unavailable. Check your connection and try again.';
-  if (error.code === 'invalid_response')
-    return `The server returned an unreadable response (${error.status}). Try again.`;
-  if (error.code === 'unauthorized')
-    return 'Your session has expired. Sign in again before retrying.';
-  return saveErrors[error.code] ?? `${fallback} (${error.code})`;
 }
 
 export default function PostEditor({
@@ -260,27 +217,8 @@ export default function PostEditor({
     );
   };
 
-  const moveMediaWithinGroup = (id: string, offset: -1 | 1) => {
-    setMedia((current) => {
-      const index = current.findIndex((item) => item.id === id);
-      if (index < 0) return current;
-      const isImage = current[index].kind === 'image';
-      const group = current.filter((item) => (item.kind === 'image') === isImage);
-      const groupIndex = group.findIndex((item) => item.id === id);
-      const destinationItem = group[groupIndex + offset];
-      if (!destinationItem) return current;
-      const destination = current.findIndex((item) => item.id === destinationItem.id);
-      const next = [...current];
-      [next[index], next[destination]] = [next[destination], next[index]];
-      return next;
-    });
-  };
-
-  const fileTypeLabel = (item: EditorMedia) => {
-    if (item.kind === 'video') return 'VIDEO';
-    const extension = item.filename?.split('.').pop()?.toUpperCase();
-    return extension && extension.length <= 5 ? extension : 'FILE';
-  };
+  const moveMediaWithinGroup = (id: string, offset: -1 | 1) =>
+    setMedia((current) => moveWithinGroup(current, id, offset));
 
   const deletePost = async () => {
     if (busy || !post || !window.confirm('Delete this post? (It will be hidden, not erased.)'))
@@ -296,401 +234,53 @@ export default function PostEditor({
     }
   };
 
-  const toolbarButton = (label: string, active: boolean, onClick: () => void) => (
-    <button
-      type="button"
-      onMouseDown={(event) => event.preventDefault()}
-      onClick={onClick}
-      aria-pressed={active}
-      className={`px-2 py-1 text-caption font-bold ${active ? 'bg-ink text-on-primary' : 'text-ink hover:bg-canvas-soft'}`}
-    >
-      {label}
-    </button>
-  );
-
-  const readiness = [
-    ['Event date and public URL', Boolean(eventDate)],
-    ['Location and map link', Boolean(address.trim())],
-    ['Lead summary', Boolean(summary.trim())],
-    ['Cover image', Boolean(heroMediaId)],
-    ['Body content', bodyHasContent],
-    ['Photos or materials', media.length > 0],
-    [
-      'Video transcripts',
-      fileMedia
-        .filter((item) => item.kind === 'video')
-        .every((item) => Boolean(item.caption?.trim())),
-    ],
-  ] as const;
-  const readinessCount = readiness.filter(([, complete]) => complete).length;
+  const readiness = postReadiness({
+    eventDate,
+    address,
+    summary,
+    heroMediaId,
+    bodyHasContent,
+    mediaCount: media.length,
+    videoCaptions: fileMedia.filter((item) => item.kind === 'video').map((item) => item.caption),
+  });
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <div className="min-w-0 space-y-6">
-        <div>
-          <label htmlFor="post-title" className={labelText}>
-            Seminar title / featured presentation
-          </label>
-          <input
-            id="post-title"
-            className={field}
-            maxLength={POST_LIMITS.title}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <p className="mt-1 text-caption text-body-muted">
-            The seminar number and public heading are generated from the event date.
-          </p>
-        </div>
-        <div>
-          <label htmlFor="post-summary" className={labelText}>
-            Summary (optional)
-          </label>
-          <input
-            id="post-summary"
-            className={field}
-            maxLength={POST_LIMITS.summary}
-            value={summary ?? ''}
-            onChange={(e) => setSummary(e.target.value)}
-          />
-          <p className="mt-1 text-caption text-body-muted">
-            Displayed as the lead paragraph on the public page.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="post-event-date" className={labelText}>
-              Event date
-            </label>
-            <input
-              id="post-event-date"
-              type="date"
-              className={`${field} disabled:cursor-not-allowed disabled:bg-canvas-band disabled:text-body-muted`}
-              value={eventDate ?? ''}
-              onChange={(e) => setEventDate(e.target.value)}
-              disabled={eventDateLocked}
-              aria-describedby="event-date-help"
-            />
-            <p id="event-date-help" className="mt-1 text-caption text-body-muted">
-              {eventDateLocked
-                ? 'Locked after creation because the date determines the sequence and public URL.'
-                : 'New seminars must use a date later than the latest seminar.'}
-            </p>
-          </div>
-          <div>
-            <label htmlFor="post-address" className={labelText}>
-              Location
-            </label>
-            <input
-              id="post-address"
-              className={field}
-              maxLength={POST_LIMITS.address}
-              value={address ?? ''}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <p className="mt-1 text-caption text-body-muted">
-              Used as one complete location and for the map link.
-            </p>
-          </div>
-        </div>
+        <PostFields
+          title={title}
+          summary={summary}
+          eventDate={eventDate}
+          address={address}
+          eventDateLocked={eventDateLocked}
+          publicHref={publicHref}
+          ordinalLabel={ordinalLabel}
+          isExisting={Boolean(post)}
+          onTitleChange={setTitle}
+          onSummaryChange={setSummary}
+          onEventDateChange={setEventDate}
+          onAddressChange={setAddress}
+        />
 
-        <div className="border-y border-hairline-strong bg-canvas-soft px-4 py-4">
-          <p className="text-caption font-bold uppercase text-accent">Public seminar identity</p>
-          {publicHref ? (
-            <>
-              <p className="mt-2 font-serif text-body-serif font-semibold text-ink">
-                {ordinalLabel}
-              </p>
-              {post ? (
-                <a
-                  href={publicHref}
-                  className="mt-1 inline-flex min-h-[44px] items-center font-mono text-caption font-bold text-link underline"
-                >
-                  {publicHref}
-                </a>
-              ) : (
-                <code className="mt-2 block font-mono text-caption font-bold text-body-muted">
-                  {publicHref}
-                </code>
-              )}
-            </>
-          ) : (
-            <p className="mt-2 text-body-sm text-body-muted">
-              Select an event date to preview the public URL.
-            </p>
-          )}
-        </div>
+        <BodyEditor editor={editor} />
 
-        <div>
-          <p id="post-body-label" className={labelText}>
-            Body
-          </p>
-          <div className="border border-hairline-strong bg-canvas">
-            <div
-              role="toolbar"
-              aria-labelledby="post-body-label"
-              className="flex flex-wrap gap-1 border-b border-hairline bg-canvas-soft px-2 py-1.5"
-            >
-              {toolbarButton('B', editor?.isActive('bold') ?? false, () =>
-                editor?.chain().focus().toggleBold().run(),
-              )}
-              {toolbarButton('I', editor?.isActive('italic') ?? false, () =>
-                editor?.chain().focus().toggleItalic().run(),
-              )}
-              {toolbarButton('H2', editor?.isActive('heading', { level: 2 }) ?? false, () =>
-                editor?.chain().focus().toggleHeading({ level: 2 }).run(),
-              )}
-              {toolbarButton('H3', editor?.isActive('heading', { level: 3 }) ?? false, () =>
-                editor?.chain().focus().toggleHeading({ level: 3 }).run(),
-              )}
-              {toolbarButton('• List', editor?.isActive('bulletList') ?? false, () =>
-                editor?.chain().focus().toggleBulletList().run(),
-              )}
-              {toolbarButton('1. List', editor?.isActive('orderedList') ?? false, () =>
-                editor?.chain().focus().toggleOrderedList().run(),
-              )}
-              {toolbarButton('Quote', editor?.isActive('blockquote') ?? false, () =>
-                editor?.chain().focus().toggleBlockquote().run(),
-              )}
-              {toolbarButton('Link', editor?.isActive('link') ?? false, () => {
-                const url = window.prompt('Link URL (https://…)');
-                if (url)
-                  editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-                else editor?.chain().focus().unsetLink().run();
-              })}
-            </div>
-            <EditorContent editor={editor} />
-          </div>
-        </div>
-
-        <div ref={mediaManagerRef} tabIndex={-1}>
-          <p className={labelText}>Media (photos, video, documents)</p>
-          {!post ? (
-            <p className="text-caption text-body-muted">Save the post first to attach media.</p>
-          ) : (
-            <>
-              <div
-                data-dropzone
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={(e) => {
-                  // 자식 요소로 이동할 때 발생하는 leave는 무시
-                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragging(false);
-                  void uploadFiles(e.dataTransfer.files);
-                }}
-                className={`mb-3 border border-dashed p-4 text-center transition-colors ${
-                  dragging ? 'border-accent bg-canvas-soft' : 'border-hairline-strong bg-canvas'
-                }`}
-              >
-                <p className="text-caption font-bold text-ink">
-                  Drag photos, video, or documents here
-                </p>
-                <p className="mt-1 text-caption text-body-muted">or choose files</p>
-                <input
-                  type="file"
-                  multiple
-                  disabled={busy}
-                  accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
-                  onChange={(e) => uploadFiles(e.target.files)}
-                  className="mx-auto mt-2 block text-caption text-body-muted"
-                />
-              </div>
-              {imageMedia.length > 0 && (
-                <section aria-labelledby="media-images-heading">
-                  <div className="flex items-center justify-between">
-                    <h3
-                      id="media-images-heading"
-                      className="font-sans text-body-sm font-bold text-ink"
-                    >
-                      Images
-                    </h3>
-                    <span className="text-caption text-body-muted">{imageMedia.length}</span>
-                  </div>
-                  <ul className="mt-2 grid gap-3 sm:grid-cols-2">
-                    {imageMedia.map((item, index) => (
-                      <li key={item.id} className="border border-hairline p-2">
-                        <img
-                          src={`/media/${item.r2Key}`}
-                          alt=""
-                          className="aspect-square w-full bg-canvas-band object-cover"
-                        />
-                        <p className="mt-1 truncate text-caption text-body-muted">
-                          {item.filename}
-                        </p>
-                        {openCaptions.has(item.id) && (
-                          <div className="mt-3">
-                            <label htmlFor={`media-caption-${item.id}`} className={labelText}>
-                              Caption (optional)
-                            </label>
-                            <input
-                              id={`media-caption-${item.id}`}
-                              className={field}
-                              maxLength={500}
-                              placeholder="Describe this photo…"
-                              value={item.caption ?? ''}
-                              onChange={(event) => updateCaption(item.id, event.target.value)}
-                            />
-                            <p className="mt-1 text-caption text-body-muted">
-                              Leave empty to show the image without a visible caption.
-                            </p>
-                          </div>
-                        )}
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 text-caption">
-                          <button
-                            type="button"
-                            onClick={() => setHeroMediaId(item.id)}
-                            disabled={busy}
-                            className={`inline-flex min-h-11 items-center font-bold ${heroMediaId === item.id ? 'text-accent' : 'text-link'}`}
-                          >
-                            {heroMediaId === item.id ? '★ Cover' : 'Set as cover'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => toggleCaption(item.id)}
-                            disabled={busy}
-                            className={`${mediaAction} text-link`}
-                          >
-                            {openCaptions.has(item.id)
-                              ? 'Hide caption field'
-                              : item.caption
-                                ? 'Edit caption'
-                                : 'Add caption'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveMediaWithinGroup(item.id, -1)}
-                            disabled={busy || index === 0}
-                            className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                            aria-label={`Move ${item.filename ?? 'image'} earlier`}
-                          >
-                            Earlier
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveMediaWithinGroup(item.id, 1)}
-                            disabled={busy || index === imageMedia.length - 1}
-                            className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                            aria-label={`Move ${item.filename ?? 'image'} later`}
-                          >
-                            Later
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeMedia(item.id)}
-                            disabled={busy}
-                            className={`${mediaAction} text-accent`}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 text-caption text-body-muted">
-                    Cover image changes take effect after saving.
-                  </p>
-                </section>
-              )}
-              {fileMedia.length > 0 && (
-                <section
-                  className={imageMedia.length > 0 ? 'mt-6' : ''}
-                  aria-labelledby="media-files-heading"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3
-                      id="media-files-heading"
-                      className="font-sans text-body-sm font-bold text-ink"
-                    >
-                      Files
-                    </h3>
-                    <span className="text-caption text-body-muted">{fileMedia.length}</span>
-                  </div>
-                  <ul className="mt-2 divide-y divide-hairline border-y border-hairline">
-                    {fileMedia.map((item, index) => (
-                      <li key={item.id} className="py-3">
-                        <div className="sm:flex sm:items-center sm:gap-4">
-                          <div className="flex min-w-0 flex-1 items-center gap-3">
-                            <span
-                              className="inline-flex h-10 w-12 shrink-0 items-center justify-center bg-canvas-band font-mono text-caption font-bold text-body-muted"
-                              aria-hidden="true"
-                            >
-                              {fileTypeLabel(item)}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="break-words font-sans text-body-sm font-bold text-ink">
-                                {item.filename ?? 'Untitled file'}
-                              </p>
-                              <p className="font-sans text-caption text-body-muted">
-                                {item.kind === 'video' ? 'Video file' : 'Document'}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="mt-2 flex flex-wrap items-center gap-x-3 font-sans text-caption sm:mt-0 sm:shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => moveMediaWithinGroup(item.id, -1)}
-                              disabled={busy || index === 0}
-                              className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                              aria-label={`Move ${item.filename ?? 'file'} earlier`}
-                            >
-                              Earlier
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveMediaWithinGroup(item.id, 1)}
-                              disabled={busy || index === fileMedia.length - 1}
-                              className={`${mediaAction} text-link disabled:cursor-not-allowed disabled:opacity-40`}
-                              aria-label={`Move ${item.filename ?? 'file'} later`}
-                            >
-                              Later
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeMedia(item.id)}
-                              disabled={busy}
-                              className={`${mediaAction} text-accent`}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                        {item.kind === 'video' && (
-                          <div className="mt-3">
-                            <label htmlFor={`video-transcript-${item.id}`} className={labelText}>
-                              Video transcript (required for public display)
-                            </label>
-                            <textarea
-                              id={`video-transcript-${item.id}`}
-                              className={field}
-                              rows={4}
-                              maxLength={500}
-                              value={item.caption ?? ''}
-                              onChange={(event) => updateCaption(item.id, event.target.value)}
-                              aria-describedby={`video-transcript-help-${item.id}`}
-                            />
-                            <p
-                              id={`video-transcript-help-${item.id}`}
-                              className="mt-1 text-caption text-body-muted"
-                            >
-                              This video remains hidden from the public page until the transcript is
-                              saved.
-                            </p>
-                          </div>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-            </>
-          )}
-        </div>
+        <MediaManager
+          hasPost={Boolean(post)}
+          busy={busy}
+          dragging={dragging}
+          imageMedia={imageMedia}
+          fileMedia={fileMedia}
+          openCaptions={openCaptions}
+          heroMediaId={heroMediaId}
+          managerRef={mediaManagerRef}
+          onDraggingChange={setDragging}
+          onUpload={(files) => void uploadFiles(files)}
+          onSetHero={setHeroMediaId}
+          onToggleCaption={toggleCaption}
+          onCaptionChange={updateCaption}
+          onMove={moveMediaWithinGroup}
+          onRemove={(id) => void removeMedia(id)}
+        />
 
         <div className="flex items-center gap-4 border-t border-hairline pt-5">
           <button
@@ -717,61 +307,7 @@ export default function PostEditor({
         </div>
       </div>
 
-      <aside className="space-y-4 lg:sticky lg:top-6" aria-label="Public page readiness">
-        <section className="border-t-2 border-hairline-strong bg-canvas-soft p-4">
-          <p className="text-caption font-bold uppercase tracking-wider text-accent">
-            Public page readiness
-          </p>
-          <p className="mt-2 font-serif text-display-sm font-semibold text-ink">
-            {Math.round((readinessCount / readiness.length) * 100)}%
-          </p>
-          <ul className="mt-3 divide-y divide-hairline border-y border-hairline">
-            {readiness.map(([label, complete]) => (
-              <li
-                key={label}
-                className={`py-2 text-caption font-bold ${complete ? 'text-ink' : 'text-body-muted'}`}
-              >
-                <span className="mr-2" aria-hidden="true">
-                  {complete ? '✓' : '○'}
-                </span>
-                {label}
-              </li>
-            ))}
-          </ul>
-          {post && publicHref && (
-            <a
-              href={publicHref}
-              target="_blank"
-              rel="noopener"
-              className="mt-4 flex min-h-[44px] items-center justify-between border border-hairline-strong px-3 text-caption font-bold text-ink no-underline hover:bg-canvas"
-            >
-              <span>Open public preview</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-          )}
-        </section>
-        <section className="border border-hairline bg-canvas p-4">
-          <p className="text-caption font-bold uppercase tracking-wider text-accent">
-            Automatic mapping
-          </p>
-          <dl className="mt-3 divide-y divide-hairline text-caption">
-            {[
-              ['Title', 'Featured presentation'],
-              ['Summary', 'Lead paragraph'],
-              ['Date', 'Sequence + URL'],
-              ['Location', 'Event rail + map'],
-              ['H2 / H3', 'On this page'],
-              ['Media', 'Cover + gallery'],
-            ].map(([source, output]) => (
-              <div key={source} className="grid grid-cols-[1fr_auto_1fr] gap-2 py-2">
-                <dt className="text-body-muted">{source}</dt>
-                <span aria-hidden="true">→</span>
-                <dd className="m-0 text-right font-bold text-ink">{output}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      </aside>
+      <ReadinessAside readiness={readiness} hasPost={Boolean(post)} publicHref={publicHref} />
     </div>
   );
 }

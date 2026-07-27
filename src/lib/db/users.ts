@@ -4,7 +4,7 @@ import type { User } from './types';
 const COLUMNS = `id, username, password_hash as passwordHash, display_name as displayName,
   session_version as sessionVersion, created_at as createdAt`;
 
-// 로그인용 조회(비번 해시 포함). 인증 비교는 auth 레이어(5단계)에서.
+// 비밀번호 비교는 auth 레이어에서 수행한다.
 export async function getUserByUsername(db: D1Database, username: string): Promise<User | null> {
   return (
     (await db

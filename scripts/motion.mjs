@@ -1,4 +1,4 @@
-// scripts/motion.mjs — L13 스크롤 진입 모션 검증 (Playwright).
+// 스크롤 진입 모션 검증.
 // 전제: preview 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
 // 검사: (1)html.js 부여 (2)hero 항상 표시 (3)하위 섹션 스크롤 전 은닉→후 표시
 //       (4)reduced-motion서 즉시 표시 (5)JS 미동작 시 표시.
@@ -25,7 +25,6 @@ const op = (page, sel, nth = 0) =>
 // 짧은 뷰포트 → 2번째 섹션이 접힘 아래에 위치하도록.
 const VP = { width: 1280, height: 500 };
 
-// 1) 기본 동작
 {
   const ctx = await browser.newContext({ viewport: VP });
   const page = await ctx.newPage();
@@ -58,7 +57,6 @@ const VP = { width: 1280, height: 500 };
   await ctx.close();
 }
 
-// 2) prefers-reduced-motion → 스크롤 전에도 표시, 모션 off
 {
   const ctx = await browser.newContext({ viewport: VP, reducedMotion: 'reduce' });
   const page = await ctx.newPage();
@@ -69,7 +67,6 @@ const VP = { width: 1280, height: 500 };
   await ctx.close();
 }
 
-// 3) JS 미동작 폴백 → 모든 섹션 표시
 {
   const ctx = await browser.newContext({ viewport: VP, javaScriptEnabled: false });
   const page = await ctx.newPage();

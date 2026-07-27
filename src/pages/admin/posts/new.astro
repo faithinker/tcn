@@ -4,7 +4,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
 import { getSessionUid } from '../../../lib/auth';
 import { getDB, getUserById } from '../../../lib/db';
-import { getSeminarCollection } from '../../../lib/seminar-service';
+import { getSeminarCollection } from '../../../lib/seminars/service';
 
 const uid = await getSessionUid(Astro.request);
 if (!uid) return Astro.redirect('/admin/login');

@@ -10,8 +10,8 @@ import {
   updatePost,
 } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
-import { parsePostPayload } from '../../../lib/post-payload';
-import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminar-validation';
+import { parsePostPayload } from '../../../lib/posts';
+import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminars';
 
 export const prerender = false;
 
@@ -91,7 +91,6 @@ export const PUT: APIRoute = async ({ request, params }) => {
   return Response.json({ ok: true, post });
 };
 
-// soft delete: deleted_at 만 세팅(실삭제 아님).
 export const DELETE: APIRoute = async ({ request, params }) => {
   const uid = await getSessionUid(request);
   if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });

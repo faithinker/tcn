@@ -1,10 +1,10 @@
-// scripts/verify.mjs — TCN 루프 검증 하네스
+// 공개 페이지와 라우트 계약 검증.
 // 목적: 각 라우트를 375/768/1280에서 렌더 → (1)콘솔/페이지 에러 (2)가로 오버플로 (3)HTTP 상태 검사 + 스크린샷 저장.
 //       + 라우트 계약(301·404) 검사 — 리다이렉트를 따라가지 않고 상태코드 자체를 단언한다.
 // 전제: preview/dev 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
 // 사용: BASE_URL=http://localhost:4321 ROUTES=/,/about,/people node scripts/verify.mjs
-// 종료코드: 실패 1건 이상이면 1 (루프 Done 게이트). 통과 시 0.
-// 산출물: verify/<route>-<width>.png  → 에이전트가 Read로 육안 확인.
+// 종료코드: 실패 1건 이상이면 1, 모두 통과하면 0.
+// 산출물: verify/<route>-<width>.png.
 // 폰트/네트워크 로드 대기 후 촬영. 셀프호스팅 폰트라 외부 요청 없음.
 
 import { mkdirSync } from 'node:fs';
@@ -35,7 +35,7 @@ const WIDTHS = (process.env.WIDTHS || '375,768,1280').split(',').map(Number);
 const CONTRACTS = process.env.CONTRACTS
   ? JSON.parse(process.env.CONTRACTS)
   : [
-      // 구 UUID 딥링크 → 날짜 정식 URL 영구 이전
+      // UUID 딥링크 → 날짜 정식 URL 영구 이전
       {
         path: '/seminars/p/5a1c9d1e-0001-4d1e-8f00-000000000001',
         status: 301,
@@ -46,7 +46,7 @@ const CONTRACTS = process.env.CONTRACTS
         status: 301,
         location: '/seminars/2026-10-30',
       },
-      // slash 변형과 레거시 링크는 중간 홉 없이 정식 URL로 이동
+      // slash 변형과 호환성 링크는 중간 홉 없이 정식 URL로 이동
       { path: '/about/', status: 301, location: '/about' },
       { path: '/seminars/2025-12-26/', status: 301, location: '/seminars/2025-12-26' },
       { path: '/ko/seminars/2025-laos/', status: 301, location: '/seminars/2025-12-26' },
@@ -89,7 +89,7 @@ for (const route of ROUTES) {
       const resp = await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       status = resp ? resp.status() : 0;
-      // L13: 스크롤 진입 리빌을 발화시킨 뒤 촬영(접힘 아래 섹션이 캡처에 보이도록).
+      // 접힘 아래 섹션도 캡처되도록 스크롤 진입 효과를 발화한다.
       await page.evaluate(async () => {
         const step = Math.floor(window.innerHeight * 0.8);
         for (let y = 0; y <= document.body.scrollHeight; y += step) {

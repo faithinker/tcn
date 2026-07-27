@@ -3,7 +3,6 @@ export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getSessionUid } from '../../lib/auth';
 
-// 이미 로그인 상태면 대시보드로.
 if (await getSessionUid(Astro.request)) return Astro.redirect('/admin');
 ---
 

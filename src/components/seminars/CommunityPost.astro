@@ -1,0 +1,386 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaLightbox from '../../components/media/MediaLightbox.astro';
+import { formatDate } from '../../i18n/utils';
+import { content } from '../../i18n/content';
+import { groupMedia, renderPostContent, seminarLightboxEntries } from '../../lib/posts';
+import type { Media } from '../../lib/db/types';
+import type { SeminarView } from '../../lib/seminars';
+
+interface Props {
+  post: SeminarView;
+  media: Media[];
+}
+
+const { post, media } = Astro.props as Props;
+const copy = content.seminars;
+
+const renderedBody = renderPostContent(post.body);
+const grouped = groupMedia(media, post.heroMediaId);
+const carouselEntries = seminarLightboxEntries(grouped, post.ordinalLabel);
+const carouselId = `seminar-${post.id}`;
+const carouselIndex = new Map(carouselEntries.map((entry, index) => [entry.id, index]));
+const viewer = content.mediaViewer;
+const mapUrl = post.address
+  ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(post.address)}`
+  : null;
+const mediaSrc = (item: Media) => `/media/${item.r2Key}`;
+const formatBytes = (size: number | null) =>
+  size == null
+    ? ''
+    : size >= 1048576
+      ? `${(size / 1048576).toFixed(1)} MB`
+      : `${Math.max(1, Math.round(size / 1024))} KB`;
+const seminarIdentity = `TCN Seminar · ${String(post.sequence).padStart(2, '0')}`;
+const showFeaturedTitle = post.title !== post.ordinalLabel;
+const showContents = renderedBody.headings.length >= 2;
+---
+
+<BaseLayout title={`${post.ordinalLabel} — ${post.title}`} description={post.summary ?? undefined}>
+  <section class="bg-canvas px-5 py-12 sm:py-24">
+    <article class="mx-auto max-w-[75rem]">
+      <a
+        href="/seminars"
+        class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+        >← {copy.backToList}</a
+      >
+
+      <header class="mt-4 border-y border-hairline-strong py-8 sm:py-10">
+        <p class="eyebrow !mb-0">{seminarIdentity}</p>
+        <h1
+          class="mt-4 max-w-[20ch] font-serif text-display-md font-semibold text-ink sm:text-display-lg"
+        >
+          {post.ordinalLabel}
+        </h1>
+        {
+          showFeaturedTitle && (
+            <p class="mt-5 font-sans text-body-sm font-bold text-body-muted">
+              {copy.featuredPresentationLabel}: <span class="text-ink">{post.title}</span>
+            </p>
+          )
+        }
+      </header>
+
+      <div
+        class="mx-auto mt-10 grid max-w-[68rem] items-start gap-10 lg:grid-cols-[minmax(0,42.5rem)_18rem] lg:gap-16"
+      >
+        <div class="min-w-0">
+          {
+            grouped.hero && (
+              <figure class="mb-10">
+                <button
+                  type="button"
+                  class="media-trigger"
+                  data-lightbox-open={carouselId}
+                  data-lightbox-index={carouselIndex.get(grouped.hero.id)}
+                  aria-label={`${viewer.viewPrefix}: ${carouselEntries[carouselIndex.get(grouped.hero.id)!].caption}`}
+                >
+                  <img
+                    src={mediaSrc(grouped.hero)}
+                    alt={carouselEntries[carouselIndex.get(grouped.hero.id)!].alt}
+                    width={grouped.hero.width ?? undefined}
+                    height={grouped.hero.height ?? undefined}
+                    decoding="async"
+                    class="aspect-video w-full border border-hairline object-cover"
+                  />
+                  <span class="media-hint" aria-hidden="true">
+                    {viewer.viewHint}
+                  </span>
+                </button>
+                {grouped.hero.caption && (
+                  <figcaption class="mt-2 font-sans text-caption text-body-muted">
+                    {grouped.hero.caption}
+                  </figcaption>
+                )}
+              </figure>
+            )
+          }
+
+          {post.summary && <p class="font-serif text-lead text-body">{post.summary}</p>}
+
+          {renderedBody.html && <div class="post-body mt-6" set:html={renderedBody.html} />}
+
+          {
+            grouped.images.length > 0 && (
+              <section id="photos" class="scroll-mt-28 mt-12 border-t border-hairline-strong pt-8">
+                <p class="font-sans text-caption font-bold uppercase text-accent">
+                  {copy.photosLabel}
+                </p>
+                <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                  {grouped.images.map((item) => {
+                    const index = carouselIndex.get(item.id)!;
+                    const entry = carouselEntries[index];
+                    return (
+                      <figure>
+                        <button
+                          type="button"
+                          class="media-trigger"
+                          data-lightbox-open={carouselId}
+                          data-lightbox-index={index}
+                          aria-label={`${viewer.viewPrefix}: ${entry.caption}`}
+                        >
+                          <img
+                            src={mediaSrc(item)}
+                            alt={entry.alt}
+                            loading="lazy"
+                            decoding="async"
+                            class="aspect-[3/2] w-full border border-hairline object-cover"
+                          />
+                          <span class="media-hint" aria-hidden="true">
+                            {viewer.viewHint}
+                          </span>
+                        </button>
+                        {item.caption && (
+                          <figcaption class="mt-2 font-sans text-caption text-body-muted">
+                            {item.caption}
+                          </figcaption>
+                        )}
+                      </figure>
+                    );
+                  })}
+                </div>
+              </section>
+            )
+          }
+
+          {
+            grouped.videos.length > 0 && (
+              <section id="videos" class="scroll-mt-28 mt-12 border-t border-hairline-strong pt-8">
+                <p class="font-sans text-caption font-bold uppercase text-accent">
+                  {copy.videosLabel}
+                </p>
+                <div class="mt-4 space-y-5">
+                  {grouped.videos.map((item) => (
+                    <figure>
+                      <video
+                        controls
+                        preload="metadata"
+                        class="w-full border border-hairline"
+                        src={mediaSrc(item)}
+                        aria-describedby={`video-transcript-${item.id}`}
+                      />
+                      <figcaption
+                        id={`video-transcript-${item.id}`}
+                        class="mt-2 font-sans text-caption text-body-muted"
+                      >
+                        <strong class="text-ink">Transcript:</strong> {item.caption}
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          {
+            grouped.documents.length > 0 && (
+              <section
+                id="materials"
+                class="scroll-mt-28 mt-12 border-t border-hairline-strong pt-8"
+              >
+                <p class="font-sans text-caption font-bold uppercase text-accent">
+                  {copy.materialsLabel}
+                </p>
+                <ul class="mt-4 divide-y divide-hairline border-y border-hairline font-sans text-body-sans">
+                  {grouped.documents.map((item) => (
+                    <li class="py-4">
+                      <a
+                        href={mediaSrc(item)}
+                        download={item.filename ?? true}
+                        class="font-bold text-link underline hover:text-link-hover"
+                      >
+                        {item.caption ?? item.filename ?? 'document'}
+                      </a>
+                      {item.size != null && (
+                        <span class="ml-2 text-caption text-body-muted">
+                          {formatBytes(item.size)}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+        </div>
+
+        <aside
+          class="order-first min-w-0 lg:order-none lg:sticky lg:top-24"
+          aria-label="Event details"
+        >
+          <div
+            class="border-t-2 border-hairline-strong bg-canvas-soft p-5 lg:bg-transparent lg:px-0 lg:pb-0"
+          >
+            <p class="font-sans text-caption font-bold uppercase tracking-wider text-ink">
+              Event details
+            </p>
+            <dl class="mt-4 divide-y divide-hairline font-sans">
+              <div class="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 py-3">
+                <dt class="text-caption font-bold uppercase text-body-muted">Date</dt>
+                <dd class="m-0 text-body-sm font-bold text-ink">{formatDate(post.eventDate)}</dd>
+              </div>
+              {
+                post.address && (
+                  <div class="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 py-3">
+                    <dt class="text-caption font-bold uppercase text-body-muted">Location</dt>
+                    <dd class="m-0 break-words text-body-sm font-bold text-ink">{post.address}</dd>
+                  </div>
+                )
+              }
+            </dl>
+            {
+              mapUrl && (
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noopener"
+                  class="mt-3 flex min-h-[46px] items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
+                >
+                  <>
+                    <span>{copy.mapLink}</span>
+                    <span aria-hidden="true">↗</span>
+                  </>
+                </a>
+              )
+            }
+            {
+              grouped.documents.length > 0 && (
+                <a
+                  href="#materials"
+                  class="mt-3 flex min-h-[46px] items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
+                >
+                  <>
+                    <span>Presentation material</span>
+                    <span aria-hidden="true">↓</span>
+                  </>
+                </a>
+              )
+            }
+            {
+              showContents && (
+                <nav
+                  class="mt-7 hidden border-t border-hairline-strong pt-4 lg:block"
+                  aria-label="On this page"
+                >
+                  <p class="font-sans text-caption font-bold uppercase tracking-wider text-body-muted">
+                    On this page
+                  </p>
+                  <ul class="mt-2 space-y-1">
+                    {renderedBody.headings.map((heading) => (
+                      <li class={heading.depth === 3 ? 'pl-3' : ''}>
+                        <a
+                          href={`#${heading.id}`}
+                          class="block py-1.5 font-sans text-caption font-bold text-ink no-underline hover:text-link hover:underline"
+                        >
+                          {heading.text}
+                        </a>
+                      </li>
+                    ))}
+                    {grouped.images.length > 0 && (
+                      <li>
+                        <a
+                          href="#photos"
+                          class="block py-1.5 font-sans text-caption font-bold text-ink no-underline hover:text-link hover:underline"
+                        >
+                          Photos
+                        </a>
+                      </li>
+                    )}
+                    {grouped.videos.length > 0 && (
+                      <li>
+                        <a
+                          href="#videos"
+                          class="block py-1.5 font-sans text-caption font-bold text-ink no-underline hover:text-link hover:underline"
+                        >
+                          Videos
+                        </a>
+                      </li>
+                    )}
+                    {grouped.documents.length > 0 && (
+                      <li>
+                        <a
+                          href="#materials"
+                          class="block py-1.5 font-sans text-caption font-bold text-ink no-underline hover:text-link hover:underline"
+                        >
+                          Materials
+                        </a>
+                      </li>
+                    )}
+                  </ul>
+                </nav>
+              )
+            }
+          </div>
+        </aside>
+      </div>
+    </article>
+  </section>
+  {carouselEntries.length > 0 && <MediaLightbox id={carouselId} entries={carouselEntries} />}
+</BaseLayout>
+
+<style>
+  .post-body :global(p) {
+    margin-top: 1rem;
+    font-family: var(--font-serif);
+    font-size: var(--text-body-serif);
+    line-height: var(--text-body-serif--line-height);
+    color: var(--color-body);
+  }
+  .post-body :global(h2),
+  .post-body :global(h3) {
+    scroll-margin-top: 7rem;
+    margin-top: 2.5rem;
+    font-family: var(--font-serif);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .post-body :global(h2) {
+    font-size: var(--text-display-sm);
+    line-height: var(--text-display-sm--line-height);
+  }
+  .post-body :global(h3) {
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+  }
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    margin-top: 1rem;
+    padding-left: 1.4em;
+    font-family: var(--font-serif);
+    font-size: var(--text-body-serif);
+    line-height: var(--text-body-serif--line-height);
+    color: var(--color-body);
+  }
+  .post-body :global(li) {
+    margin-top: 0.35rem;
+  }
+  .post-body :global(blockquote) {
+    margin: 3rem 0;
+    border-top: 2px solid var(--color-accent);
+    border-bottom: 2px solid var(--color-accent);
+    padding: 2rem 0;
+  }
+  .post-body :global(blockquote p) {
+    margin-top: 0;
+    font-size: var(--text-display-sm);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+  .post-body :global(blockquote p + p) {
+    margin-top: 0.75rem;
+  }
+  .post-body :global(a) {
+    font-weight: 700;
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  .post-body :global(a:hover) {
+    color: var(--color-link-hover);
+  }
+  .post-body :global(hr) {
+    margin: 2.5rem 0;
+    border: 0;
+    border-top: 1px solid var(--color-hairline);
+  }
+</style>

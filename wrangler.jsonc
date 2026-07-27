@@ -1,11 +1,10 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "tcn",
-  // @astrojs/cloudflare v14 통합 엔트리포인트 (astro dev·프로덕션 배포 겸용)
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-07-25",
   "compatibility_flags": ["nodejs_compat"],
-  // 정적 산출물(dist)을 ASSETS로 서빙. 빌드시 어댑터가 directory를 서버 기준 상대경로로 보정.
+  // 어댑터가 directory를 생성된 서버 출력 기준 상대 경로로 보정한다.
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",

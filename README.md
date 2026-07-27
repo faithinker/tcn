@@ -27,19 +27,20 @@
 
 ### 공개 페이지 구조
 
-영어 단일 루트 트리입니다. `about`/`people`/`contact` 등 소개 페이지는 정적, 세미나·글 관련 페이지는 D1을 조회하는 SSR입니다.
+영어 단일 루트 트리입니다. `/about`은 D1 세미나를 연혁에 합치기 위해 SSR이며, 그 밖의 소개 페이지는 정적입니다. 세미나·글 관련 페이지도 D1을 조회하는 SSR입니다.
 
-| 경로                                             | 렌더          | 내용                                                          |
-| ------------------------------------------------ | ------------- | ------------------------------------------------------------- |
-| `/`                                              | SSR           | 히어로, 차기 세미나(미래 개최일 글), 미션, 핵심 활동, 최신 글 |
-| `/about`, `/about/{founding,declaration,bylaws}` | 정적          | 소개·연혁, 창립총회, 창립 선언문, 정관                        |
-| `/people`                                        | 정적          | 임원진·이사 카드 (실명 미확보 시 "추후 공개")                 |
-| `/seminars`                                      | SSR           | 예정/지난 글 목록 (개최일로 자동 분류)                        |
-| `/seminars/p/[id]`                               | SSR           | 글 상세 - 마크다운 본문, 사진·영상·문서, 주소→지도 링크       |
-| `/contact`                                       | 정적          | 사무국 연락처                                                 |
-| `/sitemap.xml`                                   | SSR           | 정적 경로 + 공개 글                                           |
-| `/admin`, `/admin/**`                            | SSR (noindex) | 작성자 전용 CMS (로그인 필요)                                 |
-| `/api/**`, `/media/[key]`                        | SSR           | 인증·CRUD·업로드 / R2 미디어 스트리밍                         |
+| 경로                                   | 렌더          | 내용                                                          |
+| -------------------------------------- | ------------- | ------------------------------------------------------------- |
+| `/`                                    | SSR           | 히어로, 차기 세미나(미래 개최일 글), 미션, 핵심 활동, 최신 글 |
+| `/about`                               | SSR           | 소개·연혁 (정적 기관 기록 + D1 세미나)                        |
+| `/about/{founding,declaration,bylaws}` | 정적          | 창립총회, 창립 선언문, 정관                                   |
+| `/people`                              | 정적          | 임원진·이사 카드 (실명 미확보 시 "추후 공개")                 |
+| `/seminars`                            | SSR           | 예정/지난 글 목록 (개최일로 자동 분류)                        |
+| `/seminars/[date]`                     | SSR           | 글 상세 - 마크다운 본문, 사진·영상·문서, 주소→지도 링크       |
+| `/contact`                             | 정적          | 사무국 연락처                                                 |
+| `/sitemap.xml`                         | SSR           | 정적 경로 + 공개 글                                           |
+| `/admin`, `/admin/**`                  | SSR (noindex) | 작성자 전용 CMS (로그인 필요)                                 |
+| `/api/**`, `/media/[key]`              | SSR           | 인증·CRUD·업로드 / R2 미디어 스트리밍                         |
 
 구 URL(`/ko/*`·`/en/*`·연도-지역 slug·구 회차 허브 등)은 `public/_redirects`에서 새 경로로 301 이전됩니다.
 
@@ -54,13 +55,32 @@
 | 종류                    | 위치                                                           |
 | ----------------------- | -------------------------------------------------------------- |
 | 세미나·활동 글, 미디어  | Cloudflare **D1** `posts`·`media` (작성자가 `/admin`에서 입력) |
-| 연혁 (확정 기관 기록)   | `src/data/history.ts` (정적)                                   |
+| 연혁 (확정 기관 기록)   | `src/data/organization-milestones.ts` (정적)                   |
 | 임원·구성원             | `src/data/members.json`                                        |
 | 창립총회 초청장         | `src/data/invitations.json`                                    |
 | 페이지 카피 / UI 문자열 | `src/i18n/content.ts` / `src/i18n/ui.ts`                       |
 
-- 새 세미나·글: 개발자 관여 없이 **작성자가 `/admin`에서 직접 등록** → 목록·홈·상세에 즉시 반영.
+- 새 세미나·글: 개발자 관여 없이 **작성자가 `/admin`에서 직접 등록** → 목록·홈·연혁·상세에 즉시 반영.
 - 소개 페이지 카피 수정: `src/i18n/content.ts`.
+
+### 관리자 세미나 글 등록 시 영향 범위
+
+`/admin`에서 세미나를 저장하면 별도 배포 없이 즉시 공개됩니다.
+
+- 개최일은 실제 존재하는 날짜여야 하며(예: `2026-11-31` 불가), 기존 마지막 세미나보다 뒤여야 합니다.
+- 회차와 공개 URL(`/seminars/YYYY-MM-DD`)은 개최일순으로 자동 생성됩니다.
+- 홈은 미래 세미나 중 개최일이 가장 가까운 한 건을 차기 세미나로 표시합니다.
+
+| 대상                  | 반영 내용                                    |
+| --------------------- | -------------------------------------------- |
+| 홈 `/`                | 가장 가까운 차기 세미나와 최근 세미나 표시   |
+| 세미나 `/seminars`    | 예정·지난 세미나 목록에 자동 분류            |
+| 연혁 `/about#history` | 기관 연혁에 세미나 항목 추가                 |
+| 상세 페이지           | 날짜 기반 공개 URL과 본문·미디어 페이지 생성 |
+
+또한 sitemap과 관리자 글 목록이 갱신되며, 설정된 경우 Discord·Telegram 알림이 발송됩니다.
+
+예: 제2차가 `2026-10-30`, 제3차가 `2026-11-30`이면 홈에는 제2차가 계속 표시됩니다. `2026-10-31`부터 제3차가 차기 세미나로 표시됩니다.
 
 ---
 
@@ -72,7 +92,7 @@
 
 **① 프레임워크·언어**
 
-- **Astro 7.1** - 하이브리드 렌더. 소개 페이지는 정적 프리렌더, 글·목록·홈·`/admin`·`/api`는 `export const prerender = false`로 SSR.
+- **Astro 7.1** - 하이브리드 렌더. 대부분의 소개 페이지는 정적 프리렌더하고, D1 연혁을 포함하는 `/about`과 글·목록·홈·`/admin`·`/api`는 `export const prerender = false`로 SSR.
 - **TypeScript 5.9** - DB·인증·미디어·알림 등 핵심 로직 전부. `.astro` 컴포넌트 스크립트도 TS.
 - **React 19 + `@astrojs/react` 6** - 어드민 글쓰기 에디터(`PostEditor.tsx`) **단 하나**만 아일랜드로 하이드레이션. 공개 페이지에는 React 번들이 실리지 않음.
 
@@ -144,9 +164,9 @@ tcn/
 │   │   ├── notify/           # Discord/Telegram 알림
 │   │   └── posts-view.ts     # 마크다운 렌더 + 미디어 분류
 │   ├── components/
-│   │   └── admin/PostEditor.tsx   # React + Tiptap 에디터
-│   ├── page-templates/       # 페이지 본문 구현 (.astro)
-│   ├── data/                 # history.ts, members.json, invitations.json
+│   │   ├── admin/PostEditor.tsx   # React + Tiptap 에디터
+│   │   └── seminars/CommunityPost.astro   # 글 상세 본문 (라우트가 prop 주입)
+│   ├── data/                 # organization-milestones.ts, members.json, invitations.json, founding-media.json
 │   ├── i18n/                 # content.ts, ui.ts, utils.ts
 │   └── styles/global.css     # 디자인 토큰 + Tailwind
 ├── public/

@@ -1,7 +1,4 @@
-// UI 문자열 사전 — 영어 단일. 언어 분기 없이 평평한 키-값 구조를 쓴다.
-
 export const ui = {
-  // 브랜드
   'site.name': 'Transcultural Network',
   'site.abbr': 'TCN',
   'site.tagline':
@@ -37,7 +34,6 @@ export const ui = {
 
 export type UiKey = keyof typeof ui;
 
-/** UI 문자열 조회. */
 export function t(key: UiKey): string {
   return ui[key];
 }

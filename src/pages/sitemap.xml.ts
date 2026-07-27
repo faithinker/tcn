@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminar-service';
+import { getSeminarCollection } from '../lib/seminars/service';
 
-// 영어 단일 루트 트리: 정적 페이지 + D1 공개 글. SSR(글 즉시 반영).
 export const prerender = false;
 
 const STATIC_PATHS = [

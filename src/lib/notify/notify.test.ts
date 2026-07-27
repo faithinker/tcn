@@ -33,7 +33,7 @@ describe('sendPostNotifications', () => {
     const telegram = calls.find((c) => c.url.includes('telegram'));
     expect(discord?.body).toContain('New post');
     expect(discord?.body).toContain('/seminars/2025-12-26');
-    expect(telegram?.body).toContain('Updated post'.replace('Updated', 'New')); // 'New post'
+    expect(telegram?.body).toContain('Updated post'.replace('Updated', 'New'));
     expect(telegram?.body).toContain('-100123');
   });
 
@@ -73,7 +73,7 @@ describe('sendPostNotifications', () => {
       retryDelayMs: 0,
     });
 
-    expect(discordAttempts).toBe(3); // 1 + 2 재시도
+    expect(discordAttempts).toBe(3);
     expect(result).toEqual({ discord: false, telegram: true });
   });
 

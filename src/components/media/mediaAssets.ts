@@ -1,9 +1,7 @@
-// 마스터 자산 해석 + 전체 화면 상세보기용 URL 생성.
-// 화면 맞춤 파생본은 빌드 타임에 확정해서 DOM 으로 넘긴다.
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import { isImage, type FoundingMediaItem } from '../../lib/founding-media';
-import type { LightboxEntry } from '../../lib/media-lightbox';
+import { isImage, type FoundingMediaItem } from '../../lib/media/founding';
+import type { LightboxEntry } from '../../lib/media/lightbox';
 
 const masters = import.meta.glob<{ default: ImageMetadata }>('../../assets/founding/*.jpg', {
   eager: true,

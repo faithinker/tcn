@@ -1,11 +1,9 @@
-// Astro 7 Content Layer — 영어 단일 JSON 데이터 컬렉션과 Zod 스키마.
-// 데이터는 src/data/*.json (file 로더). 각 항목의 "id"가 엔트리 키(slug).
+// JSON 데이터 컬렉션은 파일의 "id"를 엔트리 키로 사용한다.
 import { defineCollection } from 'astro:content';
 import { file } from 'astro/loaders';
 import { z } from 'astro/zod';
 
-// seminars/history JSON은 Astro 컬렉션이 아니라 src/lib/content/adapter.ts가
-// 소유한다(Supabase 스냅샷의 폴백). 여기 정의하면 이중 스키마가 된다.
+// 세미나·게시글은 컬렉션이 아니라 D1(src/lib/db/posts.ts)이 소유한다. 여기 정의하면 이중 스키마가 된다.
 const members = defineCollection({
   loader: file('src/data/members.json'),
   schema: z.object({
