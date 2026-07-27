@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-07-28]
 ### Changed
+- Removed the duplicated degree details from Dr. SeongHo Jun's profile summary, leaving the existing education highlight intact and focusing the summary on his research areas. (Branch: `content/seongho-summary-dedup`) - Implemented by Codex
 - Corrected the board profiles on `/people`: removed the Asia Competition Association attaché title from Dr. Wonjoon Kim's current role, restated Dr. Zhang Wen's research summary around East Asian economic history, modern banking history, and traditional accounting in China and Korea (realigning her expertise tags to match), gave her SUSTech post its term (Sep 2019 – Nov 2021), and added Dr. Le Lan Huong's doctoral thesis title. (Branch: `content/people-profile-updates`) - Implemented by Claude
 - Unified the doctorate notation as `Ph.D` across all thirteen mentions, and surfaced the degree line for Dr. Wonjoon Kim and Dr. SeongHo Jun — both doctorates existed only in the unrendered `bio` field, so the site had never shown them. (Branch: `content/people-profile-updates`) - Implemented by Claude
 - Recast all seven profile summaries as pronoun-free prose rather than switching to a `Research interests:` label: four of the seven describe roles and career facts a research label cannot hold, and for the two that would fit, the label restates the expertise chips directly beneath it. (Branch: `content/people-profile-updates`) - Implemented by Claude
