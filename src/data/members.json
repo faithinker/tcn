@@ -7,21 +7,12 @@
     "group": "leadership",
     "order": 1,
     "country": "Republic of Korea",
-    "position": "Senior Advisor at Kim & Chang · Asia Competition Association Attaché",
-    "summary": "He formerly served as Acting Secretary General of the Korea Fair Trade Commission and as an Attaché at the Korean Delegation to the OECD.",
-    "bio": [
-      "Senior Advisor at Kim & Chang",
-      "Attaché, Asia Competition Association",
-      "Former Administrator at the Office of the President",
-      "Former Acting Secretary General of the Korea Fair Trade Commission",
-      "Former Adjunct Professor at Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
-      "Economic Planning Board, KFTC, and Korean Delegation to the OECD",
-      "PhD in Economics, Paris Nanterre University",
-      "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
-    ],
+    "position": "Senior Advisor at Kim & Chang",
+    "summary": "Formerly Acting Secretary General of the Korea Fair Trade Commission and an Attaché at the Korean Delegation to the OECD.",
     "highlights": [
       "Former Administrator at the Office of the President",
       "Former Adjunct Professor, Sungkyunkwan University Law School and Sogang University Graduate School of Management of Technology",
+      "Ph.D in Economics, Paris 10 University",
       "MPA, Seoul National University; BA in Economics, Sungkyunkwan University"
     ],
     "expertise": ["Economic policy", "Competition policy", "International cooperation"]
@@ -35,17 +26,12 @@
     "order": 2,
     "country": "Republic of Korea",
     "position": "Professor at the Academy of Korean Studies",
-    "summary": "He holds BA, MA, and PhD degrees in Economics from Sungkyunkwan University and researches economic and accounting history.",
-    "bio": [
-      "Professor at the Academy of Korean Studies",
-      "BA, MA, and PhD in Economics, Sungkyunkwan University",
-      "Postdoctoral research at the University of Oxford",
-      "Visiting Professor at Goethe University Frankfurt",
-      "Researcher at the International Institute of Social History, Netherlands"
-    ],
+    "summary": "Holds BA, MA, and Ph.D degrees in Economics from Sungkyunkwan University; researches economic and accounting history.",
     "highlights": [
       "Visiting Professor at Goethe University Frankfurt",
-      "Researcher at the International Institute of Social History"
+      "Researcher at the International Institute of Social History",
+      "Postdoctoral research at the University of Oxford",
+      "BA, MA, and Ph.D in Economics, Sungkyunkwan University"
     ],
     "expertise": ["Economic history", "Accounting history", "Commerce and capital"]
   },
@@ -58,15 +44,10 @@
     "order": 3,
     "country": "Laos",
     "position": "Dean of the Faculty of Economics and Tourism, Souphanouvong University",
-    "summary": "She leads the university's Center for Korean Studies and researches sustainable tourism, regional development, and Korean studies.",
-    "bio": [
-      "PhD in Economics, Graduate School of Korean Studies, AKS",
-      "Dean of the Faculty of Economics and Tourism, Souphanouvong University",
-      "Director of the Center for Korean Studies at Souphanouvong University"
-    ],
+    "summary": "Leads the university's Center for Korean Studies and researches sustainable tourism, regional development, and Korean studies.",
     "highlights": [
       "Director of the Center for Korean Studies",
-      "PhD in Economics, Academy of Korean Studies, 2017"
+      "Ph.D in Economics, Academy of Korean Studies, 2017"
     ],
     "expertise": ["Sustainable tourism", "Regional development", "Korean studies"]
   },
@@ -79,18 +60,12 @@
     "order": 4,
     "country": "China",
     "position": "Center for Economic Research, Shandong University",
-    "summary": "She researches East Asian economic history, traditional accounting, commercial networks, and trade relations.",
-    "bio": [
-      "PhD in Economics, Graduate School of Korean Studies, AKS",
-      "Center for Economic Research, Shandong University",
-      "Former Postdoctoral Researcher, School of Business, Southern University of Science and Technology",
-      "Former Researcher at the China Accounting Museum"
-    ],
+    "summary": "Research interests include East Asian economic history, modern banking history, and traditional accounting in China and Korea.",
     "highlights": [
-      "Former Postdoctoral Researcher at SUSTech",
-      "PhD in Economics, Academy of Korean Studies, 2019"
+      "Postdoctoral Researcher at SUSTech, Sep 2019 – Nov 2021",
+      "Ph.D in Economics, Academy of Korean Studies, 2019"
     ],
-    "expertise": ["East Asian economic history", "Traditional accounting", "Trade networks"]
+    "expertise": ["East Asian economic history", "Modern banking history", "Traditional accounting"]
   },
   {
     "id": "director-uz",
@@ -101,16 +76,10 @@
     "order": 5,
     "country": "Uzbekistan",
     "position": "Professor at Karakalpakstan National University and Senior Advisor to the Chair of the Supreme Council",
-    "summary": "She researches transculturalism in Central Asia and Korea and advises on trade, investment, and economic relations with the Republic of Korea.",
-    "bio": [
-      "PhD in Economics, Graduate School of Korean Studies, AKS",
-      "Professor at Karakalpakstan National University",
-      "Senior Advisor to the Chair of the Supreme Council of Karakalpakstan",
-      "Responsible for trade, investment, and economic relations with the Republic of Korea"
-    ],
+    "summary": "Researches transculturalism in Central Asia and Korea and advises on trade, investment, and economic relations with the Republic of Korea.",
     "highlights": [
       "Senior Advisor on trade, investment, and economic relations with the Republic of Korea",
-      "PhD in Economics, Academy of Korean Studies, 2024"
+      "Ph.D in Economics, Academy of Korean Studies, 2024"
     ],
     "expertise": ["Transculturalism", "Central Asia", "Economic cooperation"]
   },
@@ -123,15 +92,11 @@
     "order": 6,
     "country": "Vietnam",
     "position": "Lecturer, Faculty of Business Administration, Saigon University",
-    "summary": "She researches human resource development, workforce planning, business administration, and economic growth in Korea and Vietnam.",
-    "bio": [
-      "PhD in Economics, Graduate School of Korean Studies, AKS",
-      "Lecturer in the Faculty of Business Administration at Saigon University",
-      "Comparative research on human resource development in Korea and Vietnam"
-    ],
+    "summary": "Researches human resource development, workforce planning, business administration, and economic growth in Korea and Vietnam.",
     "highlights": [
       "Comparative research on Korean and Vietnamese human resource development",
-      "PhD in Economics, Academy of Korean Studies, 2020"
+      "Ph.D in Economics, Academy of Korean Studies, 2020",
+      "Doctoral thesis: “Human Resource Development in Korea and Vietnam: Focusing on Manpower Planning Reforms”"
     ],
     "expertise": ["Human resource development", "Business administration", "Economic growth"]
   },
@@ -144,12 +109,7 @@
     "order": 7,
     "country": "United States",
     "position": "CEO of ACE Engineering, Inc.",
-    "summary": "A civil engineering and construction executive in the United States, he founded ACE Engineering in 1987 and has led government and military construction projects.",
-    "bio": [
-      "CEO of ACE Engineering, Inc., USA",
-      "Construction projects for U.S. federal, military, state, and local government clients",
-      "BS in Civil Engineering, Sungkyunkwan University"
-    ],
+    "summary": "A civil engineering and construction executive in the United States who founded ACE Engineering in 1987 and has led government and military construction projects.",
     "highlights": [
       "BS in Civil Engineering, Sungkyunkwan University, 1980",
       "Construction projects for U.S. federal, military, state, and local government clients"

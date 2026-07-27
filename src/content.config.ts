@@ -15,7 +15,6 @@ const members = defineCollection({
     affiliation: z.string().optional(),
     position: z.string().optional(),
     summary: z.string().optional(),
-    bio: z.array(z.string()).optional(),
     highlights: z.array(z.string()).optional(),
     expertise: z.array(z.string()).optional(),
     country: z.string().optional(),

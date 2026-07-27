@@ -2,8 +2,8 @@
 
 디지털·AI 시대의 **초문화(transcultural) 현상**을 연구하는 국제 학술단체 초문화네트워크(TCN)의 공식 웹사이트입니다. 소개 사이트에 더해, 지정된 회원이 로그인해 세미나·활동 글을 직접 작성·공개하는 콘텐츠 플랫폼을 포함합니다.
 
-- **현재 배포 (운영)**: https://tcn.faithinker12.workers.dev - Cloudflare **Workers** · 영어 단일 · D1/R2 동적 사이트
-- **이전 배포 (구버전)**: https://tcn-ezj.pages.dev - Cloudflare **Pages** · 한국어(`/ko/`)·영어(`/en/`) 정적 사이트. 현재는 갱신되지 않으며 참고용으로만 남아 있습니다.
+- **현재 배포 (운영)**: [https://tcn.faithinker12.workers.dev](https://tcn.faithinker12.workers.dev) - Cloudflare **Workers** · 영어 단일 · D1/R2 동적 사이트
+- **이전 배포 (구버전)**: [https://tcn-ezj.pages.dev](https://tcn-ezj.pages.dev) - Cloudflare **Pages** · 한국어(`/ko/`)·영어(`/en/`) 정적 사이트. 현재는 갱신되지 않으며 참고용으로만 남아 있습니다.
 - **성격**: 영어 단일 사이트 + 인증 기반 글쓰기 CMS. 콘텐츠는 Cloudflare **D1**(DB)·**R2**(미디어)에 저장되며, 공개 페이지가 이를 실시간 조회(SSR)합니다. **글을 저장하면 즉시 공개**되고 재빌드가 필요 없습니다.
 
 ---
@@ -19,10 +19,10 @@
 | 약칭         | TCN                                                                               |
 | 정의         | 국가·민족·언어·문화의 경계를 넘어 새로운 제3의 문화를 창조하는 국제 학술 네트워크 |
 | 사무국       | 인천광역시 강화군 강화읍 국화리 286                                               |
-| 창립         | 2025-12-12, 성균관대 명륜캠퍼스 (창립국 15개국)                                   |
+| 창립         | 2025-12-12, 성균관대 명륜캠퍼스                                                   |
 | 회장         | 김원준 (Dr. Wonjoon Kim)                                                          |
 | 수석부회장   | 전성호 교수                                                                       |
-| 제1차 세미나 | 2025-12-26, 라오스 루앙프라방                                                     |
+| 제1차 세미나 | 2025-12-26, Laos Souphanouvong University                                         |
 | 제2차 세미나 | 2026-10-30, TCN 본부 (인천 강화)                                                  |
 
 ### 공개 페이지 구조
@@ -195,6 +195,18 @@ npm run generate-types # wrangler types (D1/R2 바인딩 타입 생성)
 ```
 
 > ⚠️ npm 패키지를 바꾼 뒤 dev 서버가 500을 내면 vite 캐시가 스테일된 것입니다. `npx astro dev stop` 후 재시작하세요.
+
+### AI 에이전트 설정
+
+Codex CLI로 이 저장소를 작업할 때는 프로필을 지정해서 실행합니다.
+
+```bash
+codex --profile tcn
+```
+
+저장소 로컬 설정은 `.codex/config.toml`에 있습니다. 이 프로젝트가 유일한 웹·Cloudflare 저장소이므로 Cloudflare MCP 5종(`cloudflare-api`·`docs`·`bindings`·`builds`·`observability`)을 켜고, Apple 계열 도구(`apple-docs`·`XcodeBuildMCP`·`mobile-mcp`)는 전역에 남겨둔 채 이 저장소에서만 끕니다. Spec Kit·프로젝트 로컬 Impeccable과 겹치는 gstack 스킬도 여기서 비활성화합니다.
+
+Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 워크플로 정책을 따릅니다.
 
 ### 콘텐츠 운영 (작성자 계정·시드)
 

@@ -47,3 +47,9 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 - QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run a11y`(Lighthouse) - 기본 경로에 글 상세 포함.
 - 레거시 301: `public/_redirects` - `/ko/*`·`/en/*`·구 slug(`2025-laos` 등)·구 회차 허브 전부 영구 이전.
 - 슬래시 정규화: SSR 페이지는 미들웨어가 301, 프리렌더 정적 페이지(`/people/` 등)는 Workers Static Assets `drop-trailing-slash`가 **307**로 처리(플랫폼 기본값 수용 — 2026-07-27 결정).
+
+## 6. 보류 콘텐츠 (D1, 코드 수정 대상 아님)
+
+저장소가 아니라 D1 `posts` 행에 있는 미완 항목. `/admin`에서 채우면 즉시 반영되고 배포는 필요 없다.
+
+- **제1차 세미나 (`event_date = 2025-12-26`)** - 전성호 교수 발표 제목·내용 추후 추가 예정. 현재 `summary`는 김원준·전성호 두 발표자를 밝히지만, `body`의 `## Featured presentation` 절은 김원준 발표 하나만 담고 있다. 자료 확보 시 그 절에 전성호 발표를 같은 형식(`### 제목` + `**Presenter:**` + 본문)으로 추가한다.
