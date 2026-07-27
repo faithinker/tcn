@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Changed
 - Simplified the founding-assembly media viewer to a full-screen previous/next carousel, removing zoom, pan, original-file controls, and high-resolution zoom derivatives. (Branch: `feat/media-carousel`) - Implemented by Codex
 ### Fix
+- Hardened browser route verification by treating DOM readiness as the navigation gate and making `networkidle` an optional stabilization wait for CI. (Branch: `feat/media-carousel`) - Implemented by Codex
 - Clarified the Souphanouvong University profile title as “Dean of the Faculty of Economics and Tourism.” (Branch: `fix/souphanouvong-dean-title`) - Implemented by Codex
 - Switched Cloudflare image derivatives to build-time generation, added a range-capable mobile preview, and kept the fitted image when high-resolution decoding fails. (Branch: `feat/content`) - Implemented by Codex
 - Standardized slashless canonical URLs and one-hop legacy redirects, separated liveness from dependency readiness, prevented static-asset redirect loops, and normalized byte-range delivery for public media. (Branch: `fix/routing-audit`) - Implemented by Codex
