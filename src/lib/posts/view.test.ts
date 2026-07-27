@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  groupMedia,
-  mediaAlt,
-  renderPostBody,
-  renderPostContent,
-  seminarLightboxEntries,
-} from './view';
+import { groupMedia, mediaAlt, renderPostContent, seminarLightboxEntries } from './view';
+
+// 본문 HTML만 필요한 단정용 헬퍼(구 renderPostBody 래퍼는 제품 미사용으로 제거됨).
+const renderHtml = (markdown: string) => renderPostContent(markdown).html;
 import type { Media } from '../db/types';
 
 const media = (overrides: Partial<Media>): Media => ({
@@ -26,9 +23,9 @@ const media = (overrides: Partial<Media>): Media => ({
   ...overrides,
 });
 
-describe('renderPostBody', () => {
+describe('renderPostContent — body HTML', () => {
   it('renders markdown to HTML (headings, bold, lists, links)', () => {
-    const html = renderPostBody(
+    const html = renderHtml(
       '## 제목\n\n**굵게** 그리고 [링크](https://example.org)\n\n- 하나\n- 둘',
     );
     expect(html).toContain('<h2 id="제목">제목</h2>');
@@ -38,22 +35,22 @@ describe('renderPostBody', () => {
   });
 
   it('escapes raw HTML in the source instead of passing it through', () => {
-    const html = renderPostBody('본문 <script>alert(1)</script>');
+    const html = renderHtml('본문 <script>alert(1)</script>');
     expect(html).not.toContain('<script>');
   });
 
   it('returns empty string for empty body', () => {
-    expect(renderPostBody('')).toBe('');
-    expect(renderPostBody('   ')).toBe('');
+    expect(renderHtml('')).toBe('');
+    expect(renderHtml('   ')).toBe('');
   });
 
   it('neutralizes unsafe link and image protocols', () => {
-    expect(renderPostBody('[클릭](javascript:alert(1))')).not.toContain('javascript:');
-    expect(renderPostBody('[클릭](JaVaScRiPt:alert(1))')).not.toContain('avascript:');
-    expect(renderPostBody('![x](data:text/html;base64,PHNjcmlwdD4=)')).not.toContain('data:');
-    expect(renderPostBody('[안전](https://example.org)')).toContain('href="https://example.org"');
-    expect(renderPostBody('[메일](mailto:a@b.c)')).toContain('href="mailto:a@b.c"');
-    expect(renderPostBody('[내부](/seminars)')).toContain('href="/seminars"');
+    expect(renderHtml('[클릭](javascript:alert(1))')).not.toContain('javascript:');
+    expect(renderHtml('[클릭](JaVaScRiPt:alert(1))')).not.toContain('avascript:');
+    expect(renderHtml('![x](data:text/html;base64,PHNjcmlwdD4=)')).not.toContain('data:');
+    expect(renderHtml('[안전](https://example.org)')).toContain('href="https://example.org"');
+    expect(renderHtml('[메일](mailto:a@b.c)')).toContain('href="mailto:a@b.c"');
+    expect(renderHtml('[내부](/seminars)')).toContain('href="/seminars"');
   });
 });
 

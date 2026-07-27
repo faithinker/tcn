@@ -73,10 +73,6 @@ export function renderPostContent(markdown: string): RenderedPostContent {
   return { html: marked.parse(escaped) as string, headings };
 }
 
-export function renderPostBody(markdown: string): string {
-  return renderPostContent(markdown).html;
-}
-
 export interface GroupedMedia {
   hero?: Media;
   images: Media[];
