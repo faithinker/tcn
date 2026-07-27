@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Switched Cloudflare image derivatives to build-time generation, added a range-capable mobile preview, and kept the fitted image when high-resolution decoding fails. (Branch: `feat/content`) - Implemented by Codex
 - Standardized slashless canonical URLs and one-hop legacy redirects, separated liveness from dependency readiness, prevented static-asset redirect loops, and normalized byte-range delivery for public media. (Branch: `fix/routing-audit`) - Implemented by Codex
 - Resolved PR quality-gate findings by removing pseudorandom notification jitter and simplifying routing, payload, upload, editor, and post-update control flow. (Branch: `fix/routing-audit`) - Implemented by Codex
+- Fixed Cloudflare static-page self-redirect loops by building slashless routes as `.html` files and delegating trailing-slash normalization to Workers Static Assets and middleware. (Branch: `fix/static-redirect-loop`) - Implemented by Codex
 ### Refactor
 - Separated admin media into an image grid and compact file list, removed captions from non-image uploads, and kept reordering within each media group. (Branch: `feat/seminar-content-contract`) - Implemented by Codex
 ### Security
