@@ -56,7 +56,11 @@ for (const route of ROUTES) {
 
     let status = 0, overflow = false, note = '';
     try {
-      const resp = await page.goto(BASE + route, { waitUntil: 'networkidle', timeout: 20000 });
+      // CI에서는 이미지·Worker asset 하나가 오래 유지되면 networkidle이 오지 않아
+      // 정상 렌더된 페이지도 timeout 처리된다. DOM 응답을 기준으로 진행하고,
+      // idle 대기는 안정화 기회로만 사용한다.
+      const resp = await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       status = resp ? resp.status() : 0;
       // L13: 스크롤 진입 리빌을 발화시킨 뒤 촬영(접힘 아래 섹션이 캡처에 보이도록).
       await page.evaluate(async () => {

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { groupMedia, mediaAlt, renderPostBody, renderPostContent } from './posts-view';
+import {
+  groupMedia,
+  mediaAlt,
+  renderPostBody,
+  renderPostContent,
+  seminarLightboxEntries,
+} from './posts-view';
 import type { Media } from './db/types';
 
 const media = (overrides: Partial<Media>): Media => ({
@@ -113,6 +119,35 @@ describe('groupMedia', () => {
     const grouped = groupMedia(items, null);
     expect(grouped.hero).toBeUndefined();
     expect(grouped.images).toHaveLength(2);
+  });
+
+  it('builds a hero-first seminar carousel and excludes non-image media', () => {
+    const grouped = groupMedia(
+      [
+        media({ id: 'hero', r2Key: 'p1/hero.webp', caption: 'Opening address' }),
+        media({ id: 'img2', r2Key: 'p1/discussion.webp', position: 1 }),
+        media({ id: 'vid', kind: 'video', r2Key: 'p1/clip.mp4', position: 2 }),
+      ],
+      'hero',
+    );
+    const entries = seminarLightboxEntries(grouped, 'First International Seminar');
+
+    expect(entries).toEqual([
+      {
+        id: 'hero',
+        type: 'image',
+        src: '/media/p1/hero.webp',
+        alt: 'Opening address',
+        caption: 'Opening address',
+      },
+      {
+        id: 'img2',
+        type: 'image',
+        src: '/media/p1/discussion.webp',
+        alt: 'Photo 2 from the First International Seminar.',
+        caption: 'Photo 2 from the First International Seminar.',
+      },
+    ]);
   });
 });
 

@@ -1,10 +1,8 @@
 // 창립총회 기록 미디어의 데이터 계약 — founding-media.json 을 읽어 검증한 뒤
 // 갤러리(EventGallery)가 쓰는 형태로 정리한다.
-// 확대 보장은 마스터 해상도에만 의존하므로 하한(MIN_MASTER_EDGE)을 여기서 명시한다.
 import rawMedia from '../data/founding-media.json';
 
-// 라이트박스 확대(1:1)가 의미를 갖는 최소 마스터 장변. 이보다 작은 마스터로
-// 교체되면 확대가 업스케일이 되어 조용히 흐려진다 — 테스트로 못 박는다.
+// 전체 화면 상세보기에서도 충분한 화질을 유지할 최소 마스터 장변.
 export const MIN_MASTER_EDGE = 3200;
 
 export interface FoundingImage {
@@ -13,7 +11,6 @@ export interface FoundingImage {
   src: string;
   alt: string;
   caption: string;
-  zoomable: boolean;
   role?: 'lead';
   span?: 'wide';
 }
@@ -93,8 +90,6 @@ export function parseFoundingMedia(raw: unknown): FoundingMediaItem[] {
       src: requireText(entry.src, 'src', id),
       alt,
       caption,
-      // 초상 노출 판단이 사진마다 갈릴 수 있어 기본을 명시적으로 받는다.
-      zoomable: entry.zoomable !== false,
       ...(entry.role === 'lead' ? { role: 'lead' as const } : {}),
       ...(entry.span === 'wide' ? { span: 'wide' as const } : {}),
     } satisfies FoundingImage;

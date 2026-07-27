@@ -2,16 +2,12 @@
 // 전제: HTTP Range를 지원하는 `astro dev` 또는 `npm run preview:mobile`을
 // BASE_URL에 띄워 둔다.
 // 사용: BASE_URL=http://localhost:4321 npm run verify:founding-media
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
 const failures = [];
 const foundingMedia = JSON.parse(readFileSync('src/data/founding-media.json', 'utf8'));
-const leadRecord = foundingMedia.find((item) => item.type === 'image' && item.role === 'lead');
-
-if (!leadRecord) throw new Error('founding-media.json에 대표 사진이 없다');
 
 function check(label, condition, detail = '') {
   const suffix = detail ? ` — ${detail}` : '';
@@ -21,10 +17,6 @@ function check(label, condition, detail = '') {
   }
   failures.push(`${label}${suffix}`);
   console.error(`❌ ${label}${suffix}`);
-}
-
-function sha256(value) {
-  return createHash('sha256').update(value).digest('hex');
 }
 
 const browser = await chromium.launch();
@@ -82,8 +74,15 @@ try {
   const stage = dialog.locator('[data-lb-stage]');
   const image = stage.locator('img');
   const count = dialog.locator('[data-lb-count]');
+  const manifestText = await page
+    .locator('[data-lightbox-manifest="founding-record"]')
+    .textContent();
+  const manifest = JSON.parse(manifestText ?? '[]');
   check('대표 사진을 누르면 라이트박스가 열린다', await dialog.evaluate((node) => node.open));
-  check('최초에는 화면 맞춤 이미지를 사용한다', (await image.getAttribute('data-tier')) === 'fit');
+  check(
+    '최초에는 대표 사진의 화면 맞춤 이미지를 사용한다',
+    (await image.getAttribute('src')) === manifest[0]?.src,
+  );
 
   await dialog.locator('[data-lb-next]').click();
   check('다음 버튼은 다음 미디어로 이동한다', (await count.textContent())?.trim() === '2 / 8');
@@ -100,102 +99,29 @@ try {
   await page.keyboard.press('ArrowRight');
   check('오른쪽 화살표는 대표 사진으로 순환한다', (await count.textContent())?.trim() === '1 / 8');
 
-  const originalHref = await dialog.locator('[data-lb-original]').getAttribute('href');
-  if (!originalHref) throw new Error('원본 링크의 href가 비어 있다');
-  const originalResponse = await context.request.get(new URL(originalHref, BASE).href);
-  const originalBody = await originalResponse.body();
-  const committedMaster = readFileSync(`src/assets/founding/${leadRecord.src}.jpg`);
   check(
-    '원본 열기는 재인코딩본이 아니라 커밋된 4000px 마스터를 제공한다',
-    originalResponse.ok() && sha256(originalBody) === sha256(committedMaster),
+    '상세 보기 데이터에는 확대·원본 계층이 없다',
+    manifest.every((entry) => !('zoom' in entry) && !('original' in entry)),
+  );
+  check(
+    '상세 보기에는 확대·원본 열기 컨트롤이 없다',
+    (await dialog.locator('[data-lb-zoom], [data-lb-original]').count()) === 0,
   );
 
-  // astro dev의 4000px AVIF 즉석 변환은 CI CPU에 따라 10초 이상 걸릴 수 있다.
-  // 원본 URL의 바이트 무결성은 위에서 별도로 확인했으므로, 상호작용 검사는 같은
-  // 4000px 마스터 JPEG를 고해상도 응답으로 사용해 디코드 시간과 무관하게 만든다.
-  const leadManifestText = await page
-    .locator('[data-lightbox-manifest="founding-record"]')
-    .textContent();
-  const leadZoomUrl = JSON.parse(leadManifestText ?? '[]')[0]?.zoom;
-  if (!leadZoomUrl) throw new Error('대표 사진의 고해상도 URL이 없다');
-  await page.route(new URL(leadZoomUrl, BASE).href, (route) =>
-    route.fulfill({ status: 200, contentType: 'image/jpeg', body: committedMaster }),
-  );
-
-  // The fitted image can be larger than Playwright's computed viewport while the
-  // dialog is open. Trigger the same DOM click handler without a flaky scroll step.
+  const transformBeforeClick = await image.evaluate((node) => node.style.transform);
   await image.evaluate((node) =>
     node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })),
   );
   check(
-    '사진을 누르면 즉시 확대 상태가 된다',
-    (await stage.getAttribute('data-zoomed')) === 'true',
+    '상세 보기 사진을 다시 눌러도 확대 상태가 생기지 않는다',
+    (await stage.evaluate((node) => node.dataset.zoomed === undefined)) &&
+      (await image.evaluate((node) => node.style.transform)) === transformBeforeClick,
   );
-  check('확대 사진은 브라우저 기본 끌기를 사용하지 않는다', !(await image.evaluate((node) => node.draggable)));
-
-  // 4000px 마스터 디코드가 끝나면 data-tier가 zoom으로 바뀐다. waitForFunction은
-  // 런타임 버전에 따라 기본 timeout이 무제한이라, 이 검사는 명시적인 상한을 둔다.
-  for (let attempt = 0; attempt < 40; attempt += 1) {
-    if ((await image.getAttribute('data-tier')) === 'zoom') break;
-    await page.waitForTimeout(250);
-  }
-  check(
-    '확대할 때 4000px 고해상도 계층으로 전환한다',
-    (await image.getAttribute('data-tier')) === 'zoom',
-  );
-
-  const beforeDrag = await image.evaluate((node) => node.style.transform);
-  const stageBox = await stage.boundingBox();
-  if (!stageBox) throw new Error('라이트박스 스테이지의 위치를 읽을 수 없다');
-
-  await page.mouse.move(stageBox.x + stageBox.width / 2, stageBox.y + stageBox.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(
-    stageBox.x + stageBox.width / 2 + 90,
-    stageBox.y + stageBox.height / 2 + 55,
-    { steps: 5 },
-  );
-  await page.mouse.up();
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
-
-  const afterDrag = await image.evaluate((node) => node.style.transform);
-  check(
-    '확대 사진을 드래그해도 확대 상태가 유지된다',
-    (await stage.getAttribute('data-zoomed')) === 'true',
-  );
-  check('드래그하면 사진의 팬 위치가 바뀐다', beforeDrag !== afterDrag);
 
   await page.keyboard.press('Escape');
-  check(
-    '확대 상태의 첫 Escape는 사진 맞춤으로 돌아간다',
-    (await dialog.evaluate((node) => node.open)) &&
-      (await stage.getAttribute('data-zoomed')) === 'false',
-  );
-
-  await dialog.locator('[data-lb-zoom]').click();
-  check('확대 버튼은 사진을 확대한다', (await stage.getAttribute('data-zoomed')) === 'true');
-  await dialog.locator('[data-lb-zoom]').click();
-  check('확대 버튼을 다시 누르면 화면 맞춤으로 돌아간다', (await stage.getAttribute('data-zoomed')) === 'false');
-
-  await page.keyboard.press('+');
-  const beforeKeyboardPan = await image.evaluate((node) => node.style.transform);
-  await page.keyboard.press('ArrowRight');
-  const afterKeyboardPan = await image.evaluate((node) => node.style.transform);
-  check(
-    '확대 상태의 화살표 키는 사진을 이동한다',
-    (await stage.getAttribute('data-zoomed')) === 'true' &&
-      beforeKeyboardPan !== afterKeyboardPan,
-  );
-  await page.keyboard.press('0');
-  check('0 키는 화면 맞춤으로 돌아간다', (await stage.getAttribute('data-zoomed')) === 'false');
-
-  await page.keyboard.press('Escape');
-  check('두 번째 Escape는 라이트박스를 닫는다', !(await dialog.evaluate((node) => node.open)));
+  const closedWithEscape = !(await dialog.evaluate((node) => node.open));
+  check('Escape는 상세 보기를 닫는다', closedWithEscape);
+  if (!closedWithEscape) await dialog.locator('[data-lb-close]').click();
   check(
     '닫으면 원래 갤러리 버튼으로 포커스가 돌아간다',
     await lead.evaluate((node) => document.activeElement === node),
@@ -209,45 +135,6 @@ try {
 
   await dialog.locator('[data-lb-close]').click();
   await context.close();
-
-  // The successful zoom scenario above intentionally caches the high-resolution
-  // derivative. Use a fresh browser process so the failure scenario cannot pass
-  // through that process-wide image cache without issuing the aborted request.
-  const failedZoomBrowser = await chromium.launch();
-  const failedZoomContext = await failedZoomBrowser.newContext({
-    viewport: { width: 1280, height: 900 },
-    deviceScaleFactor: 1,
-  });
-  const failedZoomPage = await failedZoomContext.newPage();
-  // Register before navigation: the optimized derivative may be discovered and
-  // fetched while the document loads, before the lightbox is opened.
-  const failedZoomTarget = new URL(leadZoomUrl, BASE).href;
-  const failedZoomPath = new URL(failedZoomTarget).pathname;
-  let failedZoomRequests = 0;
-  await failedZoomPage.route('**/*', (route) => {
-    if (new URL(route.request().url()).pathname === failedZoomPath) {
-      failedZoomRequests += 1;
-      return route.abort('failed');
-    }
-    return route.continue();
-  });
-  await failedZoomPage.goto(`${BASE}/about/founding/`, { waitUntil: 'networkidle' });
-  await failedZoomPage.locator('[data-lightbox-open="founding-record"]').first().click();
-  const failedZoomDialog = failedZoomPage.locator('[data-lightbox-root="founding-record"]');
-  const failedZoomStage = failedZoomDialog.locator('[data-lb-stage]');
-  const failedZoomImage = failedZoomStage.locator('img');
-  await failedZoomImage.evaluate((node) =>
-    node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })),
-  );
-  await failedZoomPage.waitForTimeout(300);
-  check(
-    '고해상도 로딩이 실패하면 화면 맞춤 이미지를 유지한다',
-    (await failedZoomImage.getAttribute('data-tier')) === 'fit' &&
-      (await failedZoomDialog.locator('[data-lb-loading]').isHidden()),
-    `tier=${await failedZoomImage.getAttribute('data-tier')} loadingHidden=${await failedZoomDialog.locator('[data-lb-loading]').isHidden()} abortedRequests=${failedZoomRequests}`,
-  );
-  await failedZoomContext.close();
-  await failedZoomBrowser.close();
 
   const mobile = await browser.newContext({
     viewport: { width: 390, height: 844 },

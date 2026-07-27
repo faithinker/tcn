@@ -53,6 +53,8 @@ jobs:
           npm run verify
           npm run verify:founding-media
           npm run a11y
+          TCN_SEED_BROWSER_MEDIA=1 node scripts/seed-seminar-posts.mjs
+          npm run verify:seminar-carousel
 
       - name: Upload verify screenshots
         if: failure()
