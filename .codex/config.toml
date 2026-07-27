@@ -1,6 +1,3 @@
-[mcp_servers.gitlab]
-enabled = false
-
 # Project-local workflow deduplication. Keep gstack installed globally, but
 # disable skills that overlap with Spec Kit or the project-local Impeccable.
 [[skills.config]]

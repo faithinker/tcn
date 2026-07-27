@@ -12,6 +12,8 @@
     "preview:mobile": "astro dev --host 0.0.0.0 --port 4341",
     "astro": "astro",
     "check": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "audit": "npm audit --audit-level=high",
     "audit:prod": "npm audit --omit=dev --audit-level=low",
     "verify": "node scripts/verify.mjs",
@@ -48,6 +50,8 @@
     "esbuild": "^0.28.1",
     "lighthouse": "^13.4.0",
     "playwright": "^1.61.1",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
     "tailwindcss": "^4.1.4",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"

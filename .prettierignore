@@ -1,0 +1,11 @@
+node_modules
+dist
+.astro
+.wrangler
+coverage
+public
+package-lock.json
+.agents/skills
+.claude/skills
+migrations
+CHANGELOG.md
