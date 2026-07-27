@@ -4,6 +4,18 @@
 //
 // 사용법: node scripts/seed-seminar-posts.mjs [--remote]
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// PATH 조회를 거치지 않도록 저장소 안의 실행 파일을 직접 가리킨다(경로가 쓰기 가능하면 하이재킹된다).
+// 스크립트 위치 기준이라 어느 디렉터리에서 실행해도 동작한다.
+const WRANGLER = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'node_modules',
+  '.bin',
+  'wrangler',
+);
 
 const POSTS = [
   {
@@ -58,8 +70,8 @@ update posts set hero_media_id = 'ci-seminar-hero' where id = 'ci-seminar-carous
 const sql = `${postSql}\n${mediaSql}`;
 
 execFileSync(
-  'npx',
-  ['wrangler', 'd1', 'execute', 'tcn-content', remote ? '--remote' : '--local', '--command', sql],
+  WRANGLER,
+  ['d1', 'execute', 'tcn-content', remote ? '--remote' : '--local', '--command', sql],
   {
     stdio: 'inherit',
   },
