@@ -1,5 +1,5 @@
 import { ApiRequestError } from '../../lib/admin-api';
-import { POST_LIMITS } from '../../lib/posts';
+import { POST_LIMITS } from '../../lib/posts/payload';
 
 export const saveErrors: Record<string, string> = {
   event_date_required: 'Please select the seminar date.',

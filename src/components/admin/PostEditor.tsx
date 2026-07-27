@@ -7,7 +7,7 @@ import { requestJson } from '../../lib/admin-api';
 import { requestErrorMessage } from './editor-messages';
 import { processImage } from '../../lib/media/process-image';
 import { mediaMetadataForSave } from '../../lib/media/metadata';
-import { POST_LIMITS } from '../../lib/posts';
+import { POST_LIMITS } from '../../lib/posts/payload';
 import { formatSeminarOrdinalLabel, seminarHref } from '../../lib/seminars';
 
 export interface EditorMedia {

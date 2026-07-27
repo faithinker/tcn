@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminars';
+import { getSeminarCollection } from '../lib/seminars/service';
 
 export const prerender = false;
 

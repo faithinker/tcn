@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiRequestError } from '../../lib/admin-api';
-import { POST_LIMITS } from '../../lib/posts';
+import { POST_LIMITS } from '../../lib/posts/payload';
 import { requestErrorMessage, saveErrors } from './editor-messages';
 
 const FALLBACK = 'Save failed. Try again.';

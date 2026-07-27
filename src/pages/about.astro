@@ -6,12 +6,8 @@ import { formatDate } from '../i18n/utils';
 import { content } from '../i18n/content';
 import { organizationMilestones } from '../data/organization-milestones';
 import { getDB } from '../lib/db';
-import {
-  getSeminarCollection,
-  mergeMilestones,
-  siteToday,
-  type SeminarView,
-} from '../lib/seminars';
+import { getSeminarCollection } from '../lib/seminars/service';
+import { mergeMilestones, siteToday, type SeminarView } from '../lib/seminars';
 
 // 연혁이 D1 세미나 기록과 합쳐지므로 SSR(프리렌더 시 바인딩 없음).
 export const prerender = false;
