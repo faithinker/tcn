@@ -1,0 +1,15 @@
+# Commits to skip when running `git blame`, so blame points at the author of the
+# logic rather than at whoever ran a formatter.
+#
+# Enable locally (once per clone):
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub's blame view reads this file automatically; no setup needed there.
+#
+# Only add commits that change formatting exclusively. A commit that also changes
+# behaviour must stay visible in blame.
+
+# chore(format): apply Prettier across the repository (#40)
+# 79 files, verified as pure `prettier --write` output: each file matched the
+# formatter applied to its previous content byte for byte.
+b6f9427eb1d4f7c0f095742368bd995ea563d5e8
