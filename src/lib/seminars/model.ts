@@ -1,5 +1,5 @@
-import type { Post } from './db/types';
-import { seminarHref } from './seminar-url';
+import type { Post } from '../db/types';
+import { seminarHref } from './url';
 
 export type SeminarStatus = 'upcoming' | 'today' | 'held';
 

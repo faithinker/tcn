@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('./db/client', () => ({ newId: vi.fn(() => 'new-id') }));
+vi.mock('../db/client', () => ({ newId: vi.fn(() => 'new-id') }));
 
-import type { Post } from './db/types';
+import type { Post } from '../db/types';
 import {
   deriveSeminarCollection,
   formatSeminarOrdinalLabel,
   siteToday,
   type SeminarView,
-} from './seminars';
-import * as seminarDomain from './seminars';
-import * as seminarService from './seminar-service';
+} from './model';
+import * as seminarDomain from './model';
+import * as seminarService from './service';
 
 const post = (id: string, eventDate: string): Post => ({
   id,

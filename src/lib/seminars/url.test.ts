@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { seminarHref } from './seminar-url';
+import { seminarHref } from './url';
 
 describe('seminarHref', () => {
   it('builds the public seminar URL from its event date', () => {

@@ -24,22 +24,22 @@ const {
   verifyPassword: vi.fn(),
 }));
 
-vi.mock('./auth', () => ({
+vi.mock('../auth', () => ({
   buildSessionCookie,
   createSessionToken,
   getSessionSecret,
   verifyPassword,
 }));
-vi.mock('./auth/rate-limit', () => ({
+vi.mock('../auth/rate-limit', () => ({
   clearLoginFailures,
   getLoginRateLimitKeys,
   isLoginRateLimited,
   LOGIN_RETRY_AFTER_SECONDS: 900,
   recordLoginFailure,
 }));
-vi.mock('./db', () => ({ getDB, getUserByUsername }));
+vi.mock('../db', () => ({ getDB, getUserByUsername }));
 
-import { POST } from '../pages/api/auth/login';
+import { POST } from '../../pages/api/auth/login';
 
 function context() {
   return {

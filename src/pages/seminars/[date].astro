@@ -2,8 +2,7 @@
 // Public seminar detail (SSR). event_date is the stable, human-readable URL key.
 import CommunityPost from '../../components/seminars/CommunityPost.astro';
 import { getDB, listMediaForPost } from '../../lib/db';
-import { seminarHref } from '../../lib/seminar-url';
-import { getSeminarByEventDate } from '../../lib/seminar-service';
+import { getSeminarByEventDate, seminarHref } from '../../lib/seminars';
 
 export const prerender = false;
 

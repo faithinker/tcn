@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { serializeLightboxEntries, type LightboxEntry } from './media-lightbox';
+import { serializeLightboxEntries, type LightboxEntry } from './lightbox';
 
 describe('serializeLightboxEntries', () => {
   it('keeps administrator captions from terminating the JSON script element', () => {

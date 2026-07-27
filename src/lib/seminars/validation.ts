@@ -1,4 +1,4 @@
-import { isSeminarEventDate } from './seminar-url';
+import { isSeminarEventDate } from './url';
 
 export type SeminarDateValidationError =
   | 'event_date_required'

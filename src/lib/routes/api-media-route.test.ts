@@ -22,8 +22,8 @@ const {
   updateMediaMetadata: vi.fn(),
 }));
 
-vi.mock('./auth', () => ({ getSessionUid }));
-vi.mock('./db', () => ({
+vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../db', () => ({
   completeMediaCleanup,
   deleteMediaAndQueueCleanup,
   getBucket,
@@ -33,7 +33,7 @@ vi.mock('./db', () => ({
   updateMediaMetadata,
 }));
 
-import * as mediaRoute from '../pages/api/media/[id]';
+import * as mediaRoute from '../../pages/api/media/[id]';
 
 function context(body: unknown, id = 'm1') {
   return {

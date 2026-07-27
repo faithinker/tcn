@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isSeminarDateConflictError, validateSeminarDate } from './seminar-validation';
+import { isSeminarDateConflictError, validateSeminarDate } from './validation';
 
 describe('validateSeminarDate', () => {
   it('requires an event date for a seminar post', () => {

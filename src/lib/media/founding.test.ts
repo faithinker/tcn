@@ -9,9 +9,9 @@ import {
   isImage,
   leadImage,
   parseFoundingMedia,
-} from './founding-media';
+} from './founding';
 
-const ASSET_DIR = path.resolve(import.meta.dirname, '../assets/founding');
+const ASSET_DIR = path.resolve(import.meta.dirname, '../../assets/founding');
 
 /**
  * JPEG SOF 마커에서 해상도만 읽는다. 확대 보장을 검증하려면 마스터의 실제

@@ -2,8 +2,8 @@ import type { APIRoute } from 'astro';
 import { getSessionUid } from '../../../lib/auth';
 import { createPost, getDB, listSeminarPosts } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
-import { parsePostPayload } from '../../../lib/post-payload';
-import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminar-validation';
+import { parsePostPayload } from '../../../lib/posts';
+import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminars';
 
 export const prerender = false;
 

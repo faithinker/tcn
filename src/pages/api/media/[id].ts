@@ -9,7 +9,7 @@ import {
   recordMediaCleanupFailure,
   updateMediaMetadata,
 } from '../../../lib/db';
-import { normalizeMediaMetadata, type MediaMetadataPayload } from '../../../lib/media-metadata';
+import { normalizeMediaMetadata, type MediaMetadataPayload } from '../../../lib/media/metadata';
 
 export const prerender = false;
 

@@ -8,8 +8,7 @@ import { formatDate } from '../i18n/utils';
 import { t } from '../i18n/ui';
 import { content } from '../i18n/content';
 import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminar-service';
-import type { SeminarView } from '../lib/seminars';
+import { getSeminarCollection, type SeminarView } from '../lib/seminars';
 
 // 차기 세미나·최신 글이 D1에서 실시간으로 나오도록 SSR.
 // (프리렌더하면 빌드 시 D1 바인딩이 없어 히어로가 조용히 사라진다)

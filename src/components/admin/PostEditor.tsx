@@ -5,10 +5,9 @@ import { Markdown } from 'tiptap-markdown';
 import { useRef, useState } from 'react';
 import { ApiRequestError, requestJson } from '../../lib/admin-api';
 import { processImage } from '../../lib/media/process-image';
-import { mediaMetadataForSave } from '../../lib/media-metadata';
-import { POST_LIMITS } from '../../lib/post-payload';
-import { seminarHref } from '../../lib/seminar-url';
-import { formatSeminarOrdinalLabel } from '../../lib/seminars';
+import { mediaMetadataForSave } from '../../lib/media/metadata';
+import { POST_LIMITS } from '../../lib/posts';
+import { formatSeminarOrdinalLabel, seminarHref } from '../../lib/seminars';
 
 export interface EditorMedia {
   id: string;

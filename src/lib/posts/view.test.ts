@@ -6,8 +6,8 @@ import {
   renderPostBody,
   renderPostContent,
   seminarLightboxEntries,
-} from './posts-view';
-import type { Media } from './db/types';
+} from './view';
+import type { Media } from '../db/types';
 
 const media = (overrides: Partial<Media>): Media => ({
   id: 'm1',

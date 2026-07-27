@@ -1,10 +1,10 @@
-import { listSeminarPosts } from './db/posts';
+import { listSeminarPosts } from '../db/posts';
 import {
   deriveSeminarCollection,
   siteToday,
   type SeminarCollection,
   type SeminarView,
-} from './seminars';
+} from './model';
 
 export async function getSeminarCollection(
   db: D1Database,

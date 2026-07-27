@@ -18,8 +18,8 @@ const {
   recordMediaCleanupFailure: vi.fn(),
 }));
 
-vi.mock('./auth', () => ({ getSessionUid }));
-vi.mock('./db', () => ({
+vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../db', () => ({
   completeMediaCleanup,
   getBucket,
   getDB,
@@ -27,7 +27,7 @@ vi.mock('./db', () => ({
   recordMediaCleanupFailure,
 }));
 
-import { POST } from '../pages/api/maintenance/media-cleanup';
+import { POST } from '../../pages/api/maintenance/media-cleanup';
 
 describe('POST /api/maintenance/media-cleanup', () => {
   beforeEach(() => {

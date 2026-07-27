@@ -1,6 +1,6 @@
 // 창립총회 기록 미디어의 데이터 계약 — founding-media.json 을 읽어 검증한 뒤
 // 갤러리(EventGallery)가 쓰는 형태로 정리한다.
-import rawMedia from '../data/founding-media.json';
+import rawMedia from '../../data/founding-media.json';
 
 // 전체 화면 상세보기에서도 충분한 화질을 유지할 최소 마스터 장변.
 export const MIN_MASTER_EDGE = 3200;

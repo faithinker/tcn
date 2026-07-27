@@ -9,9 +9,9 @@ const { getAssets, getBucket, getDB, getPublicMediaByKey, get, head } = vi.hoist
   head: vi.fn(),
 }));
 
-vi.mock('./db', () => ({ getAssets, getBucket, getDB, getPublicMediaByKey }));
+vi.mock('../db', () => ({ getAssets, getBucket, getDB, getPublicMediaByKey }));
 
-import * as mediaRoute from '../pages/media/[...key]';
+import * as mediaRoute from '../../pages/media/[...key]';
 
 const key = 'post-1/video.mp4';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parsePostPayload, POST_LIMITS } from './post-payload';
+import { parsePostPayload, POST_LIMITS } from './payload';
 
 describe('parsePostPayload', () => {
   const valid = {

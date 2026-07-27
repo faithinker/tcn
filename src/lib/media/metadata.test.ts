@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mediaMetadataForSave, normalizeMediaMetadata } from './media-metadata';
+import { mediaMetadataForSave, normalizeMediaMetadata } from './metadata';
 
 describe('normalizeMediaMetadata', () => {
   it('trims an optional caption and accepts a non-negative integer position', () => {

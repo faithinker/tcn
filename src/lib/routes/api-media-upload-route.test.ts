@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { UPLOAD_LIMITS } from './media/validate';
+import { UPLOAD_LIMITS } from '../media/validate';
 
 const { addMedia, bucket, getBucket, getDB, getPost, getSessionUid, newId } = vi.hoisted(() => ({
   addMedia: vi.fn(),
@@ -11,10 +11,10 @@ const { addMedia, bucket, getBucket, getDB, getPost, getSessionUid, newId } = vi
   newId: vi.fn(() => 'media-id'),
 }));
 
-vi.mock('./auth', () => ({ getSessionUid }));
-vi.mock('./db', () => ({ addMedia, getBucket, getDB, getPost, newId }));
+vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../db', () => ({ addMedia, getBucket, getDB, getPost, newId }));
 
-import { POST } from '../pages/api/media/index';
+import { POST } from '../../pages/api/media/index';
 
 function context({
   mime = 'video/mp4',

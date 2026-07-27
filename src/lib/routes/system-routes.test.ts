@@ -7,12 +7,12 @@ const { env, getDB, getSeminarCollection } = vi.hoisted(() => ({
 }));
 
 vi.mock('cloudflare:workers', () => ({ env }));
-vi.mock('./db', () => ({ getDB }));
-vi.mock('./seminar-service', () => ({ getSeminarCollection }));
+vi.mock('../db', () => ({ getDB }));
+vi.mock('../seminars/service', () => ({ getSeminarCollection }));
 
-import { GET as getHealth } from '../pages/api/health';
-import { GET as getReadiness } from '../pages/api/ready';
-import { GET as getSitemap } from '../pages/sitemap.xml';
+import { GET as getHealth } from '../../pages/api/health';
+import { GET as getReadiness } from '../../pages/api/ready';
+import { GET as getSitemap } from '../../pages/sitemap.xml';
 
 describe('system health routes', () => {
   beforeEach(() => {

@@ -3,8 +3,8 @@
 // raw HTML은 이스케이프한다(에디터가 생성하지 않는 입력 = 신뢰하지 않음).
 import { Marked, type Token, type Tokens } from 'marked';
 
-import type { Media } from './db/types';
-import type { LightboxEntry } from './media-lightbox';
+import type { Media } from '../db/types';
+import type { LightboxEntry } from '../media/lightbox';
 
 // 링크·이미지 프로토콜 화이트리스트 — 에디터가 만드는 것(http/https/mailto)과
 // 사이트 내부 경로·앵커만. javascript:/data: 등은 무해한 '#'으로 치환.
