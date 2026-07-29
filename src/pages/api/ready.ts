@@ -8,10 +8,30 @@ export const GET: APIRoute = async () => {
     DB?: D1Database;
     MEDIA?: R2Bucket;
     SESSION_SECRET?: string;
+    TURNSTILE_SITE_KEY?: string;
+    TURNSTILE_SECRET_KEY?: string;
+    QNA_TURNSTILE_HOSTNAMES?: string;
+    QNA_RATE_LIMIT_SECRET?: string;
   };
-  const { DB: db, MEDIA: media, SESSION_SECRET: sessionSecret } = bindings;
+  const {
+    DB: db,
+    MEDIA: media,
+    SESSION_SECRET: sessionSecret,
+    TURNSTILE_SITE_KEY: turnstileSiteKey,
+    TURNSTILE_SECRET_KEY: turnstileSecretKey,
+    QNA_TURNSTILE_HOSTNAMES: turnstileHostnames,
+    QNA_RATE_LIMIT_SECRET: rateLimitSecret,
+  } = bindings;
 
-  if (!db || !media || !sessionSecret) {
+  if (
+    !db ||
+    !media ||
+    !sessionSecret ||
+    !turnstileSiteKey ||
+    !turnstileSecretKey ||
+    !turnstileHostnames ||
+    !rateLimitSecret
+  ) {
     return Response.json({ ok: false }, { status: 503 });
   }
 

@@ -1,0 +1,93 @@
+---
+interface Props {
+  page: number;
+  totalPages: number;
+  hrefForPage: (page: number) => string;
+}
+
+const { page, totalPages, hrefForPage } = Astro.props;
+
+const pageNumbers = new Set<number>([1, totalPages]);
+for (let value = Math.max(1, page - 2); value <= Math.min(totalPages, page + 2); value += 1) {
+  pageNumbers.add(value);
+}
+const orderedPages = [...pageNumbers].sort((left, right) => left - right);
+const pageItems: Array<number | 'ellipsis'> = [];
+orderedPages.forEach((value, index) => {
+  const previous = orderedPages[index - 1];
+  if (previous !== undefined && value - previous > 1) pageItems.push('ellipsis');
+  pageItems.push(value);
+});
+---
+
+{
+  totalPages > 1 && (
+    <nav
+      class="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-2 font-sans"
+      aria-label="Questions pages"
+    >
+      {page > 1 ? (
+        <a
+          href={hrefForPage(page - 1)}
+          class="inline-flex min-h-12 min-w-12 items-center justify-center justify-self-start border border-hairline-strong px-3 text-caption font-bold text-ink"
+          rel="prev"
+        >
+          Previous
+        </a>
+      ) : (
+        <span
+          class="inline-flex min-h-12 min-w-12 cursor-not-allowed items-center justify-center justify-self-start border border-hairline px-3 text-caption font-bold text-body-muted opacity-60"
+          aria-disabled="true"
+        >
+          Previous
+        </span>
+      )}
+
+      <span class="text-caption font-bold text-body-muted md:hidden" aria-live="polite">
+        {page} / {totalPages}
+      </span>
+
+      <div class="hidden items-center gap-1 md:flex">
+        {pageItems.map((item) =>
+          item === 'ellipsis' ? (
+            <span class="inline-grid min-h-12 min-w-12 place-items-center" aria-hidden="true">
+              …
+            </span>
+          ) : item === page ? (
+            <span
+              class="inline-grid min-h-12 min-w-12 place-items-center bg-accent text-caption font-bold text-on-primary"
+              aria-current="page"
+            >
+              {item}
+            </span>
+          ) : (
+            <a
+              href={hrefForPage(item)}
+              class="inline-grid min-h-12 min-w-12 place-items-center text-caption font-bold text-ink hover:bg-canvas-band"
+              aria-label={`Page ${item}`}
+            >
+              {item}
+            </a>
+          ),
+        )}
+      </div>
+
+      {page < totalPages ? (
+        <a
+          href={hrefForPage(page + 1)}
+          class="inline-flex min-h-12 min-w-12 items-center justify-center justify-self-end border border-hairline-strong px-3 text-caption font-bold text-ink"
+          rel="next"
+        >
+          Next
+        </a>
+      ) : (
+        <span
+          class="inline-flex min-h-12 min-w-12 cursor-not-allowed items-center justify-center justify-self-end border border-hairline px-3 text-caption font-bold text-body-muted opacity-60"
+          aria-disabled="true"
+        >
+          Next
+        </span>
+      )}
+    </nav>
+  )
+}

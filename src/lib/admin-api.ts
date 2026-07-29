@@ -15,6 +15,20 @@ export class ApiRequestError extends Error {
   }
 }
 
+export function safeAdminReturnTo(value: string | null | undefined): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {
+    return '/admin';
+  }
+  try {
+    const url = new URL(value, 'https://tcn.invalid');
+    const isAdminPath = url.pathname === '/admin' || url.pathname.startsWith('/admin/');
+    if (url.origin !== 'https://tcn.invalid' || !isAdminPath) return '/admin';
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return '/admin';
+  }
+}
+
 export async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   let response: Response;
   try {

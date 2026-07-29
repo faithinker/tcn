@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { navItems } from './navigation';
 
 describe('primary navigation', () => {
+  it('links the public Q&A as a primary destination', () => {
+    expect(navItems).toContainEqual({ key: 'nav.questions', href: '/questions' });
+  });
+
   it('keeps About children as standalone page destinations', () => {
     const about = navItems.find((item) => item.key === 'nav.about');
 

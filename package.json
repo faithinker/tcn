@@ -20,6 +20,7 @@
     "verify:founding-media": "node scripts/verify-founding-media.mjs",
     "verify:seminar-carousel": "node scripts/verify-seminar-carousel.mjs",
     "verify:admin": "node scripts/verify-admin-authoring.mjs",
+    "test:qna:d1": "node scripts/verify-qna-d1.mjs",
     "motion": "node scripts/motion.mjs",
     "a11y": "node scripts/a11y.mjs",
     "test": "vitest run --coverage",

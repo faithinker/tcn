@@ -1,5 +1,28 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { requestJson } from './admin-api';
+import { requestJson, safeAdminReturnTo } from './admin-api';
+
+describe('safeAdminReturnTo', () => {
+  it.each([
+    ['/admin/questions', '/admin/questions'],
+    ['/admin/questions/q-1?status=waiting', '/admin/questions/q-1?status=waiting'],
+    ['/admin/posts/new', '/admin/posts/new'],
+  ])('allows local administrator destinations', (input, expected) => {
+    expect(safeAdminReturnTo(input)).toBe(expected);
+  });
+
+  it.each([
+    [null],
+    [''],
+    ['https://evil.example/admin'],
+    ['//evil.example/admin'],
+    ['/questions'],
+    ['/administrator'],
+    ['/administer/questions'],
+    ['/admin\\@evil.example'],
+  ])('rejects unsafe destination %j', (input) => {
+    expect(safeAdminReturnTo(input)).toBe('/admin');
+  });
+});
 
 describe('requestJson', () => {
   afterEach(() => {

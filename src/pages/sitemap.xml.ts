@@ -12,6 +12,7 @@ const STATIC_PATHS = [
   '/about/bylaws',
   '/people',
   '/seminars',
+  '/questions',
   '/contact',
 ];
 

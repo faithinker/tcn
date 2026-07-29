@@ -1,0 +1,170 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PublicStatusBadge from '../../components/qna/PublicStatusBadge.astro';
+import { t } from '../../i18n/ui';
+import { formatDate } from '../../i18n/utils';
+import { getDB } from '../../lib/db';
+import { getPublicQuestion } from '../../lib/qna/repository';
+
+export const prerender = false;
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const id = Astro.params.id ?? '';
+let question = null;
+let loadFailed = false;
+
+try {
+  question = await getPublicQuestion(getDB(), id);
+} catch (error) {
+  console.error('questions: failed to load public detail', error);
+  loadFailed = true;
+}
+
+const notFound = !loadFailed && !question;
+if (notFound) Astro.response.status = 404;
+
+const justCreated = Astro.url.searchParams.get('created') === '1';
+---
+
+<BaseLayout
+  title={question?.title ?? (notFound ? 'Question not found' : 'Question unavailable')}
+  description={question?.body.slice(0, 160) ?? t('qna.description')}
+  noindex={notFound || loadFailed}
+>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[75rem]">
+      <a
+        class="inline-flex min-h-12 items-center font-sans text-body-sm font-bold text-ink-soft no-underline"
+        href="/questions"
+      >
+        ← {t('qna.back')}
+      </a>
+
+      {
+        loadFailed ? (
+          <div class="mt-5 max-w-[48rem] border border-hairline bg-canvas-band p-6" role="alert">
+            <h1 class="font-serif text-display-md font-semibold text-ink">
+              This question could not be loaded.
+            </h1>
+            <p class="mt-3 font-sans text-body-sans text-ink-soft">
+              Please try again. You can also return to the Q&A list.
+            </p>
+            <a
+              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+              href={Astro.url.pathname + Astro.url.search}
+            >
+              Retry
+            </a>
+          </div>
+        ) : question ? (
+          <>
+            {justCreated && (
+              <div
+                id="question-published-banner"
+                class="mt-5 flex max-w-[58rem] flex-col items-start justify-between gap-4 border border-green-800 bg-green-50 p-5 text-green-900 dark:border-green-300 dark:bg-green-950 dark:text-green-100 sm:flex-row sm:items-center"
+                role="status"
+                aria-live="polite"
+                tabindex="-1"
+              >
+                <div>
+                  <strong class="block font-serif text-body-serif">{t('qna.published')}</strong>
+                  <p class="mt-1 font-sans text-body-sm">{t('qna.bookmark')}</p>
+                </div>
+                <button
+                  id="copy-question-link"
+                  class="inline-flex min-h-12 shrink-0 items-center rounded-sm border border-current bg-transparent px-5 font-sans font-bold"
+                  type="button"
+                >
+                  {t('qna.copyLink')}
+                </button>
+              </div>
+            )}
+
+            <article class="mt-8">
+              <header class="max-w-[52rem] border-b border-hairline pb-8">
+                <div class="mb-5 flex flex-wrap items-center gap-3">
+                  <PublicStatusBadge status={question.answer ? 'answered' : 'waiting'} />
+                  <time
+                    class="font-sans text-caption text-body-muted"
+                    datetime={question.createdAt}
+                  >
+                    {formatDate(question.createdAt)}
+                  </time>
+                </div>
+                <h1 class="font-serif text-display-md font-semibold break-words text-ink sm:text-display-lg">
+                  {question.title}
+                </h1>
+              </header>
+
+              <div class="max-w-[68ch] py-9">
+                <p class="whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
+                  {question.body}
+                </p>
+              </div>
+
+              {question.answer ? (
+                <section
+                  class="max-w-[68ch] border-t-2 border-accent pt-7"
+                  aria-labelledby="official-answer-title"
+                >
+                  <p class="eyebrow">
+                    Official response · {t('qna.secretariat')} ·{' '}
+                    {formatDate(question.answer.updatedAt)}
+                  </p>
+                  <h2
+                    id="official-answer-title"
+                    class="mt-3 font-serif text-display-sm font-semibold text-accent"
+                  >
+                    {t('qna.officialAnswer')}
+                  </h2>
+                  <p class="mt-5 whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
+                    {question.answer.body}
+                  </p>
+                </section>
+              ) : (
+                <aside class="max-w-[68ch] border border-hairline bg-canvas-band p-6">
+                  <h2 class="font-serif text-body-serif font-semibold text-ink">
+                    {t('qna.waitingTitle')}
+                  </h2>
+                  <p class="mt-2 font-sans text-body-sm text-ink-soft">{t('qna.waitingNotice')}</p>
+                </aside>
+              )}
+            </article>
+          </>
+        ) : (
+          <div class="mt-5 max-w-[48rem] border-y border-hairline py-12">
+            <p class="eyebrow">404</p>
+            <h1 class="mt-3 font-serif text-display-md font-semibold text-ink">
+              Question not found
+            </h1>
+            <p class="mt-4 font-sans text-body-sans text-ink-soft">
+              This question does not exist or is no longer visible in the public Q&A.
+            </p>
+            <a
+              class="mt-6 inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans font-bold text-on-primary no-underline"
+              href="/questions"
+            >
+              {t('qna.back')}
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const banner = document.querySelector<HTMLElement>('#question-published-banner');
+  const copyButton = document.querySelector<HTMLButtonElement>('#copy-question-link');
+
+  banner?.focus();
+  copyButton?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      copyButton.textContent = 'Link copied';
+    } catch {
+      copyButton.textContent = 'Copy unavailable — use the address bar';
+    }
+  });
+</script>

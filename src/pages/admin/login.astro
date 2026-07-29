@@ -2,12 +2,14 @@
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getSessionUid } from '../../lib/auth';
+import { safeAdminReturnTo } from '../../lib/admin-api';
 
-if (await getSessionUid(Astro.request)) return Astro.redirect('/admin');
+const returnTo = safeAdminReturnTo(Astro.url.searchParams.get('returnTo'));
+if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
 ---
 
 <AdminLayout title="Sign in">
-  <div class="mx-auto max-w-sm">
+  <div class="mx-auto max-w-sm" data-return-to={returnTo}>
     <h1 class="mb-6 font-serif text-display-sm font-semibold text-ink">Sign in</h1>
     <form id="login-form" class="space-y-4">
       <label class="block">
@@ -55,7 +57,8 @@ if (await getSessionUid(Astro.request)) return Astro.redirect('/admin');
           body: JSON.stringify({ username: data.get('username'), password: data.get('password') }),
         });
         if (response.ok) {
-          window.location.href = '/admin';
+          const container = document.querySelector<HTMLElement>('[data-return-to]');
+          window.location.href = container?.dataset.returnTo || '/admin';
           return;
         }
         if (errorEl) {
