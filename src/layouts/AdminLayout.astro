@@ -69,9 +69,17 @@ const { title = 'Admin', user = null } = Astro.props;
       user && (
         <header class="border-b border-hairline bg-canvas">
           <div class="mx-auto flex max-w-[75rem] items-center justify-between px-4 py-3">
-            <a href="/admin" class="font-sans text-body-sm font-bold tracking-tight text-ink">
-              TCN Admin
-            </a>
+            <nav class="flex min-h-12 items-center gap-4 font-sans" aria-label="Admin">
+              <a href="/admin" class="text-body-sm font-bold tracking-tight text-ink">
+                TCN Admin
+              </a>
+              <a
+                href="/admin/questions"
+                class="text-caption font-bold text-link underline-offset-2 hover:underline"
+              >
+                Questions
+              </a>
+            </nav>
             <div class="flex items-center gap-4 text-caption">
               <span class="text-body-muted">{user.displayName ?? user.username}</span>
               <button

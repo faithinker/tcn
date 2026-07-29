@@ -1,0 +1,173 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PublicPagination from '../../components/qna/PublicPagination.astro';
+import PublicStatusBadge from '../../components/qna/PublicStatusBadge.astro';
+import { t } from '../../i18n/ui';
+import { formatDate } from '../../i18n/utils';
+import { getDB } from '../../lib/db';
+import { parsePage, parsePublicStatus } from '../../lib/qna/payload';
+import { listPublicQuestions } from '../../lib/qna/repository';
+import type { QnaPage, QnaPublicStatus, QnaQuestionListItem } from '../../lib/db/types';
+
+export const prerender = false;
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const requestedPage = parsePage(Astro.url.searchParams.get('page'));
+const status = parsePublicStatus(Astro.url.searchParams.get('status'));
+let result: QnaPage<QnaQuestionListItem> | null = null;
+let loadFailed = false;
+
+try {
+  result = await listPublicQuestions(getDB(), { status, page: requestedPage });
+} catch (error) {
+  console.error('questions: failed to load public list', error);
+  loadFailed = true;
+}
+
+if (result && requestedPage > result.totalPages) {
+  const query = new URLSearchParams();
+  query.set('status', status);
+  query.set('page', String(result.totalPages));
+  return Astro.redirect(`/questions?${query.toString()}`, 302);
+}
+
+function filterHref(nextStatus: QnaPublicStatus): string {
+  const query = new URLSearchParams();
+  query.set('status', nextStatus);
+  query.set('page', '1');
+  return `/questions?${query.toString()}`;
+}
+---
+
+<BaseLayout title={t('qna.title')} description={t('qna.description')}>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[75rem]">
+      <header class="flex flex-col items-start justify-between gap-7 md:flex-row md:items-end">
+        <div>
+          <p class="eyebrow">{t('qna.eyebrow')}</p>
+          <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+            {t('qna.title')}
+          </h1>
+          <p class="mt-5 max-w-[40rem] font-sans text-body-sans text-ink-soft">
+            {t('qna.description')}
+          </p>
+        </div>
+        <a
+          class="inline-flex min-h-12 w-full items-center justify-center rounded-sm border border-ink bg-ink px-6 font-sans text-button font-bold text-on-primary no-underline md:w-auto"
+          href="/questions/new"
+        >
+          {t('qna.ask')}
+        </a>
+      </header>
+
+      <div
+        class="mt-10 flex flex-col gap-3 border-y border-hairline py-2 md:flex-row md:items-center md:justify-between"
+      >
+        <nav class="-mx-2 flex max-w-full overflow-x-auto" aria-label="Question status">
+          {
+            (
+              [
+                ['all', t('qna.all')],
+                ['waiting', t('qna.waiting')],
+                ['answered', t('qna.answered')],
+              ] as const
+            ).map(([value, label]) => (
+              <a
+                class:list={[
+                  'inline-flex min-h-12 shrink-0 items-center border-b-2 px-3 font-sans text-caption font-bold no-underline',
+                  status === value
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-ink-soft',
+                ]}
+                href={filterHref(value)}
+                aria-current={status === value ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            ))
+          }
+        </nav>
+        {
+          result && (
+            <p class="px-1 font-sans text-caption text-body-muted" aria-live="polite">
+              {result.total} {result.total === 1 ? 'question' : 'questions'} · {result.pageSize} per
+              page
+            </p>
+          )
+        }
+      </div>
+
+      {
+        loadFailed ? (
+          <div class="mt-8 border border-hairline bg-canvas-band p-6" role="alert">
+            <h2 class="font-serif text-display-sm font-semibold text-ink">
+              Questions could not be loaded.
+            </h2>
+            <p class="mt-2 font-sans text-body-sans text-ink-soft">
+              Please try again. Your current filter and page are unchanged.
+            </p>
+            <a
+              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+              href={Astro.url.pathname + Astro.url.search}
+            >
+              Retry
+            </a>
+          </div>
+        ) : result?.items.length ? (
+          <>
+            <ol class="m-0 list-none p-0">
+              {result.items.map((question) => (
+                <li class="border-b border-hairline">
+                  <a
+                    class="group grid min-h-20 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 py-3 text-ink no-underline md:grid-cols-[9rem_minmax(0,1fr)_9rem] md:gap-5"
+                    href={`/questions/${encodeURIComponent(question.id)}`}
+                  >
+                    <PublicStatusBadge
+                      status={question.status === 'answered' ? 'answered' : 'waiting'}
+                    />
+                    <h2 class="col-span-2 col-start-1 row-start-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-serif text-body-sans font-semibold text-ink group-hover:text-link group-hover:underline md:col-span-1 md:col-start-2 md:row-start-1">
+                      {question.title}
+                    </h2>
+                    <time
+                      class="col-start-2 row-start-1 font-sans text-caption text-body-muted md:col-start-3 md:text-right"
+                      datetime={question.createdAt}
+                    >
+                      {formatDate(question.createdAt)}
+                    </time>
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <PublicPagination page={result.page} totalPages={result.totalPages} status={status} />
+          </>
+        ) : (
+          <div class="mt-8 border-y border-hairline py-12">
+            <h2 class="font-serif text-display-sm font-semibold text-ink">{t('qna.empty')}</h2>
+            <p class="mt-3 max-w-[38rem] font-sans text-body-sans text-ink-soft">
+              {status === 'all'
+                ? 'Share the first question with the TCN community.'
+                : 'No questions match this status. You can view all questions or ask a new one.'}
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              {status !== 'all' && (
+                <a
+                  class="inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+                  href={filterHref('all')}
+                >
+                  View all questions
+                </a>
+              )}
+              <a
+                class="inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans font-bold text-on-primary no-underline"
+                href="/questions/new"
+              >
+                {t('qna.first')}
+              </a>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,19 @@
+---
+interface Props {
+  status: 'waiting' | 'answered';
+}
+
+const { status } = Astro.props;
+const answered = status === 'answered';
+---
+
+<span
+  class:list={[
+    'inline-flex min-h-8 w-fit items-center rounded-full border px-2.5 py-1 font-sans text-caption font-bold whitespace-nowrap',
+    answered
+      ? 'border-accent/40 bg-canvas-band text-accent'
+      : 'border-hairline-strong text-ink-soft',
+  ]}
+>
+  {answered ? 'Answered' : 'Awaiting answer'}
+</span>

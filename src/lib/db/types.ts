@@ -67,3 +67,47 @@ export interface User {
   sessionVersion: number;
   createdAt: number;
 }
+
+export type QnaVisibility = 'visible' | 'hidden';
+export type QnaPublicStatus = 'all' | 'waiting' | 'answered';
+export type QnaAdminStatus = 'waiting' | 'answered' | 'hidden';
+
+export interface QnaAnswer {
+  questionId: string;
+  body: string;
+  answeredBy: string;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QnaQuestion {
+  id: string;
+  title: string;
+  body: string;
+  askerUserId: string | null;
+  visibility: QnaVisibility;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  answer: QnaAnswer | null;
+}
+
+export interface QnaQuestionListItem {
+  id: string;
+  title: string;
+  visibility: QnaVisibility;
+  questionRevision: number;
+  createdAt: string;
+  answerRevision: number | null;
+  answeredAt: string | null;
+  status: 'waiting' | 'answered' | 'hidden';
+}
+
+export interface QnaPage<T> {
+  items: T[];
+  page: number;
+  pageSize: 20;
+  total: number;
+  totalPages: number;
+}
