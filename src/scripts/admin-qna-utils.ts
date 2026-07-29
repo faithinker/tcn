@@ -12,6 +12,10 @@ export function validateAnswerDraft(value: string): string | null {
   return null;
 }
 
+export function adjustWaitingCount(current: number, delta: number): number {
+  return Math.max(0, current + delta);
+}
+
 export function formatWaitingAge(createdAt: string, now = new Date()): string {
   const created = new Date(createdAt);
   if (!Number.isFinite(created.getTime())) return 'Awaiting answer';

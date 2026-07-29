@@ -1,4 +1,4 @@
-import { adminDraftKey, validateAnswerDraft } from './admin-qna-utils';
+import { adjustWaitingCount, adminDraftKey, validateAnswerDraft } from './admin-qna-utils';
 
 interface AnswerResponse {
   answer?: { body?: unknown; revision?: unknown };
@@ -19,6 +19,7 @@ const fieldError = document.querySelector<HTMLElement>('#answer-field-error');
 const counter = document.querySelector<HTMLElement>('#answer-count');
 const answerRevision = document.querySelector<HTMLElement>('#answer-revision');
 const statusBadge = document.querySelector<HTMLElement>('#question-status');
+const waitingCount = document.querySelector<HTMLElement>('#admin-waiting-count');
 
 const questionId = root?.dataset.questionId ?? '';
 const storageKey = adminDraftKey(questionId);
@@ -82,6 +83,13 @@ function updateCount(): void {
   if (counter && textarea) counter.textContent = textarea.value.length.toLocaleString('en-US');
 }
 
+function updateWaitingCount(delta: number): void {
+  if (!waitingCount) return;
+  const current = Number(waitingCount.textContent);
+  if (!Number.isSafeInteger(current)) return;
+  waitingCount.textContent = String(adjustWaitingCount(current, delta));
+}
+
 function restoreDraft(): void {
   if (!textarea) return;
   try {
@@ -121,6 +129,8 @@ form?.addEventListener('submit', async (event) => {
   saveDraft();
   saveButton.disabled = true;
   saveButton.textContent = 'Saving…';
+  const wasWaiting =
+    root.dataset.questionVisibility !== 'hidden' && Number(root.dataset.answerRevision ?? 0) === 0;
   try {
     const response = await fetch(`/api/questions/${encodeURIComponent(questionId)}/answer`, {
       method: 'PUT',
@@ -148,6 +158,7 @@ form?.addEventListener('submit', async (event) => {
       if (statusBadge && root.dataset.questionVisibility !== 'hidden') {
         statusBadge.textContent = 'Answered';
       }
+      if (wasWaiting) updateWaitingCount(-1);
       showNotice('Official answer saved and published.');
       return;
     }
@@ -210,6 +221,9 @@ async function changeVisibility(
       const revision = payload.question?.revision;
       if (typeof revision === 'number' && Number.isSafeInteger(revision)) {
         root.dataset.questionRevision = String(revision);
+      }
+      if (Number(root.dataset.answerRevision ?? 0) === 0) {
+        updateWaitingCount(nextVisibility === 'hidden' ? -1 : 1);
       }
       root.dataset.questionVisibility = nextVisibility;
       visibilityButton.textContent =

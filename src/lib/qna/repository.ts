@@ -115,6 +115,17 @@ function adminOrderSql(status: QnaAdminStatus): string {
   return 'q.created_at desc, q.id desc';
 }
 
+export async function countAdminQuestions(db: D1Database, status: QnaAdminStatus): Promise<number> {
+  const where = adminStatusSql(status);
+  const count = await db
+    .prepare(
+      `select count(*) as total from qna_questions q
+       left join qna_answers a on a.question_id = q.id where ${where}`,
+    )
+    .first<{ total: number }>();
+  return Number(count?.total ?? 0);
+}
+
 function pageResult(
   rows: ListRow[],
   requestedPage: number,

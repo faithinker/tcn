@@ -5,6 +5,7 @@ vi.mock('../db/client', () => ({
 }));
 
 import {
+  countAdminQuestions,
   createQuestion,
   listAdminQuestions,
   listPublicQuestions,
@@ -38,6 +39,18 @@ function questionRow(overrides: Record<string, unknown> = {}) {
 }
 
 describe('Q&A repository pagination', () => {
+  it('counts one administrator queue without loading question rows', async () => {
+    const first = vi.fn().mockResolvedValue({ total: 4 });
+    const prepare = vi.fn().mockReturnValue({ first });
+    const db = { prepare } as unknown as D1Database;
+
+    await expect(countAdminQuestions(db, 'waiting')).resolves.toBe(4);
+
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(prepare.mock.calls[0][0]).toContain("q.visibility = 'visible'");
+    expect(prepare.mock.calls[0][0]).toContain('a.question_id is null');
+  });
+
   it('paginates visible questions by a stable created_at/id order', async () => {
     const first = vi.fn().mockResolvedValue({ total: 21 });
     const all = vi.fn().mockResolvedValue({ results: [{ id: 'q-21' }] });

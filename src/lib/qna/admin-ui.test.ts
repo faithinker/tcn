@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   adminDraftKey,
+  adjustWaitingCount,
   formatWaitingAge,
   validateAnswerDraft,
 } from '../../scripts/admin-qna-utils';
@@ -12,6 +13,14 @@ const detailPage = readFileSync(
 );
 
 describe('admin Q&A UI helpers', () => {
+  it.each([
+    [4, -1, 3],
+    [4, 1, 5],
+    [0, -1, 0],
+  ])('adjusts the header waiting count without going negative', (current, delta, expected) => {
+    expect(adjustWaitingCount(current, delta)).toBe(expected);
+  });
+
   it('does not serialize Astro template indentation into the answer textarea', () => {
     const textarea = detailPage.match(
       /<textarea[\s\S]*?id="official-answer"[\s\S]*?(?:\/>|<\/textarea>)/,
