@@ -102,16 +102,17 @@ const copy = content.contact;
     <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
       {copy.contactBody}
     </p>
-    <dl
-      class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2"
-    >
-      <div class="bg-canvas p-5 sm:p-6">
-        <dt class="font-sans text-caption font-bold uppercase text-accent">{copy.phone}</dt>
-        <dd class="mt-4 min-h-7 border-b border-hairline" aria-label={copy.unavailable}></dd>
-      </div>
+    <dl class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline">
       <div class="bg-canvas p-5 sm:p-6">
         <dt class="font-sans text-caption font-bold uppercase text-accent">{copy.email}</dt>
-        <dd class="mt-4 min-h-7 border-b border-hairline" aria-label={copy.unavailable}></dd>
+        <dd class="mt-4">
+          <a
+            class="inline-flex min-h-11 items-center font-serif text-body-serif text-link underline"
+            href={`mailto:${copy.emailAddress}`}
+          >
+            {copy.emailAddress}
+          </a>
+        </dd>
       </div>
     </dl>
   </SectionTile>

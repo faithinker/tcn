@@ -67,7 +67,7 @@ export const ui = {
   'footer.office': 'Secretariat',
   'footer.officeValue': '286, Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
   'footer.copyright': 'Transcultural Network',
-  'footer.contactNote': 'Contact details to be announced',
+  'footer.contactEmail': 'mingoo@aks.ac.kr',
 } as const;
 
 export type UiKey = keyof typeof ui;

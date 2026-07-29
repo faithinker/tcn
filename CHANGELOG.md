@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-07-30]
+### Changed
+- Opened a working contact channel: Secretariat Enquiries no longer shows an empty Telephone row beside an empty Email row, and the Email row now links to `mingoo@aks.ac.kr`. The section copy states that enquiries reach the Secretariat by email rather than promising channels still to be finalised, and the footer's "Contact details to be announced" line is replaced by the same address so the two no longer contradict each other on the same page. (Branch: `content/contact-secretariat-email`) - Implemented by Claude
+
 ## [2026-07-29]
 ### Feature
 - Made the post editor attach media before the first save: selected photos, documents, and video stay staged in the editor with previews, captions, ordering, and cover choice, and one Save/Create runs post save → uploads → media metadata. New posts are created in place, so a file that fails to upload stays staged and Save retries it instead of disappearing with a redirect. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
