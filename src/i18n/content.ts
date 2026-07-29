@@ -524,10 +524,9 @@ export const content = {
     contactEyebrow: 'Contact',
     contactTitle: 'Secretariat Enquiries',
     contactBody:
-      'The Secretariat’s telephone number and email address will be published once our communication channels are finalised.',
-    phone: 'Telephone',
+      'All enquiries reach the Secretariat by email. Please write to the address below and we will respond in turn.',
     email: 'Email',
-    unavailable: 'Not yet available',
+    emailAddress: 'mingoo@aks.ac.kr',
   },
   eventRecord: {
     eyebrow: 'Event Record',
