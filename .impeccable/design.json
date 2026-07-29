@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-29T16:50:51Z",
+  "title": "Design System: Transcultural Network",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Warm Ink",
+        "canonical": "#171310",
+        "tonalRamp": ["#171310", "#2e2923", "#4b443a", "#6c6254", "#918675", "#b7ae9f", "#ddd8cf", "#f7f5f1"]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#2e2a22",
+        "tonalRamp": ["#171310", "#2e2a22", "#4b463b", "#6d6658", "#928a79", "#b9b1a3", "#ded9d1", "#f7f5f1"]
+      },
+      "body": {
+        "role": "neutral",
+        "displayName": "Body Ink",
+        "canonical": "#2e2a22",
+        "tonalRamp": ["#171310", "#2e2a22", "#4b463b", "#6d6658", "#928a79", "#b9b1a3", "#ded9d1", "#f7f5f1"]
+      },
+      "body-muted": {
+        "role": "neutral",
+        "displayName": "Muted Umber",
+        "canonical": "#5d5647",
+        "tonalRamp": ["#1d1a16", "#373229", "#5d5647", "#777061", "#978f80", "#b8b1a5", "#dcd8d0", "#f6f4f0"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Reading Canvas",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#171513", "#34312d", "#56514a", "#7c756b", "#a39c92", "#c8c3bb", "#ebe8e3", "#ffffff"]
+      },
+      "canvas-soft": {
+        "role": "neutral",
+        "displayName": "Soft Paper",
+        "canonical": "#f7f5f0",
+        "tonalRamp": ["#1b1916", "#39352f", "#5c564d", "#81796d", "#a79f94", "#cbc5bc", "#e9e5df", "#f7f5f0"]
+      },
+      "canvas-band": {
+        "role": "neutral",
+        "displayName": "Band Paper",
+        "canonical": "#f2efe7",
+        "tonalRamp": ["#1d1a15", "#3b362c", "#5f5748", "#837a68", "#aaa292", "#cdc7bc", "#e7e3dc", "#f2efe7"]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Warm Hairline",
+        "canonical": "#ddd9d0",
+        "tonalRamp": ["#211e19", "#403b32", "#625b4f", "#857d6e", "#a9a294", "#c8c2b8", "#ddd9d0", "#f4f2ed"]
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Structural Rule",
+        "canonical": "#171310",
+        "tonalRamp": ["#171310", "#2e2923", "#4b443a", "#6c6254", "#918675", "#b7ae9f", "#ddd8cf", "#f7f5f1"]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Institutional Blue",
+        "canonical": "#0b3d6b",
+        "tonalRamp": ["#07192b", "#0b2b4a", "#0b3d6b", "#1b568b", "#3e76a5", "#719bc2", "#aac5dc", "#e7f0f7"]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Institutional Blue Hover",
+        "canonical": "#09507f",
+        "tonalRamp": ["#061b2b", "#07334f", "#09507f", "#1f6b9e", "#4888b5", "#77a8ca", "#afccdf", "#e8f2f8"]
+      },
+      "link": {
+        "role": "primary",
+        "displayName": "Link Blue",
+        "canonical": "#0b3d6b",
+        "tonalRamp": ["#07192b", "#0b2b4a", "#0b3d6b", "#1b568b", "#3e76a5", "#719bc2", "#aac5dc", "#e7f0f7"]
+      },
+      "link-hover": {
+        "role": "primary",
+        "displayName": "Link Blue Hover",
+        "canonical": "#09507f",
+        "tonalRamp": ["#061b2b", "#07334f", "#09507f", "#1f6b9e", "#4888b5", "#77a8ca", "#afccdf", "#e8f2f8"]
+      },
+      "on-primary": {
+        "role": "neutral",
+        "displayName": "On Primary",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#181715", "#343331", "#565451", "#797671", "#9e9a94", "#c2bfb9", "#e5e3df", "#ffffff"]
+      },
+      "footer": {
+        "role": "neutral",
+        "displayName": "Permanent Footer Ink",
+        "canonical": "#171310",
+        "tonalRamp": ["#12110f", "#29251f", "#474039", "#685f54", "#8e8375", "#b5ad9f", "#dcd7cf", "#f6f4f0"]
+      },
+      "on-footer": {
+        "role": "neutral",
+        "displayName": "On Footer",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#181715", "#343331", "#565451", "#797671", "#9e9a94", "#c2bfb9", "#e5e3df", "#ffffff"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Oxblood Danger",
+        "canonical": "#8a2b1f",
+        "tonalRamp": ["#2a0d09", "#531913", "#8a2b1f", "#a94739", "#c66a5c", "#dd958a", "#efc1ba", "#faece9"]
+      },
+      "danger-soft": {
+        "role": "tertiary",
+        "displayName": "Danger Wash",
+        "canonical": "#f8ece9",
+        "tonalRamp": ["#2b100d", "#51221d", "#7b3c34", "#a35d52", "#c7877d", "#e1b1aa", "#f1d7d2", "#f8ece9"]
+      }
+    },
+    "typographyMeta": {
+      "display-hero": {
+        "displayName": "Display Hero",
+        "purpose": "Standard interior-page covers at 640px and above."
+      },
+      "display-lg": {
+        "displayName": "Display Large",
+        "purpose": "Major page and section headings."
+      },
+      "display-md": {
+        "displayName": "Display Medium",
+        "purpose": "Subsection and feature headings."
+      },
+      "display-sm": {
+        "displayName": "Display Small",
+        "purpose": "Card headings and profile names."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Short blue uppercase section labels."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Introductory narrative."
+      },
+      "body-serif": {
+        "displayName": "Body Serif",
+        "purpose": "Public body copy and academic prose."
+      },
+      "body-sans": {
+        "displayName": "Body Sans",
+        "purpose": "UI descriptions, tables, form content, and spacious navigation."
+      },
+      "body-sm": {
+        "displayName": "Body Small",
+        "purpose": "Compact navigation and secondary interface text."
+      },
+      "byline": {
+        "displayName": "Byline",
+        "purpose": "Narrowly used serif metadata."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Captions and metadata."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Primary action labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)",
+        "purpose": "Desktop navigation dropdowns and other genuinely floating layers."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-color",
+        "value": "150ms ease",
+        "purpose": "Link and compact state-color feedback."
+      },
+      {
+        "name": "media-hint",
+        "value": "160ms ease-out",
+        "purpose": "Media caption hint disclosure on hover-capable devices."
+      },
+      {
+        "name": "section-reveal",
+        "value": "700ms cubic-bezier(0.22, 0.61, 0.36, 1)",
+        "purpose": "Four-pixel progressive section reveal; disabled for reduced motion."
+      },
+      {
+        "name": "publish-banner",
+        "value": "200ms fade / 450ms drawn check",
+        "purpose": "One-action authoring confirmation; immediate for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-type",
+        "value": "640px"
+      },
+      {
+        "name": "desktop-navigation",
+        "value": "896px"
+      },
+      {
+        "name": "content-grid",
+        "value": "1024px"
+      },
+      {
+        "name": "spacious-header",
+        "value": "1152px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Warm-ink primary action with a restrained institutional hover.",
+      "html": "<button class=\"ds-btn-primary\">Join / Contact</button>",
+      "css": ".ds-btn-primary { min-height: 48px; border: 0; border-radius: 4px; padding: 0 24px; background: var(--color-ink, #171310); color: var(--color-on-primary, #ffffff); font-family: var(--font-sans, system-ui, sans-serif); font-size: 17px; font-weight: 700; letter-spacing: 0.2px; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: var(--color-ink-soft, #2e2a22); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #0b3d6b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Grounded secondary action separated by a strong one-pixel rule.",
+      "html": "<button class=\"ds-btn-outline\">View details</button>",
+      "css": ".ds-btn-outline { min-height: 48px; border: 1px solid var(--color-hairline-strong, #171310); border-radius: 4px; padding: 0 24px; background: var(--color-canvas, #ffffff); color: var(--color-ink, #171310); font-family: var(--font-sans, system-ui, sans-serif); font-size: 17px; font-weight: 700; transition: background-color 150ms ease; } .ds-btn-outline:hover { background: var(--color-canvas-soft, #f7f5f0); } .ds-btn-outline:focus-visible { outline: 2px solid var(--color-accent, #0b3d6b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "text-input",
+      "description": "High-contrast structural field for public and authoring forms.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Email address</span><input class=\"ds-field-input\" type=\"email\" placeholder=\"name@example.org\"></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: var(--color-ink, #171310); font-family: var(--font-sans, system-ui, sans-serif); font-size: 15px; font-weight: 700; } .ds-field-input { min-height: 48px; border: 1px solid var(--color-hairline-strong, #171310); border-radius: 4px; padding: 12px 16px; background: var(--color-canvas, #ffffff); color: var(--color-body, #2e2a22); font: 400 17px/1.6 var(--font-sans, system-ui, sans-serif); } .ds-field-input::placeholder { color: var(--color-body-muted, #5d5647); } .ds-field-input:focus-visible { outline: 2px solid var(--color-accent, #0b3d6b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Site Navigation",
+      "kind": "nav",
+      "refersTo": "site-header",
+      "description": "Single ruled masthead with serif identity and sans-serif wayfinding.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Primary\"><a class=\"ds-wordmark\" href=\"#\">Transcultural Network</a><div class=\"ds-nav-links\"><a href=\"#\">About</a><a href=\"#\">People</a><a class=\"ds-nav-cta\" href=\"#\">Join / Contact</a></div></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--color-hairline-strong, #171310); padding: 12px 20px; background: var(--color-canvas, #ffffff); } .ds-nav a { min-height: 48px; display: inline-flex; align-items: center; color: var(--color-ink, #171310); text-decoration: none; } .ds-wordmark { font: 600 22px/1.2 var(--font-serif, Georgia, serif); } .ds-nav-links { display: flex; align-items: center; gap: 8px; font: 700 15px/1.6 var(--font-sans, system-ui, sans-serif); } .ds-nav-links a:hover { color: var(--color-link, #0b3d6b); } .ds-nav-cta { border-radius: 4px; padding: 0 20px; background: var(--color-ink, #171310); color: var(--color-on-primary, #ffffff) !important; } .ds-nav a:focus-visible { outline: 2px solid var(--color-accent, #0b3d6b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Section Band",
+      "kind": "custom",
+      "refersTo": "section-band",
+      "description": "Full-width paper band that establishes rhythm without card chrome.",
+      "html": "<section class=\"ds-section-band\"><div><p class=\"ds-eyebrow\">Our purpose</p><h2>Scholarship across cultures</h2><p>Long-form thought is given room to breathe.</p></div></section>",
+      "css": ".ds-section-band { padding: 96px 20px; background: var(--color-canvas-band, #f2efe7); color: var(--color-body, #2e2a22); } .ds-section-band > div { max-width: 1200px; margin: 0 auto; } .ds-section-band h2 { max-width: 18ch; margin: 8px 0 16px; color: var(--color-ink, #171310); font: 600 44px/1.15 var(--font-serif, Georgia, serif); letter-spacing: -0.01em; } .ds-section-band p { max-width: 68ch; margin: 0; font: 400 18px/1.75 var(--font-serif, Georgia, serif); } .ds-section-band .ds-eyebrow { color: var(--color-accent, #0b3d6b); font: 700 15px/1.3 var(--font-sans, system-ui, sans-serif); letter-spacing: 1.2px; text-transform: uppercase; }"
+    },
+    {
+      "name": "Profile Card",
+      "kind": "card",
+      "refersTo": "profile-card",
+      "description": "Square editorial profile cell designed to sit inside a hairline grid.",
+      "html": "<article class=\"ds-profile\"><div class=\"ds-profile-meta\"><span>Director</span><span>Korea</span></div><h3>Scholar Name</h3><p class=\"ds-profile-label\">Current position</p><p>Professor of Transcultural Studies</p><div class=\"ds-profile-tags\"><span>History</span><span>Migration</span></div></article>",
+      "css": ".ds-profile { padding: 32px; background: var(--color-canvas, #ffffff); color: var(--color-body, #2e2a22); } .ds-profile-meta { display: flex; justify-content: space-between; gap: 20px; color: var(--color-body-muted, #5d5647); font: 700 14px/1.5 var(--font-sans, system-ui, sans-serif); } .ds-profile-meta span:first-child { color: var(--color-accent, #0b3d6b); text-transform: uppercase; } .ds-profile h3 { margin: 16px 0 24px; color: var(--color-ink, #171310); font: 600 26px/1.25 var(--font-serif, Georgia, serif); } .ds-profile-label { margin: 0 0 4px; color: var(--color-body-muted, #5d5647); font: 700 11px/1.4 var(--font-sans, system-ui, sans-serif); text-transform: uppercase; } .ds-profile p { font: 400 18px/1.75 var(--font-serif, Georgia, serif); } .ds-profile-tags { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--color-hairline, #ddd9d0); padding-top: 20px; } .ds-profile-tags span { border: 1px solid var(--color-hairline, #ddd9d0); padding: 4px 8px; font: 700 12px/1.5 var(--font-sans, system-ui, sans-serif); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "description": "Compact public state label; pills are reserved for status rather than containers.",
+      "html": "<span class=\"ds-status\">Answered</span>",
+      "css": ".ds-status { min-height: 32px; display: inline-flex; align-items: center; border: 1px solid color-mix(in srgb, var(--color-accent, #0b3d6b) 40%, transparent); border-radius: 9999px; padding: 4px 10px; background: var(--color-canvas-band, #f2efe7); color: var(--color-accent, #0b3d6b); font: 700 14px/1.5 var(--font-sans, system-ui, sans-serif); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Scholarly Record",
+    "overview": "TCN should feel like a carefully edited institutional record: calm enough for sustained reading, formal without ceremony, and contemporary without looking like a software product. Georgia carries scholarship and narrative; Pretendard carries navigation, metadata, and authoring controls. Near-black ink, a single institutional blue, warm paper surfaces, and ruled divisions create hierarchy without decorative chrome.\n\nThe public site serves an international scholarly association and is intentionally English-first. Its large body type, strong contrast, generous line height, and broad touch targets support older readers without turning accessibility into a separate visual mode. The authoring interface uses the same type, color, and border vocabulary at a denser rhythm; danger colors belong to authoring state, not public branding.",
+    "keyCharacteristics": [
+      "Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.",
+      "Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.",
+      "Flat surfaces separated by tone, whitespace, and one-pixel rules.",
+      "Desktop body copy at 18px/1.75 and reading measures between 68ch and 74ch.",
+      "Primary controls at 48px; compact secondary controls respect a 44px touch-target floor.",
+      "Responsive behavior driven by real content thresholds at 640px, 896px, 1024px, and 1152px."
+    ],
+    "rules": [
+      {
+        "name": "The Record, Not Dashboard Rule",
+        "body": "Public pages must read as edited scholarship, never as a SaaS dashboard, marketing template, or collection of interchangeable cards.",
+        "section": "overview"
+      },
+      {
+        "name": "The One Blue Rule",
+        "body": "Do not introduce a second brand hue. Institutional blue is used for links, labels, active state, focus, and selection; its restraint is the identity.",
+        "section": "colors"
+      },
+      {
+        "name": "The Public Theme Boundary Rule",
+        "body": "Dark-mode guidance applies to public pages only until the admin layout gains its own theme bootstrap and control.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Serif carries scholarship and narrative. Sans-serif carries wayfinding, metadata, status, and controls. Never create a third display voice.",
+        "section": "typography"
+      },
+      {
+        "name": "The Honest Floor Rule",
+        "body": "New readable copy must use 14px or larger. Existing 11–13px labels are short, bold, and local; do not copy them into paragraphs, navigation, captions, or form help.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-by-Default Rule",
+        "body": "If a surface is part of document flow, it stays flat. Shadows are reserved for layers that physically overlap other content.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Grounded Component Rule",
+        "body": "A component in document flow earns separation through spacing, tone, or a hairline. Do not turn every section, profile, or list item into a rounded card.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do use Georgia at weight 600 for headings and Pretendard for navigation, metadata, and controls.",
+      "Do keep public narrative copy at 17–18px with generous line height and a 68–74ch reading measure.",
+      "Do reserve institutional blue for links, active state, labels, selection, and focus.",
+      "Do use 48px primary controls and preserve a 44px floor for compact secondary controls.",
+      "Do build responsive behavior around the actual 640px, 896px, 1024px, and 1152px thresholds.",
+      "Do keep content visible without JavaScript and remove nonessential motion for reduced-motion users.",
+      "Do use paper tone, whitespace, and hairlines before introducing another container."
+    ],
+    "donts": [
+      "Don't invent tokens or components that are absent from the codebase; primary, body-sans-strong, story-card, story-row, and officer-card are not part of the current system.",
+      "Don't introduce a second brand color, gradients, glassmorphism, or decorative background effects.",
+      "Don't use rounded cards as default scaffolding or combine a content-card border with a wide shadow.",
+      "Don't repeat tiny uppercase eyebrows above every section; use the established eyebrow only where its category signal materially helps navigation.",
+      "Don't treat 768px as the universal mobile/desktop boundary or assume every academic document has an aside.",
+      "Don't apply public dark-theme claims to admin pages until admin has an explicit theme mechanism.",
+      "Don't reuse the local 11–13px exceptions for readable copy, navigation, captions, or form help.",
+      "Don't add shadows to grounded surfaces; the overlay shadow belongs only to overlapping layers."
+    ]
+  }
+}
