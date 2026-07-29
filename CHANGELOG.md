@@ -4,15 +4,23 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-07-29]
 ### Feature
+- Made the post editor attach media before the first save: selected photos, documents, and video stay staged in the editor with previews, captions, ordering, and cover choice, and one Save/Create runs post save → uploads → media metadata. New posts are created in place, so a file that fails to upload stays staged and Save retries it instead of disappearing with a redirect. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
+- Replaced the single-line save status with a sticky publish bar that answers whether the screen matches the public page: seven named states with a plain-language second line, a file-by-file upload counter, the live URL with copy, and a confirmation banner naming what went live, what is attached, and what is still incomplete. Failures state the reason and that nothing was lost, and unsaved changes now warn before the tab closes. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
+- Added a production-site quick link to the admin header, and gave Logout pointer and hover feedback. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
 - Added a public D1-backed Q&A board with question submission, waiting/answered filters, stable pagination, official administrator answers, visibility controls, and responsive public and admin views. (Branch: `codex/qna-mvp`) - Implemented by Codex
 - Reorganized the authenticated admin area as a flat Posts/Questions workspace with active navigation, contextual page actions, live waiting-question counts, and responsive task-focused lists. (Branch: `codex/qna-mvp`) - Implemented by Codex
+### Changed
+- Rebuilt the media dropzone: the whole dashed area opens the file picker (the native input chrome, which rendered in the browser's own language, is gone), all copy is English, accepted formats and size ceilings are printed inside it, staged files show their size, and deleting media asks for confirmation. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
+- Added one admin-only token pair (`danger` / `danger-soft`, warm oxblood) so destructive and failed states stop borrowing the link blue, and documented the admin state vocabulary, publish bar, and dropzone in `DESIGN.md`. Success deliberately adds no new colour. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
 ### Security
 - Protected Q&A writes with canonical Cloudflare Turnstile verification, hostname validation, replay prevention, HMAC-derived dual-window rate limits, CSRF checks, optimistic revisions, atomic privacy-minimal audit events, no-store admin responses, and safe plain-text rendering. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Fix
+- Rejected unsupported and oversized uploads in the browser before the request, inferring the type from the extension when the browser reports no MIME, so `.mov` and `.doc` files no longer reach the Worker only to fail with 415. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
 - Removed the duplicate desktop Contact navigation item and prevented administrator answer text from gaining leading whitespace or indentation after editing and publishing. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Refactor
 - Consolidated duplicated administrator Q&A mutation plumbing and aligned Sonar coverage scope with the browser-executed scripts already excluded from Vitest coverage. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Test
+- Extended the `verify:admin` browser gate to 36 checks — that selecting files creates nothing on the server until Save, that one Create publishes a post with a photo, a PDF, and an MP4, and that the publish states appear — and added unit tests for the new upload-accept, staged-media, and publish-state modules. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude
 - Added unit, contract, D1 integration, security, concurrency, pagination, and browser coverage for the Q&A lifecycle and administrator count synchronization. (Branch: `codex/qna-mvp`) - Implemented by Codex
 - Removed 46 low-value or redundant tests, retained 255 behavior-focused tests, and recalibrated Vitest thresholds to the measured coverage floor of the remaining suite. (Branch: `test/trim-qna-tests`) - Implemented by Codex
 

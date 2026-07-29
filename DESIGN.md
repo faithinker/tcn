@@ -30,6 +30,8 @@ colors:
   link: '#0b3d6b'
   link-hover: '#09507f'
   accent: '#0b3d6b'
+  danger: '#8a2b1f'
+  danger-soft: '#f8ece9'
 
 typography:
   display-hero:
@@ -267,6 +269,18 @@ The single restrained accent is a deep institutional blue `{colors.accent}` (`#0
 - **Ink Soft / Body** (`{colors.body}` - `#2e2a22`): Long-form paragraphs (~13:1 contrast).
 - **Body Muted** (`{colors.body-muted}` - `#5d5647`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1) so supporting text remains legible.
 
+### State (admin tooling only)
+
+The public site keeps one blue, one ink, paper. The authoring tool needs one more thing the public
+site never does: it must say "this failed" without borrowing the link colour.
+
+- **Danger** (`{colors.danger}` - `#8a2b1f` → `#e79a8c` dark): Destructive actions (Delete) and failed
+  saves/uploads. Warm oxblood, drawn from the same warm neutral family (~8:1 on canvas). Never used on
+  public pages, never as decoration.
+- **Danger Soft** (`{colors.danger-soft}` - `#f8ece9` → `#2b201d` dark): Tint behind a failure banner.
+- Success has **no new colour**. A published post is confirmed with the accent blue, a drawn check, and
+  a sentence naming what went live — the accent is already the system's "active state" colour.
+
 ### Dark Mode (Eye Protection Mode) & WCAG Compliance
 
 To reduce visual fatigue and ensure high legibility for senior readers under low-light conditions, the site implements a custom Dark Mode (Eye Protection) palette. Rather than stark black, it uses soft warm-charcoal and sand-white tones to prevent halation.
@@ -391,6 +405,22 @@ No drop-shadows on **surfaces** - surface contrast + hairlines carry all hierarc
 - **`story-card-large` / `story-card`** - feature news/event cards; serif heading + serif lead + sans byline.
 - **`story-row`** - bylined list row with hairline bottom border; for 공지/뉴스/논문 lists.
 - **`profile-card`** - canvas card for 임원진·이사진 (`MemberProfileCard.astro`, the only card on `/people`): accent caps role and muted country on one row, serif name (`display-sm`; `1.5rem` in the `compact` 3-up directors grid), a muted caps "current role" label above the serif position, then hairline-separated summary, `·`-marked highlight bullets, and bordered sans expertise chips. No avatar.
+
+### Admin (authoring tool)
+
+- **`publish-bar`** (`PublishBar.tsx`) - the sticky bar at the foot of the post editor. It answers one
+  question at all times: is what I see on screen what the public sees? Seven states, one vocabulary:
+  `Not published yet` / `Uploading n of N` / `Unsaved changes` / `Published` / `Published with problems`
+  / `Changes not published` / `Not created`. A square state dot (muted = neutral, accent = published,
+  ink = unsaved, danger = failed), a plain-language second line ("The public page still shows the last
+  published version."), the live URL, and Delete in danger colour.
+- **`publish-banner`** - appears once per action directly above the bar: a 450 ms drawn check plus the
+  ordinal that went live, the public URL, the attachment count, and anything still incomplete. The
+  failure variant swaps to the danger tint and lists each reason. Both fade in over 200 ms and both
+  fall back to an instant state under `prefers-reduced-motion`.
+- **`media-dropzone`** (`MediaManager.tsx`) - the whole dashed area is the file picker; accepted formats
+  and size ceilings are printed inside it. Files chosen before a post exists stay staged (`Not uploaded
+yet`) until Save uploads them.
 
 ### Signature
 

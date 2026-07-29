@@ -52,5 +52,11 @@ const editorMedia = media.map((item) => ({
       >← Posts</a
     >
   </div>
-  <PostEditor client:load post={editorPost} media={editorMedia} seminarSequence={seminarSequence} />
+  <PostEditor
+    client:load
+    post={editorPost}
+    media={editorMedia}
+    seminarSequence={seminarSequence}
+    siteOrigin={Astro.url.origin}
+  />
 </AdminLayout>
