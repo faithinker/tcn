@@ -17,6 +17,8 @@ const USERNAME = 'verify-admin-gate';
 const PASSWORD = `gate-${randomUUID()}`;
 // 시드 최대 개최일(browser-media 시드 2099-12-31)보다 뒤 — event_date_must_follow_latest 회피.
 const EVENT_DATE = '2100-01-15';
+// B 시나리오(한 번에 생성)는 A 시나리오보다 뒤 날짜여야 event_date_must_follow_latest 를 피한다.
+const SECOND_EVENT_DATE = '2100-02-20';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WRANGLER = path.join(ROOT, 'node_modules', '.bin', 'wrangler');
 
@@ -108,27 +110,56 @@ try {
     return (await status.textContent())?.includes('Saved ✓') === true;
   };
 
-  // A4 — Tiptap 본문 입력 → 저장.
+  const publishBar = page.locator('[data-publish-bar]');
+
+  // A4 — Tiptap 본문 입력 → 저장. 입력 순간 "공개본과 다르다"가, 저장 후 "게시됨"이 보여야 한다.
   await page.click('.admin-prose');
   await page.keyboard.type('Automated gate body paragraph. It must appear on the public page.');
+  check(
+    '수정 중에는 게시 상태가 Unsaved changes 로 바뀐다',
+    await page.getByText('Unsaved changes').first().isVisible(),
+  );
+  check(
+    '수정 중에는 공개본이 아직 옛 내용임을 문장으로 알린다',
+    (await page.getByText('The public page still shows the last published version.').count()) === 1,
+  );
   check('본문 입력 후 저장이 Saved ✓ 로 끝난다', await savedOk());
+  check(
+    '저장 후 게시 상태가 Published 로 바뀐다',
+    (await publishBar.getByText('Published', { exact: true }).count()) >= 1,
+  );
+  check(
+    '저장 후 공개 페이지 링크가 상태 바에 노출된다',
+    await publishBar.getByRole('link', { name: /Open public page/ }).isVisible(),
+  );
+  check(
+    '게시 확인 배너가 몇 번째 세미나가 라이브인지 말해준다',
+    (await page.getByText(/International Seminar is live/).count()) === 1,
+  );
 
-  // A5 — 이미지 2건 업로드(파일명이 달라야 정렬 검증 가능).
+  // A5 — 이미지 2건은 선택만으로 스테이징되고(네트워크 없음) Save 가 실제 업로드를 수행한다.
+  // 파일명이 달라야 정렬 검증이 가능하다.
   const fileInput = page.locator('input[type="file"]');
-  await fileInput.setInputFiles(path.join(ROOT, 'scripts/fixtures/upload-sample.webp'));
-  await page.waitForFunction(
-    (el) => /uploaded ✓|failed/.test(el.textContent ?? ''),
-    await status.elementHandle(),
-    { timeout: 30_000 },
-  );
-  await fileInput.setInputFiles(path.join(ROOT, 'src/assets/founding/founding-video-poster.jpg'));
-  await page.waitForFunction(
-    (el) => /uploaded ✓|failed/.test(el.textContent ?? ''),
-    await status.elementHandle(),
-    { timeout: 30_000 },
-  );
   const imageItems = page.locator('section[aria-labelledby="media-images-heading"] ul > li');
-  check('이미지 2건이 그리드에 나타난다', (await imageItems.count()) === 2);
+  await fileInput.setInputFiles([
+    path.join(ROOT, 'scripts/fixtures/upload-sample.webp'),
+    path.join(ROOT, 'src/assets/founding/founding-video-poster.jpg'),
+  ]);
+  check('선택한 파일 2건이 저장 전에 그리드에 스테이징된다', (await imageItems.count()) === 2);
+  check(
+    '스테이징 항목은 아직 업로드되지 않았음을 표시한다',
+    (await page.getByText('Not uploaded yet').count()) === 2,
+  );
+  check(
+    '스테이징만으로는 서버에 미디어가 생기지 않는다',
+    (await page.locator('img[src^="/media/"]').count()) === 0,
+  );
+  check('Save 가 스테이징 파일을 업로드하고 저장까지 끝낸다', await savedOk());
+  check('업로드 후 이미지 2건이 그리드에 남는다', (await imageItems.count()) === 2);
+  check(
+    '업로드된 이미지는 R2 경로로 표시된다',
+    (await page.locator('img[src^="/media/"]').count()) === 2,
+  );
   check(
     '첫 이미지가 자동으로 대표(★ Cover)로 지정된다',
     (await imageItems.first().getByRole('button', { name: '★ Cover' }).count()) === 1,
@@ -199,14 +230,82 @@ try {
 
   // A10 — 삭제(soft delete) → 공개 404.
   page.on('dialog', (dialog) => dialog.accept());
-  // 미디어 항목에도 Delete 버튼이 있다 — 글 삭제 버튼은 Save·상태 표시줄과 같은 행에 있다.
+  // 미디어 항목에도 Delete 버튼이 있으므로 글 삭제 버튼은 data 훅으로 특정한다.
   await Promise.all([
     page.waitForURL('**/admin', { timeout: 15_000 }),
-    page.locator('div:has(> [role="status"]) > button:text-is("Delete")').click(),
+    page.locator('[data-post-delete]').click(),
   ]);
   check('삭제 후 /admin 목록으로 돌아온다', page.url().endsWith('/admin'));
   const goneResponse = await page.request.get(`${BASE}/seminars/${EVENT_DATE}`);
   check('삭제된 글의 공개 URL은 404다', goneResponse.status() === 404);
+
+  // B1 — 새 글도 사진·문서·영상을 미리 붙여두고 Create 한 번으로 업로드까지 끝낸다
+  // (사전 저장 없이). 사진/문서/영상 세 종류를 한 번에 태워 파이프라인 전체를 확인한다.
+  await page.goto(`${BASE}/admin/posts/new`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(
+    () => {
+      const island = document.querySelector('astro-island');
+      return island !== null && !island.hasAttribute('ssr');
+    },
+    { timeout: 15_000 },
+  );
+  await page.fill('#post-title', 'Gate one-shot seminar (automated)');
+  await page.fill('#post-event-date', SECOND_EVENT_DATE);
+  await page
+    .locator('input[type="file"]')
+    .setInputFiles([
+      path.join(ROOT, 'scripts/fixtures/upload-sample.webp'),
+      path.join(ROOT, 'scripts/fixtures/upload-sample.pdf'),
+      path.join(ROOT, 'scripts/fixtures/upload-sample.mp4'),
+    ]);
+  check(
+    '새 글에서도 사진·문서·영상이 저장 전에 스테이징된다',
+    (await page.getByText('Not uploaded yet').count()) === 3,
+  );
+  const oneShotStatus = page.locator('[role="status"]');
+  await page.getByRole('button', { name: 'Create' }).click();
+  await page.waitForFunction(
+    (el) => /Saved ✓|failed|could not/.test(el.textContent ?? ''),
+    await oneShotStatus.elementHandle(),
+    { timeout: 60_000 },
+  );
+  check(
+    'Create 한 번으로 글 생성 + 3건 업로드가 끝난다',
+    (await oneShotStatus.textContent())?.includes('Saved ✓') === true,
+  );
+  check(
+    '한 번에 만든 글도 편집 URL(/admin/posts/{id})로 이어진다',
+    /\/admin\/posts\/(?!new$)[0-9a-f-]+$/.test(page.url()),
+  );
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  check(
+    '재로드 후 사진이 R2 경로로 남아 있다',
+    (await page.locator('img[src^="/media/"]').count()) === 1,
+  );
+  const oneShotFiles = page.locator('section[aria-labelledby="media-files-heading"] ul > li');
+  check('재로드 후 문서·영상 2건이 파일 목록에 남아 있다', (await oneShotFiles.count()) === 2);
+  check(
+    'PDF 문서가 Document 로 저장된다',
+    (await oneShotFiles.filter({ hasText: 'upload-sample.pdf' }).getByText('Document').count()) ===
+      1,
+  );
+  check(
+    'MP4 영상이 Video file 로 저장되고 트랜스크립트 입력이 열린다',
+    (await oneShotFiles
+      .filter({ hasText: 'upload-sample.mp4' })
+      .getByText('Video file')
+      .count()) === 1 && (await page.locator('textarea[id^="video-transcript-"]').count()) === 1,
+  );
+  check(
+    '재로드 후 스테이징 표시는 남지 않는다',
+    (await page.getByText('Not uploaded yet').count()) === 0,
+  );
+  await Promise.all([
+    page.waitForURL('**/admin', { timeout: 15_000 }),
+    page.locator('[data-post-delete]').click(),
+  ]);
+  const secondGoneResponse = await page.request.get(`${BASE}/seminars/${SECOND_EVENT_DATE}`);
+  check('한 번에 만든 글도 삭제 후 공개 URL이 404다', secondGoneResponse.status() === 404);
 
   check(`브라우저 콘솔 에러 0건 (실제 ${consoleErrors.length}건)`, consoleErrors.length === 0);
   if (consoleErrors.length) console.error(consoleErrors.join('\n'));

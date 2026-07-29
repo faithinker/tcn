@@ -24,6 +24,9 @@
   --color-footer: #171310;
   --color-on-footer: #ffffff;
 
+  --color-danger: #8a2b1f;
+  --color-danger-soft: #f8ece9;
+
   --font-serif:
     'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans:
@@ -89,6 +92,8 @@
     --color-hairline-strong: #e6e2da;
     --color-on-primary: #181715;
     --color-footer: #12110f;
+    --color-danger: #e79a8c;
+    --color-danger-soft: #2b201d;
   }
 
   html {

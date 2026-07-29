@@ -6,6 +6,11 @@ interface Props {
   user?: { username: string; displayName: string | null } | null;
 }
 const { title = 'Admin', user = null } = Astro.props;
+// astro.config.mjs 의 site — 로컬에서 편집 중이어도 퀵링크는 항상 운영 사이트를 가리킨다.
+const liveSiteUrl = (Astro.site ?? new URL('https://tcn.faithinker12.workers.dev')).href;
+// 헤더 액션 공통 모양: 44px 타깃 + hover 배경/색 + 포인터 커서.
+const headerAction =
+  'inline-flex min-h-11 cursor-pointer items-center gap-1 px-3 font-bold text-link no-underline transition-colors hover:bg-canvas-band hover:text-link-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 ---
 
 <!doctype html>
@@ -55,6 +60,61 @@ const { title = 'Admin', user = null } = Astro.props;
         color: var(--color-link);
         text-decoration: underline;
       }
+      /* 게시 상태 모션 — 상태 전달용만. 체크는 그려지고, 배너는 4px 올라오며 나타난다. */
+      @keyframes admin-check-draw {
+        from {
+          stroke-dashoffset: 26;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      @keyframes admin-banner-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes admin-progress-sweep {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(300%);
+        }
+      }
+      .admin-check path {
+        stroke-dasharray: 26;
+        animation: admin-check-draw 450ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+      }
+      .admin-banner {
+        animation: admin-banner-in 200ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+      }
+      .admin-progress {
+        transition: width 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      .admin-progress-sweep {
+        animation: admin-progress-sweep 1100ms cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .admin-check path {
+          stroke-dasharray: none;
+          animation: none;
+        }
+        .admin-banner,
+        .admin-progress,
+        .admin-progress-sweep {
+          animation: none;
+          transition: none;
+        }
+        .admin-progress-sweep {
+          width: 100%;
+        }
+      }
       .admin-prose p.is-editor-empty:first-child::before {
         content: attr(data-placeholder);
         color: var(--color-body-muted);
@@ -72,13 +132,12 @@ const { title = 'Admin', user = null } = Astro.props;
             <a href="/admin" class="font-sans text-body-sm font-bold tracking-tight text-ink">
               TCN Admin
             </a>
-            <div class="flex items-center gap-4 text-caption">
-              <span class="text-body-muted">{user.displayName ?? user.username}</span>
-              <button
-                id="admin-logout"
-                type="button"
-                class="font-bold text-link underline underline-offset-2 hover:text-link-hover"
-              >
+            <div class="flex items-center gap-2 text-caption">
+              <a href={liveSiteUrl} target="_blank" rel="noopener" class={headerAction}>
+                Live site<span aria-hidden="true">↗</span>
+              </a>
+              <span class="px-2 text-body-muted">{user.displayName ?? user.username}</span>
+              <button id="admin-logout" type="button" class={headerAction}>
                 Logout
               </button>
             </div>

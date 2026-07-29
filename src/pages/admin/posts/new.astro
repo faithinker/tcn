@@ -20,5 +20,5 @@ const seminarSequence = seminars.chronological.length + 1;
       >← Posts</a
     >
   </div>
-  <PostEditor client:load seminarSequence={seminarSequence} />
+  <PostEditor client:load seminarSequence={seminarSequence} siteOrigin={Astro.url.origin} />
 </AdminLayout>
