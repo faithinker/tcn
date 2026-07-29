@@ -123,6 +123,8 @@
     word-break: keep-all;
   }
 
+  /* 두 레이아웃 모두 lang="en" 고정이라 이 블록이 위 --font-serif 목록을 항상 이긴다 —
+     세리프는 시스템 Georgia 로 렌더되고 세리프 웹폰트는 싣지 않는다(fonts.css 참고). */
   html[lang='en'] {
     --font-serif: Georgia, 'Times New Roman', serif;
     --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;

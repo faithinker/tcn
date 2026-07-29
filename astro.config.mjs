@@ -12,8 +12,7 @@ export default defineConfig({
   },
 
   vite: {
-    // @tailwindcss/vite와 Astro 번들 vite의 타입 버전 스큐 회피(런타임 무관, 코스메틱).
-    plugins: [/** @type {any} */ (tailwindcss())],
+    plugins: [tailwindcss()],
     server: {
       allowedHosts: ['.trycloudflare.com'],
     },
