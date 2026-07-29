@@ -20,5 +20,6 @@ export const navItems: NavItem[] = [
   },
   { key: 'nav.people', href: '/people' },
   { key: 'nav.seminars', href: '/seminars' },
+  { key: 'nav.questions', href: '/questions' },
   { key: 'nav.contact', href: '/contact' },
 ];

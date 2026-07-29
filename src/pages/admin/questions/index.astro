@@ -1,0 +1,225 @@
+---
+export const prerender = false;
+
+import AdminPagination from '../../../components/qna/AdminPagination.astro';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSessionSecret, getSessionUid, readSessionToken } from '../../../lib/auth';
+import { getDB, getUserById } from '../../../lib/db';
+import type { QnaAdminStatus } from '../../../lib/db/types';
+import { listAdminQuestions } from '../../../lib/qna/repository';
+import { createCsrfToken } from '../../../lib/qna/security';
+import { formatWaitingAge } from '../../../scripts/admin-qna-utils';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const currentPath = `${Astro.url.pathname}${Astro.url.search}`;
+const loginUrl = `/admin/login?returnTo=${encodeURIComponent(currentPath)}`;
+const uid = await getSessionUid(Astro.request);
+if (!uid) return Astro.redirect(loginUrl);
+
+const sessionToken = readSessionToken(Astro.request);
+if (!sessionToken) return Astro.redirect(loginUrl);
+
+const statuses: QnaAdminStatus[] = ['waiting', 'answered', 'hidden'];
+const requestedStatus = Astro.url.searchParams.get('status') ?? 'waiting';
+const status = statuses.includes(requestedStatus as QnaAdminStatus)
+  ? (requestedStatus as QnaAdminStatus)
+  : 'waiting';
+
+function hrefFor(statusValue: QnaAdminStatus, pageValue = 1): string {
+  const params = new URLSearchParams({ status: statusValue });
+  if (pageValue > 1) params.set('page', String(pageValue));
+  return `/admin/questions?${params.toString()}`;
+}
+
+if (status !== requestedStatus) return Astro.redirect(hrefFor(status));
+
+const rawPage = Astro.url.searchParams.get('page');
+const requestedPage =
+  rawPage === null
+    ? 1
+    : /^\d+$/.test(rawPage) && Number.isSafeInteger(Number(rawPage)) && Number(rawPage) > 0
+      ? Number(rawPage)
+      : 0;
+if (requestedPage === 0) return Astro.redirect(hrefFor(status));
+
+const db = getDB();
+const [user, waitingFirst, answeredFirst, hiddenFirst] = await Promise.all([
+  getUserById(db, uid),
+  listAdminQuestions(db, { status: 'waiting', page: 1 }),
+  listAdminQuestions(db, { status: 'answered', page: 1 }),
+  listAdminQuestions(db, { status: 'hidden', page: 1 }),
+]);
+if (!user) return Astro.redirect(loginUrl);
+
+const firstPages = {
+  waiting: waitingFirst,
+  answered: answeredFirst,
+  hidden: hiddenFirst,
+};
+const questions =
+  requestedPage === 1
+    ? firstPages[status]
+    : await listAdminQuestions(db, { status, page: requestedPage });
+if (questions.page !== requestedPage) return Astro.redirect(hrefFor(status, questions.page));
+
+const counts = {
+  waiting: waitingFirst.total,
+  answered: answeredFirst.total,
+  hidden: hiddenFirst.total,
+};
+const csrfToken = await createCsrfToken(sessionToken, getSessionSecret());
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const filterDescription =
+  status === 'waiting'
+    ? 'Oldest waiting first'
+    : status === 'answered'
+      ? 'Most recently answered first'
+      : 'Restore a hidden question to return it to the public Q&A.';
+const emptyMessage =
+  status === 'waiting'
+    ? 'There are no questions awaiting an answer.'
+    : status === 'answered'
+      ? 'There are no answered questions.'
+      : 'There are no hidden questions.';
+---
+
+<AdminLayout title="Questions" user={user} waitingQuestionCount={counts.waiting}>
+  <section
+    data-admin-qna-list
+    data-csrf-token={csrfToken}
+    data-login-url={loginUrl}
+    data-current-status={status}
+    aria-labelledby="admin-questions-title"
+  >
+    <header class="mb-9 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
+      <div>
+        <p class="eyebrow mb-2">Q&amp;A</p>
+        <h1 id="admin-questions-title" class="font-serif text-display-lg font-semibold text-ink">
+          Questions to answer
+        </h1>
+        <p class="mt-2 max-w-2xl font-sans text-body-sans text-body-muted">
+          Review public questions and publish official TCN responses.
+        </p>
+      </div>
+      <a
+        href="/questions"
+        class="inline-flex min-h-12 items-center border border-hairline-strong px-4 font-sans text-caption font-bold text-ink"
+      >
+        View public Q&amp;A
+      </a>
+    </header>
+
+    <div
+      id="admin-qna-notice"
+      class="mb-5 hidden items-center justify-between gap-4 border border-hairline-strong bg-canvas-band px-4 py-3 font-sans text-body-sm text-ink"
+      role="status"
+      aria-live="polite"
+      tabindex="-1"
+    >
+    </div>
+
+    <div class="border border-hairline bg-canvas">
+      <div
+        class="flex flex-col gap-1 border-b border-hairline px-5 font-sans md:flex-row md:items-center md:justify-between"
+      >
+        <nav class="flex max-w-full gap-4 overflow-x-auto" aria-label="Question status">
+          {
+            statuses.map((filter) => (
+              <a
+                href={hrefFor(filter)}
+                class:list={[
+                  'inline-flex min-h-16 shrink-0 items-center gap-2 border-b-[3px] pt-[3px] text-caption font-bold',
+                  filter === status
+                    ? 'border-accent text-accent'
+                    : 'border-transparent text-body-muted hover:text-link',
+                ]}
+                aria-current={filter === status ? 'page' : undefined}
+              >
+                {filter === 'waiting' ? 'Awaiting' : filter === 'answered' ? 'Answered' : 'Hidden'}
+                <span
+                  id={`admin-count-${filter}`}
+                  data-count={counts[filter]}
+                  class="inline-flex min-h-6 min-w-6 items-center justify-center rounded-full bg-canvas-band px-1.5 text-caption font-bold text-body-muted"
+                >
+                  {counts[filter]}
+                </span>
+              </a>
+            ))
+          }
+        </nav>
+        <p class="pb-3 text-caption text-body-muted md:pb-0" aria-live="polite">
+          {filterDescription}
+        </p>
+      </div>
+
+      {
+        questions.items.length === 0 ? (
+          <div class="py-12 text-center">
+            <p id="admin-qna-empty" class="font-sans text-body-sm text-body-muted">
+              {emptyMessage}
+            </p>
+          </div>
+        ) : (
+          <ol id="admin-question-list" class="m-0 list-none divide-y divide-hairline p-0">
+            {questions.items.map((question) => (
+              <li
+                class="grid min-w-0 grid-cols-1 items-center gap-2 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto]"
+                data-question-row
+                data-question-id={question.id}
+              >
+                <a
+                  href={`/admin/questions/${encodeURIComponent(question.id)}`}
+                  class="grid min-h-16 min-w-0 items-center gap-x-6 gap-y-1 text-ink no-underline hover:text-link sm:grid-cols-[minmax(0,1fr)_10rem]"
+                >
+                  <span class="min-w-0 font-serif text-body-sans font-semibold">
+                    {question.title}
+                  </span>
+                  <span class="font-sans text-caption sm:text-right">
+                    <span class="block font-bold text-ink-soft">
+                      {question.status === 'waiting'
+                        ? formatWaitingAge(question.createdAt)
+                        : question.status === 'answered'
+                          ? 'Answered'
+                          : 'Hidden'}
+                    </span>
+                    <time class="mt-0.5 block text-body-muted" datetime={question.createdAt}>
+                      {dateFormatter.format(new Date(question.createdAt))}
+                    </time>
+                  </span>
+                </a>
+                {status === 'hidden' && (
+                  <button
+                    type="button"
+                    class="min-h-12 justify-self-start border border-hairline-strong px-4 font-sans text-caption font-bold text-ink sm:justify-self-end"
+                    data-restore-question
+                    data-question-id={question.id}
+                    data-question-revision={question.questionRevision}
+                    data-restore-status={question.answerRevision === null ? 'waiting' : 'answered'}
+                  >
+                    Restore
+                  </button>
+                )}
+              </li>
+            ))}
+          </ol>
+        )
+      }
+    </div>
+
+    <AdminPagination
+      page={questions.page}
+      totalPages={questions.totalPages}
+      hrefForPage={(pageValue) => hrefFor(status, pageValue)}
+    />
+  </section>
+
+  <script>
+    import '../../../scripts/admin-qna-list';
+  </script>
+</AdminLayout>

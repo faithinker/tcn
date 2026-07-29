@@ -1,11 +1,18 @@
 ---
 import '../styles/global.css';
+import { getDB } from '../lib/db';
+import { countAdminQuestions } from '../lib/qna/repository';
 
 interface Props {
   title?: string;
   user?: { username: string; displayName: string | null } | null;
+  waitingQuestionCount?: number;
 }
-const { title = 'Admin', user = null } = Astro.props;
+const { title = 'Admin', user = null, waitingQuestionCount } = Astro.props;
+const pathname = Astro.url.pathname;
+const activeSection = pathname.startsWith('/admin/questions') ? 'questions' : 'posts';
+const waitingCount =
+  user === null ? 0 : (waitingQuestionCount ?? (await countAdminQuestions(getDB(), 'waiting')));
 ---
 
 <!doctype html>
@@ -62,24 +69,80 @@ const { title = 'Admin', user = null } = Astro.props;
         height: 0;
         pointer-events: none;
       }
+      @media (max-width: 39.999rem) {
+        .admin-main > section {
+          padding-right: 0;
+          padding-left: 0;
+        }
+      }
     </style>
   </head>
-  <body class="min-h-dvh bg-canvas font-sans text-body antialiased">
+  <body class="min-h-dvh bg-canvas-soft font-sans text-body antialiased">
     {
       user && (
         <header class="border-b border-hairline bg-canvas">
-          <div class="mx-auto flex max-w-[75rem] items-center justify-between px-4 py-3">
-            <a href="/admin" class="font-sans text-body-sm font-bold tracking-tight text-ink">
-              TCN Admin
+          <div class="mx-auto flex max-w-[75rem] flex-wrap items-stretch px-5 sm:flex-nowrap sm:px-8">
+            <a
+              href="/admin"
+              class="flex min-h-15 shrink-0 items-center font-serif text-lead font-bold tracking-tight text-ink no-underline sm:mr-12 sm:min-h-18"
+            >
+              TCN
+              <span class="ml-2.5 font-sans text-caption font-bold tracking-wide text-body-muted uppercase">
+                Admin
+              </span>
             </a>
-            <div class="flex items-center gap-4 text-caption">
-              <span class="text-body-muted">{user.displayName ?? user.username}</span>
+
+            <nav
+              class="order-3 flex w-full items-stretch gap-6 border-t border-hairline font-sans sm:order-none sm:w-auto sm:gap-7 sm:border-t-0"
+              aria-label="Admin sections"
+            >
+              <a
+                href="/admin"
+                class:list={[
+                  'inline-flex min-h-13 items-center border-b-[3px] pt-[3px] text-body-sm font-bold no-underline sm:min-h-18',
+                  activeSection === 'posts'
+                    ? 'border-accent text-ink'
+                    : 'border-transparent text-body-muted hover:text-link',
+                ]}
+                aria-current={activeSection === 'posts' ? 'page' : undefined}
+              >
+                Posts
+              </a>
+              <a
+                href="/admin/questions"
+                class:list={[
+                  'inline-flex min-h-13 items-center gap-2 border-b-[3px] pt-[3px] text-body-sm font-bold no-underline sm:min-h-18',
+                  activeSection === 'questions'
+                    ? 'border-accent text-ink'
+                    : 'border-transparent text-body-muted hover:text-link',
+                ]}
+                aria-current={activeSection === 'questions' ? 'page' : undefined}
+              >
+                Questions
+                <span
+                  id="admin-waiting-count"
+                  class:list={[
+                    'inline-flex min-h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-caption font-bold',
+                    activeSection === 'questions'
+                      ? 'bg-accent text-on-primary'
+                      : 'bg-canvas-band text-body-muted',
+                  ]}
+                >
+                  {waitingCount}
+                </span>
+              </a>
+            </nav>
+
+            <div class="ml-auto flex min-h-15 items-center gap-5 font-sans text-caption sm:min-h-18">
+              <span class="hidden text-body-muted md:inline">
+                {user.displayName ?? user.username}
+              </span>
               <button
                 id="admin-logout"
                 type="button"
-                class="font-bold text-link underline underline-offset-2 hover:text-link-hover"
+                class="border-0 border-b border-hairline bg-transparent p-0 font-bold text-ink hover:border-accent hover:text-link"
               >
-                Logout
+                Log out
               </button>
             </div>
           </div>
@@ -92,7 +155,7 @@ const { title = 'Admin', user = null } = Astro.props;
         window.location.href = '/admin/login';
       });
     </script>
-    <main class="mx-auto max-w-[75rem] px-4 py-10">
+    <main class="admin-main mx-auto max-w-[75rem] px-5 py-10 sm:px-8 sm:py-14">
       <slot />
     </main>
   </body>

@@ -1,0 +1,165 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getSessionSecret, getSessionUid, readSessionToken } from '../../../lib/auth';
+import { getDB, getUserById } from '../../../lib/db';
+import { getAdminQuestion } from '../../../lib/qna/repository';
+import { createCsrfToken } from '../../../lib/qna/security';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const id = Astro.params.id ?? '';
+const returnPath = `/admin/questions/${encodeURIComponent(id)}`;
+const loginUrl = `/admin/login?returnTo=${encodeURIComponent(returnPath)}`;
+const uid = await getSessionUid(Astro.request);
+if (!uid) return Astro.redirect(loginUrl);
+
+const sessionToken = readSessionToken(Astro.request);
+if (!sessionToken) return Astro.redirect(loginUrl);
+
+const db = getDB();
+const [user, question] = await Promise.all([getUserById(db, uid), getAdminQuestion(db, id)]);
+if (!user) return Astro.redirect(loginUrl);
+if (!question) Astro.response.status = 404;
+
+const csrfToken = await createCsrfToken(sessionToken, getSessionSecret());
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<AdminLayout title={question?.title ?? 'Question not found'} user={user}>
+  {
+    !question ? (
+      <section class="mx-auto max-w-3xl py-12 text-center" aria-labelledby="not-found-title">
+        <p class="eyebrow mb-2">Question unavailable</p>
+        <h1 id="not-found-title" class="font-serif text-display-md font-semibold text-ink">
+          This question could not be found.
+        </h1>
+        <a
+          href="/admin/questions"
+          class="mt-6 inline-flex min-h-12 items-center border border-hairline-strong px-4 font-sans text-caption font-bold text-ink"
+        >
+          Return to questions
+        </a>
+      </section>
+    ) : (
+      <section
+        data-admin-qna-detail
+        data-question-id={question.id}
+        data-answer-revision={question.answer?.revision ?? 0}
+        data-question-revision={question.revision}
+        data-question-visibility={question.visibility}
+        data-csrf-token={csrfToken}
+        data-login-url={loginUrl}
+        aria-labelledby="question-title"
+      >
+        <a
+          href="/admin/questions"
+          class="mb-8 inline-flex min-h-12 items-center font-sans text-caption font-bold text-link"
+        >
+          ← Questions queue
+        </a>
+
+        <div
+          id="admin-qna-detail-notice"
+          class="mb-6 hidden items-center justify-between gap-4 border border-hairline-strong bg-canvas-band px-4 py-3 font-sans text-body-sm text-ink"
+          role="status"
+          aria-live="polite"
+          tabindex="-1"
+        />
+
+        <article class="max-w-4xl">
+          <header class="border-b border-hairline pb-7">
+            <div class="mb-4 flex flex-wrap items-center gap-3 font-sans text-caption text-body-muted">
+              <span
+                id="question-status"
+                class="rounded-full border border-hairline-strong px-2 py-1 font-bold text-ink-soft"
+              >
+                {question.visibility === 'hidden'
+                  ? 'Hidden'
+                  : question.answer
+                    ? 'Answered'
+                    : 'Awaiting answer'}
+              </span>
+              <time datetime={question.createdAt}>
+                {dateFormatter.format(new Date(question.createdAt))}
+              </time>
+            </div>
+            <h1
+              id="question-title"
+              class="overflow-wrap-anywhere font-serif text-display-md font-semibold text-ink"
+            >
+              {question.title}
+            </h1>
+          </header>
+          <div class="max-w-prose whitespace-pre-wrap break-words py-8 font-serif text-body-serif text-ink">
+            {question.body}
+          </div>
+        </article>
+
+        <form id="official-answer-form" class="max-w-4xl border-t border-hairline pt-8" novalidate>
+          <div
+            id="answer-error-summary"
+            class="mb-5 hidden border border-accent bg-canvas-band px-4 py-3 font-sans text-body-sm text-accent"
+            role="alert"
+            aria-live="assertive"
+            tabindex="-1"
+          />
+          <div class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <label for="official-answer" class="font-sans text-body-sans font-bold text-ink">
+              Official answer
+            </label>
+            <span class="font-sans text-caption text-body-muted">
+              <span id="answer-count">{question.answer?.body.length ?? 0}</span> / 10,000
+            </span>
+          </div>
+          <textarea
+            id="official-answer"
+            name="body"
+            maxlength="10000"
+            required
+            aria-describedby="answer-hint answer-field-error"
+            class="min-h-64 w-full resize-y border border-hairline-strong bg-canvas p-4 font-sans text-body-sans text-ink"
+            set:text={question.answer?.body ?? ''}
+          />
+          <p id="answer-hint" class="mt-2 font-sans text-caption text-body-muted">
+            Plain text only. The server records the administrator from the verified session.
+          </p>
+          <p
+            id="answer-field-error"
+            class="mt-2 hidden font-sans text-caption font-bold text-accent"
+          />
+          <p class="mt-3 font-mono text-caption text-body-muted">
+            answer revision: <span id="answer-revision">{question.answer?.revision ?? 0}</span>
+          </p>
+
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              id="save-answer"
+              type="submit"
+              class="min-h-12 bg-ink px-5 font-sans text-button font-bold text-on-primary disabled:opacity-60"
+            >
+              {question.answer ? 'Update official answer' : 'Publish official answer'}
+            </button>
+            <button
+              id="change-visibility"
+              type="button"
+              class="min-h-12 border border-hairline-strong px-5 font-sans text-button font-bold text-ink disabled:opacity-60"
+            >
+              {question.visibility === 'hidden' ? 'Restore question' : 'Hide question'}
+            </button>
+          </div>
+        </form>
+      </section>
+    )
+  }
+
+  <script>
+    import '../../../scripts/admin-qna-detail';
+  </script>
+</AdminLayout>

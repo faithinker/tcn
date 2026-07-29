@@ -235,10 +235,18 @@ npm run build && npx wrangler deploy
 | 시크릿                           | 용도                                               |
 | -------------------------------- | -------------------------------------------------- |
 | `SESSION_SECRET`                 | 세션 쿠키 서명 (직접 생성: `openssl rand -hex 32`) |
+| `TURNSTILE_SITE_KEY`             | Q&A 작성 폼의 공개 Turnstile site key              |
+| `TURNSTILE_SECRET_KEY`           | Q&A Siteverify Worker secret                       |
+| `QNA_TURNSTILE_HOSTNAMES`        | Siteverify exact hostname allowlist (쉼표 구분)    |
+| `QNA_RATE_LIMIT_SECRET`          | 원 IP 비저장 HMAC rate-limit key                   |
 | `DISCORD_WEBHOOK`                | 글 알림 - 디스코드 웹훅 URL                        |
 | `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID                        |
 
-로컬은 `.dev.vars`(`SESSION_SECRET`)를 사용하며 커밋에서 제외합니다. 알림 시크릿이 없으면 해당 채널만 조용히 건너뛰고 글 저장·공개에는 영향이 없습니다.
+로컬은 `.dev.vars`를 사용하며 커밋에서 제외합니다. Turnstile의 공식 dummy key 응답에는
+hostname/action이 없으므로, 단위·CI 테스트는 Siteverify를 mock합니다. 실제 로컬 제출 검증에는
+localhost를 허용한 전용 widget과 `QNA_TURNSTILE_HOSTNAMES=localhost`를 사용합니다. Q&A 보안
+설정이 하나라도 없거나 hostname/action 검증이 실패하면 질문 생성과 readiness는 fail closed
+됩니다. 알림 시크릿이 없으면 해당 채널만 조용히 건너뛰고 글 저장·공개에는 영향이 없습니다.
 
 - **Node**: v22+ 권장.
 - 데이터(D1)·미디어(R2) 바인딩은 `wrangler.jsonc`에 정의되어 있습니다.

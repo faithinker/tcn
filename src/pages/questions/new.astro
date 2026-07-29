@@ -1,0 +1,373 @@
+---
+import { env } from 'cloudflare:workers';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../i18n/ui';
+
+export const prerender = false;
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+interface QnaPublicBindings {
+  TURNSTILE_SITE_KEY?: string;
+}
+
+const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
+---
+
+<BaseLayout title={t('qna.newTitle')} description={t('qna.newDescription')} noindex>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[75rem]">
+      <a
+        class="inline-flex min-h-12 items-center font-sans text-body-sm font-bold text-ink-soft no-underline"
+        href="/questions"
+      >
+        ← {t('qna.cancel')}
+      </a>
+
+      <header class="mt-5 max-w-[48rem]">
+        <p class="eyebrow">Public question</p>
+        <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+          {t('qna.newTitle')}
+        </h1>
+        <p class="mt-5 font-sans text-body-sans text-ink-soft">{t('qna.newDescription')}</p>
+      </header>
+
+      <form class="mt-10 max-w-[48rem]" id="question-form" novalidate>
+        <div class="border border-hairline bg-canvas-band p-5 font-sans text-body-sm text-ink-soft">
+          {t('qna.privacy')}
+        </div>
+
+        <div
+          id="question-error-summary"
+          class="mt-6 border border-red-800 bg-red-50 p-5 font-sans text-body-sm text-red-900 dark:border-red-300 dark:bg-red-950 dark:text-red-100"
+          role="alert"
+          aria-live="assertive"
+          tabindex="-1"
+          hidden
+        >
+          <strong class="block font-bold">{t('qna.formErrors')}</strong>
+          <ul class="mt-2 list-disc pl-5" id="question-error-list"></ul>
+        </div>
+
+        <div class="mt-7">
+          <div class="mb-2 flex items-baseline justify-between gap-4">
+            <label class="font-sans text-body-sans font-bold text-ink" for="question-title">
+              {t('qna.titleLabel')}
+            </label>
+            <span class="font-sans text-caption text-body-muted">
+              <span id="title-count">0</span> / 120
+            </span>
+          </div>
+          <input
+            class="min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans text-ink"
+            id="question-title"
+            name="title"
+            type="text"
+            maxlength="120"
+            required
+            autocomplete="off"
+            aria-describedby="title-error"
+          />
+          <p
+            class="mt-2 font-sans text-caption font-bold text-red-800 dark:text-red-200"
+            id="title-error"
+            hidden
+          >
+            {t('qna.titleRequired')}
+          </p>
+        </div>
+
+        <div class="mt-7">
+          <div class="mb-2 flex items-baseline justify-between gap-4">
+            <label class="font-sans text-body-sans font-bold text-ink" for="question-body">
+              {t('qna.bodyLabel')}
+            </label>
+            <span class="font-sans text-caption text-body-muted">
+              <span id="body-count">0</span> / 10,000
+            </span>
+          </div>
+          <textarea
+            class="min-h-64 w-full resize-y rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans leading-relaxed text-ink"
+            id="question-body"
+            name="body"
+            maxlength="10000"
+            required
+            aria-describedby="body-hint body-error"></textarea>
+          <p class="mt-2 font-sans text-caption text-body-muted" id="body-hint">
+            {t('qna.plainText')}
+          </p>
+          <p
+            class="mt-2 font-sans text-caption font-bold text-red-800 dark:text-red-200"
+            id="body-error"
+            hidden
+          >
+            {t('qna.bodyRequired')}
+          </p>
+        </div>
+
+        <div class="qna-honeypot" aria-hidden="true">
+          <label for="question-website">Website</label>
+          <input
+            id="question-website"
+            name="website"
+            type="text"
+            autocomplete="off"
+            tabindex="-1"
+          />
+        </div>
+
+        {
+          siteKey ? (
+            <div class="mt-7 max-w-full overflow-x-auto">
+              <div
+                class="cf-turnstile"
+                data-sitekey={siteKey}
+                data-action="qna_question"
+                data-callback="onQnaTurnstileSuccess"
+                data-expired-callback="onQnaTurnstileExpired"
+                data-error-callback="onQnaTurnstileError"
+              />
+            </div>
+          ) : (
+            <p
+              class="mt-7 border border-red-800 bg-red-50 p-4 font-sans text-body-sm text-red-900 dark:border-red-300 dark:bg-red-950 dark:text-red-100"
+              role="alert"
+            >
+              Question submission is temporarily unavailable because the security check is not
+              configured.
+            </p>
+          )
+        }
+
+        <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+          <button
+            class="inline-flex min-h-12 items-center justify-center rounded-sm border border-ink bg-ink px-6 font-sans text-button font-bold text-on-primary disabled:cursor-wait disabled:opacity-60"
+            id="submit-question"
+            type="submit"
+            disabled={!siteKey}
+          >
+            {t('qna.submit')}
+          </button>
+          <a
+            class="inline-flex min-h-12 items-center justify-center rounded-sm border border-hairline-strong px-6 font-sans text-button font-bold text-ink no-underline"
+            href="/questions"
+          >
+            Cancel
+          </a>
+        </div>
+
+        <p class="mt-4 font-sans text-caption text-body-muted">
+          Administrators review questions periodically. A response time is not guaranteed. Email
+          notifications are not available.
+        </p>
+        <noscript>
+          <p class="mt-4 font-sans text-body-sm text-red-800 dark:text-red-200">
+            JavaScript is required to complete the security check and submit this form.
+          </p>
+        </noscript>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .qna-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  interface QuestionSuccess {
+    ok: true;
+    question: { id: string };
+  }
+
+  interface QuestionFailure {
+    ok: false;
+    error?: string;
+  }
+
+  declare global {
+    interface Window {
+      onQnaTurnstileSuccess?: (token: string) => void;
+      onQnaTurnstileExpired?: () => void;
+      onQnaTurnstileError?: () => void;
+      turnstile?: { reset: (widget?: string | HTMLElement) => void };
+    }
+  }
+
+  const form = document.querySelector<HTMLFormElement>('#question-form');
+  const title = document.querySelector<HTMLInputElement>('#question-title');
+  const body = document.querySelector<HTMLTextAreaElement>('#question-body');
+  const website = document.querySelector<HTMLInputElement>('#question-website');
+  const submit = document.querySelector<HTMLButtonElement>('#submit-question');
+  const summary = document.querySelector<HTMLElement>('#question-error-summary');
+  const errorList = document.querySelector<HTMLUListElement>('#question-error-list');
+  const titleError = document.querySelector<HTMLElement>('#title-error');
+  const bodyError = document.querySelector<HTMLElement>('#body-error');
+  const titleCount = document.querySelector<HTMLElement>('#title-count');
+  const bodyCount = document.querySelector<HTMLElement>('#body-count');
+  let turnstileToken = '';
+
+  function updateCount(input: HTMLInputElement | HTMLTextAreaElement, output: HTMLElement): void {
+    output.textContent = input.value.length.toLocaleString('en-US');
+  }
+
+  if (title && titleCount) {
+    title.addEventListener('input', () => updateCount(title, titleCount));
+  }
+  if (body && bodyCount) {
+    body.addEventListener('input', () => updateCount(body, bodyCount));
+  }
+
+  window.onQnaTurnstileSuccess = (token) => {
+    turnstileToken = token;
+  };
+  window.onQnaTurnstileExpired = () => {
+    turnstileToken = '';
+  };
+  window.onQnaTurnstileError = () => {
+    turnstileToken = '';
+  };
+
+  function clearErrors(): void {
+    if (!summary || !errorList || !title || !body || !titleError || !bodyError) return;
+    summary.hidden = true;
+    errorList.replaceChildren();
+    title.removeAttribute('aria-invalid');
+    body.removeAttribute('aria-invalid');
+    titleError.hidden = true;
+    bodyError.hidden = true;
+  }
+
+  function addSummaryError(message: string, target?: HTMLElement): void {
+    if (!summary || !errorList) return;
+    const item = document.createElement('li');
+    if (target) {
+      const link = document.createElement('a');
+      link.href = `#${target.id}`;
+      link.textContent = message;
+      item.insertAdjacentElement('beforeend', link);
+    } else {
+      item.textContent = message;
+    }
+    errorList.insertAdjacentElement('beforeend', item);
+    summary.hidden = false;
+  }
+
+  function showSummary(): void {
+    if (!summary || summary.hidden) return;
+    summary.focus();
+    summary.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function validate(): boolean {
+    if (!title || !body || !titleError || !bodyError) return false;
+    clearErrors();
+    const normalizedTitle = title.value.trim();
+    const normalizedBody = body.value.trim();
+
+    if (!normalizedTitle) {
+      title.setAttribute('aria-invalid', 'true');
+      titleError.hidden = false;
+      addSummaryError('Enter a title.', title);
+    } else if (normalizedTitle.length > 120) {
+      title.setAttribute('aria-invalid', 'true');
+      titleError.textContent = 'Use 120 characters or fewer.';
+      titleError.hidden = false;
+      addSummaryError('Use 120 characters or fewer for the title.', title);
+    }
+
+    if (!normalizedBody) {
+      body.setAttribute('aria-invalid', 'true');
+      bodyError.hidden = false;
+      addSummaryError('Enter your question.', body);
+    } else if (normalizedBody.length > 10_000) {
+      body.setAttribute('aria-invalid', 'true');
+      bodyError.textContent = 'Use 10,000 characters or fewer.';
+      bodyError.hidden = false;
+      addSummaryError('Use 10,000 characters or fewer for the question.', body);
+    }
+
+    if (!turnstileToken) {
+      addSummaryError('Complete the security check before submitting.');
+    }
+
+    if (!summary?.hidden) {
+      showSummary();
+      return false;
+    }
+    return true;
+  }
+
+  function resetTurnstile(): void {
+    turnstileToken = '';
+    const widget = document.querySelector<HTMLElement>('.cf-turnstile');
+    if (widget) window.turnstile?.reset(widget);
+  }
+
+  function failureMessage(status: number, error?: string, retryAfter?: string | null): string {
+    if (status === 413 || error === 'payload_too_large') {
+      return 'The submission is too large. Shorten it and try again; your draft has been preserved.';
+    }
+    if (status === 429 || error === 'rate_limited') {
+      const wait = retryAfter ? ` Try again in about ${retryAfter} seconds.` : '';
+      return `Too many questions were submitted.${wait} Your draft has been preserved.`;
+    }
+    if (status === 403 || error?.startsWith('turnstile')) {
+      return 'The security check expired or failed. Complete it again; your draft has been preserved.';
+    }
+    if (status === 400) {
+      return 'Review the title and question, then try again. Your draft has been preserved.';
+    }
+    return 'The question could not be published. Your draft has been preserved.';
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!title || !body || !website || !submit || !validate()) return;
+
+    submit.disabled = true;
+    submit.textContent = 'Submitting…';
+
+    try {
+      const response = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: title.value,
+          body: body.value,
+          turnstileToken,
+          website: website.value,
+        }),
+      });
+      const data = (await response.json().catch(() => null)) as
+        QuestionSuccess | QuestionFailure | null;
+
+      if (response.ok && data?.ok && data.question?.id) {
+        window.location.assign(`/questions/${encodeURIComponent(data.question.id)}?created=1`);
+        return;
+      }
+
+      const error = data && !data.ok ? data.error : undefined;
+      clearErrors();
+      addSummaryError(failureMessage(response.status, error, response.headers.get('retry-after')));
+      showSummary();
+      resetTurnstile();
+    } catch {
+      clearErrors();
+      addSummaryError('Network unavailable. Your draft has been preserved.');
+      showSummary();
+      resetTurnstile();
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Submit question';
+    }
+  });
+</script>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

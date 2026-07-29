@@ -1,7 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { env, getDB, getSeminarCollection } = vi.hoisted(() => ({
-  env: {} as { DB?: unknown; MEDIA?: unknown; SESSION_SECRET?: string },
+  env: {} as {
+    DB?: unknown;
+    MEDIA?: unknown;
+    SESSION_SECRET?: string;
+    TURNSTILE_SITE_KEY?: string;
+    TURNSTILE_SECRET_KEY?: string;
+    QNA_TURNSTILE_HOSTNAMES?: string;
+    QNA_RATE_LIMIT_SECRET?: string;
+  },
   getDB: vi.fn(),
   getSeminarCollection: vi.fn(),
 }));
@@ -22,12 +30,20 @@ describe('system health routes', () => {
     };
     env.MEDIA = { head: vi.fn().mockResolvedValue(null) };
     env.SESSION_SECRET = 'test-secret';
+    env.TURNSTILE_SITE_KEY = 'site-key';
+    env.TURNSTILE_SECRET_KEY = 'turnstile-secret';
+    env.QNA_TURNSTILE_HOSTNAMES = 'tcn.example';
+    env.QNA_RATE_LIMIT_SECRET = 'rate-secret';
   });
 
   it('provides dependency-free liveness without exposing details', async () => {
     delete env.DB;
     delete env.MEDIA;
     delete env.SESSION_SECRET;
+    delete env.TURNSTILE_SITE_KEY;
+    delete env.TURNSTILE_SECRET_KEY;
+    delete env.QNA_TURNSTILE_HOSTNAMES;
+    delete env.QNA_RATE_LIMIT_SECRET;
 
     const response = await getHealth!({} as never);
 
@@ -56,17 +72,22 @@ describe('system health routes', () => {
     await expect(response.json()).resolves.toEqual({ ok: false });
   });
 
-  it.each(['DB', 'MEDIA', 'SESSION_SECRET'] as const)(
-    'is unavailable when the %s dependency is missing',
-    async (binding) => {
-      delete env[binding];
+  it.each([
+    'DB',
+    'MEDIA',
+    'SESSION_SECRET',
+    'TURNSTILE_SITE_KEY',
+    'TURNSTILE_SECRET_KEY',
+    'QNA_TURNSTILE_HOSTNAMES',
+    'QNA_RATE_LIMIT_SECRET',
+  ] as const)('is unavailable when the %s dependency is missing', async (binding) => {
+    delete env[binding];
 
-      const response = await getReadiness!({} as never);
+    const response = await getReadiness!({} as never);
 
-      expect(response.status).toBe(503);
-      await expect(response.json()).resolves.toEqual({ ok: false });
-    },
-  );
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({ ok: false });
+  });
 });
 
 describe('GET /sitemap.xml', () => {
@@ -85,6 +106,7 @@ describe('GET /sitemap.xml', () => {
     const xml = await response.text();
 
     expect(xml).toContain('<loc>https://tcn.example/about</loc>');
+    expect(xml).toContain('<loc>https://tcn.example/questions</loc>');
     expect(xml).toContain('<loc>https://tcn.example/seminars/2025-12-26</loc>');
     expect(xml).not.toContain('<loc>https://tcn.example/about/</loc>');
   });

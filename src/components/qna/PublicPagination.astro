@@ -1,0 +1,117 @@
+---
+import type { QnaPublicStatus } from '../../lib/db/types';
+
+interface Props {
+  page: number;
+  totalPages: number;
+  status: QnaPublicStatus;
+}
+
+type PageToken = number | 'ellipsis-start' | 'ellipsis-end';
+
+const { page, totalPages, status } = Astro.props;
+
+function href(targetPage: number): string {
+  const query = new URLSearchParams();
+  query.set('status', status);
+  query.set('page', String(targetPage));
+  return `/questions?${query.toString()}`;
+}
+
+function pageTokens(current: number, last: number): PageToken[] {
+  const pages = new Set([1, last]);
+  for (let candidate = current - 2; candidate <= current + 2; candidate += 1) {
+    if (candidate > 1 && candidate < last) pages.add(candidate);
+  }
+  const sorted = [...pages].sort((left, right) => left - right);
+  const tokens: PageToken[] = [];
+  sorted.forEach((value, index) => {
+    const previous = sorted[index - 1];
+    if (previous !== undefined && value - previous > 1) {
+      tokens.push(previous === 1 ? 'ellipsis-start' : 'ellipsis-end');
+    }
+    tokens.push(value);
+  });
+  return tokens;
+}
+
+const tokens = pageTokens(page, totalPages);
+---
+
+{
+  totalPages > 1 && (
+    <nav
+      class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-3 font-sans"
+      aria-label="Q&A pagination"
+    >
+      {page > 1 ? (
+        <a
+          class="inline-flex min-h-12 w-fit items-center justify-center rounded-sm border border-hairline-strong px-4 font-bold text-ink no-underline"
+          href={href(page - 1)}
+          rel="prev"
+        >
+          Previous
+        </a>
+      ) : (
+        <span
+          class="inline-flex min-h-12 w-fit items-center justify-center rounded-sm border border-hairline px-4 font-bold text-body-muted opacity-60"
+          aria-disabled="true"
+        >
+          Previous
+        </span>
+      )}
+
+      <div class="hidden items-center gap-1 md:flex">
+        {tokens.map((token) =>
+          typeof token === 'number' ? (
+            token === page ? (
+              <span
+                class="inline-grid min-h-12 min-w-12 place-items-center rounded-sm bg-accent font-bold text-on-primary"
+                aria-current="page"
+                aria-label={`Page ${token}, current page`}
+              >
+                {token}
+              </span>
+            ) : (
+              <a
+                class="inline-grid min-h-12 min-w-12 place-items-center rounded-sm font-bold text-ink-soft no-underline hover:bg-canvas-band"
+                href={href(token)}
+                aria-label={`Go to page ${token}`}
+              >
+                {token}
+              </a>
+            )
+          ) : (
+            <span
+              class="inline-grid min-h-12 min-w-8 place-items-center text-body-muted"
+              aria-hidden="true"
+            >
+              …
+            </span>
+          ),
+        )}
+      </div>
+
+      <span class="font-sans text-caption font-bold text-ink-soft md:hidden" aria-live="polite">
+        {page} / {totalPages}
+      </span>
+
+      {page < totalPages ? (
+        <a
+          class="justify-self-end inline-flex min-h-12 w-fit items-center justify-center rounded-sm border border-hairline-strong px-4 font-bold text-ink no-underline"
+          href={href(page + 1)}
+          rel="next"
+        >
+          Next
+        </a>
+      ) : (
+        <span
+          class="justify-self-end inline-flex min-h-12 w-fit items-center justify-center rounded-sm border border-hairline px-4 font-bold text-body-muted opacity-60"
+          aria-disabled="true"
+        >
+          Next
+        </span>
+      )}
+    </nav>
+  )
+}
