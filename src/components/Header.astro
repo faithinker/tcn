@@ -4,6 +4,7 @@ import { navItems } from '../lib/navigation';
 import ThemeToggle from './ThemeToggle.astro';
 
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const desktopNavItems = navItems.filter((item) => item.key !== 'nav.contact');
 const isActive = (href: string) => {
   const target = href.replace(/\/$/, '') || '/';
   if (href === '/') return here === target;
@@ -42,7 +43,7 @@ const isExact = (href: string) => {
       aria-label={t('common.menu')}
     >
       {
-        navItems.map((item) =>
+        desktopNavItems.map((item) =>
           item.children ? (
             <details class="group relative">
               <summary
