@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Consolidated duplicated administrator Q&A mutation plumbing and aligned Sonar coverage scope with the browser-executed scripts already excluded from Vitest coverage. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Test
 - Added unit, contract, D1 integration, security, concurrency, pagination, and browser coverage for the Q&A lifecycle and administrator count synchronization. (Branch: `codex/qna-mvp`) - Implemented by Codex
+- Removed 46 low-value or redundant tests, retained 255 behavior-focused tests, and recalibrated Vitest thresholds to the measured coverage floor of the remaining suite. (Branch: `test/trim-qna-tests`) - Implemented by Codex
 
 ## [2026-07-28]
 ### Changed
