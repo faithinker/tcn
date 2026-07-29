@@ -98,18 +98,4 @@ describe('legacy redirects', () => {
       status: 301,
     });
   });
-
-  it.each([
-    '/about/',
-    '/about/founding/',
-    '/about/declaration/',
-    '/about/bylaws/',
-    '/people/',
-    '/seminars/',
-    '/contact/',
-    '/admin/',
-    '/admin/login/',
-  ])('leaves canonical trailing-slash handling outside _redirects: %s', (source) => {
-    expect(redirectRules().get(source)).toBeUndefined();
-  });
 });

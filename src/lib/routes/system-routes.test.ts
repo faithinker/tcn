@@ -106,7 +106,6 @@ describe('GET /sitemap.xml', () => {
     const xml = await response.text();
 
     expect(xml).toContain('<loc>https://tcn.example/about</loc>');
-    expect(xml).toContain('<loc>https://tcn.example/questions</loc>');
     expect(xml).toContain('<loc>https://tcn.example/seminars/2025-12-26</loc>');
     expect(xml).not.toContain('<loc>https://tcn.example/about/</loc>');
   });

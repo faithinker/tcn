@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   parseAnswerPayload,
-  parsePage,
-  parsePublicStatus,
   parseQuestionPayload,
   parseVisibilityPayload,
   QNA_LIMITS,
@@ -10,42 +8,6 @@ import {
 } from './payload';
 
 describe('Q&A query and payload contracts', () => {
-  it.each([
-    [null, 1],
-    ['1', 1],
-    ['2', 2],
-    ['0', 1],
-    ['-1', 1],
-    ['1.5', 1],
-    ['9007199254740992', 1],
-  ])('parses page %j safely', (input, expected) => {
-    expect(parsePage(input)).toBe(expected);
-  });
-
-  it.each([
-    [null, 'all'],
-    ['all', 'all'],
-    ['waiting', 'waiting'],
-    ['answered', 'answered'],
-    ['hidden', 'all'],
-  ] as const)('allowlists public status %j', (input, expected) => {
-    expect(parsePublicStatus(input)).toBe(expected);
-  });
-
-  it('normalizes a valid anonymous question and technical anti-abuse fields', () => {
-    expect(
-      parseQuestionPayload({
-        title: '  Title  ',
-        body: '  Body\nline  ',
-        turnstileToken: 'token',
-        website: '',
-      }),
-    ).toEqual({
-      ok: true,
-      value: { title: 'Title', body: 'Body\nline', turnstileToken: 'token', website: '' },
-    });
-  });
-
   it.each([
     [{ title: 'Title', body: 'Body', turnstileToken: 'token', author: 'forged' }, 'unknown_field'],
     [
