@@ -524,7 +524,9 @@ export const content = {
     contactEyebrow: 'Contact',
     contactTitle: 'Secretariat Enquiries',
     contactBody:
-      'All enquiries reach the Secretariat by email. Please write to the address below and we will respond in turn.',
+      'The Secretariat can be reached by telephone or email. Please use the contact details below and we will respond in turn.',
+    phone: 'Telephone',
+    phoneNumber: '031-709-8111',
     email: 'Email',
     emailAddress: 'mingoo@aks.ac.kr',
   },
