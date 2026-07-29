@@ -125,9 +125,8 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
             required
             aria-describedby="answer-hint answer-field-error"
             class="min-h-64 w-full resize-y border border-hairline-strong bg-canvas p-4 font-sans text-body-sans text-ink"
-          >
-            {question.answer?.body ?? ''}
-          </textarea>
+            set:text={question.answer?.body ?? ''}
+          />
           <p id="answer-hint" class="mt-2 font-sans text-caption text-body-muted">
             Plain text only. The server records the administrator from the verified session.
           </p>
