@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
+import MilestoneGallery from '../components/media/MilestoneGallery.astro';
 import { formatDate } from '../i18n/utils';
 import { content } from '../i18n/content';
 import { organizationMilestones } from '../data/organization-milestones';
@@ -64,8 +65,11 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
       {
         history.map((entry) => (
           <li class="grid gap-4 border-b border-hairline py-7 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8 sm:py-9">
-            <time datetime={entry.date} class="font-sans text-body-sans font-bold text-accent">
-              {formatDate(entry.date)}
+            <time
+              datetime={entry.dateLabel ? undefined : entry.date}
+              class="font-sans text-body-sans font-bold text-accent"
+            >
+              {entry.dateLabel ?? formatDate(entry.date)}
             </time>
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -90,6 +94,13 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
                   <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
                   <dd class="text-body">{entry.location}</dd>
                 </dl>
+              )}
+              {entry.media && (
+                <MilestoneGallery
+                  id={`milestone-${entry.date}`}
+                  items={entry.media}
+                  label={`Photographs from ${entry.title}`}
+                />
               )}
               {entry.href && (
                 <a

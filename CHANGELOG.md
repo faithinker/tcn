@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
 ## [2026-07-30]
+### Feature
+- Added a Summer 2025 founding-preparatory milestone with three consented photographs, factual captions, responsive HTML figures, and the shared full-screen previous/next media viewer; approximate dating remains visibly limited to the season rather than inventing a specific day. (Branch: `feat/founding-preparatory-gallery`) - Implemented by Codex
+
 ### Changed
 - Opened a working contact channel: Secretariat Enquiries no longer shows an empty Telephone row beside an empty Email row, and the Email row now links to `mingoo@aks.ac.kr`. The section copy states that enquiries reach the Secretariat by email rather than promising channels still to be finalised, and the footer's "Contact details to be announced" line is replaced by the same address so the two no longer contradict each other on the same page. (Branch: `content/contact-secretariat-email`) - Implemented by Claude
 - Made the shipped typography explicitly English-first by removing the unreachable Noto Serif KR dependency and Korean-only fallbacks, keeping Georgia for scholarly narrative and Pretendard for interface structure; also corrected stale implementation comments and aligned Sonar exclusions with browser-only coverage. (Branch: `test/critical-coverage-gaps`) - Implemented by Codex
