@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-07-29]
+### Feature
+- Added a public D1-backed Q&A board with question submission, waiting/answered filters, stable pagination, official administrator answers, visibility controls, and responsive public and admin views. (Branch: `codex/qna-mvp`) - Implemented by Codex
+- Reorganized the authenticated admin area as a flat Posts/Questions workspace with active navigation, contextual page actions, live waiting-question counts, and responsive task-focused lists. (Branch: `codex/qna-mvp`) - Implemented by Codex
+### Security
+- Protected Q&A writes with canonical Cloudflare Turnstile verification, hostname validation, replay prevention, HMAC-derived dual-window rate limits, CSRF checks, optimistic revisions, atomic privacy-minimal audit events, no-store admin responses, and safe plain-text rendering. (Branch: `codex/qna-mvp`) - Implemented by Codex
+### Fix
+- Removed the duplicate desktop Contact navigation item and prevented administrator answer text from gaining leading whitespace or indentation after editing and publishing. (Branch: `codex/qna-mvp`) - Implemented by Codex
+### Test
+- Added unit, contract, D1 integration, security, concurrency, pagination, and browser coverage for the Q&A lifecycle and administrator count synchronization. (Branch: `codex/qna-mvp`) - Implemented by Codex
+
 ## [2026-07-28]
 ### Changed
 - Removed the duplicated degree details from Dr. SeongHo Jun's profile summary, leaving the existing education highlight intact and focusing the summary on his research areas. (Branch: `content/seongho-summary-dedup`) - Implemented by Codex
