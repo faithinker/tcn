@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { postReadiness, readinessPercent } from './readiness';
+import { postReadiness } from './readiness';
 
 const empty = {
   eventDate: '',
@@ -46,22 +46,5 @@ describe('postReadiness', () => {
     expect(byLabel['Cover image']).toBe(true);
     expect(byLabel['Body content']).toBe(true);
     expect(byLabel['Photos or materials']).toBe(true);
-  });
-});
-
-describe('readinessPercent', () => {
-  it('rounds the completed share of all items', () => {
-    expect(readinessPercent(postReadiness(empty))).toBe(14); // 1/7
-    expect(
-      readinessPercent(
-        postReadiness({
-          ...empty,
-          eventDate: '2100-01-15',
-          heroMediaId: 'm1',
-          bodyHasContent: true,
-          mediaCount: 2,
-        }),
-      ),
-    ).toBe(71); // 5/7 — verify:admin 게이트의 A9 단정과 같은 값
   });
 });

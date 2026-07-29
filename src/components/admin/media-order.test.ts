@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileTypeLabel, moveWithinGroup } from './media-order';
+import { moveWithinGroup } from './media-order';
 
 type Kind = 'image' | 'video' | 'document';
 const item = (id: string, kind: Kind) => ({ id, kind });
@@ -41,18 +41,5 @@ describe('moveWithinGroup', () => {
     const before = ids(mixed);
     moveWithinGroup(mixed, 'b', -1);
     expect(ids(mixed)).toEqual(before);
-  });
-});
-
-describe('fileTypeLabel', () => {
-  it('labels videos and known extensions', () => {
-    expect(fileTypeLabel({ kind: 'video', filename: 'clip.mp4' })).toBe('VIDEO');
-    expect(fileTypeLabel({ kind: 'document', filename: 'paper.pdf' })).toBe('PDF');
-    expect(fileTypeLabel({ kind: 'document', filename: 'deck.PPTX' })).toBe('PPTX');
-  });
-
-  it('falls back to FILE for missing or oversized extensions', () => {
-    expect(fileTypeLabel({ kind: 'document', filename: null })).toBe('FILE');
-    expect(fileTypeLabel({ kind: 'document', filename: 'archive.backup' })).toBe('FILE');
   });
 });

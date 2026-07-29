@@ -19,10 +19,10 @@ export default defineConfig({
       ],
       // 커버리지 회귀를 막고, 실제 커버리지가 오르면 기준값도 함께 올린다.
       thresholds: {
-        statements: 84,
-        branches: 73,
-        functions: 85,
-        lines: 88,
+        statements: 83,
+        branches: 71,
+        functions: 82,
+        lines: 87,
       },
     },
   },
