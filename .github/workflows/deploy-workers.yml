@@ -80,6 +80,35 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
+      # 배포 API가 성공해도 트래픽 전환은 즉시가 아니다. 스모크가 이전 버전에 닿으면 초록이어도
+      # 방금 올린 버전을 검증하지 않은 셈이 되고, 결함은 다음 배포에서 터진다 — 2026-07-29 배포가
+      # 그렇게 통과했고(누락된 Q&A 시크릿), 다음 배포가 롤백됐다. 그래서 스모크 전에 방금 올린
+      # 버전 ID가 실제로 100% 트래픽을 받는지 확인한다. 값은 env 로 넘겨 셸 주입을 막는다.
+      - name: Wait for the deployed version to serve traffic
+        env:
+          DEPLOY_OUTPUT: ${{ steps.deploy.outputs.command-output }}
+        run: |
+          expected="$(printf '%s' "$DEPLOY_OUTPUT" | grep -oiE 'current version id: *[0-9a-f-]{36}' | tail -1 | grep -oE '[0-9a-f-]{36}' || true)"
+          if [ -z "$expected" ]; then
+            echo "::error::wrangler deploy output carried no version id — cannot prove what is live"
+            exit 1
+          fi
+          echo "deployed version: $expected"
+          for attempt in $(seq 1 12); do
+            # 일시적 API 오류는 루프가 흡수한다 — 여기서 죽으면 재시도 자체가 사라진다.
+            live="$(./node_modules/.bin/wrangler deployments status --json |
+              jq -r '[.versions[] | select(.percentage == 100) | .version_id] | first // ""' || true)"
+            if [ "$live" = "$expected" ]; then
+              echo "live after ${attempt} attempt(s): $live"
+              echo "Smoke tested version: \`$live\`" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "attempt ${attempt}: live=${live:-none}"
+            sleep 5
+          done
+          echo "::error::deployed version $expected never reached 100% of traffic"
+          exit 1
+
       - name: Production smoke tests
         id: smoke
         run: |

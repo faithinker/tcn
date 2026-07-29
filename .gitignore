@@ -18,6 +18,7 @@ npm-debug.log*
 .env.*
 !.env.example
 .dev.vars
+.dev.vars.*
 translation-input.json
 translation-output.json
 

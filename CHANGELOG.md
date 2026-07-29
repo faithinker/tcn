@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-07-30]
+### Changed
+- Opened a working contact channel: Secretariat Enquiries no longer shows an empty Telephone row beside an empty Email row, and the Email row now links to `mingoo@aks.ac.kr`. The section copy states that enquiries reach the Secretariat by email rather than promising channels still to be finalised, and the footer's "Contact details to be announced" line is replaced by the same address so the two no longer contradict each other on the same page. (Branch: `content/contact-secretariat-email`) - Implemented by Claude
+
+### Fix
+- Made the deploy workflow prove which version it smoke tests. It curled `/`, `/api/health`, and `/api/ready` immediately after `wrangler deploy`, so the checks could still be answered by the previous version: on 2026-07-29 a deploy went green without ever exercising the version it had just uploaded, and the missing Q&A Turnstile secrets only surfaced on the following deploy, which then rolled back. The workflow now waits until the version id reported by `wrangler deploy` is the one serving 100% of traffic, and fails loudly if it never gets there or if the deploy output carries no version id. (Branch: `ci/deploy-version-gate`) - Implemented by Claude
+- Closed a secrets leak path in `.gitignore`: `.dev.vars` was ignored but `.dev.vars.production` — the file that feeds the Worker's production Turnstile and rate-limit secrets into `wrangler secret bulk` — was not, so `git add -A` would have committed it. No such file was ever tracked. (Branch: `ci/deploy-version-gate`) - Implemented by Claude
+
 ## [2026-07-29]
 ### Feature
 - Made the post editor attach media before the first save: selected photos, documents, and video stay staged in the editor with previews, captions, ordering, and cover choice, and one Save/Create runs post save → uploads → media metadata. New posts are created in place, so a file that fails to upload stays staged and Save retries it instead of disappearing with a redirect. (Branch: `feat/admin-authoring-ux`) - Implemented by Claude

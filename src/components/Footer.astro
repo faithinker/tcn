@@ -50,7 +50,12 @@ const year = 2026;
         {t('footer.office')}
       </p>
       <p class="mt-3 font-sans text-body-sans text-on-footer/90">{t('footer.officeValue')}</p>
-      <p class="mt-2 font-sans text-body-sm text-on-footer/60">{t('footer.contactNote')}</p>
+      <a
+        class="mt-1 inline-flex min-h-11 items-center font-sans text-body-sans text-on-footer/90 underline hover:text-on-footer"
+        href={`mailto:${t('footer.contactEmail')}`}
+      >
+        {t('footer.contactEmail')}
+      </a>
     </div>
   </div>
 
