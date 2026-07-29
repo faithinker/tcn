@@ -100,12 +100,14 @@ try {
   );
 
   const status = page.locator('[role="status"]');
-  const savedOk = async () => {
+  // 저장이 스테이징 업로드까지 수행하면 이미지 재인코딩 + 전송이 붙는다 — CI 러너에서는
+  // 15초를 넘길 수 있어 업로드를 태우는 호출은 예산을 따로 준다.
+  const savedOk = async (timeout = 15_000) => {
     await page.getByRole('button', { name: 'Save' }).click();
     await page.waitForFunction(
       (el) => el.textContent?.includes('Saved ✓') || el.textContent?.includes('failed'),
       await status.elementHandle(),
-      { timeout: 15_000 },
+      { timeout },
     );
     return (await status.textContent())?.includes('Saved ✓') === true;
   };
@@ -154,7 +156,7 @@ try {
     '스테이징만으로는 서버에 미디어가 생기지 않는다',
     (await page.locator('img[src^="/media/"]').count()) === 0,
   );
-  check('Save 가 스테이징 파일을 업로드하고 저장까지 끝낸다', await savedOk());
+  check('Save 가 스테이징 파일을 업로드하고 저장까지 끝낸다', await savedOk(60_000));
   check('업로드 후 이미지 2건이 그리드에 남는다', (await imageItems.count()) === 2);
   check(
     '업로드된 이미지는 R2 경로로 표시된다',
