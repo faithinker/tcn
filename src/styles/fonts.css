@@ -1,10 +1,8 @@
-/* 세리프는 웹폰트를 싣지 않는다. global.css 의 html[lang='en'] 이 --font-serif 를 시스템
-   Georgia 스택으로 좁히고 BaseLayout·AdminLayout 모두 lang="en" 고정이라, 세리프 웹폰트를
-   import 해도 family 가 매칭되지 않는다(브라우저 확인: face 는 unloaded, 요청 0건).
-   한국어를 다시 넣어 그 오버라이드를 걷어낼 때는 :root 의 --font-serif 목록에 맞는 웹폰트를
-   여기서 함께 import 해야 한다. Fontsource 서브셋 CSS 를 쓸 경우 latin 과 latin-ext 를 같은
-   family/weight 로 함께 import 하면 안 된다 — unicode-range 가 없어 뒤 선언이 앞 선언을
-   통째로 덮어쓰고, latin-ext 에는 ASCII 글리프가 없어 본문이 폴백된다.
+/* 세리프는 웹폰트를 싣지 않는다 — global.css 의 --font-serif 가 시스템 Georgia 스택이다.
+   한국어를 다시 넣어 세리프 웹폰트가 필요해지면 여기서 import 하고 --font-serif 목록도 함께
+   고쳐야 한다. Fontsource 서브셋 CSS 를 쓸 경우 latin 과 latin-ext 를 같은 family/weight 로
+   함께 import 하면 안 된다 — unicode-range 가 없어 뒤 선언이 앞 선언을 통째로 덮어쓰고,
+   latin-ext 에는 ASCII 글리프가 없어 본문이 폴백된다.
 
    Pretendard: dynamic-subset(93개 서브셋) — latin 전용 빌드가 없지만 unicode-range 가 있어
    영어 페이지에서 한글 청크를 내려받지 않는다(실제 로드는 5개 안팎). */

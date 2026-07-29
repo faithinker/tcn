@@ -4,7 +4,7 @@
 
 /* DESIGN.md 토큰 -> Tailwind 테마 (utilities: bg- / text- / border- / font- / rounded- 계열).
    색: 잉크 온 페이퍼 + 단일 액센트(잉크블루), 제2 브랜드색 없음.
-   폰트: 세리프=서사(명조), 산세리프=구조(Pretendard).
+   폰트: 세리프=서사(시스템 Georgia, 웹폰트 없음), 산세리프=구조(Pretendard).
    타입 스케일: DESIGN.md, 14px 바닥. 간격은 Tailwind 기본 스케일(4px 단위)이 DESIGN 토큰과 일치. */
 @theme {
   --color-ink: #171310;
@@ -27,11 +27,8 @@
   --color-danger: #8a2b1f;
   --color-danger-soft: #f8ece9;
 
-  --font-serif:
-    'Noto Serif KR', 'Nanum Myeongjo', 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-sans:
-    'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui,
-    -apple-system, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
 
   --text-caption: 0.875rem;
   --text-caption--line-height: 1.5;
@@ -69,7 +66,7 @@
   --container-page: 75rem;
 }
 
-/* 베이스 요소: 본문 18px 명조, 잉크 온 캔버스, 링크=액센트, 접근성 포커스링 */
+/* 베이스 요소: 본문 18px 세리프, 잉크 온 캔버스, 링크=액센트, 접근성 포커스링 */
 @layer base {
   :root {
     color-scheme: light;
@@ -120,18 +117,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    word-break: keep-all;
-  }
-
-  /* 두 레이아웃 모두 lang="en" 고정이라 이 블록이 위 --font-serif 목록을 항상 이긴다 —
-     세리프는 시스템 Georgia 로 렌더되고 세리프 웹폰트는 싣지 않는다(fonts.css 참고). */
-  html[lang='en'] {
-    --font-serif: Georgia, 'Times New Roman', serif;
-    --font-sans: 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, sans-serif;
-  }
-
-  html[lang='en'] body {
-    word-break: normal;
   }
 
   main,

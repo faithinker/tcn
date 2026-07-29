@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: TCN-editorial-analysis
-description: A scholarly editorial interface designed for authority, trust, and an older Korean readership. Noto Serif KR carries headlines and long-form body copy, while Pretendard is used for navigation and metadata. Large type, high-contrast text, warm paper surfaces, hairline rules, and a single institutional blue establish the hierarchy.
+description: A scholarly editorial interface designed for authority, trust, and an older Korean readership. A system serif (Georgia) carries headlines and long-form body copy, while Pretendard is used for navigation and metadata. Large type, high-contrast text, warm paper surfaces, hairline rules, and a single institutional blue establish the hierarchy.
 
 # Audience-driven design decisions:
 #  1. Type floors raised - body 16→18px, caption 12→14px - for late-50s+ eyes (WCAG AAA legibility).
@@ -12,6 +12,7 @@ description: A scholarly editorial interface designed for authority, trust, and 
 #  6. Interactive corners 4px (rounded.sm) instead of hard 0 - a touch less austere while keeping editorial gravitas.
 #  7. Relaxed line-heights prevent Hangul clipping; body 1.75, display 1.12.
 #  8. Neutral text ramp warm-tinted (ink/body/muted, R>G>B) to harmonize with the warm parchment surfaces and the warm dark mode; luminance preserved so WCAG contrast is maintained or improved.
+#  9. Typography turned English-first once the site shipped English-only: the serif webfont (decision 3) was dropped for the system Georgia stack - it was never matched at runtime - and the Korean system fallbacks left the stacks. Pretendard stays as the sans; display weight 600 stays.
 
 colors:
   primary: '#171310'
@@ -35,79 +36,79 @@ colors:
 
 typography:
   display-hero:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 60px
     fontWeight: 600
     lineHeight: 1.12
     letterSpacing: -0.5px
   display-lg:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 44px
     fontWeight: 600
     lineHeight: 1.15
     letterSpacing: -0.3px
   display-md:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 32px
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: -0.2px
   display-sm:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 26px
     fontWeight: 600
     lineHeight: 1.25
     letterSpacing: 0
   eyebrow:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 15px
     fontWeight: 700
     lineHeight: 1.3
     letterSpacing: 1.2px
   lead:
-    fontFamily: '"Noto Serif KR", Lora, Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 21px
     fontWeight: 400
     lineHeight: 1.7
     letterSpacing: 0
   body-serif:
-    fontFamily: '"Noto Serif KR", Lora, Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 18px
     fontWeight: 400
     lineHeight: 1.75
     letterSpacing: 0
   body-sans:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 17px
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: 0
   body-sans-strong:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 17px
     fontWeight: 700
     lineHeight: 1.5
     letterSpacing: 0
   body-sm:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: 0
   byline:
-    fontFamily: '"Noto Serif KR", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 15px
     fontWeight: 700
     lineHeight: 1.6
     letterSpacing: 0
   caption:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
   button:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 17px
     fontWeight: 700
     lineHeight: 1.2
@@ -231,15 +232,15 @@ components:
 
 ## Overview
 
-TCN's public site presents a learned society (Transcultural Network), not a SaaS product. The surface is editorial: a paper canvas, serif headlines and long-form body copy, a structured grid separated by hairlines, and a single deep institutional blue for links. It is tuned end-to-end for **authority + trust** and for a **late-50s-and-older Korean readership** through larger type, higher contrast, a warm parchment tint, and Korean-first font stacks.
+TCN's public site presents a learned society (Transcultural Network), not a SaaS product. The surface is editorial: a paper canvas, serif headlines and long-form body copy, a structured grid separated by hairlines, and a single deep institutional blue for links. It is tuned end-to-end for **authority + trust** and for a **late-50s-and-older Korean readership** through larger type, higher contrast, a warm parchment tint, and English-first font stacks.
 
-Type carries the identity. Two Korean-capable families ladder the system: **Noto Serif KR (명조)** for every headline and for long-form body (정관·인사말·연혁·논문 소개), and **Pretendard** (a modern Korean UI sans) for navigation, metadata, eyebrows, captions, and buttons. Serifs speak scholarship and gravitas; the sans handles structure and wayfinding.
+Type carries the identity. Two families ladder the system: the **system serif (Georgia)** for every headline and for long-form body (정관·인사말·연혁·논문 소개), and **Pretendard** for navigation, metadata, eyebrows, captions, and buttons. Serifs speak scholarship and gravitas; the sans handles structure and wayfinding.
 
 The single restrained accent is a deep institutional blue `{colors.accent}` (`#0b3d6b`) - used for inline links, category eyebrows, and active states. There is no second brand color. Black-on-paper plus this one blue is the entire palette; the society's emblem/seal supplies any further identity.
 
 **Key Characteristics:**
 
-- Serif-led editorial voice - Noto Serif KR headlines + serif body read as a scholarly journal, not a tech landing page.
+- Serif-led editorial voice - serif headlines + serif body read as a scholarly journal, not a tech landing page.
 - One accent only: deep institutional blue `{colors.accent}`. Everything else is ink-on-paper.
 - Warm paper (`{colors.canvas-soft}` / `{colors.canvas-band}`) instead of stark white - easier on older eyes, quietly authoritative.
 - Legibility floors for an older audience: 18px serif body, 14px minimum anywhere, secondary text no lighter than `{colors.body-muted}` (~7:1 contrast).
@@ -313,10 +314,10 @@ All dark mode mappings satisfy the **WCAG 2.1 AA/AAA contrast guidelines**:
 
 ### Font Family
 
-1. **Noto Serif KR (본명조 계열)** - headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. Self-host weights 400/600 only; 600 covers all emphasized serif text. Latin fallbacks: Playfair Display (display), Lora (body).
-2. **Pretendard Variable** - navigation, buttons, eyebrows, metadata, captions, form controls. Self-host one variable family split into Unicode-range dynamic subsets; system fallbacks Apple SD Gothic Neo / Malgun Gothic.
+1. **Georgia (system serif)** - headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. No webfont is shipped for the serif; fallbacks are Times New Roman, then generic serif. 600 covers all emphasized serif text.
+2. **Pretendard Variable** - navigation, buttons, eyebrows, metadata, captions, form controls. Self-host one variable family split into Unicode-range dynamic subsets; system fallbacks system-ui / -apple-system.
 
-**Why display weight 600:** Hangul serif at 400 looks thin and loses authority at display sizes. 600 restores presence without becoming heavy.
+**Why display weight 600:** it was set for hangul serif, which reads thin at 400 in display sizes, and kept after the switch to Georgia - 600 gives the headline presence the paper canvas needs without becoming heavy.
 
 ### Hierarchy
 
@@ -435,7 +436,7 @@ yet`) until Save uploads them.
 
 ### Do
 
-- Set every headline in Noto Serif KR (`display-*`, weight 600). The serif voice IS the authority.
+- Set every headline in the serif (`display-*`, weight 600). The serif voice IS the authority.
 - Keep body at 18px serif with 1.75 line-height. The audience skews older - legibility is non-negotiable.
 - Reserve `{colors.accent}` blue for links, eyebrows, and active states only.
 - Use warm parchment bands to separate sections; let hairlines and whitespace carry structure.
