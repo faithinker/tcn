@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. AI agents (
 - Protected Q&A writes with canonical Cloudflare Turnstile verification, hostname validation, replay prevention, HMAC-derived dual-window rate limits, CSRF checks, optimistic revisions, atomic privacy-minimal audit events, no-store admin responses, and safe plain-text rendering. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Fix
 - Removed the duplicate desktop Contact navigation item and prevented administrator answer text from gaining leading whitespace or indentation after editing and publishing. (Branch: `codex/qna-mvp`) - Implemented by Codex
+### Refactor
+- Consolidated duplicated administrator Q&A mutation plumbing and aligned Sonar coverage scope with the browser-executed scripts already excluded from Vitest coverage. (Branch: `codex/qna-mvp`) - Implemented by Codex
 ### Test
 - Added unit, contract, D1 integration, security, concurrency, pagination, and browser coverage for the Q&A lifecycle and administrator count synchronization. (Branch: `codex/qna-mvp`) - Implemented by Codex
 
