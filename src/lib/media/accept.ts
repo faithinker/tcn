@@ -1,6 +1,7 @@
 // 브라우저측 업로드 사전검사. 서버(validate.ts)가 최종 판정자지만, 여기서 먼저 걸러
 // 90MB를 올린 뒤 413/415를 받는 왕복을 없애고 거절 이유를 사람 말로 즉시 보여준다.
-// 서버 허용 목록(문서 MIME·비디오 MIME·이미지=WebP)과 짝을 맞춰 유지한다.
+// 서버 허용 목록(문서 MIME·비디오 MIME·이미지=WebP)과 짝을 맞춰 유지한다 —
+// upload-allowlist-parity.test.ts 가 양방향으로 잠근다.
 import { UPLOAD_LIMITS } from './validate';
 
 // 원본 사진은 업로드 직전 WebP(긴 변 2400px)로 다시 인코딩되므로 서버 이미지 상한보다

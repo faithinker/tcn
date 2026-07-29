@@ -18,6 +18,7 @@ const LIGHTBOX_ID = 'founding-record';
 // 사이드바(16rem)+간격(3.5rem)을 빼서 본문 열이 최대 55.5rem(888px)이고,
 // 격자는 3열(정상 칸 ≈ 285px, wide 칸 ≈ 587px), md 미만에서는 2열이다.
 // 값이 실제보다 작으면 브라우저가 작은 변형을 골라 상세보기에서 흐려진다.
+// 레이아웃 폭과의 일치는 gallery-sizes-parity.test.ts 가 다시 계산해 잠근다.
 const LEAD_SIZES = '(max-width: 48rem) 100vw, (max-width: 64rem) 92vw, 56rem';
 const CELL_SIZES = '(max-width: 48rem) 47vw, (max-width: 64rem) 30vw, 19rem';
 const WIDE_CELL_SIZES = '(max-width: 48rem) 95vw, (max-width: 64rem) 61vw, 37rem';

@@ -199,6 +199,7 @@ try {
   );
 
   // A9 — readiness 패널: 날짜·본문·사진·대표 충족 반영(7항목 중 ≥5 = 71% 이상).
+  // 이 임계값과 체크리스트의 일치는 src/components/admin/readiness-gate-parity.test.ts 가 잠근다.
   const readinessText = await page
     .locator('aside[aria-label="Public page readiness"] p.font-serif')
     .first()
