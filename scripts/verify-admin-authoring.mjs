@@ -15,7 +15,8 @@ const BASE = process.env.BASE_URL || 'http://localhost:4321';
 const USERNAME = 'verify-admin-gate';
 // 실행마다 새로 만든다 — 저장소에 고정 자격이 남지 않고, 계정도 이 실행 안에서만 존재한다.
 const PASSWORD = `gate-${randomUUID()}`;
-// 시드 최대 개최일(browser-media 시드 2099-12-31)보다 뒤 — event_date_must_follow_latest 회피.
+// 시드 최대 개최일(seed-seminar-posts.mjs 의 ci-seminar-carousel = 2099-12-31)보다 뒤 —
+// event_date_must_follow_latest 회피.
 const EVENT_DATE = '2100-01-15';
 // B 시나리오(한 번에 생성)는 A 시나리오보다 뒤 날짜여야 event_date_must_follow_latest 를 피한다.
 const SECOND_EVENT_DATE = '2100-02-20';

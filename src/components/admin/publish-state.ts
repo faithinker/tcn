@@ -90,7 +90,8 @@ export function uploadProgressLabel(done: number, total: number): string {
   return `Uploading ${Math.min(done + 1, total)} of ${total}`;
 }
 
-// 로케일·타임존에 의존하지 않는 24시간 시계(감사 로그가 아니라 "방금"의 표시용).
+// 로케일 포맷에 의존하지 않는 24시간 표기(감사 로그가 아니라 "방금"의 표시용).
+// 시각 자체는 브라우저 로컬 타임존이다 — 편집자가 방금 저장한 시각을 보는 용도라 그게 맞다.
 export function formatClockTime(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');

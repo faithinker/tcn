@@ -8,6 +8,14 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov', 'clover'],
+      // 테스트가 한 번도 import하지 않은 런타임 모듈도 분모에 포함한다.
+      // 선언형 콘텐츠와 브라우저 전용 코드는 각각 빌드·Playwright 게이트가 검증한다.
+      include: [
+        'src/components/admin/**/*.ts',
+        'src/lib/**/*.ts',
+        'src/middleware.ts',
+        'src/pages/**/*.ts',
+      ],
       exclude: [
         'node_modules/**',
         'dist/**',
@@ -15,6 +23,13 @@ export default defineConfig({
         'scripts/**',
         '**/*.test.ts',
         '**/*.config.*',
+        'src/components/admin/types.ts',
+        'src/lib/auth/index.ts',
+        'src/lib/db/index.ts',
+        'src/lib/db/types.ts',
+        'src/lib/media/process-image.ts',
+        'src/lib/posts/index.ts',
+        'src/lib/seminars/index.ts',
         '.astro/**',
       ],
       // 커버리지 회귀를 막고, 실제 커버리지가 오르면 기준값도 함께 올린다.

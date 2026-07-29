@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-07-30]
 ### Changed
 - Opened a working contact channel: Secretariat Enquiries no longer shows an empty Telephone row beside an empty Email row, and the Email row now links to `mingoo@aks.ac.kr`. The section copy states that enquiries reach the Secretariat by email rather than promising channels still to be finalised, and the footer's "Contact details to be announced" line is replaced by the same address so the two no longer contradict each other on the same page. (Branch: `content/contact-secretariat-email`) - Implemented by Claude
+- Made the shipped typography explicitly English-first by removing the unreachable Noto Serif KR dependency and Korean-only fallbacks, keeping Georgia for scholarly narrative and Pretendard for interface structure; also corrected stale implementation comments and aligned Sonar exclusions with browser-only coverage. (Branch: `test/critical-coverage-gaps`) - Implemented by Codex
+
+### Documentation
+- Rebuilt `DESIGN.md` from an eight-area implementation audit, removing fictional or retired tokens and components while documenting the real responsive thresholds, public-only dark theme, typography exceptions, accessibility behavior, motion, and authoring states; added the machine-readable Impeccable design sidecar. (Branch: `test/critical-coverage-gaps`) - Implemented by Codex
+
+### Test
+- Added critical runtime coverage for authentication cookies and session routes, post APIs, canonical middleware behavior, and Q&A D1 constraints, with Vitest thresholds split by coverage category and the D1 constraint gate wired into CI. (Branch: `test/critical-coverage-gaps`) - Implemented by Codex
 
 ### Fix
 - Made the deploy workflow prove which version it smoke tests. It curled `/`, `/api/health`, and `/api/ready` immediately after `wrangler deploy`, so the checks could still be answered by the previous version: on 2026-07-29 a deploy went green without ever exercising the version it had just uploaded, and the missing Q&A Turnstile secrets only surfaced on the following deploy, which then rolled back. The workflow now waits until the version id reported by `wrangler deploy` is the one serving 100% of traffic, and fails loudly if it never gets there or if the deploy output carries no version id. (Branch: `ci/deploy-version-gate`) - Implemented by Claude

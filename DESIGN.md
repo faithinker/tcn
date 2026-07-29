@@ -1,134 +1,103 @@
 ---
-version: alpha
-name: TCN-editorial-analysis
-description: A scholarly editorial interface designed for authority, trust, and an older Korean readership. Noto Serif KR carries headlines and long-form body copy, while Pretendard is used for navigation and metadata. Large type, high-contrast text, warm paper surfaces, hairline rules, and a single institutional blue establish the hierarchy.
-
-# Audience-driven design decisions:
-#  1. Type floors raised - body 16→18px, caption 12→14px - for late-50s+ eyes (WCAG AAA legibility).
-#  2. Secondary gray darkened & warmed #757575→#5d5647 (4.6:1 → ~7.3:1 contrast).
-#  3. Korean serif + sans font stacks added (Noto Serif KR / Pretendard); display weight 600, not 400 - hangul serif needs more weight than a Latin didone for equal presence.
-#  4. Warm parchment surfaces (#f7f5f0) reduce white glare and add journal warmth.
-#  5. Near-black warm ink (#171310) instead of pure #000 - reduces halation for large hangul blocks.
-#  6. Interactive corners 4px (rounded.sm) instead of hard 0 - a touch less austere while keeping editorial gravitas.
-#  7. Relaxed line-heights prevent Hangul clipping; body 1.75, display 1.12.
-#  8. Neutral text ramp warm-tinted (ink/body/muted, R>G>B) to harmonize with the warm parchment surfaces and the warm dark mode; luminance preserved so WCAG contrast is maintained or improved.
-
+name: TCN Scholarly Editorial System
+description: A restrained, high-legibility editorial system for an international scholarly association.
 colors:
-  primary: '#171310'
-  on-primary: '#ffffff'
-  footer: '#171310'
-  on-footer: '#ffffff'
   ink: '#171310'
   ink-soft: '#2e2a22'
   body: '#2e2a22'
   body-muted: '#5d5647'
-  hairline: '#ddd9d0'
-  hairline-strong: '#171310'
   canvas: '#ffffff'
   canvas-soft: '#f7f5f0'
   canvas-band: '#f2efe7'
+  hairline: '#ddd9d0'
+  hairline-strong: '#171310'
+  accent: '#0b3d6b'
+  accent-hover: '#09507f'
   link: '#0b3d6b'
   link-hover: '#09507f'
-  accent: '#0b3d6b'
+  on-primary: '#ffffff'
+  footer: '#171310'
+  on-footer: '#ffffff'
   danger: '#8a2b1f'
   danger-soft: '#f8ece9'
-
 typography:
   display-hero:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 60px
     fontWeight: 600
     lineHeight: 1.12
     letterSpacing: -0.5px
   display-lg:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 44px
     fontWeight: 600
     lineHeight: 1.15
-    letterSpacing: -0.3px
+    letterSpacing: -0.01em
   display-md:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", "Playfair Display", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 32px
     fontWeight: 600
     lineHeight: 1.2
-    letterSpacing: -0.2px
+    letterSpacing: -0.01em
   display-sm:
-    fontFamily: '"Noto Serif KR", "Nanum Myeongjo", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 26px
     fontWeight: 600
     lineHeight: 1.25
-    letterSpacing: 0
+    letterSpacing: -0.01em
   eyebrow:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 15px
     fontWeight: 700
     lineHeight: 1.3
     letterSpacing: 1.2px
   lead:
-    fontFamily: '"Noto Serif KR", Lora, Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 21px
     fontWeight: 400
     lineHeight: 1.7
     letterSpacing: 0
   body-serif:
-    fontFamily: '"Noto Serif KR", Lora, Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 18px
     fontWeight: 400
     lineHeight: 1.75
     letterSpacing: 0
   body-sans:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 17px
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: 0
-  body-sans-strong:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
-    fontSize: 17px
-    fontWeight: 700
-    lineHeight: 1.5
-    letterSpacing: 0
   body-sm:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 15px
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: 0
   byline:
-    fontFamily: '"Noto Serif KR", Georgia, serif'
+    fontFamily: 'Georgia, "Times New Roman", serif'
     fontSize: 15px
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.6
     letterSpacing: 0
   caption:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
   button:
-    fontFamily: '"Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif'
+    fontFamily: '"Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif'
     fontSize: 17px
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: 0.2px
-  code:
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0
-
 rounded:
   none: 0px
   sm: 4px
   full: 9999px
-
-shadow:
-  overlay: '0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)'
-
 spacing:
-  xxs: 2px
   xs: 4px
   sm: 8px
   md: 12px
@@ -139,314 +108,311 @@ spacing:
   4xl: 48px
   5xl: 64px
   6xl: 96px
-
 components:
-  masthead-band:
-    backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    typography: '{typography.body-sans-strong}'
-    padding: '{spacing.lg} {spacing.xl}'
-    borderBottom: '1px solid {colors.hairline-strong}'
-  nav-bar:
-    backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    typography: '{typography.body-sans-strong}'
-    padding: '{spacing.md} {spacing.xl}'
-  nav-link:
-    textColor: '{colors.ink}'
-    typography: '{typography.body-sans-strong}'
-    minHeight: 48px
   button-primary:
-    backgroundColor: '{colors.primary}'
+    backgroundColor: '{colors.ink}'
     textColor: '{colors.on-primary}'
     typography: '{typography.button}'
     rounded: '{rounded.sm}'
-    padding: '{spacing.lg} {spacing.2xl}'
-    minHeight: 48px
+    padding: '16px 24px'
+    height: 48px
   button-outline:
     backgroundColor: '{colors.canvas}'
     textColor: '{colors.ink}'
-    borderColor: '{colors.hairline-strong}'
     typography: '{typography.button}'
     rounded: '{rounded.sm}'
-    padding: '{spacing.lg} {spacing.2xl}'
-    minHeight: 48px
+    padding: '16px 24px'
+    height: 48px
   text-input:
     backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    borderColor: '{colors.hairline-strong}'
+    textColor: '{colors.body}'
     typography: '{typography.body-sans}'
     rounded: '{rounded.sm}'
-    padding: '{spacing.md} {spacing.lg}'
-    minHeight: 48px
-  eyebrow:
-    textColor: '{colors.accent}'
-    typography: '{typography.eyebrow}'
-  hero-band:
+    padding: '12px 16px'
+    height: 48px
+  site-header:
     backgroundColor: '{colors.canvas}'
     textColor: '{colors.ink}'
-    typography: '{typography.display-hero}'
-    padding: '{spacing.6xl} {spacing.xl}'
+    typography: '{typography.body-sm}'
+    rounded: '{rounded.none}'
+    padding: '12px 20px'
   section-band:
     backgroundColor: '{colors.canvas-band}'
-    textColor: '{colors.ink}'
-    padding: '{spacing.6xl} {spacing.xl}'
-  story-card-large:
+    textColor: '{colors.body}'
+    rounded: '{rounded.none}'
+    padding: '96px 20px'
+  profile-card:
     backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    typography: '{typography.display-md}'
-    padding: '{spacing.2xl}'
-  story-card:
-    backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    typography: '{typography.display-sm}'
-    padding: '{spacing.lg}'
-  story-row:
-    backgroundColor: '{colors.canvas}'
-    textColor: '{colors.ink}'
-    borderColor: '{colors.hairline}'
-    typography: '{typography.body-sans-strong}'
-    padding: '{spacing.2xl} 0'
-  officer-card:
-    backgroundColor: '{colors.canvas-soft}'
-    textColor: '{colors.ink}'
-    borderColor: '{colors.hairline}'
-    nameTypography: '{typography.display-sm}'
-    roleTypography: '{typography.eyebrow}'
-    bioTypography: '{typography.body-serif}'
-    rounded: '{rounded.sm}'
-    padding: '{spacing.2xl}'
-  byline-row:
-    backgroundColor: '{colors.canvas}'
-    textColor: '{colors.body-muted}'
-    typography: '{typography.byline}'
-  hairline-divider:
-    borderColor: '{colors.hairline}'
+    textColor: '{colors.body}'
+    rounded: '{rounded.none}'
+    padding: '32px'
   footer:
     backgroundColor: '{colors.footer}'
     textColor: '{colors.on-footer}'
     typography: '{typography.body-sm}'
-    padding: '{spacing.6xl} {spacing.xl}'
+    rounded: '{rounded.none}'
+    padding: '64px 20px'
 ---
+
+# Design System: Transcultural Network
 
 ## Overview
 
-TCN's public site presents a learned society (Transcultural Network), not a SaaS product. The surface is editorial: a paper canvas, serif headlines and long-form body copy, a structured grid separated by hairlines, and a single deep institutional blue for links. It is tuned end-to-end for **authority + trust** and for a **late-50s-and-older Korean readership** through larger type, higher contrast, a warm parchment tint, and Korean-first font stacks.
+**Creative North Star: "The Scholarly Record"**
 
-Type carries the identity. Two Korean-capable families ladder the system: **Noto Serif KR (명조)** for every headline and for long-form body (정관·인사말·연혁·논문 소개), and **Pretendard** (a modern Korean UI sans) for navigation, metadata, eyebrows, captions, and buttons. Serifs speak scholarship and gravitas; the sans handles structure and wayfinding.
+TCN should feel like a carefully edited institutional record: calm enough for sustained reading, formal
+without ceremony, and contemporary without looking like a software product. Georgia carries scholarship
+and narrative; Pretendard carries navigation, metadata, and authoring controls. Near-black ink, a single
+institutional blue, warm paper surfaces, and ruled divisions create hierarchy without decorative chrome.
 
-The single restrained accent is a deep institutional blue `{colors.accent}` (`#0b3d6b`) - used for inline links, category eyebrows, and active states. There is no second brand color. Black-on-paper plus this one blue is the entire palette; the society's emblem/seal supplies any further identity.
+The public site serves an international scholarly association and is intentionally English-first. Its
+large body type, strong contrast, generous line height, and broad touch targets support older readers
+without turning accessibility into a separate visual mode. The authoring interface uses the same type,
+color, and border vocabulary at a denser rhythm; danger colors belong to authoring state, not public
+branding.
+
+The system is responsive at the points where its content changes, not at three artificial device classes.
+The type scale and section spacing compact below 640px; the navigation changes to a menu below 896px;
+content grids reorganize primarily at 1024px; and the header gains its most spacious treatment at 1152px.
+Public pages cap at 1200px. Narrative copy usually occupies 68ch, while full academic documents may use
+74ch. Document pages use the shared two-column shell only when they supply an aside; a document without
+an aside remains a centered reading column.
+
+Public pages support a warm dark theme. The admin layout currently remains light because it has neither
+the public theme bootstrap nor the theme control. Scroll-entry motion is progressive enhancement:
+content is visible without JavaScript, moves only four pixels when enhanced, and becomes immediate when
+the reader requests reduced motion.
 
 **Key Characteristics:**
 
-- Serif-led editorial voice - Noto Serif KR headlines + serif body read as a scholarly journal, not a tech landing page.
-- One accent only: deep institutional blue `{colors.accent}`. Everything else is ink-on-paper.
-- Warm paper (`{colors.canvas-soft}` / `{colors.canvas-band}`) instead of stark white - easier on older eyes, quietly authoritative.
-- Legibility floors for an older audience: 18px serif body, 14px minimum anywhere, secondary text no lighter than `{colors.body-muted}` (~7:1 contrast).
-- Hairline dividers and surface contrast carry hierarchy - no drop-shadows, minimal chrome.
-- Generous vertical rhythm (`{spacing.5xl}`/`{spacing.6xl}`) so dense academic content (officers, bylaws, events, publications) never crowds.
+- Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.
+- Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.
+- Flat surfaces separated by tone, whitespace, and one-pixel rules.
+- Desktop body copy at 18px/1.75 and reading measures between 68ch and 74ch.
+- Primary controls at 48px; compact secondary controls respect a 44px touch-target floor.
+- Responsive behavior driven by real content thresholds at 640px, 896px, 1024px, and 1152px.
+
+**The Record, Not Dashboard Rule.** Public pages must read as edited scholarship, never as a SaaS
+dashboard, marketing template, or collection of interchangeable cards.
 
 ## Colors
 
-### Brand & Accent
+The palette is ink on paper with one institutional blue. Warm neutrals soften long reading sessions;
+color never substitutes for hierarchy or meaning.
 
-- **Ink** (`{colors.ink}` - `#171310`): Wordmark, all headlines, all body. Near-black to avoid halation on large hangul blocks.
-- **Accent / Link** (`{colors.accent}` = `{colors.link}` - `#0b3d6b`): The society's single blue. Inline links, category eyebrows, active nav, focus rings. Deep enough for high contrast and institutional gravitas.
-- **Link Hover** (`{colors.link-hover}` - `#09507f`): Hover/pressed state for links.
+### Primary
 
-### Surface
+- **Institutional Blue** (`{colors.accent}`): links, active navigation, section labels, selection, and
+  default focus rings. Hover and pressed states use `{colors.accent-hover}`.
+- **Warm Ink** (`{colors.ink}`): headings, wordmark, primary buttons, and strong structural rules.
 
-- **Canvas** (`{colors.canvas}` - `#ffffff`): Default reading background for long-form text (maximum contrast).
-- **Canvas Soft** (`{colors.canvas-soft}` - `#f7f5f0`): Warm parchment for cards (officer cards, callouts).
-- **Canvas Band** (`{colors.canvas-band}` - `#f2efe7`): Slightly deeper parchment for alternating full-width section bands.
-- **Hairline** (`{colors.hairline}` - `#ddd9d0`): 1px warm dividers between story/officer/bylaw rows.
-- **Hairline Strong** (`{colors.hairline-strong}` - `#171310`): 1–2px black rules for the masthead underline and outline buttons.
-- **Footer** (`{colors.footer}` - `#171310` → `#12110f` dark) / **On-Footer** (`{colors.on-footer}` - `#ffffff`, both modes): The footer is an always-dark slab that does NOT invert with the theme. It uses dedicated non-inverting tokens (never `ink`/`on-primary`, which flip in dark mode); white text at reduced opacity (90/70/60/50%) carries the internal hierarchy.
+### Neutral
 
-### Text
+- **Reading Canvas** (`{colors.canvas}`): the default page and field surface.
+- **Soft Paper** (`{colors.canvas-soft}`): quiet grouping, hover feedback, and grounded callouts.
+- **Band Paper** (`{colors.canvas-band}`): alternating full-width sections and selected status surfaces.
+- **Body Ink** (`{colors.body}`): long-form copy. `{colors.ink-soft}` is the matching softened strong
+  neutral for active or hover surfaces.
+- **Muted Umber** (`{colors.body-muted}`): dates, captions, countries, and secondary metadata.
+- **Warm Hairline** (`{colors.hairline}`): subtle dividers and field boundaries.
+  `{colors.hairline-strong}` marks sticky headers, emphasized rules, and outline controls.
+- **Permanent Footer Ink** (`{colors.footer}`): the always-dark footer surface.
+  `{colors.on-footer}` remains white in both public themes.
 
-- **Ink** (`#171310`): Headlines and primary body.
-- **Ink Soft / Body** (`{colors.body}` - `#2e2a22`): Long-form paragraphs (~13:1 contrast).
-- **Body Muted** (`{colors.body-muted}` - `#5d5647`): Bylines, dates, secondary metadata only. Never lighter than this (~7:1) so supporting text remains legible.
+### Authoring State
 
-### State (admin tooling only)
+- **Oxblood Danger** (`{colors.danger}`): failed publishing states and the post-level destructive action.
+- **Danger Wash** (`{colors.danger-soft}`): the background of failure feedback.
+- Media deletion currently uses the accent treatment even though it is destructive. Do not infer a
+  universal "all delete actions are danger" rule from the post publish bar.
 
-The public site keeps one blue, one ink, paper. The authoring tool needs one more thing the public
-site never does: it must say "this failed" without borrowing the link colour.
+### Public Dark Theme
 
-- **Danger** (`{colors.danger}` - `#8a2b1f` → `#e79a8c` dark): Destructive actions (Delete) and failed
-  saves/uploads. Warm oxblood, drawn from the same warm neutral family (~8:1 on canvas). Never used on
-  public pages, never as decoration.
-- **Danger Soft** (`{colors.danger-soft}` - `#f8ece9` → `#2b201d` dark): Tint behind a failure banner.
-- Success has **no new colour**. A published post is confirmed with the accent blue, a drawn check, and
-  a sentence naming what went live — the accent is already the system's "active state" colour.
+| Role                      | Light     | Dark      |
+| ------------------------- | --------- | --------- |
+| canvas                    | `#ffffff` | `#181715` |
+| canvas-soft               | `#f7f5f0` | `#24221f` |
+| canvas-band               | `#f2efe7` | `#1f1e1b` |
+| ink                       | `#171310` | `#e6e2da` |
+| ink-soft / body           | `#2e2a22` | `#d1cbbd` |
+| body-muted                | `#5d5647` | `#928b7d` |
+| accent / link             | `#0b3d6b` | `#8bb2d9` |
+| accent-hover / link-hover | `#09507f` | `#a3c5e8` |
+| hairline                  | `#ddd9d0` | `#383530` |
+| hairline-strong           | `#171310` | `#e6e2da` |
+| on-primary                | `#ffffff` | `#181715` |
+| footer                    | `#171310` | `#12110f` |
+| danger                    | `#8a2b1f` | `#e79a8c` |
+| danger-soft               | `#f8ece9` | `#2b201d` |
 
-### Dark Mode (Eye Protection Mode) & WCAG Compliance
+**The One Blue Rule.** Do not introduce a second brand hue. Institutional blue is used for links,
+labels, active state, focus, and selection; its restraint is the identity.
 
-To reduce visual fatigue and ensure high legibility for senior readers under low-light conditions, the site implements a custom Dark Mode (Eye Protection) palette. Rather than stark black, it uses soft warm-charcoal and sand-white tones to prevent halation.
-
-All dark mode mappings satisfy the **WCAG 2.1 AA/AAA contrast guidelines**:
-
-- **Main Reading Contrast**: `{colors.body}` (`#d1cbbd`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~11:1** (satisfying WCAG AAA 7:1 floor).
-- **Title Contrast**: `{colors.ink}` (`#e6e2da`) on `{colors.canvas}` (`#181715`) achieves a contrast ratio of **~13.9:1** (satisfying WCAG AAA 7:1 floor).
-- **Secondary Text Contrast**: `{colors.body-muted}` (`#928b7d`) on `{colors.canvas-soft}` (`#24221f`) achieves a contrast ratio of **~4.7:1** (satisfying WCAG AA floor).
-- **Accent Contrast**: `{colors.accent}` (`#8bb2d9`) on `{colors.canvas}` (`#181715`) achieves **~8.1:1** contrast.
-- **Boundary Contrast (Non-Text Elements)**: Under WCAG AA, UI boundaries must have a contrast ratio of **≥ 3:1** against adjacent background colors.
-  - _Body to Footer transition_: Since the main canvas (`#181715`) and the dark footer background (`#12110f`) have a low contrast ratio (~1.06:1), a solid 1px top border utilizing `{colors.hairline-strong}` (which resolves to `#e6e2da` in dark mode) is mandated. This delivers a contrast ratio of **~13:1**, satisfying the WCAG AA floor and ensuring clean structural demarcation.
-
-| Token                      | Light Mode Value | Dark Mode Value | Contrast Role (vs Background)                   |
-| -------------------------- | ---------------- | --------------- | ----------------------------------------------- |
-| `{colors.canvas}`          | `#ffffff`        | `#181715`       | Main background                                 |
-| `{colors.canvas-soft}`     | `#f7f5f0`        | `#24221f`       | Card background                                 |
-| `{colors.canvas-band}`     | `#f2efe7`        | `#1f1e1b`       | Section striping background                     |
-| `{colors.ink}`             | `#171310`        | `#e6e2da`       | Headlines / Monograms (AAA contrast)            |
-| `{colors.ink-soft}`        | `#2e2a22`        | `#d1cbbd`       | Button active / hover background                |
-| `{colors.body}`            | `#2e2a22`        | `#d1cbbd`       | Body copy (AA contrast)                         |
-| `{colors.body-muted}`      | `#5d5647`        | `#928b7d`       | Metadata / Secondary text (AA contrast)         |
-| `{colors.accent}`          | `#0b3d6b`        | `#8bb2d9`       | Links / Eyebrows (AA contrast)                  |
-| `{colors.hairline}`        | `#ddd9d0`        | `#383530`       | Subtle inner dividers                           |
-| `{colors.hairline-strong}` | `#171310`        | `#e6e2da`       | Structural borders (masthead, footer boundary)  |
-| `{colors.footer}`          | `#171310`        | `#12110f`       | Footer slab - non-inverting always-dark surface |
-| `{colors.on-footer}`       | `#ffffff`        | `#ffffff`       | Footer text - non-inverting                     |
+**The Public Theme Boundary Rule.** Dark-mode guidance applies to public pages only until the admin
+layout gains its own theme bootstrap and control.
 
 ## Typography
 
-### Font Family
+**Display and Narrative Font:** Georgia, with Times New Roman and generic serif fallbacks
 
-1. **Noto Serif KR (본명조 계열)** - headlines (`display-*`), lead paragraphs, long-form body, bylines. The scholarly voice. Self-host weights 400/600 only; 600 covers all emphasized serif text. Latin fallbacks: Playfair Display (display), Lora (body).
-2. **Pretendard Variable** - navigation, buttons, eyebrows, metadata, captions, form controls. Self-host one variable family split into Unicode-range dynamic subsets; system fallbacks Apple SD Gothic Neo / Malgun Gothic.
+**Structure and Interface Font:** Pretendard Variable, with Pretendard and system UI fallbacks
 
-**Why display weight 600:** Hangul serif at 400 looks thin and loses authority at display sizes. 600 restores presence without becoming heavy.
+**Character:** Georgia gives the association a durable, bookish voice without another font download.
+Pretendard keeps navigation, metadata, controls, and dense authoring surfaces direct and legible. The
+contrast between the families is functional, not decorative.
 
 ### Hierarchy
 
-| Token                           | Size | Weight | Line Height | Use                                                           |
-| ------------------------------- | ---- | ------ | ----------- | ------------------------------------------------------------- |
-| `{typography.display-hero}`     | 60px | 600    | 1.12        | Home hero / page cover headline.                              |
-| `{typography.display-lg}`       | 44px | 600    | 1.15        | Major section headlines.                                      |
-| `{typography.display-md}`       | 32px | 600    | 1.20        | Feature card / subsection.                                    |
-| `{typography.display-sm}`       | 26px | 600    | 1.25        | Officer name, card headings.                                  |
-| `{typography.eyebrow}`          | 15px | 700    | 1.30        | Category / section label (Pretendard, tracked, accent color). |
-| `{typography.lead}`             | 21px | 400    | 1.70        | Lead paragraph (인사말·소개 리드).                            |
-| `{typography.body-serif}`       | 18px | 400    | 1.75        | Default long-form body (정관·연혁·본문).                      |
-| `{typography.body-sans}`        | 17px | 400    | 1.60        | Sans body - nav, UI, table cells.                             |
-| `{typography.body-sans-strong}` | 17px | 700    | 1.50        | Nav links, story-row titles.                                  |
-| `{typography.body-sm}`          | 15px | 400    | 1.60        | Secondary sans body.                                          |
-| `{typography.byline}`           | 15px | 700    | 1.60        | Officer role line / byline (serif).                           |
-| `{typography.caption}`          | 14px | 400    | 1.50        | Fine print, captions. Minimum size anywhere.                  |
-| `{typography.button}`           | 17px | 700    | 1.20        | Button labels.                                                |
+- **Display Hero** (600, 60px, 1.12): standard interior-page covers at 640px and above. It compacts to
+  42px below 640px. The long homepage title intentionally uses a smaller bespoke 28px/32px scale.
+- **Display Large** (600, 44px, 1.15): major page and section headings. It compacts to 36px below 640px.
+- **Display Medium** (600, 32px, 1.2): subsection and feature headings. It compacts to 28px below 640px.
+- **Display Small** (600, 26px, 1.25): card and profile names. It compacts to 22px below 640px; compact
+  director cards use a deliberate 24px variant.
+- **Lead** (400, 21px, 1.7): introductory narrative. It compacts to 19px below 640px.
+- **Body Serif** (400, 18px, 1.75): default public body and academic prose. It compacts to 17px/1.7
+  below 640px. Keep normal narrative measure between 68ch and 74ch.
+- **Body Sans** (400, 17px, 1.6): UI descriptions, tables, form content, and navigation when space
+  permits. Weight 700 creates strong labels; there is no separate strong-body token.
+- **Body Small** (400, 15px, 1.6): compact navigation and secondary interface text.
+- **Eyebrow** (700, 15px, 1.3, uppercase): the reusable blue section label. Below 640px it becomes
+  13px with 0.08em tracking.
+- **Caption** (400, 14px, 1.5): captions and metadata, frequently combined with bold uppercase styling.
+- **Button** (700, 17px, 1.2): primary action labels.
+- **Byline** (600, 15px, 1.6): a narrowly used serif metadata role, not the officer-role treatment.
 
-### Principles
+The shared scale bottoms out at 14px, but the current implementation has three intentional compact
+exceptions: the mobile eyebrow at 13px, profile expertise tags at 12px, and the profile current-position
+label at 11px. Treat these as contained exceptions, not reusable text tokens. Bylaw clause-number badges
+also use a local 12px label.
 
-- **Serif for narrative, sans for structure.** Serif never labels a button; sans never sets article body.
-- **14px is the floor.** Nothing on the page renders below `{typography.caption}` - the audience skews late-50s+.
-- **Secondary text ≥ `{colors.body-muted}`.** No faint gray metadata.
-- **Line-height is generous.** Hangul needs air; body runs 1.75.
+**The Two Voices Rule.** Serif carries scholarship and narrative. Sans-serif carries wayfinding,
+metadata, status, and controls. Never create a third display voice.
 
-## Layout
+**The Honest Floor Rule.** New readable copy must use 14px or larger. Existing 11–13px labels are
+short, bold, and local; do not copy them into paragraphs, navigation, captions, or form help.
 
-### Spacing System
+## Elevation
 
-- **Base unit**: 4px. Tokens: `xxs` 2 · `xs` 4 · `sm` 8 · `md` 12 · `lg` 16 · `xl` 20 · `2xl` 24 · `3xl` 32 · `4xl` 48 · `5xl` 64 · `6xl` 96.
-- **Section padding**: full-width bands use `{spacing.6xl}` 96px top/bottom on desktop.
-- **Row padding**: `{spacing.2xl}` 24px vertical between story/officer/bylaw rows.
+TCN is flat by default. Surface tone, spacing, and one-pixel rules establish depth. Standard content
+cards do not float and do not combine borders with decorative shadows. The only shared shadow is the
+restrained overlay shadow used by the desktop navigation menu and other genuinely floating layers:
+`0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)`.
 
-### Grid & Container
+### Shadow Vocabulary
 
-- Content container ~1200px max to favor readable measure over density.
-- Long-form article/bylaw column caps at ~68ch for comfortable reading.
-- **Long-form Academic Documents Layout**: To preserve a unified reading axis, the three key document pages under `/about` (Declaration, Bylaws, and Founding Invitation) **MUST** implement a consistent 2-column grid layout on desktop (`lg:grid-cols-[16rem_minmax(0,1fr)]`). The left side serves as an `aside` visual anchor (meta-label, TOC, or summary), and the right side hosts the main `max-w-[74ch]` reading block. This prevents layout shifting and ensures an identical text alignment line across sheets.
-- Home: hero band → intro (인사말/미션) → featured (연혁 or 학술대회) → officer grid → news/notice rows → footer.
-- Officer grid: 2-up desktop, 1-up mobile.
+- **Grounded Surface:** no shadow; use canvas, soft paper, or band paper plus whitespace.
+- **Hairline Separation:** a 1px warm hairline for lists, fields, media, and internal divisions.
+- **Strong Rule:** a 1px ink rule for sticky boundaries and emphasized structure.
+- **Floating Overlay:** the shared overlay shadow plus a strong hairline border for dropdowns and
+  transient floating layers.
 
-### Responsive Strategy
-
-| Name    | Width      | Key Changes                                                   |
-| ------- | ---------- | ------------------------------------------------------------- |
-| Mobile  | < 768px    | Hero 60→36px; all grids 1-up; hamburger nav; body stays 18px. |
-| Tablet  | 768–1023px | 2-up officer/feature grids.                                   |
-| Desktop | ≥ 1024px   | Full grid, wide bands.                                        |
-
-**Touch targets:** nav links, buttons, and inputs are ≥ 48px tall - comfortable for older users on Android. Do not shrink below 44px.
-
-## Elevation & Depth
-
-| Level                | Treatment                                                      | Use                                                     |
-| -------------------- | -------------------------------------------------------------- | ------------------------------------------------------- |
-| Level 0 - Flat       | No shadow, no border.                                          | Most surfaces.                                          |
-| Level 1 - Hairline   | 1px `{colors.hairline}`.                                       | Row dividers, card edges, input borders.                |
-| Level 2 - Black rule | 1–2px `{colors.hairline-strong}`.                              | Masthead underline, outline buttons, emphasis.          |
-| Level 3 - Overlay    | Restrained soft shadow (`{shadow.overlay}`) + hairline border. | Floating overlays only - nav dropdown, future popovers. |
-
-No drop-shadows on **surfaces** - surface contrast + hairlines carry all hierarchy. The one exception is **floating overlays** (menus/popovers), which lift with the single restrained `{shadow.overlay}` token; in dark mode the light hairline border carries the separation. Grounded in flat-but-elevated systems (Radix popover/dialog shadows, Geist floating layers).
-
-## Shapes
-
-| Token            | Value  | Use                                                                 |
-| ---------------- | ------ | ------------------------------------------------------------------- |
-| `{rounded.none}` | 0px    | Section bands, full-bleed imagery.                                  |
-| `{rounded.sm}`   | 4px    | Buttons, inputs, cards; lightly softened while remaining editorial. |
-| `{rounded.full}` | 9999px | Author/officer avatars, icon buttons only.                          |
+**The Flat-by-Default Rule.** If a surface is part of document flow, it stays flat. Shadows are reserved
+for layers that physically overlap other content.
 
 ## Components
 
 ### Navigation
 
-- **`masthead-band`** - thin top band, society wordmark/seal centered or left, black 1px underline. Pretendard bold.
-- **`nav-bar`** - light nav; primary sections + a clear "회원가입/문의" CTA. Hamburger < 768px. Links ≥ 48px tall.
+The site uses one sticky header, not separate masthead and navigation bands. The serif wordmark sits on
+the left; sans-serif navigation, public theme control, and the ink-filled "Join / Contact" action occupy
+the right. Top-level controls are at least 48px high. Dropdown and mobile child links use the 44px compact
+floor. Desktop navigation appears at 896px; below that threshold the header opens a scroll-contained
+mobile menu. At 1152px the full wordmark suffix, larger type, and wider spacing appear.
+
+The dropdown is a true overlay: canvas background, strong hairline border, 4px-free square geometry, and
+the single overlay shadow. Active and expanded states use institutional blue. The mobile menu is a
+grounded continuation of the header and therefore has no shadow.
 
 ### Buttons
 
-- **`button-primary`** - ink fill, white label, 4px corners, ≥48px tall. Primary CTA (회원가입, 문의, 자료 다운로드).
-- **`button-outline`** - white fill, black 1px border, ink label. Secondary actions.
+- **Shape:** lightly softened rectangle (4px radius), never a pill.
+- **Primary:** warm ink fill, white/light on-primary label, 24px horizontal padding, and a 48px minimum
+  height. Hover shifts to softened ink; public pagination may use institutional blue for the selected page.
+- **Outline:** canvas fill, strong hairline border, warm ink label, and a 48px minimum height. Hover uses
+  soft paper.
+- **Focus:** a 2px institutional-blue outline offset by 2px. Controls on dark surfaces use a light ring
+  derived from the surface text color.
+- **Motion:** color transitions are brief. Reduced-motion users receive immediate state changes.
 
-### Cards & Rows
+### Inputs and Fields
 
-- **`story-card-large` / `story-card`** - feature news/event cards; serif heading + serif lead + sans byline.
-- **`story-row`** - bylined list row with hairline bottom border; for 공지/뉴스/논문 lists.
-- **`profile-card`** - canvas card for 임원진·이사진 (`MemberProfileCard.astro`, the only card on `/people`): accent caps role and muted country on one row, serif name (`display-sm`; `1.5rem` in the `compact` 3-up directors grid), a muted caps "current role" label above the serif position, then hairline-separated summary, `·`-marked highlight bullets, and bordered sans expertise chips. No avatar.
+Fields use a canvas background, a one-pixel structural border, square-to-4px corners, 12px/16px internal
+padding, and sans-serif content. Primary form controls are 48px high; denser authoring fields may use the
+44px floor. Validation and publish failure use oxblood and danger wash. Placeholder and help text must
+retain readable contrast against the current surface.
 
-### Admin (authoring tool)
+### Section Bands and Reading Containers
 
-- **`publish-bar`** (`PublishBar.tsx`) - the sticky bar at the foot of the post editor. It answers one
-  question at all times: is what I see on screen what the public sees? Seven states, one vocabulary:
-  `Not published yet` / `Uploading n of N` / `Unsaved changes` / `Published` / `Published with problems`
-  / `Changes not published` / `Not created`. A square state dot (muted = neutral, accent = published,
-  ink = unsaved, danger = failed), a plain-language second line ("The public page still shows the last
-  published version."), the live URL, and Delete in danger colour.
-- **`publish-banner`** - appears once per action directly above the bar: a 450 ms drawn check plus the
-  ordinal that went live, the public URL, the attachment count, and anything still incomplete. The
-  failure variant swaps to the danger tint and lists each reason. Both fade in over 200 ms and both
-  fall back to an instant state under `prefers-reduced-motion`.
-- **`media-dropzone`** (`MediaManager.tsx`) - the whole dashed area is the file picker; accepted formats
-  and size ceilings are printed inside it. Files chosen before a post exists stay staged (`Not uploaded
-yet`) until Save uploads them.
+`SectionTile` supplies three grounded variants: reading canvas, band paper, and soft paper. Sections use
+48px vertical padding below 640px and 96px from 640px upward, with 16px/20px side padding. They are
+full-width bands, not cards. Standard page content caps at 1200px.
 
-### Signature
+Academic documents use a 74ch reading measure. Bylaws and the founding invitation supply a 256px aside
+and therefore use the shared two-column desktop shell. The declaration supplies no aside and correctly
+renders as a centered single column. Shorter prose and community questions commonly use 68ch.
 
-- **`hero-band`** - white hero, `display-hero` serif headline + `lead` subhead. No background image required; type carries it (works even without photography).
-- **`section-band`** - alternating parchment full-width band to separate major sections (미션, 연혁, 학술대회).
-- **`eyebrow`** - accent-blue tracked caps label above section headlines.
-- **`byline-row`** - serif byline with muted color; officer role / article meta.
-- **`hairline-divider`** - the 1px warm line; the only default elevation cue.
-- **`footer`** - ink-black band, white text columns: 연락처·주소·바로가기·저작권. Generous 96px padding.
+### Profile Cards
+
+`MemberProfileCard` is a square, borderless canvas cell inside a hairline-separated grid. It has no
+avatar and no individual drop shadow. A blue uppercase role and muted country lead into the serif name,
+current position, summary, highlights, and bordered expertise tags. Leadership and support tiers become
+two columns at 1024px. Directors become two columns at 768px and three at 1024px, including the intentional
+odd-last-card span between 768px and 1024px.
+
+### Media and Lightbox
+
+Media triggers are full-width, borderless buttons around fixed-aspect imagery. Hover-capable devices
+reveal a dark caption hint; touch devices show it persistently. Video posters use the permanent dark
+surface and a circular play mark. The lightbox is the elevated modal layer and supplies high-contrast
+focus rings, keyboard controls, captions, and immediate reduced-motion behavior.
+
+### Publish Bar and Authoring Feedback
+
+The sticky publish bar derives seven phases from `draft`, `saving`, `failed`, `partial`, `published`,
+`dirty`, and `live`. Those phases produce six default headlines because `published` and `live` both say
+"Published." Upload progress temporarily replaces the saving headline with "Uploading n of N"; a save
+without staged files says "Saving the post." "Not created" is the failed-state override when no post
+exists yet.
+
+Selected media always remains staged until Save or Create, regardless of whether the post already exists.
+The published-state controls include the public URL, Copy link, and post-level Delete when a post exists.
+The one-action publish banner draws its confirmation over 450ms and fades in over 200ms; failure uses the
+danger wash. Both become immediate under `prefers-reduced-motion`.
+
+### Status, Motion, and Accessibility
+
+Status badges may use a full pill because they are compact labels, not containers. Global focus uses a
+2px outline with a 2px offset. Public content sections after the hero may reveal through a 700ms,
+four-pixel upward transition only when JavaScript has opted in; content remains visible when JavaScript
+fails. Reduced motion disables the transition. The back-to-top control and primary actions are 48px
+square/high; secondary link targets may use the 44px floor.
+
+**The Grounded Component Rule.** A component in document flow earns separation through spacing, tone,
+or a hairline. Do not turn every section, profile, or list item into a rounded card.
 
 ## Do's and Don'ts
 
-### Do
+### Do:
 
-- Set every headline in Noto Serif KR (`display-*`, weight 600). The serif voice IS the authority.
-- Keep body at 18px serif with 1.75 line-height. The audience skews older - legibility is non-negotiable.
-- Reserve `{colors.accent}` blue for links, eyebrows, and active states only.
-- Use warm parchment bands to separate sections; let hairlines and whitespace carry structure.
-- Keep touch targets ≥ 48px. Test on Android at default zoom.
-- Let type + hairlines do the work when photography is thin - the design does not depend on hero imagery.
+- **Do** use Georgia at weight 600 for headings and Pretendard for navigation, metadata, and controls.
+- **Do** keep public narrative copy at 17–18px with generous line height and a 68–74ch reading measure.
+- **Do** reserve institutional blue for links, active state, labels, selection, and focus.
+- **Do** use 48px primary controls and preserve a 44px floor for compact secondary controls.
+- **Do** build responsive behavior around the actual 640px, 896px, 1024px, and 1152px thresholds.
+- **Do** keep content visible without JavaScript and remove nonessential motion for reduced-motion users.
+- **Do** use paper tone, whitespace, and hairlines before introducing another container.
 
-### Don't
+### Don't:
 
-- Don't drop below 14px anywhere, and don't use gray lighter than `{colors.body-muted}` for readable text.
-- Don't add a second brand color. One blue, one ink, paper. The seal supplies identity.
-- Don't set body copy in the sans, or button labels in the serif. Two voices, two roles.
-- Don't add drop-shadows to surfaces or gradients - this is editorial, not SaaS. (Floating overlays may use the single restrained `{shadow.overlay}`.)
-- Don't crowd content to look "efficient" - generous rhythm reads as institutional confidence.
-- Don't go pure `#000` on `#fff` for large hangul blocks - use `{colors.ink}` `#171310` to reduce glare.
+- **Don't** invent tokens or components that are absent from the codebase; `primary`,
+  `body-sans-strong`, `story-card`, `story-row`, and `officer-card` are not part of the current system.
+- **Don't** introduce a second brand color, gradients, glassmorphism, or decorative background effects.
+- **Don't** use rounded cards as default scaffolding or combine a content-card border with a wide shadow.
+- **Don't** repeat tiny uppercase eyebrows above every section; use the established eyebrow only where
+  its category signal materially helps navigation.
+- **Don't** treat 768px as the universal mobile/desktop boundary or assume every academic document has
+  an aside.
+- **Don't** apply public dark-theme claims to admin pages until admin has an explicit theme mechanism.
+- **Don't** reuse the local 11–13px exceptions for readable copy, navigation, captions, or form help.
+- **Don't** add shadows to grounded surfaces; the overlay shadow belongs only to overlapping layers.

@@ -93,6 +93,9 @@ jobs:
       - name: Apply migrations to local D1
         run: ./node_modules/.bin/wrangler d1 migrations apply tcn-content --local
 
+      - name: Verify Q&A D1 constraints
+        run: npm run test:qna:d1
+
       - name: Test
         run: npm run test
 
