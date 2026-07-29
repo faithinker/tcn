@@ -11,7 +11,6 @@ export class PostRevisionConflictError extends Error {
   }
 }
 
-// 공개 목록: soft delete 제외, 개최일(없으면 생성일) 최신순.
 export async function listPosts(db: D1Database): Promise<Post[]> {
   const rs = await db
     .prepare(

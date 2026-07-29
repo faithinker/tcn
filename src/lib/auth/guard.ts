@@ -8,7 +8,6 @@ function readSecret(): string | null {
   return value && value.length > 0 ? value : null;
 }
 
-// 요청 쿠키에서 로그인한 사용자 id 를 얻는다. 없거나 무효/만료면 null.
 export async function getSessionUid(request: Request): Promise<string | null> {
   const secret = readSecret();
   if (!secret) return null;

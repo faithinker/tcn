@@ -3,27 +3,31 @@
 
 export type MediaKind = 'image' | 'video' | 'document';
 
+export type IsoDate = string;
+export type UnixSeconds = number;
+export type Markdown = string;
+
 export interface Post {
   id: string;
   title: string;
   summary: string | null;
-  eventDate: string | null; // YYYY-MM-DD
+  eventDate: IsoDate | null;
   address: string | null;
-  body: string; // 마크다운
+  body: Markdown;
   heroMediaId: string | null;
   authorId: string | null;
   revision: number;
-  createdAt: number; // unix seconds
-  updatedAt: number;
-  deletedAt: number | null; // null = 노출
+  createdAt: UnixSeconds;
+  updatedAt: UnixSeconds;
+  deletedAt: UnixSeconds | null;
 }
 
 export interface PostInput {
   title: string;
   summary?: string | null;
-  eventDate?: string | null;
+  eventDate?: IsoDate | null;
   address?: string | null;
-  body?: string;
+  body?: Markdown;
   heroMediaId?: string | null;
   authorId?: string | null;
   expectedRevision?: number;
@@ -42,7 +46,7 @@ export interface Media {
   duration: number | null;
   position: number;
   caption: string | null;
-  createdAt: number;
+  createdAt: UnixSeconds;
 }
 
 export interface MediaInput {
@@ -65,7 +69,7 @@ export interface User {
   passwordHash: string;
   displayName: string | null;
   sessionVersion: number;
-  createdAt: number;
+  createdAt: UnixSeconds;
 }
 
 export type QnaVisibility = 'visible' | 'hidden';

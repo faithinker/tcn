@@ -4,7 +4,6 @@ import type { Media, MediaInput } from './types';
 const COLUMNS = `id, post_id as postId, r2_key as r2Key, kind, mime_type as mimeType,
   filename, size, width, height, duration, position, caption, created_at as createdAt`;
 
-// 한 글의 미디어: 갤러리 순서(position), 그다음 생성순.
 export async function listMediaForPost(db: D1Database, postId: string): Promise<Media[]> {
   const rs = await db
     .prepare(`select ${COLUMNS} from media where post_id = ?1 order by position, created_at`)

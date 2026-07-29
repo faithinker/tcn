@@ -1,4 +1,3 @@
-// 우측 준비도 사이드바 + 자동 매핑 안내 — 순수 표현 컴포넌트.
 import { readinessPercent, type ReadinessItem } from './readiness';
 
 interface Props {

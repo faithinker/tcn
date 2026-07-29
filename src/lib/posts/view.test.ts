@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { groupMedia, mediaAlt, renderPostContent, seminarLightboxEntries } from './view';
 
-// 본문 HTML만 필요한 단정용 헬퍼(구 renderPostBody 래퍼는 제품 미사용으로 제거됨).
 const renderHtml = (markdown: string) => renderPostContent(markdown).html;
 import type { Media } from '../db/types';
 

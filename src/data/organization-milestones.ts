@@ -2,7 +2,7 @@
 // 세미나 기록은 D1 posts에서 공통 SeminarView로 파생한다.
 
 export interface OrganizationMilestone {
-  date: string; // YYYY-MM-DD
+  date: string;
   title: string;
   location: string;
   description: string;
