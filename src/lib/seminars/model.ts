@@ -26,12 +26,20 @@ export interface OrganizationMilestoneInput {
   location: string;
   description: string;
   media?: MilestoneMediaItem[];
+  stages?: MilestoneStage[];
 }
 
 export interface MilestoneMediaItem {
   src: string;
   alt: string;
   caption: string;
+}
+
+export interface MilestoneStage {
+  date: string;
+  title: string;
+  description: string;
+  media: MilestoneMediaItem[];
 }
 
 export interface MilestoneView extends OrganizationMilestoneInput {
@@ -137,6 +145,7 @@ export function mergeMilestones(
     href: seminar.href,
     dateLabel: undefined,
     media: undefined,
+    stages: undefined,
   }));
   return [...organizationViews, ...seminarViews].toSorted((a, b) => a.date.localeCompare(b.date));
 }

@@ -213,7 +213,7 @@ describe('mergeMilestones', () => {
     ]);
   });
 
-  it('preserves media attached to a month-level organization milestone', () => {
+  it('preserves dated stages and their media within an organization milestone', () => {
     const mergeMilestones = (
       seminarDomain as {
         mergeMilestones?: (
@@ -223,14 +223,24 @@ describe('mergeMilestones', () => {
             title: string;
             location: string;
             description: string;
-            media: Array<{ src: string; alt: string; caption: string }>;
+            stages: Array<{
+              date: string;
+              title: string;
+              description: string;
+              media: Array<{ src: string; alt: string; caption: string }>;
+            }>;
           }>,
           seminars: SeminarView[],
           today: string,
         ) => Array<{
           date: string;
           dateLabel?: string;
-          media?: Array<{ src: string; alt: string; caption: string }>;
+          stages?: Array<{
+            date: string;
+            title: string;
+            description: string;
+            media: Array<{ src: string; alt: string; caption: string }>;
+          }>;
         }>;
       }
     ).mergeMilestones;
@@ -238,22 +248,29 @@ describe('mergeMilestones', () => {
     expect(mergeMilestones).toBeTypeOf('function');
     if (!mergeMilestones) return;
 
-    const media = [
+    const stages = [
       {
-        src: 'prefound-meeting-01',
-        alt: 'Participants gathered in a meeting room',
-        caption: 'Participants at the founding preparatory meeting.',
+        date: '2024-11-30',
+        title: 'The decision to found TCN',
+        description: 'Participants resolved to establish the Network.',
+        media: [
+          {
+            src: 'prefound-meeting-01',
+            alt: 'Participants gathered in a meeting room',
+            caption: 'Participants after the seminar, 30 November 2024.',
+          },
+        ],
       },
     ];
     const [milestone] = mergeMilestones(
       [
         {
-          date: '2025-06',
-          dateLabel: 'Summer 2025',
-          title: 'Preparatory Meeting',
+          date: '2024-11-30',
+          dateLabel: 'Nov 2024–Jun 2025',
+          title: 'Founding Preparations',
           location: '',
           description: 'Members met in preparation for the founding of the Network.',
-          media,
+          stages,
         },
       ],
       [],
@@ -261,9 +278,9 @@ describe('mergeMilestones', () => {
     );
 
     expect(milestone).toMatchObject({
-      date: '2025-06',
-      dateLabel: 'Summer 2025',
-      media,
+      date: '2024-11-30',
+      dateLabel: 'Nov 2024–Jun 2025',
+      stages,
     });
   });
 });
