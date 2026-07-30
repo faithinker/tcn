@@ -40,7 +40,7 @@ const isExact = (href: string) => {
 
     <nav
       class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1"
-      aria-label={t('common.menu')}
+      aria-label="Primary"
     >
       {
         desktopNavItems.map((item) =>
@@ -128,7 +128,7 @@ const isExact = (href: string) => {
   <nav
     id="mobileNav"
     class="max-h-[calc(100dvh-73px)] overflow-y-auto overscroll-contain border-t border-hairline bg-canvas min-[56rem]:hidden"
-    aria-label={t('common.menu')}
+    aria-label="Primary (mobile)"
     hidden
   >
     <ul class="mx-auto max-w-[75rem] px-2 py-2">
@@ -203,7 +203,12 @@ const isExact = (href: string) => {
   const openDropdown = () => dropdowns.find((item) => item.open);
 
   const closeDropdowns = (except?: HTMLDetailsElement) => {
-    for (const item of dropdowns) if (item !== except) item.open = false;
+    for (const item of dropdowns) {
+      if (item === except || !item.open) continue;
+      // 패널 안에 포커스가 있는 채로 닫으면 포커스가 body 로 유실된다 — 요약으로 되돌린다.
+      if (item.contains(document.activeElement)) item.querySelector('summary')?.focus();
+      item.open = false;
+    }
   };
 
   for (const dropdown of dropdowns) {

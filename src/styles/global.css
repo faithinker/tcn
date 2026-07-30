@@ -133,7 +133,8 @@
   }
 
   button,
-  a {
+  a,
+  summary {
     touch-action: manipulation;
   }
 
