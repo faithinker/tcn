@@ -32,7 +32,7 @@ export interface OrganizationMilestoneInput {
 export interface MilestoneMediaItem {
   src: string;
   alt: string;
-  caption: string;
+  caption?: string;
 }
 
 export interface MilestoneStage {

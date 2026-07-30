@@ -26,5 +26,11 @@ describe('organizationMilestones', () => {
       title: 'Practical preparations begin',
     });
     expect(milestone?.stages?.[1]?.media.map(({ src }) => src)).toEqual(['prefounding-meeting-03']);
+    expect(milestone?.stages?.flatMap(({ media }) => media.map(({ caption }) => caption))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
   });
 });

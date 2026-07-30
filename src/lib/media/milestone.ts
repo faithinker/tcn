@@ -7,6 +7,6 @@ export function milestoneLightboxEntries(items: MilestoneMediaItem[]): LightboxE
     type: 'image',
     src: `/images/history/${item.src}.webp`,
     alt: item.alt,
-    caption: item.caption,
+    caption: item.caption ?? '',
   }));
 }

@@ -28,7 +28,7 @@ const entries = milestoneLightboxEntries(items);
           class="media-trigger"
           data-lightbox-open={id}
           data-lightbox-index={index}
-          aria-label={`${viewer.viewPrefix}: ${item.caption}`}
+          aria-label={`${viewer.viewPrefix}: ${item.caption || item.alt}`}
         >
           <img
             src={entries[index].src}
@@ -43,7 +43,7 @@ const entries = milestoneLightboxEntries(items);
             {viewer.viewHint}
           </span>
         </button>
-        <figcaption class="milestone-caption">{item.caption}</figcaption>
+        {item.caption && <figcaption class="milestone-caption">{item.caption}</figcaption>}
       </figure>
     ))
   }

@@ -22,4 +22,23 @@ describe('milestoneLightboxEntries', () => {
       },
     ]);
   });
+
+  it('supports caption-free milestone photographs', () => {
+    expect(
+      milestoneLightboxEntries([
+        {
+          src: 'prefounding-meeting-04',
+          alt: 'Participants outside the Academy of Korean Studies',
+        },
+      ]),
+    ).toEqual([
+      {
+        id: 'prefounding-meeting-04',
+        type: 'image',
+        src: '/images/history/prefounding-meeting-04.webp',
+        alt: 'Participants outside the Academy of Korean Studies',
+        caption: '',
+      },
+    ]);
+  });
 });
