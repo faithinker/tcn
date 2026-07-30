@@ -45,7 +45,7 @@ const isExact = (href: string) => {
       {
         desktopNavItems.map((item) =>
           item.children ? (
-            <details class="group relative">
+            <details class="group relative" data-nav-dropdown>
               <summary
                 aria-current={
                   isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
@@ -190,6 +190,46 @@ const isExact = (href: string) => {
   const isOpen = () => btn?.getAttribute('aria-expanded') === 'true';
   let openScrollY = 0;
 
+  // 데스크톱 드롭다운(<details>)은 네이티브로는 요약을 다시 눌러야만 닫힌다.
+  // 헤더 메뉴의 표준 해제 동작(바깥 클릭·ESC·스크롤·포커스 이탈)을 여기서 채운다.
+  const dropdowns = Array.from(
+    document.querySelectorAll<HTMLDetailsElement>('details[data-nav-dropdown]'),
+  );
+  // 스크롤 임계값. 모바일 메뉴(4px)보다 크게 잡아 트랙패드 관성 스크롤의
+  // 잔여 이동으로 메뉴가 열리자마자 닫히는 것을 막는다.
+  const DROPDOWN_SCROLL_TOLERANCE = 24;
+  let dropdownScrollY = 0;
+
+  const openDropdown = () => dropdowns.find((item) => item.open);
+
+  const closeDropdowns = (except?: HTMLDetailsElement) => {
+    for (const item of dropdowns) if (item !== except) item.open = false;
+  };
+
+  for (const dropdown of dropdowns) {
+    dropdown.addEventListener('toggle', () => {
+      if (!dropdown.open) return;
+      dropdownScrollY = window.scrollY;
+      closeDropdowns(dropdown);
+    });
+
+    // 키보드로 마지막 항목을 지나 Tab 하면 닫는다.
+    // relatedTarget이 없으면 창 자체가 포커스를 잃은 경우라 유지한다.
+    dropdown.addEventListener('focusout', (event) => {
+      const next = event.relatedTarget;
+      if (!(next instanceof Node) || dropdown.contains(next)) return;
+      dropdown.open = false;
+    });
+  }
+
+  // click이 아니라 pointerdown으로 잡아, 바깥을 누르는 순간 닫히게 한다.
+  document.addEventListener('pointerdown', (event) => {
+    const current = openDropdown();
+    if (!current) return;
+    if (event.target instanceof Node && current.contains(event.target)) return;
+    closeDropdowns();
+  });
+
   const setMenuOpen = (open: boolean) => {
     if (!(btn instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) return;
     btn.setAttribute('aria-expanded', String(open));
@@ -206,7 +246,16 @@ const isExact = (href: string) => {
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && isOpen()) {
+    if (event.key !== 'Escape') return;
+
+    const current = openDropdown();
+    if (current) {
+      current.open = false;
+      current.querySelector('summary')?.focus();
+      return;
+    }
+
+    if (isOpen()) {
       setMenuOpen(false);
       btn?.focus();
     }
@@ -214,6 +263,7 @@ const isExact = (href: string) => {
 
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 896) setMenuOpen(false);
+    else closeDropdowns();
   });
 
   // 표준 UX: 헤더에 붙은 드롭다운 메뉴는 페이지 스크롤 시 닫는다.
@@ -223,6 +273,8 @@ const isExact = (href: string) => {
     'scroll',
     () => {
       if (isOpen() && Math.abs(window.scrollY - openScrollY) > 4) setMenuOpen(false);
+      if (openDropdown() && Math.abs(window.scrollY - dropdownScrollY) > DROPDOWN_SCROLL_TOLERANCE)
+        closeDropdowns();
     },
     { passive: true },
   );
