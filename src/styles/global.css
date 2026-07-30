@@ -14,6 +14,7 @@
   --color-canvas: #ffffff;
   --color-canvas-soft: #f7f5f0;
   --color-canvas-band: #f2efe7;
+  --color-surface: var(--color-canvas-soft);
   --color-hairline: #ddd9d0;
   --color-hairline-strong: #171310;
   --color-accent: #0b3d6b;

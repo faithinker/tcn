@@ -8,6 +8,7 @@ colors:
   body-muted: '#5d5647'
   canvas: '#ffffff'
   canvas-soft: '#f7f5f0'
+  surface: '#f7f5f0'
   canvas-band: '#f2efe7'
   hairline: '#ddd9d0'
   hairline-strong: '#171310'
@@ -218,6 +219,8 @@ color never substitutes for hierarchy or meaning.
 
 - **Reading Canvas** (`{colors.canvas}`): the default page and field surface.
 - **Soft Paper** (`{colors.canvas-soft}`): quiet grouping, hover feedback, and grounded callouts.
+  `{colors.surface}` is its CSS alias (`--color-surface` resolves to `--color-canvas-soft` in both
+  themes), reserved for media placeholder surfaces such as gallery figures while images load.
 - **Band Paper** (`{colors.canvas-band}`): alternating full-width sections and selected status surfaces.
 - **Body Ink** (`{colors.body}`): long-form copy. `{colors.ink-soft}` is the matching softened strong
   neutral for active or hover surfaces.

@@ -40,6 +40,12 @@
         "canonical": "#f7f5f0",
         "tonalRamp": ["#1b1916", "#39352f", "#5c564d", "#81796d", "#a79f94", "#cbc5bc", "#e9e5df", "#f7f5f0"]
       },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Media Surface (alias of Soft Paper)",
+        "canonical": "#f7f5f0",
+        "tonalRamp": ["#1b1916", "#39352f", "#5c564d", "#81796d", "#a79f94", "#cbc5bc", "#e9e5df", "#f7f5f0"]
+      },
       "canvas-band": {
         "role": "neutral",
         "displayName": "Band Paper",
