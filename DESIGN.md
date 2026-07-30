@@ -97,17 +97,11 @@ rounded:
   none: 0px
   sm: 4px
   full: 9999px
-spacing:
-  xs: 4px
-  sm: 8px
-  md: 12px
-  lg: 16px
-  xl: 20px
-  2xl: 24px
-  3xl: 32px
-  4xl: 48px
-  5xl: 64px
-  6xl: 96px
+containers:
+  prose: 68ch
+  page: 75rem
+shadows:
+  overlay: '0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)'
 components:
   button-primary:
     backgroundColor: '{colors.ink}'
@@ -136,22 +130,30 @@ components:
     typography: '{typography.body-sm}'
     rounded: '{rounded.none}'
     padding: '12px 20px'
+    paddingCompact: '12px 16px'
+    compactBelow: 1152px
   section-band:
     backgroundColor: '{colors.canvas-band}'
     textColor: '{colors.body}'
     rounded: '{rounded.none}'
     padding: '96px 20px'
+    paddingCompact: '48px 16px'
+    compactBelow: 640px
   profile-card:
     backgroundColor: '{colors.canvas}'
     textColor: '{colors.body}'
     rounded: '{rounded.none}'
     padding: '32px'
+    paddingCompact: '24px 20px 28px'
+    compactBelow: 640px
   footer:
     backgroundColor: '{colors.footer}'
     textColor: '{colors.on-footer}'
     typography: '{typography.body-sm}'
     rounded: '{rounded.none}'
     padding: '64px 20px'
+    paddingCompact: '48px 16px'
+    compactBelow: 640px
 ---
 
 # Design System: Transcultural Network
@@ -174,9 +176,13 @@ branding.
 The system is responsive at the points where its content changes, not at three artificial device classes.
 The type scale and section spacing compact below 640px; the navigation changes to a menu below 896px;
 content grids reorganize primarily at 1024px; and the header gains its most spacious treatment at 1152px.
-Public pages cap at 1200px. Narrative copy usually occupies 68ch, while full academic documents may use
-74ch. Document pages use the shared two-column shell only when they supply an aside; a document without
-an aside remains a centered reading column.
+Two narrower thresholds belong to specific galleries and grids rather than the whole layout: the milestone
+gallery takes a second column at 576px, and the director grid and event record grid take an extra column
+at 768px. No single threshold governs every component.
+Public pages cap at 1200px. The standard narrative measure is 68ch; leads and hero paragraphs tighten to
+60–62ch and full academic documents widen to 74–76ch, so the shipped range is 60ch to 76ch with 68ch as
+the default. Document pages use the shared two-column shell only when they supply an aside; a document
+without an aside remains a centered reading column.
 
 Public pages support a warm dark theme. The admin layout currently remains light because it has neither
 the public theme bootstrap nor the theme control. Scroll-entry motion is progressive enhancement:
@@ -188,9 +194,11 @@ the reader requests reduced motion.
 - Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.
 - Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.
 - Flat surfaces separated by tone, whitespace, and one-pixel rules.
-- Desktop body copy at 18px/1.75 and reading measures between 68ch and 74ch.
+- Desktop body copy at 18px/1.75, with 68ch as the standard reading measure and named 60–62ch and
+  74–76ch exceptions.
 - Primary controls at 48px; compact secondary controls respect a 44px touch-target floor.
-- Responsive behavior driven by real content thresholds at 640px, 896px, 1024px, and 1152px.
+- Responsive behavior driven by real content thresholds at 576px, 640px, 768px, 896px, 1024px, and
+  1152px, several of which are component-local rather than global.
 
 **The Record, Not Dashboard Rule.** Public pages must read as edited scholarship, never as a SaaS
 dashboard, marketing template, or collection of interchangeable cards.
@@ -263,15 +271,20 @@ contrast between the families is functional, not decorative.
 
 ### Hierarchy
 
-- **Display Hero** (600, 60px, 1.12): standard interior-page covers at 640px and above. It compacts to
-  42px below 640px. The long homepage title intentionally uses a smaller bespoke 28px/32px scale.
+- **Display Hero** (600, 60px, 1.12): standard interior-page covers at 640px and above. A 42px
+  compaction is defined for below 640px, but every shipped usage is `sm:`-prefixed, so no page renders
+  Display Hero under 640px and the override is currently unreachable — latent, not live. Those covers
+  fall back to Display Large instead. The long homepage title intentionally uses a smaller bespoke
+  28px/32px scale.
 - **Display Large** (600, 44px, 1.15): major page and section headings. It compacts to 36px below 640px.
 - **Display Medium** (600, 32px, 1.2): subsection and feature headings. It compacts to 28px below 640px.
 - **Display Small** (600, 26px, 1.25): card and profile names. It compacts to 22px below 640px; compact
   director cards use a deliberate 24px variant.
-- **Lead** (400, 21px, 1.7): introductory narrative. It compacts to 19px below 640px.
+- **Lead** (400, 21px, 1.7): introductory narrative. It compacts to 19px below 640px. The homepage lead
+  bypasses the token with a hardcoded 21px/1.6 (`index.astro:47`) and so neither takes the 1.7 line
+  height nor compacts — a known deviation, not a second lead style.
 - **Body Serif** (400, 18px, 1.75): default public body and academic prose. It compacts to 17px/1.7
-  below 640px. Keep normal narrative measure between 68ch and 74ch.
+  below 640px. Keep normal narrative measure at 68ch.
 - **Body Sans** (400, 17px, 1.6): UI descriptions, tables, form content, and navigation when space
   permits. Weight 700 creates strong labels; there is no separate strong-body token.
 - **Body Small** (400, 15px, 1.6): compact navigation and secondary interface text.
@@ -286,6 +299,12 @@ exceptions: the mobile eyebrow at 13px, profile expertise tags at 12px, and the 
 label at 11px. Treat these as contained exceptions, not reusable text tokens. Bylaw clause-number badges
 also use a local 12px label.
 
+`MemberProfileCard` carries two further off-scale serif sizes that sit above the floor but outside the
+named roles: the profile summary at 16px/1.75 (`MemberProfileCard.astro:82`) and profile highlights at
+15px/1.65 (`:91`). It also uses two font weights outside the documented 400/600/700 set — 750 on the
+current-position label (`:71`) and 650 on expertise tags (`:118`). These are existing exceptions local to
+the profile card; do not treat them as new tokens or propagate them to other components.
+
 **The Two Voices Rule.** Serif carries scholarship and narrative. Sans-serif carries wayfinding,
 metadata, status, and controls. Never create a third display voice.
 
@@ -295,9 +314,9 @@ short, bold, and local; do not copy them into paragraphs, navigation, captions, 
 ## Elevation
 
 TCN is flat by default. Surface tone, spacing, and one-pixel rules establish depth. Standard content
-cards do not float and do not combine borders with decorative shadows. The only shared shadow is the
-restrained overlay shadow used by the desktop navigation menu and other genuinely floating layers:
-`0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)`.
+cards do not float and do not combine borders with decorative shadows. The only shared shadow is
+`--shadow-overlay`, the restrained overlay used by the desktop navigation menu and other genuinely
+floating layers: `0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)`.
 
 ### Shadow Vocabulary
 
@@ -346,11 +365,16 @@ retain readable contrast against the current surface.
 
 `SectionTile` supplies three grounded variants: reading canvas, band paper, and soft paper. Sections use
 48px vertical padding below 640px and 96px from 640px upward, with 16px/20px side padding. They are
-full-width bands, not cards. Standard page content caps at 1200px.
+full-width bands, not cards. Standard page content caps at 1200px; `--container-page` (75rem) names that
+cap but is currently unreferenced, because all 20 call sites hardcode `max-w-[75rem]` instead of the
+`max-w-page` utility the token generates.
 
-Academic documents use a 74ch reading measure. Bylaws and the founding invitation supply a 256px aside
-and therefore use the shared two-column desktop shell. The declaration supplies no aside and correctly
-renders as a centered single column. Shorter prose and community questions commonly use 68ch.
+The 68ch default is `--container-prose`, which backs Tailwind's `max-w-prose` at three call sites; the
+remaining 68ch measures are written as `max-w-[68ch]`. Academic documents widen to 74ch, and the bylaws
+introduction to 76ch. Bylaws and the founding invitation supply a 256px aside and therefore use the shared
+two-column desktop shell. The declaration supplies no aside and correctly renders as a centered single
+column. Shorter prose and community questions use 68ch, while page leads and hero paragraphs tighten to
+60–62ch.
 
 ### Profile Cards
 
@@ -396,10 +420,12 @@ or a hairline. Do not turn every section, profile, or list item into a rounded c
 ### Do:
 
 - **Do** use Georgia at weight 600 for headings and Pretendard for navigation, metadata, and controls.
-- **Do** keep public narrative copy at 17–18px with generous line height and a 68–74ch reading measure.
+- **Do** keep public narrative copy at 17–18px with generous line height and a 68ch reading measure,
+  reserving 60–62ch for leads and 74–76ch for full academic documents.
 - **Do** reserve institutional blue for links, active state, labels, selection, and focus.
 - **Do** use 48px primary controls and preserve a 44px floor for compact secondary controls.
-- **Do** build responsive behavior around the actual 640px, 896px, 1024px, and 1152px thresholds.
+- **Do** build responsive behavior around the actual 576px, 640px, 768px, 896px, 1024px, and 1152px
+  thresholds, and keep the narrower ones scoped to the components that need them.
 - **Do** keep content visible without JavaScript and remove nonessential motion for reduced-motion users.
 - **Do** use paper tone, whitespace, and hairlines before introducing another container.
 
@@ -407,6 +433,8 @@ or a hairline. Do not turn every section, profile, or list item into a rounded c
 
 - **Don't** invent tokens or components that are absent from the codebase; `primary`,
   `body-sans-strong`, `story-card`, `story-row`, and `officer-card` are not part of the current system.
+  There are no `--spacing-*` tokens either: spacing comes from Tailwind's numeric scale, so cite the
+  actual utility or pixel value rather than a named step.
 - **Don't** introduce a second brand color, gradients, glassmorphism, or decorative background effects.
 - **Don't** use rounded cards as default scaffolding or combine a content-card border with a wide shadow.
 - **Don't** repeat tiny uppercase eyebrows above every section; use the established eyebrow only where
