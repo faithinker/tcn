@@ -21,9 +21,17 @@ export interface SeminarCollection {
 
 export interface OrganizationMilestoneInput {
   date: string;
+  dateLabel?: string;
   title: string;
   location: string;
   description: string;
+  media?: MilestoneMediaItem[];
+}
+
+export interface MilestoneMediaItem {
+  src: string;
+  alt: string;
+  caption: string;
 }
 
 export interface MilestoneView extends OrganizationMilestoneInput {
@@ -127,6 +135,8 @@ export function mergeMilestones(
     location: seminar.address ?? '',
     description: seminar.summary ?? '',
     href: seminar.href,
+    dateLabel: undefined,
+    media: undefined,
   }));
   return [...organizationViews, ...seminarViews].toSorted((a, b) => a.date.localeCompare(b.date));
 }

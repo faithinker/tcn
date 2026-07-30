@@ -162,6 +162,7 @@ describe('mergeMilestones', () => {
         mergeMilestones?: (
           organization: Array<{
             date: string;
+            dateLabel?: string;
             title: string;
             location: string;
             description: string;
@@ -210,5 +211,59 @@ describe('mergeMilestones', () => {
         status: 'upcoming',
       }),
     ]);
+  });
+
+  it('preserves media attached to a month-level organization milestone', () => {
+    const mergeMilestones = (
+      seminarDomain as {
+        mergeMilestones?: (
+          organization: Array<{
+            date: string;
+            dateLabel?: string;
+            title: string;
+            location: string;
+            description: string;
+            media: Array<{ src: string; alt: string; caption: string }>;
+          }>,
+          seminars: SeminarView[],
+          today: string,
+        ) => Array<{
+          date: string;
+          dateLabel?: string;
+          media?: Array<{ src: string; alt: string; caption: string }>;
+        }>;
+      }
+    ).mergeMilestones;
+
+    expect(mergeMilestones).toBeTypeOf('function');
+    if (!mergeMilestones) return;
+
+    const media = [
+      {
+        src: 'prefound-meeting-01',
+        alt: 'Participants gathered in a meeting room',
+        caption: 'Participants at the founding preparatory meeting.',
+      },
+    ];
+    const [milestone] = mergeMilestones(
+      [
+        {
+          date: '2025-06',
+          dateLabel: 'Summer 2025',
+          title: 'Preparatory Meeting',
+          location: '',
+          description: 'Members met in preparation for the founding of the Network.',
+          media,
+        },
+      ],
+      [],
+      '2025-12-20',
+    );
+
+    expect(milestone).toMatchObject({
+      date: '2025-06',
+      dateLabel: 'Summer 2025',
+      media,
+    });
   });
 });

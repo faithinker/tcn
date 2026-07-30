@@ -1,0 +1,84 @@
+---
+import { content } from '../../i18n/content';
+import type { MilestoneMediaItem } from '../../lib/seminars';
+import { milestoneLightboxEntries } from '../../lib/media/milestone';
+import MediaLightbox from './MediaLightbox.astro';
+
+interface Props {
+  id: string;
+  items: MilestoneMediaItem[];
+  label: string;
+}
+
+const { id, items, label } = Astro.props;
+const viewer = content.mediaViewer;
+const entries = milestoneLightboxEntries(items);
+---
+
+<div class="milestone-gallery" role="group" aria-label={label}>
+  {
+    items.map((item, index) => (
+      <figure class="milestone-figure">
+        <button
+          type="button"
+          class="media-trigger"
+          data-lightbox-open={id}
+          data-lightbox-index={index}
+          aria-label={`${viewer.viewPrefix}: ${item.caption}`}
+        >
+          <img
+            src={entries[index].src}
+            alt={item.alt}
+            width="1200"
+            height="900"
+            loading="lazy"
+            decoding="async"
+            class="milestone-image"
+          />
+          <span class="media-hint" aria-hidden="true">
+            {viewer.viewHint}
+          </span>
+        </button>
+        <figcaption class="milestone-caption">{item.caption}</figcaption>
+      </figure>
+    ))
+  }
+</div>
+
+<MediaLightbox id={id} entries={entries} />
+
+<style>
+  .milestone-gallery {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem 1rem;
+    margin-top: 1.75rem;
+  }
+  .milestone-figure {
+    min-width: 0;
+  }
+  .milestone-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: var(--color-surface);
+  }
+  .milestone-caption {
+    margin-top: 0.55rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    line-height: 1.55;
+    color: var(--color-body-muted);
+  }
+  @media (min-width: 36rem) {
+    .milestone-gallery {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .milestone-gallery {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

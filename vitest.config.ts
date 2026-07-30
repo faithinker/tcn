@@ -12,6 +12,8 @@ export default defineConfig({
       // 선언형 콘텐츠와 브라우저 전용 코드는 각각 빌드·Playwright 게이트가 검증한다.
       include: [
         'src/components/admin/**/*.ts',
+        'src/data/organization-milestones.ts',
+        'src/i18n/utils.ts',
         'src/lib/**/*.ts',
         'src/middleware.ts',
         'src/pages/**/*.ts',

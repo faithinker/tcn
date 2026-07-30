@@ -57,7 +57,7 @@ export const content = {
     historyEyebrow: 'History',
     historyTitle: 'Milestones',
     historyBody:
-      'A record of the Transcultural Network’s major activities, from its founding to its international seminars.',
+      'A record of the Transcultural Network’s major activities, from preparations for its founding to its international seminars.',
     historyLocationLabel: 'Location',
     historyPastLabel: 'Held',
     historyUpcomingLabel: 'Upcoming',
