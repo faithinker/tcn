@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-29T16:50:51Z",
+  "generatedAt": "2026-07-30T00:00:00Z",
   "title": "Design System: Transcultural Network",
   "extensions": {
     "colorMeta": {
@@ -194,8 +194,18 @@
     ],
     "breakpoints": [
       {
+        "name": "gallery-columns",
+        "value": "576px",
+        "scope": "component"
+      },
+      {
         "name": "compact-type",
         "value": "640px"
+      },
+      {
+        "name": "mid-grid-columns",
+        "value": "768px",
+        "scope": "component"
       },
       {
         "name": "desktop-navigation",
@@ -275,9 +285,9 @@
       "Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.",
       "Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.",
       "Flat surfaces separated by tone, whitespace, and one-pixel rules.",
-      "Desktop body copy at 18px/1.75 and reading measures between 68ch and 74ch.",
+      "Desktop body copy at 18px/1.75, with 68ch as the standard reading measure and named 60–62ch and 74–76ch exceptions.",
       "Primary controls at 48px; compact secondary controls respect a 44px touch-target floor.",
-      "Responsive behavior driven by real content thresholds at 640px, 896px, 1024px, and 1152px."
+      "Responsive behavior driven by real content thresholds at 576px, 640px, 768px, 896px, 1024px, and 1152px, several of which are component-local rather than global."
     ],
     "rules": [
       {
@@ -318,15 +328,15 @@
     ],
     "dos": [
       "Do use Georgia at weight 600 for headings and Pretendard for navigation, metadata, and controls.",
-      "Do keep public narrative copy at 17–18px with generous line height and a 68–74ch reading measure.",
+      "Do keep public narrative copy at 17–18px with generous line height and a 68ch reading measure, reserving 60–62ch for leads and 74–76ch for full academic documents.",
       "Do reserve institutional blue for links, active state, labels, selection, and focus.",
       "Do use 48px primary controls and preserve a 44px floor for compact secondary controls.",
-      "Do build responsive behavior around the actual 640px, 896px, 1024px, and 1152px thresholds.",
+      "Do build responsive behavior around the actual 576px, 640px, 768px, 896px, 1024px, and 1152px thresholds, and keep the narrower ones scoped to the components that need them.",
       "Do keep content visible without JavaScript and remove nonessential motion for reduced-motion users.",
       "Do use paper tone, whitespace, and hairlines before introducing another container."
     ],
     "donts": [
-      "Don't invent tokens or components that are absent from the codebase; primary, body-sans-strong, story-card, story-row, and officer-card are not part of the current system.",
+      "Don't invent tokens or components that are absent from the codebase; primary, body-sans-strong, story-card, story-row, and officer-card are not part of the current system. There are no --spacing-* tokens either: spacing comes from Tailwind's numeric scale, so cite the actual utility or pixel value rather than a named step.",
       "Don't introduce a second brand color, gradients, glassmorphism, or decorative background effects.",
       "Don't use rounded cards as default scaffolding or combine a content-card border with a wide shadow.",
       "Don't repeat tiny uppercase eyebrows above every section; use the established eyebrow only where its category signal materially helps navigation.",

@@ -4,8 +4,10 @@
 
 - Production deploys run only from `main` through the protected `production` GitHub Environment.
 - D1 migrations must be additive and compatible with the currently deployed Worker.
-- The workflow records a D1 Time Travel bookmark, applies migrations, deploys, then checks `/`, `/api/health`, and `/api/ready`.
+- The workflow records a D1 Time Travel bookmark, applies migrations, deploys, waits for the deployed version to serve all traffic, then checks `/`, `/api/health`, and `/api/ready`.
+- The version gate stands between the deploy and the smoke tests. It reads the version id out of the `wrangler deploy` output and polls `wrangler deployments status` up to twelve times, five seconds apart, until that id is the one serving 100% of traffic; it fails the job if the id never gets there or if the deploy output carried no version id. Without the gate a smoke test can be answered by the previous version and pass while the version just uploaded stays untested.
 - A failed post-deploy smoke test automatically runs `wrangler rollback`. The additive D1 schema remains compatible with the restored Worker.
+- Automatic rollback is gated on the smoke step itself failing. A version-gate failure skips the smoke step, so nothing rolls back: the job goes red with the newly uploaded version already deployed and never verified. Treat that outcome as an unverified production release and follow "After a failed version gate" below.
 
 ## Environment isolation
 
@@ -35,7 +37,7 @@ npx wrangler d1 time-travel info tcn-content
 npx wrangler d1 time-travel restore tcn-content --bookmark=<confirmed-bookmark>
 ```
 
-Time Travel restore overwrites the live database. Record the current bookmark first, obtain incident approval, restore, then verify `/api/ready`, one seminar listing, one seminar detail, and admin login.
+Time Travel restore overwrites the live database. Record the current bookmark first, obtain incident approval, restore, then verify `/api/ready`, one seminar listing, one seminar detail, `/questions` with one question detail, and admin login. The five `qna_*` tables live in this same database, so a restore moves the Q&A board back in time along with everything else — questions and answers written after the bookmark are gone.
 
 ## R2 recovery and cleanup
 
@@ -64,6 +66,33 @@ Review the policy when either signal appears:
 
 The mitigation is a short `max-age` (around 300s) in `src/pages/media/[...key].ts`, accepting that a deletion takes up to that long to disappear everywhere. If that delay is unacceptable, build a purge path on delete before adding cache time.
 
+## Q&A table growth
+
+`qna_turnstile_tokens` prunes itself. Every accepted siteverify deletes the rows whose `expires_at` has passed in the same `db.batch` that inserts the new digest (`src/lib/qna/security.ts`), so the table stays close to the tokens issued in the last five minutes. Pruning is opportunistic — it only runs when a question is submitted — so expired rows sit there through quiet periods.
+
+`qna_rate_limits` is never pruned. One row is one HMAC-derived client key, and both windows reset in place inside a single UPSERT, so the row outlives its lapsed counters and nothing deletes it. There is no cron trigger and no maintenance route for this table. It grows with the number of distinct submitting clients and never shrinks; watching its size is the operator's job.
+
+```bash
+npx wrangler d1 execute tcn-content --remote \
+  --command 'select count(*) from qna_rate_limits'
+```
+
+`qna_audit_events` grows without bound too, one row per administrator answer or visibility change. That table is the audit record — do not prune it.
+
+## Readiness triage
+
+`/api/ready` is fail closed. It answers `503` unless the `DB` and `MEDIA` bindings and all five of `SESSION_SECRET`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `QNA_TURNSTILE_HOSTNAMES`, and `QNA_RATE_LIMIT_SECRET` are present, and only reaches D1 and R2 after that check passes. A missing secret and broken code return the same `{"ok":false}`, and `/api/health` stays `200` through both — it is liveness only and checks nothing external.
+
+So when readiness fails or a deploy rolls back, take the secret inventory before reading code. The command prints names and types, never values:
+
+```bash
+npx wrangler secret list
+```
+
+This is exactly what the 2026-07-29 incident was. The Q&A Turnstile secrets were missing, the Worker code was fine, and the deploy went green only because the smoke tests were answered by the previous version; the following deploy is the one that rolled back.
+
+Rotating `SESSION_SECRET` signs every administrator out. Sessions are stateless HMAC-SHA256 tokens with no server-side record, so the moment the signing key changes every existing `tcn_session` cookie fails signature verification. The Q&A administrator CSRF token derives from the same secret, so open editing screens fail their next write until re-login.
+
 ## Incident rollback
 
 ```bash
@@ -71,4 +100,22 @@ npx wrangler deployments status
 npx wrangler rollback --yes --message "Incident rollback: <reason>"
 ```
 
-After rollback, check `/api/health`, `/api/ready`, the home page, one D1-backed seminar, one R2 image, and admin authentication. Do not restore D1 merely because Worker code was rolled back; use the recorded bookmark only when data or schema integrity is affected.
+After rollback, check `/api/health`, `/api/ready`, the home page, one D1-backed seminar, one R2 image, `/questions` with one question detail, and admin authentication. Do not restore D1 merely because Worker code was rolled back; use the recorded bookmark only when data or schema integrity is affected.
+
+### After a failed version gate
+
+The job stopped before the smoke tests and rolled nothing back, so a version no check ever exercised is deployed. Establish what is serving traffic and verify it by hand:
+
+```bash
+npx wrangler deployments status --json
+curl --fail --silent --show-error --output /dev/null https://tcn.faithinker12.workers.dev/api/ready
+```
+
+Roll back if readiness fails or the live version is not the one intended. `wrangler rollback` with no version id resolves to the version uploaded before the latest — upload order, not the last version that passed a smoke test — so read the target id off the version list and pass it explicitly:
+
+```bash
+npx wrangler versions list
+npx wrangler rollback <last-verified-version-id> --yes --message "Version gate failed: <reason>"
+```
+
+A gate failure reporting no version id in the deploy output means the workflow could not prove what it shipped. The deploy still happened; verify by hand in that case too.
