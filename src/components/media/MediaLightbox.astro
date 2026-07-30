@@ -63,6 +63,8 @@ const single = entries.length < 2;
     border: 0;
     background: transparent;
     overflow: hidden;
+    /* showModal 은 배경 스크롤을 잠그지 않는다 — 백드롭 위 스크롤이 body 로 연쇄되는 것을 차단 */
+    overscroll-behavior: contain;
     color: var(--color-on-footer);
   }
   .media-lightbox::backdrop {
@@ -281,13 +283,16 @@ const single = entries.length < 2;
     });
 
     dialog.addEventListener('keydown', (event) => {
+      if (entries.length < 2) return;
+      // 비디오 컨트롤에 포커스가 있으면 좌우 화살표는 ±5초 탐색이다 — 가로채지 않는다.
+      if (event.target instanceof HTMLMediaElement) return;
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        if (entries.length > 1) render(index - 1);
+        render(index - 1);
       }
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        if (entries.length > 1) render(index + 1);
+        render(index + 1);
       }
     });
   });
