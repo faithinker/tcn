@@ -9,28 +9,25 @@ export const organizationMilestones: OrganizationMilestoneInput[] = [
     title: 'Preparations for the Founding of the Transcultural Network',
     location: '',
     description:
-      'Two meetings moved the Network from a shared founding decision to practical preparations for its establishment.',
+      'Together, the two meetings marked the transition from the decision to found TCN to the practical work of establishing it.',
     stages: [
       {
         date: '2024-11-30',
         title: 'The decision to found TCN',
         description:
-          'Following the seminar, participants resolved to establish the Transcultural Network.',
+          'At the close of the seminar, participants resolved to establish the Transcultural Network.',
         media: [
           {
             src: 'prefounding-meeting-01',
             alt: 'Seminar participants standing together in a conference room',
-            caption: 'The seminar participants who resolved to establish TCN.',
           },
           {
             src: 'prefounding-meeting-02',
             alt: 'Seminar participants seated together in a lounge',
-            caption: 'Founding participants gathered after the seminar.',
           },
           {
             src: 'prefounding-meeting-04',
             alt: 'Participants posing outside the Academy of Korean Studies after the seminar',
-            caption: 'Commemorating the decision at the Academy of Korean Studies.',
           },
         ],
       },
@@ -38,12 +35,11 @@ export const organizationMilestones: OrganizationMilestoneInput[] = [
         date: '2025-06-17',
         title: 'Practical preparations begin',
         description:
-          'After the seminar at the National Assembly, participants discussed the practical work needed to establish the Network.',
+          'Following the seminar at the National Assembly of the Republic of Korea, participants discussed the practical steps required to establish the Network.',
         media: [
           {
             src: 'prefounding-meeting-03',
             alt: 'Participants posing on a staircase at the National Assembly',
-            caption: 'The National Assembly seminar that led into TCN’s practical preparations.',
           },
         ],
       },

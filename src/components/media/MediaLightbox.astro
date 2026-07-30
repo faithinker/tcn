@@ -112,6 +112,9 @@ const single = entries.length < 2;
     line-height: 1.5;
     color: color-mix(in srgb, var(--color-on-footer) 80%, transparent);
   }
+  .lb-caption[hidden] {
+    display: none;
+  }
   .lb-meta {
     font-size: var(--text-caption);
     letter-spacing: 0.04em;
@@ -253,8 +256,9 @@ const single = entries.length < 2;
       }
 
       caption.textContent = entry.caption;
+      caption.hidden = !entry.caption;
       if (count) count.textContent = `${index + 1} / ${entries.length}`;
-      live.textContent = `${index + 1} / ${entries.length}. ${entry.caption}`;
+      live.textContent = `${index + 1} / ${entries.length}. ${entry.caption || entry.alt}`;
     }
 
     function open(next: number) {
