@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import Button from '../components/Button.astro';
 import MilestoneGallery from '../components/media/MilestoneGallery.astro';
+import MilestoneStages from '../components/media/MilestoneStages.astro';
 import { formatDate } from '../i18n/utils';
 import { content } from '../i18n/content';
 import { organizationMilestones } from '../data/organization-milestones';
@@ -101,6 +102,9 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
                   items={entry.media}
                   label={`Photographs from ${entry.title}`}
                 />
+              )}
+              {entry.stages && (
+                <MilestoneStages id={`milestone-${entry.date}`} stages={entry.stages} />
               )}
               {entry.href && (
                 <a

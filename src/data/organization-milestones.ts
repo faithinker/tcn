@@ -4,28 +4,48 @@ import type { OrganizationMilestoneInput } from '../lib/seminars';
 
 export const organizationMilestones: OrganizationMilestoneInput[] = [
   {
-    // 정확한 날짜는 확인되지 않았다. 정렬에는 여름의 시작 월을 사용하고 공개 표기는 한정한다.
-    date: '2025-06',
-    dateLabel: 'Summer 2025',
-    title: 'Preparatory Meeting for the Founding of the Transcultural Network',
+    date: '2024-11-30',
+    dateLabel: 'Nov 2024–Jun 2025',
+    title: 'Preparations for the Founding of the Transcultural Network',
     location: '',
     description:
-      'Participants met in summer 2025 to prepare for the establishment of the Transcultural Network.',
-    media: [
+      'Two meetings moved the Network from a shared founding decision to practical preparations for its establishment.',
+    stages: [
       {
-        src: 'prefounding-meeting-01',
-        alt: 'Participants standing together in a conference room',
-        caption: 'Participants gathered in the meeting room.',
+        date: '2024-11-30',
+        title: 'The decision to found TCN',
+        description:
+          'Following the seminar, participants resolved to establish the Transcultural Network.',
+        media: [
+          {
+            src: 'prefounding-meeting-01',
+            alt: 'Seminar participants standing together in a conference room',
+            caption: 'The seminar participants who resolved to establish TCN.',
+          },
+          {
+            src: 'prefounding-meeting-02',
+            alt: 'Seminar participants seated together in a lounge',
+            caption: 'Founding participants gathered after the seminar.',
+          },
+          {
+            src: 'prefounding-meeting-04',
+            alt: 'Participants posing outside the Academy of Korean Studies after the seminar',
+            caption: 'Commemorating the decision at the Academy of Korean Studies.',
+          },
+        ],
       },
       {
-        src: 'prefounding-meeting-02',
-        alt: 'Participants seated together in a lounge',
-        caption: 'Participants gathered in a lounge during the meeting.',
-      },
-      {
-        src: 'prefounding-meeting-03',
-        alt: 'A large group of participants posing together on an indoor staircase',
-        caption: 'A group photograph from the founding preparatory meeting.',
+        date: '2025-06-17',
+        title: 'Practical preparations begin',
+        description:
+          'After the seminar at the National Assembly, participants discussed the practical work needed to establish the Network.',
+        media: [
+          {
+            src: 'prefounding-meeting-03',
+            alt: 'Participants posing on a staircase at the National Assembly',
+            caption: 'The National Assembly seminar that led into TCN’s practical preparations.',
+          },
+        ],
       },
     ],
   },

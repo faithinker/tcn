@@ -1,0 +1,81 @@
+---
+import { formatDate } from '../../i18n/utils';
+import type { MilestoneStage } from '../../lib/seminars';
+import MilestoneGallery from './MilestoneGallery.astro';
+
+interface Props {
+  id: string;
+  stages: MilestoneStage[];
+}
+
+const { id, stages } = Astro.props;
+---
+
+<div class="milestone-stages">
+  {
+    stages.map((stage, index) => (
+      <section class="milestone-stage" aria-labelledby={`${id}-stage-${index}-title`}>
+        <time datetime={stage.date} class="milestone-stage-date">
+          {formatDate(stage.date)}
+        </time>
+        <div class="min-w-0">
+          <h4 id={`${id}-stage-${index}-title`} class="milestone-stage-title">
+            {stage.title}
+          </h4>
+          <p class="milestone-stage-description">{stage.description}</p>
+          <MilestoneGallery
+            id={`${id}-stage-${index}`}
+            items={stage.media}
+            label={`Photographs from ${formatDate(stage.date)}: ${stage.title}`}
+          />
+        </div>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .milestone-stages {
+    margin-top: 2.25rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .milestone-stage {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+  }
+  .milestone-stage + .milestone-stage {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .milestone-stage-date {
+    margin-top: 0.125rem;
+    font-family: var(--font-sans);
+    font-size: var(--text-body-sm);
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+  .milestone-stage-title {
+    font-size: var(--text-display-sm);
+    line-height: 1.3;
+  }
+  .milestone-stage-description {
+    max-width: 64ch;
+    margin-top: 0.625rem;
+    font-size: var(--text-body-serif);
+    line-height: 1.7;
+    color: var(--color-body);
+    text-wrap: pretty;
+  }
+  @media (max-width: 39.999rem) {
+    .milestone-stage {
+      display: block;
+    }
+    .milestone-stage-title {
+      margin-top: 0.5rem;
+    }
+  }
+</style>

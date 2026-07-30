@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-07-30]
 
 ### Feature
+- Reframed the founding-preparatory history as one November 2024–June 2025 milestone with two dated stages for the founding decision and the practical-preparation discussion; grouped four photographs by event and location, added the optimized fourth photograph, tightened the captions, and balanced the single-image layout. (Branch: `feat/founding-preparations-timeline`) - Implemented by Codex
 - Added a Summer 2025 founding-preparatory milestone with three consented photographs, factual captions, responsive HTML figures, and the shared full-screen previous/next media viewer; approximate dating remains visibly limited to the season rather than inventing a specific day. (Branch: `feat/founding-preparatory-gallery`) - Implemented by Codex
 
 ### Changed
