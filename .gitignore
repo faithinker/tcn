@@ -39,3 +39,6 @@ coverage/
 
 # Claude Code 병렬 작업 워크트리 (저장소 사본 — 추적·스캔 제외)
 .claude/worktrees/
+
+# Impeccable UI 크리틱 산출물 (어드민 취약점 인벤토리 — 공개 저장소 제외, 로컬 보관)
+.impeccable/critique/
