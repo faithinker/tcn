@@ -14,6 +14,7 @@
   --color-canvas: #ffffff;
   --color-canvas-soft: #f7f5f0;
   --color-canvas-band: #f2efe7;
+  --color-surface: var(--color-canvas-soft);
   --color-hairline: #ddd9d0;
   --color-hairline-strong: #171310;
   --color-accent: #0b3d6b;
@@ -132,7 +133,8 @@
   }
 
   button,
-  a {
+  a,
+  summary {
     touch-action: manipulation;
   }
 
@@ -343,7 +345,8 @@ html.js main > section:not(:first-of-type).is-visible {
   }
 }
 
-/* 다크 표면의 포커스 링 대비 확보 */
+/* 다크 표면의 포커스 링 대비 확보 — canvas 는 다크 테마에서 footer 와 함께 어두워져
+   링이 사라지므로, 두 테마 모두 흰색인 on-footer(표면 텍스트색)를 쓴다. */
 footer :focus-visible {
-  outline-color: var(--color-canvas);
+  outline-color: var(--color-on-footer);
 }

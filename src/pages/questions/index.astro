@@ -126,7 +126,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
                     <PublicStatusBadge
                       status={question.status === 'answered' ? 'answered' : 'waiting'}
                     />
-                    <h2 class="col-span-2 col-start-1 row-start-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-serif text-body-sans font-semibold text-ink group-hover:text-link group-hover:underline md:col-span-1 md:col-start-2 md:row-start-1">
+                    <h2 class="col-span-2 col-start-1 row-start-2 min-w-0 break-words line-clamp-2 font-serif text-body-sans font-semibold text-ink group-hover:text-link group-hover:underline md:col-span-1 md:col-start-2 md:row-start-1">
                       {question.title}
                     </h2>
                     <time

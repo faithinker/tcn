@@ -135,6 +135,12 @@ const liveSiteUrl = (Astro.site ?? new URL('https://tcn.faithinker12.workers.dev
     </style>
   </head>
   <body class="min-h-dvh bg-canvas-soft font-sans text-body antialiased">
+    <a
+      href="#admin-main"
+      class="sr-only rounded-sm bg-ink px-4 py-2 font-sans font-bold text-on-primary focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100]"
+    >
+      Skip to content
+    </a>
     {
       user && (
         <header class="border-b border-hairline bg-canvas">
@@ -220,7 +226,11 @@ const liveSiteUrl = (Astro.site ?? new URL('https://tcn.faithinker12.workers.dev
         window.location.href = '/admin/login';
       });
     </script>
-    <main class="admin-main mx-auto max-w-[75rem] px-5 py-10 sm:px-8 sm:py-14">
+    <main
+      id="admin-main"
+      tabindex="-1"
+      class="admin-main mx-auto max-w-[75rem] px-5 py-10 focus:outline-none sm:px-8 sm:py-14"
+    >
       <slot />
     </main>
   </body>

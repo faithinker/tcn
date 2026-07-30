@@ -39,7 +39,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
 
         <div
           id="question-error-summary"
-          class="mt-6 border border-red-800 bg-red-50 p-5 font-sans text-body-sm text-red-900 dark:border-red-300 dark:bg-red-950 dark:text-red-100"
+          class="mt-6 border border-danger bg-danger-soft p-5 font-sans text-body-sm text-danger"
           role="alert"
           aria-live="assertive"
           tabindex="-1"
@@ -68,11 +68,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             autocomplete="off"
             aria-describedby="title-error"
           />
-          <p
-            class="mt-2 font-sans text-caption font-bold text-red-800 dark:text-red-200"
-            id="title-error"
-            hidden
-          >
+          <p class="mt-2 font-sans text-caption font-bold text-danger" id="title-error" hidden>
             {t('qna.titleRequired')}
           </p>
         </div>
@@ -92,15 +88,12 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             name="body"
             maxlength="10000"
             required
+            autocomplete="off"
             aria-describedby="body-hint body-error"></textarea>
           <p class="mt-2 font-sans text-caption text-body-muted" id="body-hint">
             {t('qna.plainText')}
           </p>
-          <p
-            class="mt-2 font-sans text-caption font-bold text-red-800 dark:text-red-200"
-            id="body-error"
-            hidden
-          >
+          <p class="mt-2 font-sans text-caption font-bold text-danger" id="body-error" hidden>
             {t('qna.bodyRequired')}
           </p>
         </div>
@@ -130,7 +123,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             </div>
           ) : (
             <p
-              class="mt-7 border border-red-800 bg-red-50 p-4 font-sans text-body-sm text-red-900 dark:border-red-300 dark:bg-red-950 dark:text-red-100"
+              class="mt-7 border border-danger bg-danger-soft p-4 font-sans text-body-sm text-danger"
               role="alert"
             >
               Question submission is temporarily unavailable because the security check is not
@@ -161,7 +154,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
           notifications are not available.
         </p>
         <noscript>
-          <p class="mt-4 font-sans text-body-sm text-red-800 dark:text-red-200">
+          <p class="mt-4 font-sans text-body-sm text-danger">
             JavaScript is required to complete the security check and submit this form.
           </p>
         </noscript>
@@ -212,6 +205,15 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
   const titleCount = document.querySelector<HTMLElement>('#title-count');
   const bodyCount = document.querySelector<HTMLElement>('#body-count');
   let turnstileToken = '';
+  let published = false;
+
+  // 최대 1만 자짜리 초안이 탭 닫기·뒤로가기로 조용히 사라지지 않게 막는다.
+  // 게시 성공 리다이렉트는 published 플래그로 통과시킨다.
+  window.addEventListener('beforeunload', (event) => {
+    if (published) return;
+    if (!title?.value.trim() && !body?.value.trim()) return;
+    event.preventDefault();
+  });
 
   function updateCount(input: HTMLInputElement | HTMLTextAreaElement, output: HTMLElement): void {
     output.textContent = input.value.length.toLocaleString('en-US');
@@ -262,7 +264,8 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
   function showSummary(): void {
     if (!summary || summary.hidden) return;
     summary.focus();
-    summary.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    summary.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
   }
 
   function validate(): boolean {
@@ -349,6 +352,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
         QuestionSuccess | QuestionFailure | null;
 
       if (response.ok && data?.ok && data.question?.id) {
+        published = true;
         window.location.assign(`/questions/${encodeURIComponent(data.question.id)}?created=1`);
         return;
       }

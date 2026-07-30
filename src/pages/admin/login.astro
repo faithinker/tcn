@@ -17,8 +17,9 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
         <input
           name="username"
           required
+          spellcheck="false"
           autocomplete="username"
-          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none"
+          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
         />
       </label>
       <label class="block">
@@ -28,7 +29,7 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
           type="password"
           required
           autocomplete="current-password"
-          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus:border-accent focus:outline-none"
+          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
         />
       </label>
       <p id="login-error" role="alert" aria-live="polite" class="hidden text-caption text-accent">
@@ -48,7 +49,10 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
       errorEl?.classList.add('hidden');
-      if (submit) submit.disabled = true;
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = 'Signing in…';
+      }
       try {
         const data = new FormData(form);
         const response = await fetch('/api/auth/login', {
@@ -74,7 +78,10 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
           errorEl.classList.remove('hidden');
         }
       } finally {
-        if (submit) submit.disabled = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = 'Sign in';
+        }
       }
     });
   </script>

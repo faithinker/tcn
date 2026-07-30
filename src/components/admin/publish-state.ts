@@ -86,8 +86,8 @@ export function missingReadinessLabels(items: ReadinessItem[]): string[] {
 
 // done 은 "끝난 개수"이고 사람에게는 "지금 몇 번째"가 필요하다 — 0번째 파일은 없다.
 export function uploadProgressLabel(done: number, total: number): string {
-  if (total === 0) return 'Saving the post';
-  return `Uploading ${Math.min(done + 1, total)} of ${total}`;
+  if (total === 0) return 'Saving the post…';
+  return `Uploading ${Math.min(done + 1, total)} of ${total}…`;
 }
 
 // 로케일 포맷에 의존하지 않는 24시간 표기(감사 로그가 아니라 "방금"의 표시용).

@@ -88,7 +88,11 @@ const organizationJsonLd = {
       {t('common.skipToContent')}
     </a>
     <Header />
-    <main id="main">
+    {
+      /* tabindex=-1: 스킵링크 착지점. scroll-mt 는 sticky 헤더(73px)가 본문 상단을 덮지 않게 한다.
+        영역 전체에 포커스링을 그리지 않는 표준 스킵 타깃 처리로 outline 만 숨긴다. */
+    }
+    <main id="main" tabindex="-1" class="scroll-mt-24 focus:outline-none">
       <slot />
     </main>
     <Footer />
