@@ -22,7 +22,7 @@ export const ui = {
   'common.back': 'Back',
   'common.backToAbout': 'Back to About',
   'common.language': 'Language',
-  'common.themeToggle': 'Eye Protection Mode',
+  'common.themeToggle': 'Dark theme',
   'common.backToTop': 'Back to top',
   'qna.eyebrow': 'Community desk',
   'qna.title': 'Questions & Answers',
@@ -45,7 +45,7 @@ export const ui = {
   'qna.newDescription':
     'Only the title and question are required. After security checks, your post is published immediately.',
   'qna.privacy':
-    'Do not include phone numbers, email addresses, or sensitive personal information. Guest questions cannot be edited or deleted in this MVP.',
+    'Do not include phone numbers, email addresses, or sensitive personal information. Guest questions cannot be edited or deleted after submission.',
   'qna.plainText': 'Plain text only. Line breaks are preserved; HTML is displayed as text.',
   'qna.submit': 'Submit question',
   'qna.cancel': 'Cancel and return',

@@ -36,7 +36,10 @@ const showFeaturedTitle = post.title !== post.ordinalLabel;
 const showContents = renderedBody.headings.length >= 2;
 ---
 
-<BaseLayout title={`${post.ordinalLabel} — ${post.title}`} description={post.summary ?? undefined}>
+<BaseLayout
+  title={showFeaturedTitle ? `${post.ordinalLabel} — ${post.title}` : post.title}
+  description={post.summary ?? undefined}
+>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <article class="mx-auto max-w-[75rem]">
       <a
@@ -234,7 +237,7 @@ const showContents = renderedBody.headings.length >= 2;
                   href={mapUrl}
                   target="_blank"
                   rel="noopener"
-                  class="mt-3 flex min-h-[46px] items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
+                  class="mt-3 flex min-h-12 items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
                 >
                   <>
                     <span>{copy.mapLink}</span>
@@ -247,7 +250,7 @@ const showContents = renderedBody.headings.length >= 2;
               grouped.documents.length > 0 && (
                 <a
                   href="#materials"
-                  class="mt-3 flex min-h-[46px] items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
+                  class="mt-3 flex min-h-12 items-center justify-between border border-hairline-strong px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
                 >
                   <>
                     <span>Presentation material</span>

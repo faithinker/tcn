@@ -127,11 +127,11 @@ describe('missingReadinessLabels', () => {
 
 describe('uploadProgressLabel', () => {
   it('counts the file in flight, never announcing a zeroth file', () => {
-    expect(uploadProgressLabel(0, 3)).toBe('Uploading 1 of 3');
-    expect(uploadProgressLabel(1, 3)).toBe('Uploading 2 of 3');
+    expect(uploadProgressLabel(0, 3)).toBe('Uploading 1 of 3…');
+    expect(uploadProgressLabel(1, 3)).toBe('Uploading 2 of 3…');
     // 마지막 파일이 끝난 뒤에도 총량을 넘겨 세지 않는다.
-    expect(uploadProgressLabel(3, 3)).toBe('Uploading 3 of 3');
-    expect(uploadProgressLabel(0, 0)).toBe('Saving the post');
+    expect(uploadProgressLabel(3, 3)).toBe('Uploading 3 of 3…');
+    expect(uploadProgressLabel(0, 0)).toBe('Saving the post…');
   });
 });
 
