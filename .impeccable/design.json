@@ -289,7 +289,7 @@
     "overview": "TCN should feel like a carefully edited institutional record: calm enough for sustained reading, formal without ceremony, and contemporary without looking like a software product. Georgia carries scholarship and narrative; Pretendard carries navigation, metadata, and authoring controls. Near-black ink, a single institutional blue, warm paper surfaces, and ruled divisions create hierarchy without decorative chrome.\n\nThe public site serves an international scholarly association and is intentionally English-first. Its large body type, strong contrast, generous line height, and broad touch targets support older readers without turning accessibility into a separate visual mode. The authoring interface uses the same type, color, and border vocabulary at a denser rhythm; danger colors belong to authoring state, not public branding.",
     "keyCharacteristics": [
       "Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.",
-      "Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.",
+      "Restrained palette: ink, paper, one institutional blue, plus danger feedback for failed states and form validation.",
       "Flat surfaces separated by tone, whitespace, and one-pixel rules.",
       "Desktop body copy at 18px/1.75, with 68ch as the standard reading measure and named 60–62ch and 74–76ch exceptions.",
       "Primary controls at 48px; compact secondary controls respect a 44px touch-target floor.",

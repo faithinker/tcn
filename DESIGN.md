@@ -171,8 +171,8 @@ institutional blue, warm paper surfaces, and ruled divisions create hierarchy wi
 The public site serves an international scholarly association and is intentionally English-first. Its
 large body type, strong contrast, generous line height, and broad touch targets support older readers
 without turning accessibility into a separate visual mode. The authoring interface uses the same type,
-color, and border vocabulary at a denser rhythm; danger colors belong to authoring state, not public
-branding.
+color, and border vocabulary at a denser rhythm; danger colors belong to failure and validation
+feedback — authoring states and public form errors — never to public branding or decoration.
 
 The system is responsive at the points where its content changes, not at three artificial device classes.
 The type scale and section spacing compact below 640px; the navigation changes to a menu below 896px;
@@ -193,7 +193,7 @@ the reader requests reduced motion.
 **Key Characteristics:**
 
 - Serif narrative and sans-serif structure, with no webfont dependency for the serif voice.
-- Restrained palette: ink, paper, one institutional blue, plus authoring-only danger feedback.
+- Restrained palette: ink, paper, one institutional blue, plus danger feedback for failed states and form validation.
 - Flat surfaces separated by tone, whitespace, and one-pixel rules.
 - Desktop body copy at 18px/1.75, with 68ch as the standard reading measure and named 60–62ch and
   74–76ch exceptions.
@@ -232,7 +232,8 @@ color never substitutes for hierarchy or meaning.
 
 ### Authoring State
 
-- **Oxblood Danger** (`{colors.danger}`): failed publishing states and the post-level destructive action.
+- **Oxblood Danger** (`{colors.danger}`): failed publishing states, the post-level destructive action, and
+  public form validation errors (the Q&A submission form).
 - **Danger Wash** (`{colors.danger-soft}`): the background of failure feedback.
 - Media deletion currently uses the accent treatment even though it is destructive. Do not infer a
   universal "all delete actions are danger" rule from the post publish bar.
