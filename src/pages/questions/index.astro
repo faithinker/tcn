@@ -49,7 +49,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
           <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
             {t('qna.title')}
           </h1>
-          <p class="mt-5 max-w-[40rem] font-sans text-body-sans text-ink-soft">
+          <p class="mt-5 max-w-[62ch] font-sans text-body-sans text-ink-soft">
             {t('qna.description')}
           </p>
         </div>
@@ -108,7 +108,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
               Please try again. Your current filter and page are unchanged.
             </p>
             <a
-              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans text-button font-bold text-ink no-underline"
               href={Astro.url.pathname + Astro.url.search}
             >
               Retry
@@ -126,7 +126,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
                     <PublicStatusBadge
                       status={question.status === 'answered' ? 'answered' : 'waiting'}
                     />
-                    <h2 class="col-span-2 col-start-1 row-start-2 min-w-0 break-words line-clamp-2 font-serif text-body-sans font-semibold text-ink group-hover:text-link group-hover:underline md:col-span-1 md:col-start-2 md:row-start-1">
+                    <h2 class="col-span-2 col-start-1 row-start-2 min-w-0 break-words line-clamp-2 font-serif text-body-serif font-semibold text-ink group-hover:text-link group-hover:underline md:col-span-1 md:col-start-2 md:row-start-1">
                       {question.title}
                     </h2>
                     <time
@@ -144,7 +144,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
         ) : (
           <div class="mt-8 border-y border-hairline py-12">
             <h2 class="font-serif text-display-sm font-semibold text-ink">{t('qna.empty')}</h2>
-            <p class="mt-3 max-w-[38rem] font-sans text-body-sans text-ink-soft">
+            <p class="mt-3 max-w-[62ch] font-sans text-body-sans text-ink-soft">
               {status === 'all'
                 ? 'Share the first question with the TCN community.'
                 : 'No questions match this status. You can view all questions or ask a new one.'}
@@ -152,14 +152,14 @@ function filterHref(nextStatus: QnaPublicStatus): string {
             <div class="mt-6 flex flex-wrap gap-3">
               {status !== 'all' && (
                 <a
-                  class="inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+                  class="inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans text-button font-bold text-ink no-underline"
                   href={filterHref('all')}
                 >
                   View all questions
                 </a>
               )}
               <a
-                class="inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans font-bold text-on-primary no-underline"
+                class="inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
                 href="/questions/new"
               >
                 {t('qna.first')}

@@ -50,8 +50,17 @@ const year = 2026;
         {t('footer.office')}
       </p>
       <p class="mt-3 font-sans text-body-sans text-on-footer/90">{t('footer.officeValue')}</p>
-      <p class="mt-1 font-sans text-body-sans text-on-footer/90">
-        {t('footer.contactEmail')}
+      {
+        /* 푸터는 두 테마에서 영구 다크다 — 잉크색을 쓸 수 없으므로 표면 텍스트색 + 밑줄로
+          링크 어포던스를 만든다. 파란색은 도입하지 않는다. */
+      }
+      <p class="mt-1">
+        <a
+          href={`mailto:${t('footer.contactEmail')}`}
+          class="inline-flex min-h-[44px] items-center break-all font-sans text-body-sans text-on-footer/90 underline hover:text-on-footer hover:decoration-2"
+        >
+          {t('footer.contactEmail')}
+        </a>
       </p>
     </div>
   </div>

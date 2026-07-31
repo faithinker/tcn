@@ -103,6 +103,7 @@ containers:
   page: 75rem
 shadows:
   overlay: '0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)'
+  overlay-dark: '0 4px 14px -6px rgb(0 0 0 / 0.55), 0 1px 4px rgb(0 0 0 / 0.4)'
 components:
   button-primary:
     backgroundColor: '{colors.ink}'
@@ -260,6 +261,16 @@ color never substitutes for hierarchy or meaning.
 **The One Blue Rule.** Do not introduce a second brand hue. Institutional blue is used for links,
 labels, active state, focus, and selection; its restraint is the identity.
 
+**The Underlined Ink Link Rule.** Blue is not the only way to mark a link, and on link-dense
+surfaces it stops being restraint. Where a set of sibling links sits next to a current-position
+marker — the related-documents nav and the bylaws table of contents — the resting links use warm ink
+plus an underline, and blue is reserved for the one entry that is current (`aria-current`). Hover
+thickens the underline rather than shifting hue. Contact details follow the same rule: the telephone
+and email links are real `tel:`/`mailto:` targets in ink with an underline, and the footer's email
+link uses `on-footer` with an underline because the footer is permanently dark. Never mark a
+non-navigable current item in blue while its navigable siblings are muted grey — that inverts the
+affordance.
+
 **The Public Theme Boundary Rule.** Dark-mode guidance applies to public pages only until the admin
 layout gains its own theme bootstrap and control.
 
@@ -288,7 +299,8 @@ contrast between the families is functional, not decorative.
   bypasses the token with a hardcoded 21px/1.6 (`index.astro:47`) and so neither takes the 1.7 line
   height nor compacts — a known deviation, not a second lead style.
 - **Body Serif** (400, 18px, 1.75): default public body and academic prose. It compacts to 17px/1.7
-  below 640px. Keep normal narrative measure at 68ch.
+  below 640px — both the size and the line-height token compact, so the utility and the `body`
+  element agree. Keep normal narrative measure at 68ch; every shipped body paragraph is bounded.
 - **Body Sans** (400, 17px, 1.6): UI descriptions, tables, form content, and navigation when space
   permits. Weight 700 creates strong labels; there is no separate strong-body token.
 - **Body Small** (400, 15px, 1.6): compact navigation and secondary interface text.
@@ -302,6 +314,12 @@ The shared scale bottoms out at 14px, but the current implementation has three i
 exceptions: the mobile eyebrow at 13px, profile expertise tags at 12px, and the profile current-position
 label at 11px. Treat these as contained exceptions, not reusable text tokens. Bylaw clause-number badges
 also use a local 12px label.
+
+Two further off-scale sizes are brand rather than type-scale decisions and are deliberate: the header
+wordmark at 18px, rising to 22px at 1152px (`Header.astro:31, 34`), and the footer wordmark at 22px
+(`Footer.astro:22`). The homepage carries a bespoke pair — the title at 28px/32px and, when populated,
+the alternate name at 22px/26px (`index.astro:42`). No other component may introduce an off-scale
+display size; use `display-sm` where a 26px/22px heading is wanted.
 
 `MemberProfileCard` carries two further off-scale serif sizes that sit above the floor but outside the
 named roles: the profile summary at 16px/1.75 (`MemberProfileCard.astro:82`) and profile highlights at
@@ -321,6 +339,11 @@ TCN is flat by default. Surface tone, spacing, and one-pixel rules establish dep
 cards do not float and do not combine borders with decorative shadows. The only shared shadow is
 `--shadow-overlay`, the restrained overlay used by the desktop navigation menu and other genuinely
 floating layers: `0 4px 14px -6px rgb(23 19 16 / 0.14), 0 1px 4px rgb(23 19 16 / 0.08)`.
+
+`--shadow-overlay` is theme-aware. The warm-ink shadow above contributes nothing over the dark
+canvas, so the dark theme substitutes a blacker, stronger overlay
+(`0 4px 14px -6px rgb(0 0 0 / 0.55), 0 1px 4px rgb(0 0 0 / 0.4)`) and elevation reads in both themes.
+This is the one token whose value differs by theme beyond the color table.
 
 ### Shadow Vocabulary
 
@@ -365,6 +388,12 @@ padding, and sans-serif content. Primary form controls are 48px high; denser aut
 44px floor. Validation and publish failure use oxblood and danger wash. Placeholder and help text must
 retain readable contrast against the current surface.
 
+Third-party form widgets must be told the site theme explicitly. The public theme is a manual
+`html.dark` class, so a widget left on its own `prefers-color-scheme` default renders in the wrong theme
+whenever the reader's choice differs from their OS. The Turnstile widget therefore has `data-theme` set
+from the site theme before `api.js` loads, and re-renders on the `tcn:themechange` event the theme
+control dispatches.
+
 ### Section Bands and Reading Containers
 
 `SectionTile` supplies three grounded variants: reading canvas, band paper, and soft paper. Sections use
@@ -379,6 +408,12 @@ introduction to 76ch. Bylaws and the founding invitation supply a 256px aside an
 two-column desktop shell. The declaration supplies no aside and correctly renders as a centered single
 column. Shorter prose and community questions use 68ch, while page leads and hero paragraphs tighten to
 60–62ch.
+
+Reading measures are expressed in `ch`, never in `rem`. A rem measure does not track the type scale, so
+it drifts against the 60–76ch range at the 640px compaction. The Q&A pages and the seminar post body all
+state their measures in `ch`; the seminar post also uses the same 256px aside as the document shell, so
+there is one two-column shell rather than two. `max-w-[75rem]` remains the page cap and is not a reading
+measure.
 
 ### Profile Cards
 
@@ -414,7 +449,19 @@ Status badges may use a full pill because they are compact labels, not container
 2px outline with a 2px offset. Public content sections after the hero may reveal through a 700ms,
 four-pixel upward transition only when JavaScript has opted in; content remains visible when JavaScript
 fails. Reduced motion disables the transition. The back-to-top control and primary actions are 48px
-square/high; secondary link targets may use the 44px floor.
+square/high; secondary link targets may use the 44px floor. The back-to-top control hovers to softened
+ink like every other primary button; blue fill belongs to the status badge and the selected pagination
+page, not to hover.
+
+**The Reveal Threshold Rule.** The reveal observer must use `threshold: 0` and let `rootMargin` decide
+the entry point. A ratio threshold cannot be met by a section taller than roughly `root / threshold`,
+so long sections — the About milestone record grows with every seminar — would stay at `opacity: 0`
+forever while remaining in the accessibility tree. Progressive enhancement must never be able to
+subtract content.
+
+In-page anchors and sticky asides share one offset. The header is 73px, so anchor targets use
+`scroll-mt-24` and sticky asides use `top-24` (96px) everywhere; the mobile menu's height budget
+subtracts both the header and `env(safe-area-inset-top)`.
 
 **The Grounded Component Rule.** A component in document flow earns separation through spacing, tone,
 or a hairline. Do not turn every section, profile, or list item into a rounded card.
@@ -442,7 +489,10 @@ or a hairline. Do not turn every section, profile, or list item into a rounded c
 - **Don't** introduce a second brand color, gradients, glassmorphism, or decorative background effects.
 - **Don't** use rounded cards as default scaffolding or combine a content-card border with a wide shadow.
 - **Don't** repeat tiny uppercase eyebrows above every section; use the established eyebrow only where
-  its category signal materially helps navigation.
+  its category signal materially helps navigation. Never pair an eyebrow with a heading that says the
+  same thing, never stack two eyebrows inside one section, and never render an ordinal (`01`, `Step 02`)
+  as a blue eyebrow — ordinals and sub-labels take the muted uppercase caption treatment. The blue
+  uppercase officer role in `MemberProfileCard` is the documented exception and stays.
 - **Don't** treat 768px as the universal mobile/desktop boundary or assume every academic document has
   an aside.
 - **Don't** apply public dark-theme claims to admin pages until admin has an explicit theme mechanism.

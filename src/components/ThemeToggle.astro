@@ -72,9 +72,15 @@ const label = t('common.themeToggle');
 
     toggle.addEventListener('click', () => {
       const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('tcn_theme', isDark ? 'dark' : 'light');
+      // 스토리지가 차단되어도 토글 자체는 동작해야 한다 — 기억만 못 한다.
+      try {
+        localStorage.setItem('tcn_theme', isDark ? 'dark' : 'light');
+      } catch {
+        /* 스토리지 차단: 이 세션에서만 유지된다 */
+      }
       const themeMeta = document.querySelector('meta[name="theme-color"]');
       if (themeMeta) themeMeta.setAttribute('content', isDark ? '#181715' : '#ffffff');
+      document.dispatchEvent(new CustomEvent('tcn:themechange', { detail: { isDark } }));
       updateAriaPressed();
     });
   }
