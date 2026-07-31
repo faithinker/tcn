@@ -48,7 +48,14 @@ const organizationJsonLd = {
     <meta name="theme-color" content="#ffffff" />
     <script is:inline>
       document.documentElement.classList.add('js');
-      const savedTheme = localStorage.getItem('tcn_theme');
+      // localStorage 접근은 스토리지가 차단된 컨텍스트에서 throw 한다. 감싸지 않으면
+      // 이후 테마 적용 전체가 중단되어 OS 다크 선호도까지 무시된다.
+      let savedTheme = null;
+      try {
+        savedTheme = localStorage.getItem('tcn_theme');
+      } catch {
+        savedTheme = null;
+      }
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
       document.documentElement.classList.toggle('dark', isDark);

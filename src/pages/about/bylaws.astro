@@ -29,7 +29,7 @@ const copy = content.bylaws;
 
   <Fragment slot="beforeBody">
     <div class="mt-6 border-l-[3px] border-accent bg-canvas-soft px-5 py-4">
-      <p class="max-w-[76ch] font-serif text-body-sm text-ink-soft">
+      <p class="max-w-[76ch] font-sans text-body-sm text-ink-soft">
         {copy.adoptionNotice}
       </p>
     </div>
@@ -44,7 +44,7 @@ const copy = content.bylaws;
             <li>
               <a
                 href={`#${chapter.id}`}
-                class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-accent hover:text-link"
+                class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-hairline-strong hover:bg-canvas-soft"
               >
                 <span class="mr-2 tabular-nums text-accent">{index + 1}</span>
                 {chapter.title}
@@ -55,7 +55,7 @@ const copy = content.bylaws;
         <li>
           <a
             href={`#${copy.addenda.id}`}
-            class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-accent hover:text-link"
+            class="toc-jump inline-flex min-h-[44px] items-center rounded-sm border border-hairline px-3 font-sans text-body-sm font-bold text-ink no-underline hover:border-hairline-strong hover:bg-canvas-soft"
           >
             <span class="mr-2 text-accent">§</span>{copy.addenda.title}
           </a>
@@ -73,7 +73,7 @@ const copy = content.bylaws;
             <a
               data-toc-link
               href={`#${chapter.id}`}
-              class="toc-jump block py-1.5 text-body-sm font-bold text-body-muted no-underline hover:text-link"
+              class="toc-jump flex min-h-[44px] items-center text-body-sm font-bold text-ink underline hover:decoration-2"
             >
               <span class="mr-2 tabular-nums text-accent">{index + 1}</span>
               {chapter.title}
@@ -85,7 +85,7 @@ const copy = content.bylaws;
         <a
           data-toc-link
           href={`#${copy.addenda.id}`}
-          class="toc-jump block py-1.5 text-body-sm font-bold text-body-muted no-underline hover:text-link"
+          class="toc-jump flex min-h-[44px] items-center text-body-sm font-bold text-ink underline hover:decoration-2"
         >
           <span class="mr-2 text-accent">§</span>{copy.addenda.title}
         </a>
@@ -96,7 +96,7 @@ const copy = content.bylaws;
   <div class="max-w-[74ch]">
     {
       copy.chapters.map((chapter) => (
-        <section id={chapter.id} data-bylaws-section class="bylaws-chapter scroll-mt-28">
+        <section id={chapter.id} data-bylaws-section class="bylaws-chapter scroll-mt-24">
           <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t-2 border-hairline-strong pt-4">
             <span class="font-sans text-body-sans font-bold tracking-wide text-accent">
               {chapter.label}
@@ -140,7 +140,7 @@ const copy = content.bylaws;
     <section
       id={copy.addenda.id}
       data-bylaws-section
-      class="bylaws-addenda scroll-mt-28 border border-hairline bg-canvas-soft px-5 pb-2 pt-6 sm:px-6"
+      class="bylaws-addenda scroll-mt-24 border border-hairline bg-canvas-soft px-5 pb-2 pt-6 sm:px-6"
     >
       <h2 class="font-serif text-display-sm font-semibold text-ink">{copy.addenda.title}</h2>
       {
@@ -242,8 +242,10 @@ const copy = content.bylaws;
     font-weight: 700;
   }
 
+  /* 현재 위치만 파란색을 쓴다 — 쉬는 상태의 링크는 잉크색 + 밑줄(DESIGN.md 213-214). */
   [data-toc-link].is-active {
-    color: var(--color-ink);
+    color: var(--color-accent);
+    text-decoration: none;
   }
 
   .bylaws-chapter:target > div:first-child {

@@ -46,7 +46,7 @@ try {
             class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
           >
             <div class="flex flex-wrap items-center gap-3">
-              <p class="eyebrow !mb-0">{copy.nextEyebrow}</p>
+              <p class="eyebrow">{copy.nextEyebrow}</p>
               <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
                 {next.status === 'today' ? copy.todayBadge : copy.upcomingBadge}
               </span>
@@ -76,15 +76,16 @@ try {
   }
 
   {
+    /* "Upcoming" 아이브로우는 바로 위 섹션의 "Upcoming Seminar" 와 자기 제목
+      "Upcoming Seminars" 를 세 번째로 반복하므로 제목만 남긴다. */
+  }
+  {
     (rest.length > 0 || !next) && (
-      <SectionTile variant="band" eyebrow={copy.upcomingEyebrow} title={copy.upcomingTitle}>
+      <SectionTile variant="band" title={copy.upcomingTitle}>
         <div class="mt-8 grid gap-4">
           {rest.length ? (
             rest.map((post) => (
-              <a
-                href={post.href}
-                class="group block border-y border-hairline-strong bg-canvas p-5 no-underline sm:p-8"
-              >
+              <a href={post.href} class="group block bg-canvas p-5 no-underline sm:p-8">
                 <p class="font-sans text-caption font-bold uppercase text-accent">
                   {formatDate(post.eventDate)}
                 </p>

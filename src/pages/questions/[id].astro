@@ -43,7 +43,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
 
       {
         loadFailed ? (
-          <div class="mt-5 max-w-[48rem] border border-hairline bg-canvas-band p-6" role="alert">
+          <div class="mt-5 max-w-[68ch] border border-hairline bg-canvas-band p-6" role="alert">
             <h1 class="font-serif text-display-md font-semibold text-ink">
               This question could not be loaded.
             </h1>
@@ -51,7 +51,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
               Please try again. You can also return to the Q&A list.
             </p>
             <a
-              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans font-bold text-ink no-underline"
+              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans text-button font-bold text-ink no-underline"
               href={Astro.url.pathname + Astro.url.search}
             >
               Retry
@@ -62,7 +62,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
             {justCreated && (
               <div
                 id="question-published-banner"
-                class="mt-5 flex max-w-[58rem] flex-col items-start justify-between gap-4 border border-accent bg-canvas-soft p-5 text-ink sm:flex-row sm:items-center"
+                class="mt-5 flex max-w-[68ch] flex-col items-start justify-between gap-4 border border-accent bg-canvas-soft p-5 text-ink sm:flex-row sm:items-center"
                 role="status"
                 aria-live="polite"
                 tabindex="-1"
@@ -73,7 +73,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
                 </div>
                 <button
                   id="copy-question-link"
-                  class="inline-flex min-h-12 shrink-0 items-center rounded-sm border border-current bg-transparent px-5 font-sans font-bold"
+                  class="inline-flex min-h-12 shrink-0 items-center rounded-sm border border-current bg-transparent px-5 font-sans text-button font-bold"
                   type="button"
                 >
                   {t('qna.copyLink')}
@@ -82,7 +82,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
             )}
 
             <article class="mt-8">
-              <header class="max-w-[52rem] border-b border-hairline pb-8">
+              <header class="max-w-[68ch] border-b border-hairline pb-8">
                 <div class="mb-5 flex flex-wrap items-center gap-3">
                   <PublicStatusBadge status={question.answer ? 'answered' : 'waiting'} />
                   <time
@@ -133,7 +133,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
             </article>
           </>
         ) : (
-          <div class="mt-5 max-w-[48rem] border-y border-hairline py-12">
+          <div class="mt-5 max-w-[68ch] border-y border-hairline py-12">
             <p class="eyebrow">404</p>
             <h1 class="mt-3 font-serif text-display-md font-semibold text-ink">
               Question not found
@@ -142,7 +142,7 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
               This question does not exist or is no longer visible in the public Q&A.
             </p>
             <a
-              class="mt-6 inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans font-bold text-on-primary no-underline"
+              class="mt-6 inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
               href="/questions"
             >
               {t('qna.back')}

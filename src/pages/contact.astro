@@ -22,27 +22,31 @@ const copy = content.contact;
     </div>
   </section>
 
-  <SectionTile variant="band" eyebrow={copy.benefitsEyebrow} title={copy.benefitsTitle}>
+  {
+    /* 제목이 이미 범주를 말하는 섹션에서는 아이브로우를 겹치지 않는다.
+      서수 라벨도 파란 아이브로우가 아니라 중립 메타데이터로 둔다(DESIGN.md 443-445). */
+  }
+  <SectionTile variant="band" title={copy.benefitsTitle}>
     <ul class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2">
       {
         copy.benefits.map((benefit, index) => (
           <li class="min-w-0 bg-canvas p-5 sm:p-8">
-            <p class="font-sans text-caption font-bold text-accent">
+            <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
               {String(index + 1).padStart(2, '0')}
             </p>
-            <p class="mt-2 font-serif text-[1.375rem] font-semibold text-ink">{benefit}</p>
+            <p class="mt-2 font-serif text-display-sm font-semibold text-ink">{benefit}</p>
           </li>
         ))
       }
     </ul>
   </SectionTile>
 
-  <SectionTile variant="canvas" eyebrow={copy.applicationEyebrow} title={copy.applicationTitle}>
+  <SectionTile variant="canvas" title={copy.applicationTitle}>
     <ol class="mt-8 grid gap-8 lg:grid-cols-3">
       {
         copy.steps.map((step, index) => (
           <li class="border-t border-hairline-strong pt-5">
-            <p class="font-sans text-caption font-bold text-accent">
+            <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
               Step {String(index + 1).padStart(2, '0')}
             </p>
             <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{step.title}</h2>
@@ -83,7 +87,7 @@ const copy = content.contact;
     </div>
   </SectionTile>
 
-  <SectionTile variant="soft" eyebrow={copy.beforeEyebrow} title={copy.beforeTitle}>
+  <SectionTile variant="soft" title={copy.beforeTitle}>
     <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
       {copy.beforeBody}
     </p>
@@ -105,13 +109,31 @@ const copy = content.contact;
     <dl
       class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2"
     >
+      {
+        /* 연락처는 실제로 걸고 보낼 수 있어야 한다. 링크 어포던스는 밑줄이 담당하고,
+          파란색은 쓰지 않는다 — 잉크색 유지(DESIGN.md 213-214, One Blue Rule). */
+      }
       <div class="bg-canvas p-5 sm:p-6">
-        <dt class="font-sans text-caption font-bold uppercase text-accent">{copy.phone}</dt>
-        <dd class="mt-4 font-serif text-lead text-ink">{copy.phoneNumber}</dd>
+        <dt class="font-sans text-caption font-bold uppercase text-body-muted">{copy.phone}</dt>
+        <dd class="mt-4">
+          <a
+            href={`tel:${copy.phoneNumber.replace(/[^0-9+]/g, '')}`}
+            class="inline-flex min-h-12 items-center font-serif text-lead text-ink underline hover:decoration-2"
+          >
+            {copy.phoneNumber}
+          </a>
+        </dd>
       </div>
       <div class="bg-canvas p-5 sm:p-6">
-        <dt class="font-sans text-caption font-bold uppercase text-accent">{copy.email}</dt>
-        <dd class="mt-4 font-serif text-lead text-ink">{copy.emailAddress}</dd>
+        <dt class="font-sans text-caption font-bold uppercase text-body-muted">{copy.email}</dt>
+        <dd class="mt-4">
+          <a
+            href={`mailto:${copy.emailAddress}`}
+            class="inline-flex min-h-12 items-center break-all font-serif text-lead text-ink underline hover:decoration-2"
+          >
+            {copy.emailAddress}
+          </a>
+        </dd>
       </div>
     </dl>
   </SectionTile>

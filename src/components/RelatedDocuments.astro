@@ -14,20 +14,21 @@ const documents = [
 ---
 
 <nav
-  class="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2 font-sans text-body-sm"
+  class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1 font-sans text-body-sm"
   aria-label={t('common.relatedDocuments')}
 >
   <span class="font-bold text-ink">{t('common.relatedDocuments')}</span>
   {
     documents.map((document) => {
       const isCurrent = document.id === current;
+      // 링크 어포던스는 밑줄이 담당한다. 파란색은 현재 위치 표시 전용(DESIGN.md 213-214).
       return (
         <a
           href={document.href}
           aria-current={isCurrent ? 'page' : undefined}
           class:list={[
-            'font-bold no-underline transition-colors',
-            isCurrent ? 'text-accent' : 'text-body-muted hover:text-link',
+            'inline-flex min-h-[44px] items-center font-bold',
+            isCurrent ? 'text-accent no-underline' : 'text-ink underline hover:decoration-2',
           ]}
         >
           {document.label}

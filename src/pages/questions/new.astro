@@ -24,7 +24,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
         ← {t('qna.cancel')}
       </a>
 
-      <header class="mt-5 max-w-[48rem]">
+      <header class="mt-5 max-w-[62ch]">
         <p class="eyebrow">Public question</p>
         <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
           {t('qna.newTitle')}
@@ -32,7 +32,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
         <p class="mt-5 font-sans text-body-sans text-ink-soft">{t('qna.newDescription')}</p>
       </header>
 
-      <form class="mt-10 max-w-[48rem]" id="question-form" novalidate>
+      <form class="mt-10 max-w-[68ch]" id="question-form" novalidate>
         <div class="border border-hairline bg-canvas-band p-5 font-sans text-body-sm text-ink-soft">
           {t('qna.privacy')}
         </div>
@@ -112,6 +112,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
         {
           siteKey ? (
             <div class="mt-7 max-w-full overflow-x-auto">
+              {/* data-theme 은 아래 인라인 스크립트가 사이트 테마에 맞춰 세운다. */}
               <div
                 class="cf-turnstile"
                 data-sitekey={siteKey}
@@ -374,4 +375,25 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
   });
 </script>
 
+{
+  /* Turnstile 기본값 auto 는 prefers-color-scheme 를 따르지만 TCN 테마는 html.dark 클래스로
+    수동 전환된다 — OS 라이트 + 사이트 다크에서 라이트 위젯이 다크 폼 위에 얹히는 것을 막는다.
+    api.js 로드 전에 세워야 첫 렌더부터 맞는다. */
+}
+<script is:inline>
+  (function () {
+    const widget = document.querySelector('.cf-turnstile');
+    if (!widget) return;
+    const siteTheme = () =>
+      document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    widget.setAttribute('data-theme', siteTheme());
+    document.addEventListener('tcn:themechange', () => {
+      const next = siteTheme();
+      if (widget.getAttribute('data-theme') === next) return;
+      widget.setAttribute('data-theme', next);
+      // 위젯은 data-theme 변경을 스스로 감지하지 않는다 — 새 테마로 다시 렌더한다.
+      if (window.turnstile) window.turnstile.reset(widget);
+    });
+  })();
+</script>
 <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

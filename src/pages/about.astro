@@ -54,12 +54,12 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
 
   <SectionTile
     id="history"
-    class="scroll-mt-20"
+    class="scroll-mt-24"
     variant="canvas"
     eyebrow={copy.historyEyebrow}
     title={copy.historyTitle}
   >
-    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
+    <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.historyBody}
     </p>
     <ol class="mt-10 border-t border-hairline-strong">
@@ -86,7 +86,7 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
                 </span>
               </div>
               {entry.description && (
-                <p class="mt-4 text-pretty font-serif text-body-serif text-body">
+                <p class="mt-4 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
                   {entry.description}
                 </p>
               )}
@@ -121,8 +121,9 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
     </ol>
   </SectionTile>
 
-  <SectionTile variant="band" eyebrow={copy.foundingEyebrow} title={copy.foundingTitle}>
-    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
+  {/* foundingEyebrow 와 foundingTitle 은 같은 문자열이었다 — 같은 말을 두 번 하지 않는다. */}
+  <SectionTile variant="band" title={copy.foundingTitle}>
+    <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.foundingBody}
     </p>
     <div class="mt-8">
@@ -132,8 +133,9 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
     </div>
   </SectionTile>
 
-  <SectionTile variant="canvas" eyebrow={copy.declarationEyebrow} title={copy.declarationTitle}>
-    <p class="mt-6 text-pretty font-serif text-body-serif text-body">
+  {/* declarationEyebrow 와 declarationTitle 도 동일 문자열이었다. */}
+  <SectionTile variant="canvas" title={copy.declarationTitle}>
+    <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.declarationBody}
     </p>
     <div class="mt-8">
