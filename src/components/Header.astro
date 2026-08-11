@@ -39,7 +39,7 @@ const isExact = (href: string) => {
     </a>
 
     <nav
-      class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1"
+      class="hidden min-w-0 items-center gap-0.5 min-[56rem]:ml-auto min-[56rem]:flex min-[72rem]:gap-1"
       aria-label="Primary"
     >
       {
@@ -50,7 +50,7 @@ const isExact = (href: string) => {
                 aria-current={
                   isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
                 }
-                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
+                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink transition-colors hover:bg-canvas-soft hover:text-link-hover group-open:border-accent group-open:text-link aria-[current]:border-accent aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
               >
                 {t(item.key)}
                 <svg
@@ -82,7 +82,7 @@ const isExact = (href: string) => {
             <a
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
-              class="flex min-h-[48px] items-center whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink no-underline hover:text-link aria-[current]:text-link min-[72rem]:px-3 min-[72rem]:text-body-sans"
+              class="flex min-h-[48px] items-center whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink no-underline transition-colors hover:bg-canvas-soft hover:text-link-hover aria-[current]:border-accent aria-[current]:text-link min-[72rem]:px-3 min-[72rem]:text-body-sans"
             >
               {t(item.key)}
             </a>
@@ -97,7 +97,7 @@ const isExact = (href: string) => {
       </a>
     </nav>
 
-    <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+    <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 min-[56rem]:ml-0">
       <ThemeToggle />
 
       <button

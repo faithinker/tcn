@@ -118,7 +118,7 @@ const copy = content.contact;
         <dd class="mt-4">
           <a
             href={`tel:${copy.phoneNumber.replace(/[^0-9+]/g, '')}`}
-            class="inline-flex min-h-12 items-center font-serif text-lead text-ink underline hover:decoration-2"
+            class="inline-flex min-h-12 items-center font-serif text-lead text-ink underline decoration-1 [text-decoration-skip-ink:none] hover:decoration-2"
           >
             {copy.phoneNumber}
           </a>
@@ -129,7 +129,7 @@ const copy = content.contact;
         <dd class="mt-4">
           <a
             href={`mailto:${copy.emailAddress}`}
-            class="inline-flex min-h-12 items-center break-all font-serif text-lead text-ink underline hover:decoration-2"
+            class="inline-flex min-h-12 items-center break-all font-serif text-lead text-ink underline decoration-1 [text-decoration-skip-ink:none] hover:decoration-2"
           >
             {copy.emailAddress}
           </a>

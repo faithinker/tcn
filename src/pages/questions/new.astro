@@ -59,7 +59,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             </span>
           </div>
           <input
-            class="min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans text-ink"
+            class="qna-field min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans text-ink"
             id="question-title"
             name="title"
             type="text"
@@ -83,7 +83,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             </span>
           </div>
           <textarea
-            class="min-h-64 w-full resize-y rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans leading-relaxed text-ink"
+            class="qna-field min-h-64 w-full resize-y rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans leading-relaxed text-ink"
             id="question-body"
             name="body"
             maxlength="10000"
@@ -165,12 +165,42 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
 </BaseLayout>
 
 <style>
+  .qna-field {
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  @media (hover: hover) {
+    .qna-field:hover {
+      border-color: var(--color-ink-soft);
+    }
+  }
+
+  .qna-field[aria-invalid='true'] {
+    border-color: var(--color-danger);
+  }
+
+  .qna-field:focus-visible,
+  .qna-field[aria-invalid='true']:focus-visible {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: inset 0 0 0 1px var(--color-accent);
+    caret-color: var(--color-accent);
+  }
+
   .qna-honeypot {
     position: absolute;
     left: -10000px;
     width: 1px;
     height: 1px;
     overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qna-field {
+      transition: none;
+    }
   }
 </style>
 

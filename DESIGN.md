@@ -122,6 +122,10 @@ components:
   text-input:
     backgroundColor: '{colors.canvas}'
     textColor: '{colors.body}'
+    borderColor: '{colors.hairline-strong}'
+    hoverBorderColor: '{colors.ink-soft}'
+    focusBorderColor: '{colors.accent}'
+    errorBorderColor: '{colors.danger}'
     typography: '{typography.body-sans}'
     rounded: '{rounded.sm}'
     padding: '12px 16px'
@@ -387,6 +391,12 @@ Fields use a canvas background, a one-pixel structural border, square-to-4px cor
 padding, and sans-serif content. Primary form controls are 48px high; denser authoring fields may use the
 44px floor. Validation and publish failure use oxblood and danger wash. Placeholder and help text must
 retain readable contrast against the current surface.
+
+Public Q&A text fields use the strong hairline at rest, softened ink on hover, and one visually continuous
+two-pixel institutional-blue inset boundary on focus. The inset treatment replaces the global offset focus
+ring for those fields, so focus does not create a double border or change layout. Invalid fields use the
+danger border while unfocused; when focused, the blue focus boundary takes precedence while `aria-invalid`
+and the adjacent danger message continue to communicate the error.
 
 Third-party form widgets must be told the site theme explicitly. The public theme is a manual
 `html.dark` class, so a widget left on its own `prefers-color-scheme` default renders in the wrong theme

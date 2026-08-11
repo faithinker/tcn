@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-08-11]
+
+### Fix
+- Refined public interaction states across the Q&A form, header navigation, status tabs, and Secretariat contact links: fields now use one layout-stable focus boundary with documented hover/error behavior, desktop navigation follows visual and keyboard order with distinct active/hover states, redundant Q&A dividers are removed, and telephone/email underlines remain continuous. (Branch: `fix/ui-improve`) - Implemented by Codex
+
 ## [2026-08-01]
 
 ### Fix
