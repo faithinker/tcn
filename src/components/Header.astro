@@ -45,12 +45,12 @@ const isExact = (href: string) => {
       {
         desktopNavItems.map((item) =>
           item.children ? (
-            <details class="group relative" data-nav-dropdown>
+            <details class="desktop-nav-dropdown group relative" data-nav-dropdown>
               <summary
                 aria-current={
                   isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
                 }
-                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink transition-colors hover:bg-canvas-soft hover:text-link-hover group-open:border-accent group-open:text-link aria-[current]:border-accent aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
+                class="desktop-nav-item nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink transition-colors min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
               >
                 {t(item.key)}
                 <svg
@@ -82,7 +82,7 @@ const isExact = (href: string) => {
             <a
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
-              class="flex min-h-[48px] items-center whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink no-underline transition-colors hover:bg-canvas-soft hover:text-link-hover aria-[current]:border-accent aria-[current]:text-link min-[72rem]:px-3 min-[72rem]:text-body-sans"
+              class="desktop-nav-item flex min-h-[48px] items-center whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink no-underline transition-colors min-[72rem]:px-3 min-[72rem]:text-body-sans"
             >
               {t(item.key)}
             </a>
@@ -182,6 +182,22 @@ const isExact = (href: string) => {
     </ul>
   </nav>
 </header>
+
+<style>
+  .desktop-nav-item:hover {
+    border-bottom-color: var(--color-hairline-strong);
+    background-color: var(--color-canvas-soft);
+    color: var(--color-ink);
+  }
+
+  .desktop-nav-item[aria-current],
+  .desktop-nav-item[aria-current]:hover,
+  .desktop-nav-dropdown[open] > .desktop-nav-item,
+  .desktop-nav-dropdown[open] > .desktop-nav-item:hover {
+    border-bottom-color: var(--color-accent);
+    color: var(--color-link);
+  }
+</style>
 
 <script>
   const btn = document.getElementById('navToggle');

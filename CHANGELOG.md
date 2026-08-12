@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-08-12]
+
+### Fix
+- Distinguished pointer hover from selected navigation in both public themes: the theme control now exposes a pointer cursor and neutral hover surface, desktop navigation and Q&A tabs reserve institutional blue for current state, and the selected Q&A underline sits directly on the shared tab rule. (Branch: `fix/ui-improve`) - Implemented by Codex
+
 ## [2026-08-11]
 
 ### Fix

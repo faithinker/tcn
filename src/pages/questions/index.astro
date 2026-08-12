@@ -61,8 +61,11 @@ function filterHref(nextStatus: QnaPublicStatus): string {
         </a>
       </header>
 
-      <div class="mt-10 flex flex-col gap-3 py-2 md:flex-row md:items-center md:justify-between">
-        <nav class="-mx-2 flex max-w-full overflow-x-auto" aria-label="Question status">
+      <div class="mt-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <nav
+          class="flex w-full overflow-x-auto border-b border-hairline md:flex-1"
+          aria-label="Question status"
+        >
           {
             (
               [
@@ -73,10 +76,10 @@ function filterHref(nextStatus: QnaPublicStatus): string {
             ).map(([value, label]) => (
               <a
                 class:list={[
-                  'inline-flex min-h-12 shrink-0 items-center border-b-2 px-3 font-sans text-caption font-bold no-underline transition-colors',
+                  '-mb-px inline-flex min-h-12 shrink-0 items-center border-b-2 px-3 font-sans text-caption font-bold no-underline transition-colors',
                   status === value
                     ? 'border-accent text-accent hover:bg-canvas-soft hover:text-accent'
-                    : 'border-transparent text-ink-soft hover:bg-canvas-soft hover:text-link-hover',
+                    : 'border-transparent text-ink-soft hover:border-hairline-strong hover:bg-canvas-soft hover:text-ink',
                 ]}
                 href={filterHref(value)}
                 aria-current={status === value ? 'page' : undefined}

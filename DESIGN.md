@@ -265,6 +265,12 @@ color never substitutes for hierarchy or meaning.
 **The One Blue Rule.** Do not introduce a second brand hue. Institutional blue is used for links,
 labels, active state, focus, and selection; its restraint is the identity.
 
+**Interactive State Hierarchy.** Current navigation and selected tabs use institutional blue with an
+accent underline. Pointer hover stays neutral: warm ink on Soft Paper, with a strong-ink underline
+where the control has a tab edge. This keeps hover distinct from selection in both themes instead of
+making every interactive state look current. Icon-only theme controls follow the same neutral hover
+treatment; their pointer cursor, surface change, and persistent boundary provide the affordance.
+
 **The Underlined Ink Link Rule.** Blue is not the only way to mark a link, and on link-dense
 surfaces it stops being restraint. Where a set of sibling links sits next to a current-position
 marker — the related-documents nav and the bylaws table of contents — the resting links use warm ink
