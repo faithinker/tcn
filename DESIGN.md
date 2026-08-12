@@ -376,6 +376,12 @@ the right. Top-level controls are at least 48px high. Dropdown and mobile child 
 floor. Desktop navigation appears at 896px; below that threshold the header opens a scroll-contained
 mobile menu. At 1152px the full wordmark suffix, larger type, and wider spacing appear.
 
+Desktop top-level navigation keeps the full 73px header hit area so its active underline sits directly
+over the header's bottom rule. Neutral hover fill remains a centered 48px-high surface rather than
+filling the entire header. The Join / Contact action also remains centered at 48px. Q&A status tabs use
+the same edge-aligned underline pattern; on desktop their shared hairline continues beneath the result
+count, while on smaller screens it stays with the horizontally scrollable tab row.
+
 The dropdown is a true overlay: canvas background, strong hairline border, 4px-free square geometry, and
 the single overlay shadow. Active and expanded states use institutional blue. The mobile menu is a
 grounded continuation of the header and therefore has no shadow.

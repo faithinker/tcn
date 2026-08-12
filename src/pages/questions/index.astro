@@ -61,9 +61,14 @@ function filterHref(nextStatus: QnaPublicStatus): string {
         </a>
       </header>
 
-      <div class="mt-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div
+        class="qna-filter-bar relative mt-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
+      >
+        <span
+          class="pointer-events-none absolute inset-x-0 bottom-0 hidden h-px bg-hairline md:block"
+          aria-hidden="true"></span>
         <nav
-          class="flex w-full overflow-x-auto border-b border-hairline md:flex-1"
+          class="qna-tabs relative z-10 flex w-full overflow-x-auto overflow-y-hidden md:flex-1"
           aria-label="Question status"
         >
           {
@@ -76,7 +81,7 @@ function filterHref(nextStatus: QnaPublicStatus): string {
             ).map(([value, label]) => (
               <a
                 class:list={[
-                  '-mb-px inline-flex min-h-12 shrink-0 items-center border-b-2 px-3 font-sans text-caption font-bold no-underline transition-colors',
+                  'inline-flex min-h-12 shrink-0 items-center border-b-2 px-3 font-sans text-caption font-bold no-underline transition-colors',
                   status === value
                     ? 'border-accent text-accent hover:bg-canvas-soft hover:text-accent'
                     : 'border-transparent text-ink-soft hover:border-hairline-strong hover:bg-canvas-soft hover:text-ink',
@@ -172,3 +177,9 @@ function filterHref(nextStatus: QnaPublicStatus): string {
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .qna-tabs {
+    box-shadow: inset 0 -1px var(--color-hairline);
+  }
+</style>

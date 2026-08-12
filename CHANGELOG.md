@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-08-12]
 
 ### Fix
+- Aligned navigation indicators with their shared structural rules: desktop header items keep a 73px hit area so the current underline meets the header divider while hover fill stays centered at 48px, the Join / Contact action remains 48px high, and the Q&A filter rule now continues beneath the result count without creating a tab scrollbar. (Branch: `fix/ui-improve`) - Implemented by Codex
 - Distinguished pointer hover from selected navigation in both public themes: the theme control now exposes a pointer cursor and neutral hover surface, desktop navigation and Q&A tabs reserve institutional blue for current state, and the selected Q&A underline sits directly on the shared tab rule. (Branch: `fix/ui-improve`) - Implemented by Codex
 
 ## [2026-08-11]
