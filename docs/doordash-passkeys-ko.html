@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DoorDash Passkeys 도입 — 한국어 상세 요약</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --text: #2e2a22;
+        --ink: #171310;
+        --muted: #5d5647;
+        --line: #ddd9d0;
+        --accent: #0b3d6b;
+        --code: #f7f5f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #181715;
+          --text: #d1cbbd;
+          --ink: #e6e2da;
+          --muted: #928b7d;
+          --line: #383530;
+          --accent: #8bb2d9;
+          --code: #24221f;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          18px/1.75 Georgia,
+          'Times New Roman',
+          serif;
+      }
+      main {
+        width: min(68ch, calc(100% - 40px));
+        margin: 0 auto 80px;
+      }
+      article {
+        padding: 64px 0;
+      }
+      h1 {
+        color: var(--ink);
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(44px, 7vw, 60px);
+        line-height: 1.12;
+        letter-spacing: -0.5px;
+        margin: 10px 0 18px;
+        text-wrap: balance;
+      }
+      h2 {
+        margin: 64px 0 18px;
+        color: var(--ink);
+        font:
+          600 32px/1.2 Georgia,
+          'Times New Roman',
+          serif;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      h3 {
+        margin: 32px 0 10px;
+        color: var(--ink);
+        font:
+          600 26px/1.25 Georgia,
+          'Times New Roman',
+          serif;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      p,
+      li {
+        word-break: keep-all;
+      }
+      ul,
+      ol {
+        padding-left: 1.35em;
+      }
+      li + li {
+        margin-top: 0.45em;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 15px;
+      }
+      .dek {
+        color: var(--muted);
+        font-size: 21px;
+        line-height: 1.7;
+      }
+      .notice,
+      .takeaway {
+        margin: 32px 0;
+        padding: 20px;
+        border: 1px solid var(--line);
+        background: var(--code);
+        border-radius: 4px;
+      }
+      code {
+        background: var(--code);
+        padding: 0.12em 0.35em;
+        border-radius: 4px;
+        font-size: 0.92em;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 3px;
+      }
+      footer {
+        color: var(--muted);
+        margin-top: 2.5em;
+        padding-top: 1.25em;
+        border-top: 1px solid var(--line);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        <div class="eyebrow">DoorDash Engineering · Identity · Mobile</div>
+        <h1>Passkeys를 안전하고 매끄럽게 도입하는 방법</h1>
+        <p class="dek">
+          DoorDash의 mobile-first Passkey 도입 과정에서 드러난 WebAuthn 구조, rollout 전략, iOS와
+          browser의 현실적인 차이를 정리했다.
+        </p>
+        <aside class="notice">
+          <strong>안내:</strong> 원문 전체 번역이 아닌 학습용 상세 요약이다. Passkey, WebAuthn,
+          API와 플랫폼 명칭은 영어를 유지했다.
+        </aside>
+
+        <h2>왜 Passkeys인가</h2>
+        <p>
+          Passkey는 기억해야 하는 shared secret 대신 public/private key pair를 사용한다. private
+          key는 client의 안전한 저장소에 남고 server에는 public key만 저장된다. phishing, credential
+          stuffing, password database 유출에 강하며 biometric 또는 device PIN 검증이 자연스럽게 두
+          번째 요소 역할을 한다.
+        </p>
+
+        <h2>기본 프로토콜</h2>
+        <h3>Registration</h3>
+        <ol>
+          <li>로그인된 사용자가 Passkey 생성을 시작한다.</li>
+          <li>Backend가 risk check와 필요 시 step-up authentication을 수행한다.</li>
+          <li>
+            기존 credential을 조회해 duplicate 생성을 막을 <code>excludeCredentials</code>를
+            구성한다.
+          </li>
+          <li>고엔트로피의 일회용 challenge를 server에서 생성하고 제한된 시간만 보관한다.</li>
+          <li>Client가 OS 또는 browser API를 통해 credential을 만든다.</li>
+          <li>
+            Client가 signed challenge와 public key가 포함된 결과를 server에 보내면, server가 검증 후
+            저장한다.
+          </li>
+        </ol>
+        <p>
+          암호 검증을 직접 구현하지 않고 FIDO2 conformant library를 사용해야 한다. DoorDash는 server
+          측 검증에 WebAuthn4J를 사용했다.
+        </p>
+
+        <h3>Assertion</h3>
+        <p>
+          로그인 시 server가 새 challenge를 발급한다. Client는 private key로 서명하고, server는
+          저장된 public key로 서명과 relying party 정보를 확인한다. 매번 다른 challenge를 사용하므로
+          replay attack도 방지한다.
+        </p>
+
+        <h2>Mobile-first rollout</h2>
+        <p>
+          DoorDash는 처음부터 모든 사용자에게 Passkey 생성을 강제하지 않았다. mobile native
+          login에서 먼저 시작해 성공률과 login funnel guardrail을 관찰했다. 로컬에 credential이
+          없으면 조용히 실패하는 <code>preferImmediatelyAvailableCredentials</code>를 활용해
+          불필요한 QR code modal을 피하고 기존 로그인 방식으로 자연스럽게 fallback했다.
+        </p>
+        <p>
+          Mobile에서 만든 Passkey는 password manager 동기화를 통해 web에서도 쓸 수 있다. Web에서는
+          conditional mediation과 autofill UI를 사용해 사용자가 Passkey를 선택할 때만 promise가
+          완료되도록 구성했다.
+        </p>
+
+        <h2>도입률을 높이는 방법</h2>
+        <p>
+          설정 화면에 Passkey 메뉴만 추가하면 대부분의 사용자는 발견하지 못한다. 반대로 매번 upsell
+          modal을 띄우면 login friction이 커진다. DoorDash가 주목한 해법은 지원 client에서 최근
+          password 로그인 정보를 이용해 조용히 Passkey로 업그레이드하는 conditional creation이다.
+        </p>
+
+        <h2>운영 중 만난 문제</h2>
+        <h3>Client와 server credential 불일치</h3>
+        <ul>
+          <li>사용자 email이나 username이 바뀌었지만 로컬 Passkey 표시는 과거 정보인 경우.</li>
+          <li>로컬 생성은 성공했지만 finish request가 실패해 server에 credential이 없는 경우.</li>
+          <li>Server에서 삭제했지만 password manager에는 credential이 남은 경우.</li>
+        </ul>
+        <p>
+          새 client에서는 WebAuthn Signal API의 <code>signalCurrentUserDetails()</code>,
+          <code>signalAllAcceptedCredentials()</code>, <code>signalUnknownCredential()</code>를
+          이용할 수 있다. 구형 OS와 browser에는 명확한 오류 안내와 credential manager 이동 경로가
+          필요하다.
+        </p>
+
+        <h3>iOS 예외 차이</h3>
+        <ul>
+          <li>
+            중복 credential에서 표준 오류 대신 undocumented
+            <code>WKErrorDuplicateCredential</code>가 발생할 수 있다.
+          </li>
+          <li>
+            로컬 credential이 없어도 일반적인 cancel과 같은 오류로 보일 수 있어 description까지
+            확인해야 한다.
+          </li>
+          <li>
+            <code>isUserVerifyingPlatformAuthenticatorAvailable</code>가 privacy 이유로 항상 true에
+            가까운 결과를 줄 수 있어 <code>canEvaluatePolicy</code> 같은 추가 heuristic이 필요하다.
+          </li>
+        </ul>
+
+        <h3>Browser 지원 편차</h3>
+        <p>
+          명세가 같아도 구현 시점과 serialization API 지원률이 다르다. 지원하지 않는 user agent를
+          위해 검증된 ponyfill을 준비하고 capability detection 결과로 flow를 분기해야 한다.
+        </p>
+
+        <aside class="takeaway">
+          <strong>실무 적용:</strong> Passkey 프로젝트 핵심은 cryptography보다 rollout과 state
+          synchronization이다. server challenge 수명, duplicate 방지, fallback UX, OS별 error
+          mapping, credential 정합성 복구를 하나의 설계로 다뤄야 한다.
+        </aside>
+
+        <h2>읽으며 확인할 질문</h2>
+        <ol>
+          <li>Passkey가 없는 사용자가 막힘없이 기존 로그인으로 돌아갈 수 있는가?</li>
+          <li>Registration의 start/finish 사이 network failure를 어떻게 복구하는가?</li>
+          <li>계정 정보 변경·credential 삭제 시 client와 server를 어떻게 동기화하는가?</li>
+          <li>
+            iOS, Android, Safari, Chrome의 capability와 error 차이가 observability에 기록되는가?
+          </li>
+        </ol>
+
+        <footer>
+          원문:
+          <a
+            href="https://careersatdoordash.com/blog/doordash-supporting-passkeys-to-create-a-secure-and-seamless-login-experience/"
+            >Supporting passkeys to create a secure and seamless login experience</a
+          >
+          · 2026-04-15
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

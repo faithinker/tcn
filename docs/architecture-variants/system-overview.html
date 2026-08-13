@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TCN 시스템 개요</title>
+    <style>
+      :root {
+        --paper: #fbfaf8;
+        --paper-2: #f2f0ec;
+        --ink: #17171a;
+        --muted: #4a4a52;
+        --soft: #7a7a85;
+        --rule: #dedbd4;
+        --accent: #1f5f4f;
+        --accent-tint: #e3efe9;
+        --link: #356b82;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      }
+      main {
+        width: min(1440px, 100%);
+        margin: auto;
+        padding: 48px 40px 40px;
+      }
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent);
+        font:
+          600 12px/1 ui-monospace,
+          monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font:
+          400 clamp(36px, 5vw, 56px)/1.05 Georgia,
+          serif;
+      }
+      .lede {
+        max-width: 760px;
+        margin: 16px 0 32px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      figure {
+        margin: 0;
+        overflow-x: auto;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        min-width: 960px;
+        height: auto;
+      }
+      .zone {
+        fill: rgba(23, 23, 26, 0.018);
+        stroke: rgba(23, 23, 26, 0.12);
+        stroke-width: 0.8;
+      }
+      .zone-label {
+        fill: var(--soft);
+        font:
+          600 8px ui-monospace,
+          monospace;
+        letter-spacing: 0.14em;
+      }
+      .node-name {
+        fill: var(--ink);
+        font:
+          600 16px 'Pretendard Variable',
+          'Pretendard',
+          'Apple SD Gothic Neo',
+          sans-serif;
+      }
+      .sub {
+        fill: var(--muted);
+        font:
+          400 12px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      .tag {
+        fill: var(--soft);
+        font:
+          600 8px ui-monospace,
+          monospace;
+        letter-spacing: 0.12em;
+      }
+      .edge-label {
+        fill: var(--muted);
+        font:
+          500 12px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+        letter-spacing: 0.04em;
+      }
+      figcaption {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font:
+          12px/1.5 ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--soft);
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">TCN / Architecture / Simplified</p>
+      <h1>한 Worker, 한 데이터 관문</h1>
+      <p class="lede">
+        공개·관리자 요청은 Astro 라우트로 모이고, Cloudflare Worker의 SSR/API 경계를 지나 도메인
+        로직과 단일 바인딩 관문 <code>lib/db</code>로 내려간다.
+      </p>
+      <figure>
+        <svg
+          viewBox="0 0 1280 720"
+          role="img"
+          aria-labelledby="tcn-system-overview-title tcn-system-overview-desc"
+        >
+          <title id="tcn-system-overview-title">TCN 시스템 개요</title>
+          <desc id="tcn-system-overview-desc">
+            방문자와 관리자의 요청이 Astro 라우트, Cloudflare Worker, 도메인 서비스, lib/db를 거쳐
+            D1, R2, 정적 자산 바인딩으로 흐르는 구조.
+          </desc>
+          <defs>
+            <marker
+              id="overview-arrow"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#4a4a52" />
+            </marker>
+            <marker
+              id="overview-arrow-accent"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#1f5f4f" />
+            </marker>
+            <marker
+              id="overview-arrow-link"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#356b82" />
+            </marker>
+          </defs>
+          <rect width="1280" height="720" fill="#fbfaf8" />
+
+          <rect class="zone" x="40" y="144" width="208" height="352" rx="8" />
+          <rect x="56" y="148" width="64" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="88" y="160" text-anchor="middle">ENTRY</text>
+          <rect class="zone" x="280" y="208" width="736" height="224" rx="8" />
+          <rect x="296" y="212" width="96" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="344" y="224" text-anchor="middle">APPLICATION</text>
+          <rect class="zone" x="1040" y="440" width="200" height="184" rx="8" />
+          <rect x="1056" y="444" width="88" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="1100" y="456" text-anchor="middle">BINDINGS</text>
+
+          <path
+            d="M216 236 H252 Q264 236 264 248 V292 Q264 304 276 304 H304"
+            fill="none"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#overview-arrow)"
+          />
+          <path
+            d="M216 396 H252 Q264 396 264 384 V340 Q264 328 276 328 H304"
+            fill="none"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#overview-arrow)"
+          />
+          <line
+            x1="488"
+            y1="316"
+            x2="556"
+            y2="316"
+            stroke="#1f5f4f"
+            stroke-width="1.6"
+            marker-end="url(#overview-arrow-accent)"
+          />
+          <line
+            x1="740"
+            y1="316"
+            x2="804"
+            y2="316"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#overview-arrow)"
+          />
+          <line
+            x1="988"
+            y1="316"
+            x2="1060"
+            y2="316"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#overview-arrow)"
+          />
+          <line
+            x1="1140"
+            y1="352"
+            x2="1140"
+            y2="476"
+            stroke="#356b82"
+            stroke-width="1.2"
+            marker-end="url(#overview-arrow-link)"
+          />
+
+          <rect x="232" y="268" width="80" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="272" y="280" text-anchor="middle">PUBLIC</text>
+          <rect x="232" y="348" width="80" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="272" y="360" text-anchor="middle">ADMIN</text>
+          <rect x="496" y="288" width="52" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="522" y="300" text-anchor="middle">SSR</text>
+          <rect x="744" y="288" width="56" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="772" y="300" text-anchor="middle">CALL</text>
+          <rect x="992" y="288" width="60" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="1022" y="300" text-anchor="middle">BIND</text>
+          <rect x="1152" y="396" width="52" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="1178" y="408" text-anchor="middle">I/O</text>
+
+          <g>
+            <rect x="56" y="200" width="160" height="72" rx="6" fill="#fff" stroke="#7a7a85" />
+            <text class="tag" x="72" y="216">USER</text>
+            <text class="node-name" x="136" y="240" text-anchor="middle">방문자</text>
+            <text class="sub" x="136" y="256" text-anchor="middle">public web</text>
+          </g>
+          <g>
+            <rect x="56" y="360" width="160" height="72" rx="6" fill="#fff" stroke="#7a7a85" />
+            <text class="tag" x="72" y="376">ADMIN</text>
+            <text class="node-name" x="136" y="400" text-anchor="middle">관리자</text>
+            <text class="sub" x="136" y="416" text-anchor="middle">authoring</text>
+          </g>
+          <g>
+            <rect x="304" y="280" width="184" height="72" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="320" y="296">ROUTES</text>
+            <text class="node-name" x="396" y="320" text-anchor="middle">Astro 라우트</text>
+            <text class="sub" x="396" y="336" text-anchor="middle">pages · API · middleware</text>
+          </g>
+          <g>
+            <rect
+              x="556"
+              y="280"
+              width="184"
+              height="72"
+              rx="6"
+              fill="#e3efe9"
+              stroke="#1f5f4f"
+              stroke-width="1.6"
+            />
+            <text class="tag" x="572" y="296" fill="#1f5f4f">RUNTIME</text>
+            <text class="node-name" x="648" y="320" text-anchor="middle">Cloudflare Worker</text>
+            <text class="sub" x="648" y="336" text-anchor="middle">SSR · API · assets</text>
+          </g>
+          <g>
+            <rect x="804" y="280" width="184" height="72" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="820" y="296">DOMAIN</text>
+            <text class="node-name" x="896" y="320" text-anchor="middle">도메인 서비스</text>
+            <text class="sub" x="896" y="336" text-anchor="middle">Q&amp;A · seminar · media</text>
+          </g>
+          <g>
+            <rect
+              x="1060"
+              y="280"
+              width="160"
+              height="72"
+              rx="6"
+              fill="#e3efe9"
+              stroke="#1f5f4f"
+              stroke-width="1.6"
+            />
+            <text class="tag" x="1076" y="296" fill="#1f5f4f">GATEWAY</text>
+            <text class="node-name" x="1140" y="320" text-anchor="middle">lib/db</text>
+            <text class="sub" x="1140" y="336" text-anchor="middle">getDB · bucket · assets</text>
+          </g>
+          <g>
+            <rect
+              x="1056"
+              y="476"
+              width="168"
+              height="112"
+              rx="6"
+              fill="rgba(23,23,26,.04)"
+              stroke="#4a4a52"
+            />
+            <text class="tag" x="1072" y="492">CLOUDFLARE</text>
+            <text class="node-name" x="1140" y="520" text-anchor="middle">D1 · R2 · ASSETS</text>
+            <text class="sub" x="1140" y="544" text-anchor="middle">tcn-content</text>
+            <text class="sub" x="1140" y="560" text-anchor="middle">tcn-media · ./dist</text>
+          </g>
+
+          <line x1="40" y1="660" x2="1240" y2="660" stroke="#dedbd4" />
+          <text class="zone-label" x="40" y="684">LEGEND</text>
+          <rect x="132" y="672" width="20" height="12" rx="2" fill="#e3efe9" stroke="#1f5f4f" />
+          <text class="sub" x="164" y="684">핵심 관문</text>
+          <line
+            x1="304"
+            y1="680"
+            x2="340"
+            y2="680"
+            stroke="#356b82"
+            marker-end="url(#overview-arrow-link)"
+          />
+          <text class="sub" x="356" y="684">Cloudflare binding I/O</text>
+        </svg>
+        <figcaption>
+          <span>7 nodes · 6 edges</span><span>Audience: executive</span><span>Size: slide-16x9</span
+          ><span>Detail: simplified</span>
+        </figcaption>
+      </figure>
+      <footer>Source: architecture-2026-08-13.mmd · Mermaid layout and styling discarded</footer>
+    </main>
+  </body>
+</html>

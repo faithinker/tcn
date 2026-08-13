@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TCN 기능 도메인 지도</title>
+    <style>
+      :root {
+        --paper: #fbfaf8;
+        --paper-2: #f2f0ec;
+        --ink: #17171a;
+        --muted: #4a4a52;
+        --soft: #7a7a85;
+        --rule: #dedbd4;
+        --accent: #1f5f4f;
+        --accent-tint: #e3efe9;
+        --link: #356b82;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      }
+      main {
+        width: min(1400px, 100%);
+        margin: auto;
+        padding: 48px 40px 40px;
+      }
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent);
+        font:
+          600 12px ui-monospace,
+          monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font:
+          400 clamp(36px, 5vw, 52px)/1.05 Georgia,
+          serif;
+      }
+      .lede {
+        max-width: 820px;
+        margin: 16px 0 32px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      figure {
+        margin: 0;
+        overflow-x: auto;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        min-width: 960px;
+        height: auto;
+      }
+      .zone {
+        fill: rgba(23, 23, 26, 0.018);
+        stroke: rgba(23, 23, 26, 0.12);
+        stroke-width: 0.8;
+      }
+      .zone-label {
+        fill: var(--soft);
+        font:
+          600 8px ui-monospace,
+          monospace;
+        letter-spacing: 0.14em;
+      }
+      .name {
+        fill: var(--ink);
+        font:
+          600 14px 'Pretendard Variable',
+          'Pretendard',
+          'Apple SD Gothic Neo',
+          sans-serif;
+      }
+      .sub {
+        fill: var(--muted);
+        font:
+          400 10px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      .tag {
+        fill: var(--soft);
+        font:
+          600 8px ui-monospace,
+          monospace;
+        letter-spacing: 0.1em;
+      }
+      .edge-label {
+        fill: var(--muted);
+        font:
+          500 8px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+        letter-spacing: 0.06em;
+      }
+      figcaption {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font:
+          12px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--soft);
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">TCN / Domain map / Balanced</p>
+      <h1>두 진입면, 두 기능 묶음, 한 저장소 관문</h1>
+      <p class="lede">
+        원본의 13개 프레젠테이션·도메인 모듈을 공개 경험과 관리자 경험으로 묶었다. 두 흐름은 서로
+        다른 책임을 가지지만 저장소 접근은 모두 <code>lib/db</code>로 수렴한다.
+      </p>
+      <figure>
+        <svg
+          viewBox="0 0 1280 720"
+          role="img"
+          aria-labelledby="tcn-domain-map-title tcn-domain-map-desc"
+        >
+          <title id="tcn-domain-map-title">TCN 기능 도메인 지도</title>
+          <desc id="tcn-domain-map-desc">
+            공개 페이지와 관리자 API가 각각 공개 도메인과 저작 도메인을 거쳐 공통 lib/db 관문과
+            Cloudflare 저장소로 연결되는 구조.
+          </desc>
+          <defs>
+            <marker
+              id="domain-arrow"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#4a4a52" />
+            </marker>
+            <marker
+              id="domain-arrow-accent"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#1f5f4f" />
+            </marker>
+            <marker
+              id="domain-arrow-link"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#356b82" />
+            </marker>
+          </defs>
+          <rect width="1280" height="720" fill="#fbfaf8" />
+          <rect class="zone" x="40" y="128" width="232" height="424" rx="8" />
+          <rect x="56" y="132" width="72" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="92" y="144" text-anchor="middle">ROUTES</text>
+          <rect class="zone" x="312" y="128" width="344" height="424" rx="8" />
+          <rect x="328" y="132" width="80" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="368" y="144" text-anchor="middle">DOMAINS</text>
+          <rect class="zone" x="696" y="128" width="208" height="424" rx="8" />
+          <rect x="712" y="132" width="96" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="760" y="144" text-anchor="middle">DATA ACCESS</text>
+          <rect class="zone" x="944" y="128" width="296" height="424" rx="8" />
+          <rect x="960" y="132" width="80" height="16" fill="#fbfaf8" />
+          <text class="zone-label" x="1000" y="144" text-anchor="middle">BINDINGS</text>
+
+          <line
+            x1="240"
+            y1="244"
+            x2="344"
+            y2="244"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#domain-arrow)"
+          />
+          <line
+            x1="240"
+            y1="436"
+            x2="344"
+            y2="436"
+            stroke="#4a4a52"
+            stroke-width="1.2"
+            marker-end="url(#domain-arrow)"
+          />
+          <path
+            d="M624 244 H676 Q688 244 688 256 V316 Q688 328 700 328 H728"
+            fill="none"
+            stroke="#1f5f4f"
+            stroke-width="1.4"
+            marker-end="url(#domain-arrow-accent)"
+          />
+          <path
+            d="M624 436 H676 Q688 436 688 424 V364 Q688 352 700 352 H728"
+            fill="none"
+            stroke="#1f5f4f"
+            stroke-width="1.4"
+            marker-end="url(#domain-arrow-accent)"
+          />
+          <path
+            d="M872 316 H920 Q932 316 932 304 V220 Q932 208 944 208 H984"
+            fill="none"
+            stroke="#356b82"
+            stroke-width="1.2"
+            marker-end="url(#domain-arrow-link)"
+          />
+          <line
+            x1="872"
+            y1="340"
+            x2="984"
+            y2="340"
+            stroke="#356b82"
+            stroke-width="1.2"
+            marker-end="url(#domain-arrow-link)"
+          />
+          <path
+            d="M872 364 H920 Q932 364 932 376 V460 Q932 472 944 472 H984"
+            fill="none"
+            stroke="#356b82"
+            stroke-width="1.2"
+            marker-end="url(#domain-arrow-link)"
+          />
+
+          <rect x="264" y="216" width="64" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="296" y="228" text-anchor="middle">RENDER</text>
+          <rect x="264" y="408" width="64" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="296" y="420" text-anchor="middle">MUTATE</text>
+          <rect x="648" y="280" width="56" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="676" y="292" text-anchor="middle">QUERY</text>
+          <rect x="648" y="384" width="56" height="16" rx="2" fill="#fbfaf8" />
+          <text class="edge-label" x="676" y="396" text-anchor="middle">WRITE</text>
+
+          <g>
+            <rect x="72" y="204" width="168" height="80" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="88" y="220">PUBLIC</text>
+            <text class="name" x="156" y="248" text-anchor="middle">공개 페이지</text>
+            <text class="sub" x="156" y="264" text-anchor="middle">pages/(public)</text>
+          </g>
+          <g>
+            <rect x="72" y="396" width="168" height="80" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="88" y="412">ADMIN</text>
+            <text class="name" x="156" y="440" text-anchor="middle">관리자 · API</text>
+            <text class="sub" x="156" y="456" text-anchor="middle">pages/admin · pages/api</text>
+          </g>
+          <g>
+            <rect x="344" y="192" width="280" height="104" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="360" y="208">PUBLIC CAPABILITIES</text>
+            <text class="name" x="484" y="240" text-anchor="middle">
+              기관 기록 · 세미나 · Q&amp;A
+            </text>
+            <text class="sub" x="484" y="264" text-anchor="middle">i18n · seminars · qna</text>
+            <text class="sub" x="484" y="280" text-anchor="middle">
+              layouts · public components
+            </text>
+          </g>
+          <g>
+            <rect x="344" y="384" width="280" height="104" rx="6" fill="#fff" stroke="#17171a" />
+            <text class="tag" x="360" y="400">ADMIN CAPABILITIES</text>
+            <text class="name" x="484" y="432" text-anchor="middle">저작 · 인증 · 미디어</text>
+            <text class="sub" x="484" y="456" text-anchor="middle">admin components · auth</text>
+            <text class="sub" x="484" y="472" text-anchor="middle">posts · media · notify</text>
+          </g>
+          <g>
+            <rect
+              x="728"
+              y="292"
+              width="144"
+              height="96"
+              rx="6"
+              fill="#e3efe9"
+              stroke="#1f5f4f"
+              stroke-width="1.6"
+            />
+            <text class="tag" x="744" y="308" fill="#1f5f4f">GATEWAY</text>
+            <text class="name" x="800" y="340" text-anchor="middle">lib/db</text>
+            <text class="sub" x="800" y="360" text-anchor="middle">14 incoming deps</text>
+          </g>
+          <g>
+            <rect
+              x="984"
+              y="172"
+              width="216"
+              height="72"
+              rx="6"
+              fill="rgba(23,23,26,.04)"
+              stroke="#4a4a52"
+            />
+            <text class="tag" x="1000" y="188">DATABASE</text>
+            <text class="name" x="1092" y="216" text-anchor="middle">D1 · tcn-content</text>
+            <text class="sub" x="1092" y="232" text-anchor="middle">10 tables</text>
+          </g>
+          <g>
+            <rect
+              x="984"
+              y="304"
+              width="216"
+              height="72"
+              rx="6"
+              fill="rgba(23,23,26,.04)"
+              stroke="#4a4a52"
+            />
+            <text class="tag" x="1000" y="320">OBJECT STORE</text>
+            <text class="name" x="1092" y="348" text-anchor="middle">R2 · tcn-media</text>
+            <text class="sub" x="1092" y="364" text-anchor="middle">media objects</text>
+          </g>
+          <g>
+            <rect
+              x="984"
+              y="436"
+              width="216"
+              height="72"
+              rx="6"
+              fill="rgba(23,23,26,.04)"
+              stroke="#4a4a52"
+            />
+            <text class="tag" x="1000" y="452">STATIC</text>
+            <text class="name" x="1092" y="480" text-anchor="middle">ASSETS · ./dist</text>
+            <text class="sub" x="1092" y="496" text-anchor="middle">compiled site</text>
+          </g>
+
+          <line x1="40" y1="624" x2="1240" y2="624" stroke="#dedbd4" />
+          <text class="zone-label" x="40" y="648">LEGEND</text>
+          <rect x="132" y="636" width="24" height="16" rx="2" fill="#e3efe9" stroke="#1f5f4f" />
+          <text class="sub" x="172" y="648">shared gateway</text>
+          <line
+            x1="332"
+            y1="644"
+            x2="372"
+            y2="644"
+            stroke="#356b82"
+            marker-end="url(#domain-arrow-link)"
+          />
+          <text class="sub" x="388" y="648">binding access</text>
+        </svg>
+        <figcaption>
+          <span>24 source nodes → 8 drawn</span><span>Audience: mixed</span
+          ><span>Size: doc-wide</span><span>Detail: balanced</span>
+        </figcaption>
+      </figure>
+      <footer>Source: architecture-2026-08-13.mmd · Architecture redraw by capability</footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DoorDash Swift Testing 전환 — 한국어 상세 요약</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --text: #2e2a22;
+        --ink: #171310;
+        --muted: #5d5647;
+        --line: #ddd9d0;
+        --accent: #0b3d6b;
+        --code: #f7f5f0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #181715;
+          --text: #d1cbbd;
+          --ink: #e6e2da;
+          --muted: #928b7d;
+          --line: #383530;
+          --accent: #8bb2d9;
+          --code: #24221f;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          18px/1.75 Georgia,
+          'Times New Roman',
+          serif;
+      }
+      main {
+        width: min(68ch, calc(100% - 40px));
+        margin: 0 auto 80px;
+      }
+      article {
+        padding: 64px 0;
+      }
+      h1 {
+        color: var(--ink);
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: clamp(44px, 7vw, 60px);
+        line-height: 1.12;
+        letter-spacing: -0.5px;
+        margin: 10px 0 18px;
+        text-wrap: balance;
+      }
+      h2 {
+        margin: 64px 0 18px;
+        color: var(--ink);
+        font:
+          600 32px/1.2 Georgia,
+          'Times New Roman',
+          serif;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      h3 {
+        margin: 32px 0 10px;
+        color: var(--ink);
+        font:
+          600 26px/1.25 Georgia,
+          'Times New Roman',
+          serif;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      p,
+      li {
+        word-break: keep-all;
+      }
+      ul,
+      ol {
+        padding-left: 1.35em;
+      }
+      li + li {
+        margin-top: 0.45em;
+      }
+      .eyebrow {
+        color: var(--accent);
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 15px;
+      }
+      .dek {
+        color: var(--muted);
+        font-size: 21px;
+        line-height: 1.7;
+      }
+      .notice,
+      .takeaway {
+        margin: 32px 0;
+        padding: 20px;
+        border: 1px solid var(--line);
+        background: var(--code);
+        border-radius: 4px;
+      }
+      code {
+        background: var(--code);
+        padding: 0.12em 0.35em;
+        border-radius: 4px;
+        font-size: 0.92em;
+      }
+      pre {
+        overflow: auto;
+        background: var(--code);
+        padding: 1em;
+        border-radius: 4px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 3px;
+      }
+      footer {
+        color: var(--muted);
+        margin-top: 2.5em;
+        padding-top: 1.25em;
+        border-top: 1px solid var(--line);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        <div class="eyebrow">DoorDash Engineering · iOS · Developer Productivity</div>
+        <h1>Cursor와 Bazel로 XCTest를 Swift Testing으로 전환하기</h1>
+        <p class="dek">
+          DoorDash가 공유 iOS module의 test를 자동화 중심으로 이전하고 속도와 신뢰성을 함께 개선한
+          과정을 정리했다.
+        </p>
+        <aside class="notice">
+          <strong>안내:</strong> 원문 전체 번역이 아닌 학습용 상세 요약이다. Swift, XCTest, Swift
+          Testing, Cursor, SweetPad, MCP, Bazel 명칭은 영어를 유지했다.
+        </aside>
+
+        <h2>전환 배경</h2>
+        <p>
+          DoorDash의 XCTest suite는 대부분 직렬 실행되어 CI의 test step이 두 자릿수 분까지 늘어났다.
+          Swift Testing은 sync와 async test를 기본적으로 병렬 실행하고, <code>#expect</code>를 통해
+          실패 expression을 더 자세히 보여준다. 내부 benchmark에서는 test 실행 자체가 XCTest보다
+          4~7배 빠른 사례가 확인됐다.
+        </p>
+
+        <h2>세 가지 원칙</h2>
+        <ol>
+          <li><strong>Local ownership:</strong> 각 module team이 자기 test를 이전한다.</li>
+          <li><strong>Tooling first:</strong> 반복 가능한 규칙과 실행 환경을 먼저 만든다.</li>
+          <li><strong>Reliability gate:</strong> 빠른 실행과 test 신뢰성을 교환하지 않는다.</li>
+        </ol>
+
+        <h2>자동화 환경</h2>
+        <h3>SweetPad와 MCP</h3>
+        <p>
+          SweetPad는 VS Code와 Cursor에서 Xcode command-line tool을 이용해 Apple platform project를
+          build, test, debug하게 해준다. DoorDash iOS platform team은 SweetPad에 MCP server를 추가해
+          Cursor가 VS Code command를 호출하도록 했다. Agent는 source를 바꾼 뒤 같은 대화 흐름에서
+          target build와 test를 실행하고 실패를 다시 수정할 수 있었다.
+        </p>
+
+        <h3>Cursor migration rule</h3>
+        <p>기계적 변환 규칙을 하나의 reusable rule로 만들었다. 주요 변환은 다음과 같다.</p>
+        <ul>
+          <li><code>import XCTest</code> → <code>import Testing</code></li>
+          <li><code>XCTestCase</code> → <code>struct</code>와 <code>@Suite</code></li>
+          <li><code>XCTAssert*</code> → <code>#expect</code></li>
+          <li><code>XCTUnwrap</code> → <code>#require</code></li>
+          <li><code>XCTFail</code> → <code>Issue.record</code></li>
+          <li>
+            expectation 기반 async test → confirmation, async iterator, continuation 기반 test
+          </li>
+          <li>loop 기반 case → parameterized test</li>
+        </ul>
+        <p>
+          Rule은 의미를 새로 설계하는 도구가 아니라 반복 편집을 일관되게 수행하는 도구로 제한했다.
+          큰 test file은 먼저 책임별로 나눈 뒤 변환하도록 권장했다.
+        </p>
+
+        <h2>검증 loop</h2>
+        <pre><code>1. 한 test file을 변환한다.
+2. 해당 package의 test를 실행한다.
+3. compile error, crash, assertion failure를 수정한다.
+4. 다시 실행한다.
+5. package 전환 완료 후 10회 연속 통과를 확인한다.</code></pre>
+        <p>
+          초기에는 SweetPad MCP가 이 loop를 실행했다. Bazel 도입 후에는 prompt 자체에
+          <code>bazel test &lt;package&gt;</code> 명령과 반복 조건을 넣었다. Agent가 test command를
+          추측하지 않게 build system 사용법을 context로 제공한 점이 중요하다.
+        </p>
+
+        <h2>병렬 실행이 드러낸 flaky test</h2>
+        <p>
+          전환 후 발견된 flaky test 대부분은 Swift Testing이 새로 만든 문제가 아니었다. XCTest의
+          직렬 실행에 가려져 있던 shared mutable state, test order 의존, timing assumption이 병렬
+          실행으로 드러난 것이다.
+        </p>
+        <ul>
+          <li>전역 cache나 singleton state를 test끼리 공유.</li>
+          <li>앞 test가 값을 만들고 뒤 test가 암묵적으로 사용.</li>
+          <li>고정 sleep이나 실행 순서에 의존하는 async assertion.</li>
+          <li>background thread에서 UIKit API를 호출하는 잘못된 test.</li>
+        </ul>
+        <p>10회 연속 통과 조건은 이런 잠재 문제를 merge 전에 찾는 단순하고 강력한 gate가 됐다.</p>
+
+        <h2>모든 test를 옮기지는 않음</h2>
+        <p>
+          <code>assertMacroExpansion</code>처럼 내부적으로 XCTest API에 의존하는 case는 남겼다.
+          목표는 migration 비율 100%가 아니라 더 빠르고 안정적인 suite다. ecosystem이 아직 지원하지
+          않는 test를 무리하게 바꾸지 않았다.
+        </p>
+
+        <h2>측정 결과</h2>
+        <ul>
+          <li>CI의 unit test step 약 60% 단축.</li>
+          <li>공유 iOS package의 전체 build 평균 약 40% 단축.</li>
+          <li>공유 module의 약 90%를 Swift Testing으로 이전.</li>
+          <li>기존 suite가 잡던 regression coverage 유지.</li>
+          <li>CI 비용 절감과 주당 여러 engineer-day의 대기 시간 회수.</li>
+        </ul>
+
+        <aside class="takeaway">
+          <strong>실무 적용:</strong> AI migration 성공 조건은 좋은 prompt 하나가 아니다. 명확한
+          mechanical rule, 실제 build/test tool 접근, package별 ownership, 반복 가능한 reliability
+          gate, 전후 metric이 함께 있어야 한다.
+        </aside>
+
+        <h2>읽으며 확인할 질문</h2>
+        <ol>
+          <li>우리 test suite에서 직렬 실행에 숨어 있는 shared state는 무엇인가?</li>
+          <li>Agent가 수정 직후 실제 target test를 실행할 수 있는가?</li>
+          <li>Migration 완료를 판단할 객관적인 반복 통과 조건이 있는가?</li>
+          <li>변환 전후 CI 시간, flake rate, 비용을 측정하고 있는가?</li>
+        </ol>
+
+        <footer>
+          원문:
+          <a
+            href="https://careersatdoordash.com/blog/doordash-using-cursor-to-accelerate-migration-to-swift-testing/"
+            >Using Cursor to accelerate migration to Swift Testing</a
+          >
+          · 2026-04-28
+        </footer>
+      </article>
+    </main>
+  </body>
+</html>

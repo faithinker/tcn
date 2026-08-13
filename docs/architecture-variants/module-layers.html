@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TCN 모듈 계층</title>
+    <style>
+      :root {
+        --paper: #fbfaf8;
+        --paper-2: #f2f0ec;
+        --ink: #17171a;
+        --muted: #4a4a52;
+        --soft: #7a7a85;
+        --rule: #dedbd4;
+        --accent: #1f5f4f;
+        --accent-tint: #e3efe9;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: 'Pretendard Variable', 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+      }
+      main {
+        width: min(1400px, 100%);
+        margin: auto;
+        padding: 48px 40px 40px;
+      }
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--accent);
+        font:
+          600 12px ui-monospace,
+          monospace;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font:
+          400 clamp(36px, 5vw, 52px)/1.05 Georgia,
+          serif;
+      }
+      .lede {
+        max-width: 800px;
+        margin: 16px 0 32px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      figure {
+        margin: 0;
+        overflow-x: auto;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        min-width: 960px;
+        height: auto;
+      }
+      .idx {
+        fill: var(--soft);
+        font:
+          600 12px ui-monospace,
+          monospace;
+        letter-spacing: 0.12em;
+      }
+      .name {
+        fill: var(--ink);
+        font:
+          600 20px 'Pretendard Variable',
+          'Pretendard',
+          'Apple SD Gothic Neo',
+          sans-serif;
+      }
+      .note {
+        fill: var(--muted);
+        font:
+          400 12px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      .small {
+        fill: var(--soft);
+        font:
+          500 10px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+        letter-spacing: 0.08em;
+      }
+      figcaption {
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font:
+          12px ui-monospace,
+          'Apple SD Gothic Neo',
+          monospace;
+      }
+      footer {
+        margin-top: 28px;
+        color: var(--soft);
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">TCN / Module topology / Balanced</p>
+      <h1>의존성은 여섯 층으로 내려간다</h1>
+      <p class="lede">
+        24개 모듈을 소유 계층으로 접었다. 상위 라우트가 프레젠테이션과 도메인을 사용하고, 모든
+        Cloudflare 바인딩 접근은 <code>lib/db</code> 한 층으로 수렴한다.
+      </p>
+      <figure>
+        <svg
+          viewBox="0 0 1280 720"
+          role="img"
+          aria-labelledby="tcn-module-layers-title tcn-module-layers-desc"
+        >
+          <title id="tcn-module-layers-title">TCN 모듈 계층</title>
+          <desc id="tcn-module-layers-desc">
+            TCN의 진입, 프레젠테이션, 도메인, 공용, 데이터 접근, Cloudflare 바인딩 계층을 위에서
+            아래 순서로 보여준다.
+          </desc>
+          <defs>
+            <marker
+              id="layers-arrow"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#4a4a52" />
+            </marker>
+            <marker
+              id="layers-arrow-accent"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#1f5f4f" />
+            </marker>
+            <marker
+              id="layers-arrow-link"
+              markerWidth="8"
+              markerHeight="6"
+              refX="7"
+              refY="3"
+              orient="auto"
+            >
+              <polygon points="0 0,8 3,0 6" fill="#356b82" />
+            </marker>
+          </defs>
+          <rect width="1280" height="720" fill="#fbfaf8" />
+          <line
+            x1="96"
+            y1="152"
+            x2="96"
+            y2="548"
+            stroke="#4a4a52"
+            stroke-width="1"
+            marker-end="url(#layers-arrow)"
+          />
+          <text class="small" x="76" y="340" text-anchor="middle" transform="rotate(-90 76 340)">
+            DEPENDENCY DIRECTION
+          </text>
+
+          <rect x="160" y="88" width="960" height="80" rx="8" fill="#fff" stroke="#17171a" />
+          <text class="idx" x="188" y="120">L1 · 4 MODULES</text>
+          <text class="name" x="360" y="136">진입</text>
+          <text class="note" x="1088" y="136" text-anchor="end">
+            middleware · public · admin · API
+          </text>
+          <rect x="160" y="168" width="960" height="80" fill="#f2f0ec" stroke="#dedbd4" />
+          <text class="idx" x="188" y="200">L2 · 7 MODULES</text>
+          <text class="name" x="360" y="216">프레젠테이션</text>
+          <text class="note" x="1088" y="216" text-anchor="end">
+            layouts · root/media/qna/seminars/admin components · scripts
+          </text>
+          <rect x="160" y="248" width="960" height="80" fill="#fff" stroke="#dedbd4" />
+          <text class="idx" x="188" y="280">L3 · 6 MODULES</text>
+          <text class="name" x="360" y="296">도메인</text>
+          <text class="note" x="1088" y="296" text-anchor="end">
+            seminars · posts · qna · media · notify · auth
+          </text>
+          <rect x="160" y="328" width="960" height="80" fill="#f2f0ec" stroke="#dedbd4" />
+          <text class="idx" x="188" y="360">L4 · 3 MODULES</text>
+          <text class="name" x="360" y="376">공용</text>
+          <text class="note" x="1088" y="376" text-anchor="end">i18n · data · lib/(root)</text>
+          <rect
+            x="160"
+            y="408"
+            width="960"
+            height="80"
+            fill="#e3efe9"
+            stroke="#1f5f4f"
+            stroke-width="1.6"
+          />
+          <text class="idx" x="188" y="440" fill="#1f5f4f">L5 · 1 MODULE</text>
+          <text class="name" x="360" y="456">데이터 접근</text>
+          <text class="note" x="1088" y="456" text-anchor="end">
+            lib/db · 14 incoming dependencies
+          </text>
+          <rect x="160" y="488" width="960" height="80" rx="8" fill="#fff" stroke="#17171a" />
+          <text class="idx" x="188" y="520">L6 · 3 BINDINGS</text>
+          <text class="name" x="360" y="536">Cloudflare 인프라</text>
+          <text class="note" x="1088" y="536" text-anchor="end">D1 · R2 · ASSETS</text>
+
+          <line x1="160" y1="628" x2="1120" y2="628" stroke="#dedbd4" />
+          <text class="small" x="160" y="652">LEGEND</text>
+          <rect x="252" y="640" width="24" height="16" rx="2" fill="#e3efe9" stroke="#1f5f4f" />
+          <text class="note" x="292" y="652">focal gateway</text>
+          <line
+            x1="456"
+            y1="648"
+            x2="500"
+            y2="648"
+            stroke="#4a4a52"
+            marker-end="url(#layers-arrow)"
+          />
+          <text class="note" x="516" y="652">imports move downward</text>
+        </svg>
+        <figcaption>
+          <span>24 source nodes → 6 layers</span><span>Audience: engineer</span
+          ><span>Size: doc-wide</span><span>Detail: balanced</span>
+        </figcaption>
+      </figure>
+      <footer>Source: architecture-2026-08-13.mmd · Layer Stack redraw</footer>
+    </main>
+  </body>
+</html>
