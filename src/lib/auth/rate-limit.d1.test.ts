@@ -2,7 +2,7 @@
 //
 // rate-limit.test.ts 는 D1 을 목킹하므로 bind 인자와 batch 형태만 본다.
 // 윈도 리셋·잠금 해제 같은 판단은 전부 SQL 안에 있어서 목으로는 닿지 않는다.
-// 여기서는 workerd + SQLite 를 띄워 실제 동작을 고정한다.
+// 여기서는 실제 SQLite 에 마이그레이션을 적용해 동작을 고정한다(test-support/d1.ts).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { openTestD1, type TestD1 } from '../../test-support/d1';
 import { clearLoginFailures, isLoginRateLimited, recordLoginFailure } from './rate-limit';
