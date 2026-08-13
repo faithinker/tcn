@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-08-13]
 
+### Chore
+- Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
+
 ### Documentation
 - Added a dated TCN architecture analysis with Mermaid source and three focused HTML views covering the system, module layers, and domain dependencies. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
 - Added Korean detailed summaries of DoorDash Engineering articles on mobile app-size governance, passkey rollout, and migrating XCTest suites to Swift Testing. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
-
-### Chore
-- Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
 ## [2026-08-12]
 
