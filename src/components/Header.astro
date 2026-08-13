@@ -39,18 +39,18 @@ const isExact = (href: string) => {
     </a>
 
     <nav
-      class="order-3 hidden min-w-0 items-center gap-0.5 min-[56rem]:flex min-[72rem]:gap-1"
+      class="-mb-[13px] -mt-3 hidden min-h-[73px] min-w-0 items-stretch gap-0.5 min-[56rem]:ml-auto min-[56rem]:flex min-[72rem]:gap-1"
       aria-label="Primary"
     >
       {
         desktopNavItems.map((item) =>
           item.children ? (
-            <details class="group relative" data-nav-dropdown>
+            <details class="desktop-nav-dropdown group relative min-h-[73px]" data-nav-dropdown>
               <summary
                 aria-current={
                   isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
                 }
-                class="nav-summary flex min-h-[48px] cursor-pointer list-none items-center gap-1 whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink hover:text-link group-open:text-link aria-[current]:text-link min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
+                class="desktop-nav-item nav-summary flex min-h-[73px] cursor-pointer list-none items-center justify-center gap-1 whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink transition-colors min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
               >
                 {t(item.key)}
                 <svg
@@ -82,7 +82,7 @@ const isExact = (href: string) => {
             <a
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
-              class="flex min-h-[48px] items-center whitespace-nowrap px-2 font-sans text-body-sm font-bold text-ink no-underline hover:text-link aria-[current]:text-link min-[72rem]:px-3 min-[72rem]:text-body-sans"
+              class="desktop-nav-item flex min-h-[73px] items-center justify-center whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink no-underline transition-colors min-[72rem]:px-3 min-[72rem]:text-body-sans"
             >
               {t(item.key)}
             </a>
@@ -91,13 +91,13 @@ const isExact = (href: string) => {
       }
       <a
         href="/contact"
-        class="ml-1 inline-flex min-h-[48px] items-center whitespace-nowrap rounded-sm bg-ink px-3 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-ink-soft min-[72rem]:ml-2 min-[72rem]:px-5 min-[72rem]:text-button"
+        class="ml-1 inline-flex min-h-[48px] self-center items-center whitespace-nowrap rounded-sm bg-ink px-3 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-ink-soft min-[72rem]:ml-2 min-[72rem]:px-5 min-[72rem]:text-button"
       >
         {t('nav.cta')}
       </a>
     </nav>
 
-    <div class="order-2 ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+    <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 min-[56rem]:ml-0">
       <ThemeToggle />
 
       <button
@@ -182,6 +182,25 @@ const isExact = (href: string) => {
     </ul>
   </nav>
 </header>
+
+<style>
+  .desktop-nav-item:hover {
+    border-bottom-color: var(--color-hairline-strong);
+    background-image: linear-gradient(var(--color-canvas-soft), var(--color-canvas-soft));
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 48px;
+    color: var(--color-ink);
+  }
+
+  .desktop-nav-item[aria-current],
+  .desktop-nav-item[aria-current]:hover,
+  .desktop-nav-dropdown[open] > .desktop-nav-item,
+  .desktop-nav-dropdown[open] > .desktop-nav-item:hover {
+    border-bottom-color: var(--color-accent);
+    color: var(--color-link);
+  }
+</style>
 
 <script>
   const btn = document.getElementById('navToggle');

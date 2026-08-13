@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Chore
 - Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
+## [2026-08-12]
+
+### Fix
+- Aligned navigation indicators with their shared structural rules: desktop header items keep a 73px hit area so the current underline meets the header divider while hover fill stays centered at 48px, the Join / Contact action remains 48px high, and the Q&A filter rule now continues beneath the result count without creating a tab scrollbar. (Branch: `fix/ui-improve`) - Implemented by Codex
+- Distinguished pointer hover from selected navigation in both public themes: the theme control now exposes a pointer cursor and neutral hover surface, desktop navigation and Q&A tabs reserve institutional blue for current state, and the selected Q&A underline sits directly on the shared tab rule. (Branch: `fix/ui-improve`) - Implemented by Codex
+
+## [2026-08-11]
+
+### Fix
+- Refined public interaction states across the Q&A form, header navigation, status tabs, and Secretariat contact links: fields now use one layout-stable focus boundary with documented hover/error behavior, desktop navigation follows visual and keyboard order with distinct active/hover states, redundant Q&A dividers are removed, and telephone/email underlines remain continuous. (Branch: `fix/ui-improve`) - Implemented by Codex
+
 ## [2026-08-01]
 
 ### Fix

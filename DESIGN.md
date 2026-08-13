@@ -122,6 +122,10 @@ components:
   text-input:
     backgroundColor: '{colors.canvas}'
     textColor: '{colors.body}'
+    borderColor: '{colors.hairline-strong}'
+    hoverBorderColor: '{colors.ink-soft}'
+    focusBorderColor: '{colors.accent}'
+    errorBorderColor: '{colors.danger}'
     typography: '{typography.body-sans}'
     rounded: '{rounded.sm}'
     padding: '12px 16px'
@@ -261,6 +265,12 @@ color never substitutes for hierarchy or meaning.
 **The One Blue Rule.** Do not introduce a second brand hue. Institutional blue is used for links,
 labels, active state, focus, and selection; its restraint is the identity.
 
+**Interactive State Hierarchy.** Current navigation and selected tabs use institutional blue with an
+accent underline. Pointer hover stays neutral: warm ink on Soft Paper, with a strong-ink underline
+where the control has a tab edge. This keeps hover distinct from selection in both themes instead of
+making every interactive state look current. Icon-only theme controls follow the same neutral hover
+treatment; their pointer cursor, surface change, and persistent boundary provide the affordance.
+
 **The Underlined Ink Link Rule.** Blue is not the only way to mark a link, and on link-dense
 surfaces it stops being restraint. Where a set of sibling links sits next to a current-position
 marker — the related-documents nav and the bylaws table of contents — the resting links use warm ink
@@ -366,6 +376,12 @@ the right. Top-level controls are at least 48px high. Dropdown and mobile child 
 floor. Desktop navigation appears at 896px; below that threshold the header opens a scroll-contained
 mobile menu. At 1152px the full wordmark suffix, larger type, and wider spacing appear.
 
+Desktop top-level navigation keeps the full 73px header hit area so its active underline sits directly
+over the header's bottom rule. Neutral hover fill remains a centered 48px-high surface rather than
+filling the entire header. The Join / Contact action also remains centered at 48px. Q&A status tabs use
+the same edge-aligned underline pattern; on desktop their shared hairline continues beneath the result
+count, while on smaller screens it stays with the horizontally scrollable tab row.
+
 The dropdown is a true overlay: canvas background, strong hairline border, 4px-free square geometry, and
 the single overlay shadow. Active and expanded states use institutional blue. The mobile menu is a
 grounded continuation of the header and therefore has no shadow.
@@ -387,6 +403,12 @@ Fields use a canvas background, a one-pixel structural border, square-to-4px cor
 padding, and sans-serif content. Primary form controls are 48px high; denser authoring fields may use the
 44px floor. Validation and publish failure use oxblood and danger wash. Placeholder and help text must
 retain readable contrast against the current surface.
+
+Public Q&A text fields use the strong hairline at rest, softened ink on hover, and one visually continuous
+two-pixel institutional-blue inset boundary on focus. The inset treatment replaces the global offset focus
+ring for those fields, so focus does not create a double border or change layout. Invalid fields use the
+danger border while unfocused; when focused, the blue focus boundary takes precedence while `aria-invalid`
+and the adjacent danger message continue to communicate the error.
 
 Third-party form widgets must be told the site theme explicitly. The public theme is a manual
 `html.dark` class, so a widget left on its own `prefers-color-scheme` default renders in the wrong theme
