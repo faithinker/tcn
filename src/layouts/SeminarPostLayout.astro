@@ -1,11 +1,11 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import MediaLightbox from '../../components/media/MediaLightbox.astro';
-import { formatDate } from '../../i18n/utils';
-import { content } from '../../i18n/content';
-import { groupMedia, renderPostContent, seminarLightboxEntries } from '../../lib/posts';
-import type { Media } from '../../lib/db/types';
-import type { SeminarView } from '../../lib/seminars';
+import BaseLayout from './BaseLayout.astro';
+import MediaLightbox from '../components/media/MediaLightbox.astro';
+import { formatDate } from '../i18n/utils';
+import { content } from '../i18n/content';
+import { groupMedia, renderPostContent, seminarLightboxEntries } from '../lib/posts';
+import type { Media } from '../lib/db/types';
+import type { SeminarView } from '../lib/seminars';
 
 interface Props {
   post: SeminarView;

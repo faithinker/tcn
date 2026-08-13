@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64, textEncoder, timingSafeEqual } from './_crypto';
+import { base64ToBytes, bytesToBase64, textEncoder, timingSafeEqual } from '../crypto';
 
 // PBKDF2-SHA256. 저장 포맷은 자기서술형: `pbkdf2$<iterations>$<saltB64>$<hashB64>`.
 // iterations 를 문자열에 담아 verify 가 파라미터를 그대로 재현하므로, 향후 값을 올려도 기존 해시 검증 가능.

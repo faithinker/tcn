@@ -1,6 +1,6 @@
 import { getSessionSecret, getSessionUid } from '../auth/guard';
 import { readSessionToken } from '../auth/cookie';
-import { base64UrlEncode, textEncoder, timingSafeEqual } from '../auth/_crypto';
+import { base64UrlEncode, hmacSha256, sha256, textEncoder, timingSafeEqual } from '../crypto';
 
 const SHORT_WINDOW_SECONDS = 10 * 60;
 const DAY_WINDOW_SECONDS = 24 * 60 * 60;
@@ -19,26 +19,12 @@ export class QnaSecurityError extends Error {
   }
 }
 
-async function hmac(value: string, secret: string): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    textEncoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  return new Uint8Array(
-    await crypto.subtle.sign('HMAC', key, textEncoder.encode(value) as BufferSource),
-  );
-}
-
 async function digest(value: string): Promise<string> {
-  const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', textEncoder.encode(value)));
-  return base64UrlEncode(bytes);
+  return base64UrlEncode(await sha256(value));
 }
 
 export async function createCsrfToken(sessionToken: string, secret: string): Promise<string> {
-  return base64UrlEncode(await hmac(`qna-csrf:${sessionToken}`, secret));
+  return base64UrlEncode(await hmacSha256(`qna-csrf:${sessionToken}`, secret));
 }
 
 export async function verifyCsrfToken(
@@ -60,12 +46,7 @@ export async function requireAdminMutation(
   const uid = await (dependencies.getUid ?? getSessionUid)(request);
   if (!uid) throw new QnaSecurityError('unauthorized', 401);
 
-  const expectedOrigin = new URL(request.url).origin;
-  const origin = request.headers.get('origin');
-  if (!origin || origin !== expectedOrigin) throw new QnaSecurityError('invalid_origin', 403);
-
-  const fetchSite = request.headers.get('sec-fetch-site');
-  if (fetchSite === 'cross-site') throw new QnaSecurityError('cross_site_request', 403);
+  requireSameOrigin(request);
 
   const sessionToken = readSessionToken(request);
   if (!sessionToken) throw new QnaSecurityError('unauthorized', 401);
@@ -90,7 +71,7 @@ export function requireSameOrigin(request: Request): void {
 export async function getQnaRateLimitKey(request: Request, secret: string): Promise<string> {
   if (!secret) throw new QnaSecurityError('security_not_configured', 503);
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
-  return `qna:${base64UrlEncode(await hmac(`qna-ip:${ip}`, secret))}`;
+  return `qna:${base64UrlEncode(await hmacSha256(`qna-ip:${ip}`, secret))}`;
 }
 
 interface RateRow {

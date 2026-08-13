@@ -1,6 +1,6 @@
 ---
 // Public seminar detail (SSR). event_date is the stable, human-readable URL key.
-import CommunityPost from '../../components/seminars/CommunityPost.astro';
+import SeminarPostLayout from '../../layouts/SeminarPostLayout.astro';
 import { getDB, listMediaForPost } from '../../lib/db';
 import { getSeminarByEventDate } from '../../lib/seminars/service';
 import { seminarHref } from '../../lib/seminars';
@@ -16,4 +16,4 @@ if (!post) return new Response(null, { status: 404 });
 const media = await listMediaForPost(db, post.id);
 ---
 
-<CommunityPost post={post} media={media} />
+<SeminarPostLayout post={post} media={media} />
