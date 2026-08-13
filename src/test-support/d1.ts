@@ -23,9 +23,11 @@ import { fileURLToPath } from 'node:url';
 const MIGRATIONS_DIR = fileURLToPath(new URL('../../migrations', import.meta.url));
 
 function migrationStatements(): string[] {
+  // 마이그레이션은 순서가 곧 스키마다. 기본 .sort() 는 구현체 정렬 규칙에 기대므로
+  // 0001_ 접두사 기준으로 명시적으로 비교한다.
   const files = readdirSync(MIGRATIONS_DIR)
     .filter((name) => name.endsWith('.sql'))
-    .sort();
+    .sort((a, b) => a.localeCompare(b, 'en'));
 
   return files.flatMap((name) =>
     readFileSync(join(MIGRATIONS_DIR, name), 'utf8')
