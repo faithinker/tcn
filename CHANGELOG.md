@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ## [2026-08-13]
 
 ### Chore
+- Removed project-local MCP overrides that declared only `enabled` without their own `command` or `url`, leaving the inherited Cloudflare API transport and the intentional XcodeBuildMCP disablement. (Branch: `chore/codex-mcp-config`) - Implemented by Codex
 - Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
 ## [2026-08-12]
