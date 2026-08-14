@@ -1,0 +1,2155 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TCN 프로젝트 구조 분석</title>
+    <style>
+      :root {
+        --bg: #fbfaf8;
+        --bg-raised: #ffffff;
+        --bg-sunken: #f2f0ec;
+        --ink: #17171a;
+        --ink-2: #4a4a52;
+        --ink-3: #7a7a85;
+        --line: #dedbd4;
+        --line-soft: #eae7e0;
+        --accent: #1f5f4f;
+        --accent-soft: #e3efe9;
+        --warn: #8a5a12;
+        --warn-soft: #f6ecd8;
+        --edge: #b8b3a8;
+        --edge-hi: #1f5f4f;
+        --edge-back: #b4791b;
+        --l1: #2f4858;
+        --l2: #3f6b8a;
+        --l3: #1f5f4f;
+        --l4: #6b5a8a;
+        --l5: #8a4a3a;
+        --l6: #5a5a5a;
+        --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        --sans:
+          'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI',
+          Roboto, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131316;
+          --bg-raised: #1c1c20;
+          --bg-sunken: #0e0e10;
+          --ink: #ececef;
+          --ink-2: #b4b4bd;
+          --ink-3: #85858f;
+          --line: #34343b;
+          --line-soft: #26262b;
+          --accent: #6fc2a5;
+          --accent-soft: #17302a;
+          --warn: #d8a75a;
+          --warn-soft: #33280f;
+          --edge: #4a4a53;
+          --edge-hi: #6fc2a5;
+          --edge-back: #d8a75a;
+          --l1: #8fb0c4;
+          --l2: #7fa9c9;
+          --l3: #6fc2a5;
+          --l4: #a894c9;
+          --l5: #c98f7d;
+          --l6: #9a9aa4;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 15px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 24px 96px;
+      }
+
+      header.top {
+        border-bottom: 1px solid var(--line);
+        padding: 56px 0 32px;
+        margin-bottom: 48px;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin: 0 0 14px;
+      }
+      h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin: 0 0 14px;
+        font-weight: 600;
+      }
+      .lede {
+        color: var(--ink-2);
+        max-width: 70ch;
+        margin: 0;
+        font-size: 16px;
+      }
+
+      section {
+        margin-bottom: 64px;
+        scroll-margin-top: 20px;
+      }
+      h2 {
+        font-size: 21px;
+        letter-spacing: -0.01em;
+        font-weight: 600;
+        margin: 0 0 6px;
+        padding-top: 8px;
+      }
+      h2 .num {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        margin-right: 10px;
+        vertical-align: 2px;
+      }
+      h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 32px 0 10px;
+        letter-spacing: -0.005em;
+      }
+      .sub {
+        color: var(--ink-3);
+        font-size: 13.5px;
+        margin: 0 0 22px;
+        max-width: 76ch;
+      }
+      p {
+        max-width: 76ch;
+      }
+
+      /* stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .stat {
+        background: var(--bg-raised);
+        padding: 18px 18px 16px;
+      }
+      .stat b {
+        display: block;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      .stat span {
+        display: block;
+        font-size: 12px;
+        color: var(--ink-3);
+        margin-top: 5px;
+      }
+
+      /* generic panel */
+      .panel {
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px;
+      }
+
+      /* graph */
+      .graph-shell {
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .graph-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line-soft);
+        background: var(--bg-sunken);
+        font-size: 12px;
+        color: var(--ink-2);
+      }
+      .graph-bar .hint {
+        color: var(--ink-3);
+      }
+      .swatch {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .swatch i {
+        width: 20px;
+        height: 3px;
+        border-radius: 2px;
+        display: inline-block;
+      }
+      .graph-scroll {
+        overflow-x: auto;
+      }
+      svg.graph {
+        display: block;
+        min-width: 1000px;
+        width: 100%;
+        height: auto;
+      }
+      .node rect {
+        fill: var(--bg-raised);
+        stroke-width: 1.4;
+        rx: 7;
+        transition:
+          fill 0.12s,
+          stroke-width 0.12s;
+      }
+      .node text.nm {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        fill: var(--ink);
+        font-weight: 500;
+      }
+      .node text.meta {
+        font-family: var(--mono);
+        font-size: 10px;
+        fill: var(--ink-3);
+      }
+      .node {
+        cursor: pointer;
+      }
+      .node:hover rect {
+        stroke-width: 2.4;
+      }
+      .edge {
+        fill: none;
+        stroke: var(--edge);
+        stroke-opacity: 0.42;
+        transition:
+          stroke-opacity 0.12s,
+          stroke 0.12s,
+          stroke-width 0.12s;
+      }
+      .edge.back {
+        stroke: var(--edge-back);
+        stroke-dasharray: 4 3;
+        stroke-opacity: 0.55;
+      }
+      svg.graph.focused .edge {
+        stroke-opacity: 0.07;
+      }
+      svg.graph.focused .edge.on-out {
+        stroke: var(--edge-hi);
+        stroke-opacity: 1;
+      }
+      svg.graph.focused .edge.on-in {
+        stroke: var(--edge-back);
+        stroke-opacity: 1;
+      }
+      svg.graph.focused .node {
+        opacity: 0.28;
+      }
+      svg.graph.focused .node.on {
+        opacity: 1;
+      }
+      .layerband {
+        fill: var(--bg-sunken);
+      }
+      .layerlabel {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        fill: var(--ink-3);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .readout {
+        border-top: 1px solid var(--line-soft);
+        padding: 14px 16px;
+        font-size: 13px;
+        min-height: 58px;
+        background: var(--bg-sunken);
+      }
+      .readout b {
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .readout .row {
+        margin-top: 5px;
+        color: var(--ink-2);
+        font-size: 12.5px;
+      }
+      .readout .row em {
+        font-style: normal;
+        color: var(--ink-3);
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        margin-right: 8px;
+      }
+      code,
+      .mono {
+        font-family: var(--mono);
+        font-size: 0.88em;
+      }
+      code {
+        background: var(--bg-sunken);
+        border: 1px solid var(--line-soft);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+
+      /* feature cards */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+        gap: 14px;
+      }
+      .feat {
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent);
+        border-radius: 8px;
+        padding: 16px 18px 14px;
+      }
+      .feat h4 {
+        margin: 0 0 3px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .feat .tag {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: var(--ink-3);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .feat dl {
+        margin: 12px 0 0;
+        display: grid;
+        grid-template-columns: 62px 1fr;
+        gap: 6px 10px;
+        font-size: 12.5px;
+      }
+      .feat dt {
+        color: var(--ink-3);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding-top: 2px;
+      }
+      .feat dd {
+        margin: 0;
+        color: var(--ink-2);
+      }
+      .feat dd .mono {
+        color: var(--ink);
+      }
+
+      /* runtime diagram */
+      .runtime {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--bg-raised);
+      }
+      .rt-row {
+        display: grid;
+        grid-template-columns: 132px 1fr;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .rt-row:last-child {
+        border-bottom: 0;
+      }
+      .rt-key {
+        background: var(--bg-sunken);
+        padding: 14px 14px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        border-right: 1px solid var(--line-soft);
+      }
+      .rt-val {
+        padding: 13px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        align-items: center;
+      }
+      .chip {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        border-radius: 5px;
+        padding: 3px 8px;
+        color: var(--ink-2);
+        white-space: nowrap;
+      }
+      .chip.acc {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .chip.wn {
+        border-color: var(--warn);
+        color: var(--warn);
+        background: var(--warn-soft);
+      }
+      .rt-note {
+        flex-basis: 100%;
+        font-size: 12.5px;
+        color: var(--ink-3);
+        margin-top: 2px;
+      }
+
+      /* tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      th {
+        text-align: left;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        font-weight: 500;
+        padding: 10px 14px;
+        background: var(--bg-sunken);
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--ink-2);
+        vertical-align: top;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      td.m,
+      th.m {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .tbl-scroll {
+        overflow-x: auto;
+      }
+
+      /* findings */
+      .finding {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--bg-raised);
+        padding: 15px 18px;
+        margin-bottom: 10px;
+      }
+      .finding.warn {
+        border-left: 3px solid var(--warn);
+      }
+      .finding.ok {
+        border-left: 3px solid var(--accent);
+      }
+      .finding h4 {
+        margin: 0 0 5px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .finding p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+
+      /* recommendations */
+      .tier {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin: 34px 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .tier:first-of-type {
+        margin-top: 22px;
+      }
+      .tier::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+      .rec {
+        display: grid;
+        grid-template-columns: 46px 1fr;
+        background: var(--bg-raised);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      .rec-rank {
+        background: var(--bg-sunken);
+        border-right: 1px solid var(--line-soft);
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--ink-3);
+        display: flex;
+        justify-content: center;
+        padding-top: 17px;
+      }
+      .rec-body {
+        padding: 15px 18px 16px;
+        min-width: 0;
+      }
+      .rec-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 8px 12px;
+        margin-bottom: 8px;
+      }
+      .rec-head h4 {
+        margin: 0;
+        font-size: 14.5px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+      }
+      .rec-body p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+      .rec-body p:last-child {
+        margin-bottom: 0;
+      }
+      .meta-chip {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 2px 6px;
+        color: var(--ink-3);
+        white-space: nowrap;
+      }
+      .meta-chip.risk-lo {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .meta-chip.done {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        font-weight: 600;
+      }
+      .meta-chip.todo {
+        color: var(--ink-2);
+        border-color: var(--ink-3);
+      }
+      .rec.is-done {
+        border-left: 3px solid var(--accent);
+      }
+      .rec.is-done .rec-rank {
+        color: var(--accent);
+      }
+      .rec.is-todo {
+        border-left: 3px solid var(--line);
+      }
+      .meta-chip.risk-md {
+        color: var(--warn);
+        border-color: var(--warn);
+        background: var(--warn-soft);
+      }
+      .evi {
+        border: 1px solid var(--line-soft);
+        border-radius: 6px;
+        background: var(--bg-sunken);
+        padding: 10px 12px;
+        margin: 0 0 10px;
+        font-size: 12px;
+        display: grid;
+        gap: 5px;
+      }
+      .evi-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: baseline;
+      }
+      .evi-row .loc {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink);
+        overflow-wrap: anywhere;
+      }
+      .evi-row .what {
+        color: var(--ink-3);
+        font-size: 11.5px;
+        text-align: right;
+      }
+      .evi-cap {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        margin-bottom: 1px;
+      }
+      pre.snip {
+        margin: 0 0 10px;
+        padding: 11px 13px;
+        background: var(--bg-sunken);
+        border: 1px solid var(--line-soft);
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: var(--ink-2);
+      }
+      pre.snip .del {
+        color: var(--warn);
+      }
+      pre.snip .add {
+        color: var(--accent);
+      }
+      @media (max-width: 560px) {
+        .evi-row {
+          grid-template-columns: 1fr;
+          gap: 1px;
+        }
+        .evi-row .what {
+          text-align: left;
+        }
+      }
+
+      /* bar chart */
+      .bars {
+        display: grid;
+        gap: 5px;
+      }
+      .bar {
+        display: grid;
+        grid-template-columns: 150px 1fr 92px;
+        align-items: center;
+        gap: 12px;
+        font-size: 12.5px;
+      }
+      .bar .lbl {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink-2);
+        text-align: right;
+      }
+      .bar .track {
+        height: 16px;
+        background: var(--bg-sunken);
+        border-radius: 3px;
+        overflow: hidden;
+        display: flex;
+      }
+      .bar .fill {
+        background: var(--accent);
+        opacity: 0.75;
+      }
+      .bar .fill.t {
+        background: var(--l4);
+        opacity: 0.5;
+      }
+      .bar .val {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink-3);
+      }
+
+      footer.btm {
+        border-top: 1px solid var(--line);
+        padding-top: 20px;
+        color: var(--ink-3);
+        font-size: 12.5px;
+      }
+      @media (max-width: 780px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 640px) {
+        .bar {
+          grid-template-columns: 110px 1fr 70px;
+        }
+        .rt-row {
+          grid-template-columns: 1fr;
+        }
+        .rt-key {
+          border-right: 0;
+          border-bottom: 1px solid var(--line-soft);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <p class="eyebrow">Transcultural Network / tcn-site v0.1.0</p>
+        <h1>TCN 프로젝트 구조 분석</h1>
+        <p class="lede">
+          Astro 7 + React 19 아일랜드를 Cloudflare Workers 위에서 SSR로 굴리고, D1과 R2를 바인딩으로
+          직접 물린 단일 워커 사이트입니다. 아래는 소스 118개 파일에서 추출한 268개의 내부 import를
+          모듈 단위로 접어 만든 계층도, 기능 도메인 지도, 런타임 경계, 그리고 09 의 개선 작업
+          결과입니다.
+        </p>
+      </header>
+
+      <section>
+        <h2><span class="num">01</span>규모</h2>
+        <p class="sub"><code>src/</code> 기준. 테스트 파일은 소스 집계에서 제외했습니다.</p>
+        <div class="stats">
+          <div class="stat"><b>118</b><span>소스 파일 (ts/tsx/astro)</span></div>
+          <div class="stat"><b>11,837</b><span>소스 라인 (ts/tsx/astro)</span></div>
+          <div class="stat"><b>48</b><span>테스트 파일 (vitest)</span></div>
+          <div class="stat"><b>268</b><span>내부 import 엣지</span></div>
+          <div class="stat"><b>13</b><span>외부 런타임 의존성</span></div>
+          <div class="stat"><b>35</b><span>라우트 (페이지 + API)</span></div>
+          <div class="stat"><b>10</b><span>D1 테이블</span></div>
+          <div class="stat"><b>6</b><span>마이그레이션</span></div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">02</span>의존성 계층도</h2>
+        <p class="sub">
+          노드는 디렉터리 단위 모듈, 엣지는 import 방향입니다. 선 굵기는 import 횟수, 노드의
+          <span class="mono">↻n</span>은 모듈 내부 결합도(자기 디렉터리 내 import 수)입니다. 노드를
+          클릭하면 해당 모듈의 진입/진출 의존성만 남습니다.
+        </p>
+
+        <div class="graph-shell">
+          <div class="graph-bar">
+            <span class="swatch"
+              ><i style="background: var(--edge-hi)"></i> 진출 (이 모듈이 씀)</span
+            >
+            <span class="swatch"
+              ><i style="background: var(--edge-back)"></i> 진입 (이 모듈을 씀)</span
+            >
+            <span class="swatch"
+              ><i
+                style="
+                  background: repeating-linear-gradient(
+                    90deg,
+                    var(--edge-back) 0 4px,
+                    transparent 4px 7px
+                  );
+                "
+              ></i>
+              계층 역행</span
+            >
+            <span class="hint">노드 클릭으로 고정 · 빈 곳 클릭으로 해제</span>
+          </div>
+          <div class="graph-scroll">
+            <svg
+              class="graph"
+              id="g"
+              viewBox="0 0 1240 800"
+              role="img"
+              aria-label="모듈 의존성 계층도"
+            ></svg>
+          </div>
+          <div class="readout" id="ro">
+            <b>모듈을 선택하세요</b>
+            <div class="row">각 모듈의 의존 대상과 역의존 관계를 여기에 펼칩니다.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">03</span>기능 도메인</h2>
+        <p class="sub">
+          라우트 표면 - 도메인 로직 - 저장소가 한 줄로 이어지는 6개 축입니다. 각 축은 자기 도메인
+          모듈을 소유하고, 공통으로 <code>lib/db</code>와 <code>i18n</code>만 아래에서 공유합니다.
+        </p>
+        <div class="features">
+          <div class="feat">
+            <span class="tag">Public / Prerender + SSR</span>
+            <h4>기관 기록 사이트</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">
+                / · /about · /about/founding · /declaration · /bylaws · /people · /contact · /404
+              </dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">i18n/content.ts</span> (554줄) 가 본문 원문을 소유,
+                <span class="mono">layouts/DocumentLayout</span> 이 문서형 페이지를 감쌈
+              </dd>
+              <dt>데이터</dt>
+              <dd>
+                <span class="mono">src/data/*.json</span> 을 astro:content 컬렉션(members,
+                invitations)으로 스키마 검증
+              </dd>
+              <dt>테스트</dt>
+              <dd>i18n utils, organization-milestones</dd>
+            </dl>
+          </div>
+
+          <div class="feat">
+            <span class="tag">Public / SSR</span>
+            <h4>세미나 아카이브</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">/seminars · /seminars/[date] · /seminars/p/[id]</dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">lib/seminars</span> (model · url · validation · service) +
+                <span class="mono">layouts/SeminarPostLayout</span>
+              </dd>
+              <dt>데이터</dt>
+              <dd>
+                <span class="mono">posts</span> 테이블 (event_date 유니크 인덱스, soft delete,
+                revision)
+              </dd>
+              <dt>테스트</dt>
+              <dd>model, validation, 라우트 계약 2종</dd>
+            </dl>
+          </div>
+
+          <div class="feat">
+            <span class="tag">Public + Admin / SSR</span>
+            <h4>공식 Q&amp;A</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">
+                /questions · /questions/[id] · /questions/new · /admin/questions · POST·PATCH·PUT
+                /api/questions
+              </dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">lib/qna</span> 836줄. repository · payload ·
+                security(CSRF·Turnstile·rate limit) · response · admin-route
+              </dd>
+              <dt>데이터</dt>
+              <dd>
+                <span class="mono"
+                  >qna_questions · qna_answers · qna_audit_events · qna_rate_limits ·
+                  qna_turnstile_tokens</span
+                >
+              </dd>
+              <dt>테스트</dt>
+              <dd>4개 유닛 + 라우트 계약 2종. 프로젝트에서 가장 두껍게 방어된 영역</dd>
+            </dl>
+          </div>
+
+          <div class="feat">
+            <span class="tag">Admin / React island</span>
+            <h4>저작 도구</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">/admin · /admin/posts/new · /admin/posts/[id]</dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">components/admin</span> 13파일 1,669줄. PostEditor 가
+                BodyEditor(TipTap) · MediaManager · PostFields · PublishBar · ReadinessAside 를 조립
+              </dd>
+              <dt>상태</dt>
+              <dd>
+                순수 함수로 분리:
+                <span class="mono"
+                  >readiness · publish-state · pending-media · media-order · editor-messages</span
+                >
+              </dd>
+              <dt>테스트</dt>
+              <dd>6개. 상태 로직이 컴포넌트 밖에 있어 전부 단위 테스트 가능</dd>
+            </dl>
+          </div>
+
+          <div class="feat">
+            <span class="tag">Shared / SSR</span>
+            <h4>미디어 파이프라인</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">
+                POST /api/media · PATCH·DELETE /api/media/[id] · GET /media/[...key] · POST
+                /api/maintenance/media-cleanup
+              </dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">lib/media</span> 7파일. validate · accept(허용목록) ·
+                process-image · metadata · lightbox · milestone · founding
+              </dd>
+              <dt>데이터</dt>
+              <dd>
+                R2 <span class="mono">tcn-media</span> + D1 <span class="mono">media</span>, 삭제는
+                <span class="mono">media_cleanup_queue</span> 로 지연 처리
+              </dd>
+              <dt>테스트</dt>
+              <dd>7개. 업로드 허용목록·갤러리 sizes 는 소스간 parity 테스트로 고정</dd>
+            </dl>
+          </div>
+
+          <div class="feat">
+            <span class="tag">Cross-cutting</span>
+            <h4>인증 · 세션</h4>
+            <dl>
+              <dt>라우트</dt>
+              <dd class="mono">POST /api/auth/login · logout · GET /api/auth/me · /admin/login</dd>
+              <dt>모듈</dt>
+              <dd>
+                <span class="mono">lib/auth</span> 6파일 252줄. 공용
+                <span class="mono">lib/crypto</span> 위에 password · session(HMAC 토큰, TTL 24h) ·
+                cookie · guard · rate-limit
+              </dd>
+              <dt>데이터</dt>
+              <dd>
+                <span class="mono">users.session_version</span> 으로 일괄 무효화,
+                <span class="mono">auth_rate_limits</span> 로 로그인 시도 제한
+              </dd>
+              <dt>테스트</dt>
+              <dd>
+                6개 + 해시 스크립트 parity 테스트. <span class="mono">lib/crypto</span> 는 별도 1개
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">04</span>런타임 경계</h2>
+        <p class="sub">
+          하나의 Cloudflare Worker가 정적 자산·SSR·API를 모두 처리합니다. 프레임워크 밖 경계는 아래
+          네 줄이 전부입니다.
+        </p>
+        <div class="runtime">
+          <div class="rt-row">
+            <div class="rt-key">Entry</div>
+            <div class="rt-val">
+              <span class="chip acc">@astrojs/cloudflare</span>
+              <span class="chip">wrangler.jsonc</span>
+              <span class="chip">nodejs_compat</span>
+              <span class="chip">compat 2026-07-25</span>
+              <span class="rt-note">
+                워커 하나가 <code>./dist</code> 를 ASSETS 바인딩으로 서빙하고 나머지를 SSR로
+                넘깁니다. <code>html_handling: drop-trailing-slash</code> 로 canonical URL을 슬래시
+                없이 고정.
+              </span>
+            </div>
+          </div>
+          <div class="rt-row">
+            <div class="rt-key">Middleware</div>
+            <div class="rt-val">
+              <span class="chip acc">src/middleware.ts</span>
+              <span class="chip">301 canonical redirect</span>
+              <span class="chip">no-store</span>
+              <span class="chip">CSP frame-ancestors none</span>
+              <span class="rt-note">
+                전역 관심사는 두 가지뿐입니다. canonical 리다이렉트, 그리고
+                <code>/questions</code>·<code>/admin/questions</code>·<code>/api/questions</code>
+                경로에만 거는 보안 헤더. 인증 가드는 미들웨어가 아니라 각 라우트가
+                <code>lib/auth</code> 로 직접 겁니다.
+              </span>
+            </div>
+          </div>
+          <div class="rt-row">
+            <div class="rt-key">Rendering</div>
+            <div class="rt-val">
+              <span class="chip wn">prerender=false × 29</span>
+              <span class="chip">정적: /about/* · /people · /contact · /404</span>
+              <span class="chip">imageService: compile</span>
+              <span class="rt-note">
+                D1을 읽는 페이지는 전부 SSR입니다. 창립총회 기록은 프리렌더 정적이라 이미지 변형을
+                빌드 타임 sharp로 굽습니다 (IMAGES 바인딩 부재 회피).
+              </span>
+            </div>
+          </div>
+          <div class="rt-row">
+            <div class="rt-key">Bindings</div>
+            <div class="rt-val">
+              <span class="chip acc">D1 · tcn-content</span>
+              <span class="chip acc">R2 · tcn-media</span>
+              <span class="chip acc">ASSETS · ./dist</span>
+              <span class="rt-note">
+                모든 바인딩 접근은 <code>lib/db/client.ts</code> 의
+                <code>getDB / getBucket / getAssets</code> 세 함수를 통과합니다. 다른 모듈은
+                <code>cloudflare:workers</code> 를 직접 import 하지 않습니다.
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">05</span>라우트 표면</h2>
+        <p class="sub">
+          35개 라우트. API는 메서드별로 파일이 나뉘지 않고 하나의 라우트 파일이 여러 메서드를 export
+          하는 Astro 관례를 따릅니다.
+        </p>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="m">경로</th>
+                <th class="m">메서드</th>
+                <th>렌더</th>
+                <th>인증</th>
+                <th>주 의존</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="m">/</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>i18n · lib/db · lib/seminars</td>
+              </tr>
+              <tr>
+                <td class="m">/about</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>data/organization-milestones · components/media</td>
+              </tr>
+              <tr>
+                <td class="m">/about/founding · /declaration · /bylaws</td>
+                <td class="m">GET</td>
+                <td>정적</td>
+                <td>공개</td>
+                <td>DocumentLayout · i18n/content</td>
+              </tr>
+              <tr>
+                <td class="m">/people · /contact · /404</td>
+                <td class="m">GET</td>
+                <td>정적</td>
+                <td>공개</td>
+                <td>astro:content · i18n/content</td>
+              </tr>
+              <tr>
+                <td class="m">/seminars · /seminars/[date] · /seminars/p/[id]</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>lib/seminars/service · layouts/SeminarPostLayout</td>
+              </tr>
+              <tr>
+                <td class="m">/questions · /questions/[id] · /questions/new</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>lib/qna/repository · components/qna</td>
+              </tr>
+              <tr>
+                <td class="m">/media/[...key]</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개 (가시성 검사)</td>
+                <td>lib/db · R2</td>
+              </tr>
+              <tr>
+                <td class="m">/sitemap.xml</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>lib/seminars/service</td>
+              </tr>
+              <tr>
+                <td class="m">/admin · /admin/login</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/auth · AdminLayout</td>
+              </tr>
+              <tr>
+                <td class="m">/admin/posts/new · /admin/posts/[id]</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>components/admin/PostEditor (React island)</td>
+              </tr>
+              <tr>
+                <td class="m">/admin/questions · /admin/questions/[id]</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>세션 + CSRF</td>
+                <td>lib/qna/security · scripts/admin-qna-*</td>
+              </tr>
+              <tr>
+                <td class="m">/api/health · /api/ready</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>공개</td>
+                <td>없음 / D1 핑</td>
+              </tr>
+              <tr>
+                <td class="m">/api/auth/login · logout</td>
+                <td class="m">POST</td>
+                <td>SSR</td>
+                <td>rate limit</td>
+                <td>lib/auth · lib/db/users</td>
+              </tr>
+              <tr>
+                <td class="m">/api/auth/me</td>
+                <td class="m">GET</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/auth/guard</td>
+              </tr>
+              <tr>
+                <td class="m">/api/posts</td>
+                <td class="m">POST</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/posts · lib/notify · lib/seminars</td>
+              </tr>
+              <tr>
+                <td class="m">/api/posts/[id]</td>
+                <td class="m">PUT · DELETE</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/posts · revision 충돌 검사</td>
+              </tr>
+              <tr>
+                <td class="m">/api/media</td>
+                <td class="m">POST</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/media/validate · R2</td>
+              </tr>
+              <tr>
+                <td class="m">/api/media/[id]</td>
+                <td class="m">PATCH · DELETE</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/media/metadata · cleanup queue</td>
+              </tr>
+              <tr>
+                <td class="m">/api/questions</td>
+                <td class="m">POST</td>
+                <td>SSR</td>
+                <td>Turnstile + rate limit</td>
+                <td>lib/qna 전체</td>
+              </tr>
+              <tr>
+                <td class="m">/api/questions/[id]/answer</td>
+                <td class="m">PUT</td>
+                <td>SSR</td>
+                <td>세션 + CSRF</td>
+                <td>lib/qna/admin-route</td>
+              </tr>
+              <tr>
+                <td class="m">/api/questions/[id]/visibility</td>
+                <td class="m">PATCH</td>
+                <td>SSR</td>
+                <td>세션 + CSRF</td>
+                <td>lib/qna/admin-route</td>
+              </tr>
+              <tr>
+                <td class="m">/api/maintenance/media-cleanup</td>
+                <td class="m">POST</td>
+                <td>SSR</td>
+                <td>세션</td>
+                <td>lib/db/media · R2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">06</span>데이터 모델</h2>
+        <p class="sub">
+          D1 <code>tcn-content</code>. 마이그레이션 6개가 순서대로 초기 스키마 - 세미나 유니크 제약
+          - 미디어 정리 큐 - 인증 강화 - 낙관적 잠금 - Q&amp;A를 쌓았습니다.
+        </p>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th class="m">테이블</th>
+                <th class="m">마이그레이션</th>
+                <th>역할</th>
+                <th>소유 모듈</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="m">users</td>
+                <td class="m">0001, 0004</td>
+                <td>
+                  관리자 계정. 0004에서 <code>session_version</code> 추가로 세션 일괄 폐기 지원
+                </td>
+                <td class="m">lib/db/users</td>
+              </tr>
+              <tr>
+                <td class="m">posts</td>
+                <td class="m">0001, 0002, 0005</td>
+                <td>
+                  세미나·게시글. soft delete + <code>event_date</code> 유니크(가시분) + 0005에서
+                  <code>revision</code> 낙관적 잠금
+                </td>
+                <td class="m">lib/db/posts</td>
+              </tr>
+              <tr>
+                <td class="m">media</td>
+                <td class="m">0001</td>
+                <td>R2 객체 메타데이터. <code>(post_id, position)</code> 인덱스로 정렬 보장</td>
+                <td class="m">lib/db/media</td>
+              </tr>
+              <tr>
+                <td class="m">media_cleanup_queue</td>
+                <td class="m">0003</td>
+                <td>D1 삭제 후 R2 객체를 지연 정리하는 큐. 실패 기록 포함</td>
+                <td class="m">lib/db/media</td>
+              </tr>
+              <tr>
+                <td class="m">auth_rate_limits</td>
+                <td class="m">0004</td>
+                <td>로그인 시도 제한</td>
+                <td class="m">lib/auth/rate-limit</td>
+              </tr>
+              <tr>
+                <td class="m">qna_questions</td>
+                <td class="m">0006</td>
+                <td>공개 질문. 가시성·상태 인덱스 2종 (공개용/관리자용 분리)</td>
+                <td class="m">lib/qna/repository</td>
+              </tr>
+              <tr>
+                <td class="m">qna_answers</td>
+                <td class="m">0006</td>
+                <td>공식 답변. 질문당 upsert</td>
+                <td class="m">lib/qna/repository</td>
+              </tr>
+              <tr>
+                <td class="m">qna_audit_events</td>
+                <td class="m">0006</td>
+                <td>관리자 조작 감사 로그</td>
+                <td class="m">lib/qna/repository</td>
+              </tr>
+              <tr>
+                <td class="m">qna_rate_limits</td>
+                <td class="m">0006</td>
+                <td>질문 등록 제한 (해시 키 기반)</td>
+                <td class="m">lib/qna/security</td>
+              </tr>
+              <tr>
+                <td class="m">qna_turnstile_tokens</td>
+                <td class="m">0006</td>
+                <td>Turnstile 토큰 재사용 방지, 만료 인덱스</td>
+                <td class="m">lib/qna/security</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">07</span>모듈 규모와 테스트 분포</h2>
+        <p class="sub">
+          진한 막대는 소스 라인(최대 1,669 기준), 뒤에 이어붙인 흐린 막대는 테스트 파일 수입니다. 두
+          막대의 축은 서로 다릅니다. 맨 아래 <code>lib/routes</code> 는 소스 없이 라우트 계약 테스트
+          10개만 있는 디렉터리입니다.
+        </p>
+        <div class="panel">
+          <div class="bars" id="bars"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">08</span>구조상 관측</h2>
+        <p class="sub">
+          의존성 그래프에서 읽히는 것들입니다. 09 의 개선 작업이 반영된 뒤 상태 기준입니다.
+        </p>
+
+        <div class="finding ok">
+          <h4>런타임 계층 역행이 0 이 되었습니다</h4>
+          <p>
+            268개 내부 엣지 중 계층을 거스르는 것은 이제 하나뿐이고, 그것마저
+            <code>data/organization-milestones.ts → lib/seminars</code> 의
+            <code>import type</code> 이라 빌드 시 소거됩니다. 유일했던 런타임 역행
+            <code>components/seminars/CommunityPost.astro → layouts/BaseLayout</code> 은 파일이
+            <code>layouts/SeminarPostLayout.astro</code> 로 옮겨가면서 사라졌습니다. 순환 의존은
+            없습니다.
+          </p>
+        </div>
+
+        <div class="finding ok">
+          <h4>바인딩 접근이 한 파일로 좁혀져 있습니다</h4>
+          <p>
+            D1·R2·ASSETS 접근이 전부 <code>lib/db/client.ts</code> 를 거칩니다. 48개 테스트가 바인딩
+            목킹 없이 도는 이유이자, 라우트 계약 테스트 10개를 <code>lib/routes/</code> 에 소스 없이
+            테스트만 두고 운영할 수 있는 이유입니다.
+          </p>
+        </div>
+
+        <div class="finding warn">
+          <h4>lib/qna 는 836줄로 여전히 도메인 중 가장 무겁습니다</h4>
+          <p>
+            <code>security.ts</code> 하나가 CSRF 토큰, 동일 출처 검사, rate limit, Turnstile 검증을
+            안고 있습니다. 소스를 열어보니 무게의 일부는 관심사가 뭉친 것이 아니라
+            <strong>아래 계층에 공용 crypto 가 없어서 각자 만든 것</strong>이었고, 그건
+            <code>lib/crypto</code> 를 새로 두면서 해소됐습니다(09-02). 남은 무게는 rate limiter
+            중복(09-04)이며 아직 미적용입니다.
+          </p>
+        </div>
+
+        <div class="finding warn">
+          <h4>components/admin 이 내부 결합 21로 가장 조밀합니다</h4>
+          <p>
+            13개 파일 1,669줄이 서로를 21번 참조합니다. 다만
+            <code>PostEditor.tsx</code> 가 5개 하위 컴포넌트를 조립하는 허브이고 상태 로직은
+            <code>readiness · publish-state · pending-media · media-order</code> 순수 함수로 빠져
+            있어, 조밀함이 곧 얽힘은 아닙니다.
+          </p>
+        </div>
+
+        <div class="finding ok">
+          <h4>i18n 이 프레젠테이션 전용으로 고립돼 있습니다</h4>
+          <p>
+            <code>i18n</code> 은 33번 import 되지만 자신은 <code>lib</code> 어느 모듈도 부르지
+            않습니다. 본문 원문 554줄이 <code>i18n/content.ts</code> 에 있는데, 도메인 로직이 이걸
+            읽지 않으므로 번역 작업이 비즈니스 로직을 건드릴 일이 없습니다.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2><span class="num">09</span>개선 제안</h2>
+        <p class="sub">
+          08 의 관측을 소스까지 따라가서 확인한 것들입니다. 그래프에서는 안 보이던 중복이
+          대부분이고, 위험 대비 효과 순으로 정렬했습니다.
+          <strong>01·02·03·06 과 05 의 절반이 적용됐습니다.</strong> 적용 후
+          <code>vitest</code> 48파일 335건 전부 통과, <code>astro check</code> 179파일 0 에러를
+          확인했습니다. 근거에 적힌 줄 번호는 개선 전 기준입니다.
+        </p>
+
+        <div class="tier">즉시 · 5분 · 무위험</div>
+
+        <div class="rec is-done">
+          <div class="rec-rank">01</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>같은 파일 안에서 복붙된 출처 검증</h4>
+              <span class="meta-chip done">적용 완료</span>
+              <span class="meta-chip risk-lo">risk 없음</span>
+              <span class="meta-chip">6줄 → 1줄</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">src/lib/qna/security.ts:63-68</span>
+                <span class="what">requireAdminMutation 안의 인라인 검사</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">src/lib/qna/security.ts:80-88</span>
+                <span class="what">requireSameOrigin, 글자 단위로 동일</span>
+              </div>
+            </div>
+            <p>
+              origin 일치 검사와 <code>sec-fetch-site</code> cross-site 차단이 같은 파일 안에서 두
+              번 쓰였습니다. 아래 함수를 호출하면 끝입니다.
+            </p>
+            <pre
+              class="snip"
+            ><span class="del">-  const expectedOrigin = new URL(request.url).origin;
+-  const origin = request.headers.get('origin');
+-  if (!origin || origin !== expectedOrigin) throw new QnaSecurityError('invalid_origin', 403);
+-
+-  const fetchSite = request.headers.get('sec-fetch-site');
+-  if (fetchSite === 'cross-site') throw new QnaSecurityError('cross_site_request', 403);</span>
+<span class="add">+  requireSameOrigin(request);</span></pre>
+            <p>
+              <strong>결과:</strong> <code>security.ts:49</code> 에 반영됨. 함수 선언은
+              호이스팅되므로 정의보다 앞서 호출해도 문제없습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="tier">단기 · 한 시간 · 중복 제거</div>
+
+        <div class="rec is-done">
+          <div class="rec-rank">02</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>crypto 헬퍼 3중복을 lib/crypto 로 승격</h4>
+              <span class="meta-chip done">적용 완료</span>
+              <span class="meta-chip risk-lo">risk 낮음</span>
+              <span class="meta-chip">경계 침범도 함께 해소</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">lib/auth/session.ts:11-21 · lib/qna/security.ts:22-33</span>
+                <span class="what">HMAC-SHA256. as BufferSource 캐스트까지 동일</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">lib/auth/rate-limit.ts:10-14 · lib/qna/security.ts:35-38</span>
+                <span class="what">SHA-256. 출력만 hex vs base64url</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">lib/qna/security.ts:3</span>
+                <span class="what">lib/auth/_crypto 직접 import</span>
+              </div>
+            </div>
+            <p>
+              08 에서 <q>lib/qna 가 관심사를 뭉쳐 안고 있다</q>고 읽었지만 실제 원인은 아래 계층에
+              공용 crypto 가 없어서 두 도메인이 각자 만든 것이었습니다.
+              <code>lib/auth/_crypto.ts</code> 를 <code>lib/crypto/</code> 로 올리고
+              <code>hmacSha256</code> · <code>sha256</code> 을 얹으면 3벌이 사라집니다.
+            </p>
+            <p>
+              덤으로 경계 침범이 해소됩니다. <code>_</code> 접두사는
+              <code>lib/auth</code> 내부용이라는 표시이고 <code>auth/index.ts</code> 가 재수출하지
+              않는데, <code>lib/qna</code> 가 그 공개 표면을 건너뛰고 직접 가져다 쓰고 있습니다.
+            </p>
+            <p>
+              <strong>결과:</strong> <code>lib/crypto/index.ts</code> 신설(58줄),
+              <code>lib/auth/_crypto.ts</code> 삭제. <code>hmacSha256</code> · <code>sha256</code> ·
+              <code>bytesToHex</code> 로 3벌이 1벌이 됐고 <code>lib/auth</code> 는 296줄에서 252줄로
+              줄었습니다. 02 계층도에 <code>lib/crypto</code> 노드가 새로 생겼습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="rec is-done">
+          <div class="rec-rank">03</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>클라이언트 IP 추출을 하나로</h4>
+              <span class="meta-chip done">적용 완료</span>
+              <span class="meta-chip risk-md">보안 판단 필요</span>
+              <span class="meta-chip">현재는 잠복</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">lib/auth/rate-limit.ts:21-24</span>
+                <span class="what">cf-connecting-ip ?? x-forwarded-for[0] ?? unknown</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">lib/qna/security.ts:92</span>
+                <span class="what">cf-connecting-ip ?? unknown</span>
+              </div>
+            </div>
+            <p>
+              <code>x-forwarded-for</code> 는 클라이언트가 조작할 수 있는 헤더입니다. 이걸 rate
+              limit 버킷 키로 쓰면 헤더를 돌려가며 IP 제한을 우회할 수 있습니다.
+            </p>
+            <p>
+              Workers 에서는 <code>cf-connecting-ip</code> 가 항상 채워지므로
+              <strong>지금은 도달하지 않는 폴백</strong>입니다. 다만 다른 프록시 뒤나 테스트
+              하니스에서 돌면 살아납니다. auth 쪽 폴백을 없애 qna 와 맞추는 쪽을 권합니다.
+            </p>
+            <p>
+              <strong>결과:</strong> <code>x-forwarded-for</code> 폴백 제거. 다만 이 변경과 함께
+              들어온 <code>import</code> 문이 <code>rate-limit.ts</code> 파일 <em>맨 아래</em>에
+              붙어 있어 상단으로 옮겼습니다. ES 모듈 import 는 호이스팅되므로 동작에는 영향이
+              없었지만 의도한 코드가 아닙니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="tier">구조 · 반나절</div>
+
+        <div class="rec is-todo">
+          <div class="rec-rank">04</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>슬라이딩 윈도 rate limiter 2벌을 1벌로</h4>
+              <span class="meta-chip todo">미적용</span>
+              <span class="meta-chip risk-lo">risk 낮음</span>
+              <span class="meta-chip">마이그레이션 불필요</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">lib/auth/rate-limit.ts:48-75</span>
+                <span class="what">auth_rate_limits · 단일 윈도 + blocked_until 잠금</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">lib/qna/security.ts:103-159</span>
+                <span class="what">qna_rate_limits · 단기/일일 2중 윈도</span>
+              </div>
+            </div>
+            <p>
+              둘 다
+              <code
+                >insert ... on conflict do update set X = case when window_started_at &lt;= ?2 - N
+                then 1 else X + 1 end</code
+              >
+              이라는 같은 SQL 패턴을 각자 구현합니다. qna 쪽이 더 일반적이고, auth 쪽이 잠금을 더
+              갖고 있습니다.
+            </p>
+            <p>
+              <strong>코드만 통합하고 테이블은 그대로 두세요.</strong> 마이그레이션 없이 중복이
+              사라지고, 세 번째 rate limit 이 생길 때 비용이 0 이 됩니다.
+            </p>
+            <p>
+              <strong>현재:</strong> 두 파일 모두 자기 <code>on conflict do update</code> 구문을
+              그대로 갖고 있습니다. 08 에서 <code>lib/qna</code> 가 여전히 836줄로 가장 무거운
+              이유가 이것입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="rec is-todo">
+          <div class="rec-rank">05</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>테스트 공백 두 곳</h4>
+              <span class="meta-chip todo">절반 적용</span>
+              <span class="meta-chip risk-lo">risk 없음</span>
+              <span class="meta-chip">07 막대의 빈칸</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">src/scripts/ 469줄 · 테스트 0</span>
+                <span class="what">admin-qna-detail.ts 만 277줄</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">src/lib/qna/admin-ui.test.ts</span>
+                <span class="what">.astro 소스를 정규식으로 grep</span>
+              </div>
+            </div>
+            <p>
+              <code>scripts/admin-qna-utils.ts</code> 는 34줄 순수 함수 4개고 3곳에서 import 됩니다.
+              <code>formatWaitingAge</code> 는 UTC 날짜 경계 계산까지 들어 있는데 검증이 없습니다.
+              지금 당장 공짜로 덮을 수 있는 곳입니다.
+            </p>
+            <p>
+              <code>admin-ui.test.ts</code> 는 테스트가 아니라 린트 규칙입니다.
+              <code>readFileSync</code> 로 <code>.astro</code> 파일을 읽어 정규식으로 문자열을
+              찾습니다. 템플릿 서식만 바뀌어도 깨지고, 실제 동작은 아무것도 검증하지 않습니다.
+            </p>
+            <p>
+              <strong>결과:</strong> <code>scripts/admin-qna-utils.test.ts</code> 와
+              <code>lib/crypto/crypto.test.ts</code> 가 추가되어 테스트 파일이 46 에서 48 로
+              늘었습니다. <code>admin-ui.test.ts</code> 는 그대로라 절반만 적용된 상태입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="tier">낮은 우선순위 · 이름과 위치</div>
+
+        <div class="rec is-done">
+          <div class="rec-rank">06</div>
+          <div class="rec-body">
+            <div class="rec-head">
+              <h4>CommunityPost 는 컴포넌트가 아니라 페이지 템플릿</h4>
+              <span class="meta-chip done">적용 완료</span>
+              <span class="meta-chip">런타임 계층 역행 1건의 원인</span>
+            </div>
+            <div class="evi">
+              <div class="evi-cap">근거</div>
+              <div class="evi-row">
+                <span class="loc">components/seminars/CommunityPost.astro:2</span>
+                <span class="what">BaseLayout 을 감쌈 (393줄)</span>
+              </div>
+              <div class="evi-row">
+                <span class="loc">pages/seminars/[date].astro:3</span>
+                <span class="what">유일한 사용처</span>
+              </div>
+            </div>
+            <p>
+              <code>layouts/</code> 로 옮기거나, 레이아웃을 페이지로 끌어올리고 CommunityPost 를
+              순수 컴포넌트로 남기면 08 의 역행 엣지가 0 이 됩니다. 함께
+              <code>PostEditor.tsx</code> 544줄이 코드베이스 최대 파일이지만, 상태 로직이 이미 순수
+              함수로 빠져 있어 급하지 않습니다.
+            </p>
+            <p>
+              <strong>결과:</strong> <code>layouts/SeminarPostLayout.astro</code> 로 이동,
+              <code>components/seminars/</code> 디렉터리 소멸. 02 계층도에서 해당 노드가 사라지고 그
+              엣지들이 <code>layouts</code> 로 옮겨갔으며, 08 의 런타임 계층 역행이 0 이 되었습니다.
+              <code>PostEditor.tsx</code> 는 그대로입니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="btm">
+        생성일 2026-08-13 · 09 의 개선 작업 반영 후 재추출 · 분석 대상
+        <span class="mono">src/</span> 118 파일 / 268 내부 import · 의존성은 정적 import 문 기준이며
+        동적 <span class="mono">import()</span> 도 포함합니다 · 검증:
+        <span class="mono">vitest</span> 48파일 335건 통과,
+        <span class="mono">astro check</span> 179파일 0 에러.
+      </footer>
+    </div>
+
+    <script>
+      // ---- 모듈 노드 정의: [id, 라벨, x, y, w, 파일수, 라인수, 내부결합, 색상변수]
+      const NODES = [
+        // L1 진입
+        {
+          id: 'mw',
+          label: 'middleware.ts',
+          x: 30,
+          y: 40,
+          w: 152,
+          files: 1,
+          loc: 29,
+          self: 0,
+          c: '--l1',
+        },
+        {
+          id: 'pp',
+          label: 'pages/(public)',
+          x: 202,
+          y: 40,
+          w: 190,
+          files: 16,
+          loc: 2159,
+          self: 0,
+          c: '--l1',
+        },
+        {
+          id: 'pa',
+          label: 'pages/admin',
+          x: 412,
+          y: 40,
+          w: 168,
+          files: 6,
+          loc: 650,
+          self: 0,
+          c: '--l1',
+        },
+        {
+          id: 'pi',
+          label: 'pages/api',
+          x: 600,
+          y: 40,
+          w: 168,
+          files: 13,
+          loc: 701,
+          self: 0,
+          c: '--l1',
+        },
+
+        // L2 프레젠테이션
+        {
+          id: 'ly',
+          label: 'layouts',
+          x: 40,
+          y: 180,
+          w: 150,
+          files: 4,
+          loc: 806,
+          self: 2,
+          c: '--l2',
+        },
+        {
+          id: 'cr',
+          label: 'components/(root)',
+          x: 212,
+          y: 180,
+          w: 180,
+          files: 10,
+          loc: 830,
+          self: 1,
+          c: '--l2',
+        },
+        {
+          id: 'cm',
+          label: 'components/media',
+          x: 414,
+          y: 180,
+          w: 176,
+          files: 5,
+          loc: 672,
+          self: 4,
+          c: '--l2',
+        },
+        {
+          id: 'cq',
+          label: 'components/qna',
+          x: 612,
+          y: 180,
+          w: 160,
+          files: 3,
+          loc: 229,
+          self: 0,
+          c: '--l2',
+        },
+        {
+          id: 'ca',
+          label: 'components/admin',
+          x: 794,
+          y: 180,
+          w: 180,
+          files: 13,
+          loc: 1669,
+          self: 21,
+          c: '--l2',
+        },
+        {
+          id: 'sc',
+          label: 'scripts',
+          x: 996,
+          y: 180,
+          w: 130,
+          files: 4,
+          loc: 469,
+          self: 2,
+          c: '--l2',
+        },
+
+        // L3 도메인
+        {
+          id: 'ls',
+          label: 'lib/seminars',
+          x: 60,
+          y: 330,
+          w: 152,
+          files: 5,
+          loc: 237,
+          self: 6,
+          c: '--l3',
+        },
+        {
+          id: 'lp',
+          label: 'lib/posts',
+          x: 236,
+          y: 330,
+          w: 140,
+          files: 3,
+          loc: 213,
+          self: 2,
+          c: '--l3',
+        },
+        {
+          id: 'lq',
+          label: 'lib/qna',
+          x: 400,
+          y: 330,
+          w: 140,
+          files: 5,
+          loc: 836,
+          self: 4,
+          c: '--l3',
+        },
+        {
+          id: 'lm',
+          label: 'lib/media',
+          x: 564,
+          y: 330,
+          w: 140,
+          files: 7,
+          loc: 480,
+          self: 2,
+          c: '--l3',
+        },
+        {
+          id: 'ln',
+          label: 'lib/notify',
+          x: 728,
+          y: 330,
+          w: 140,
+          files: 2,
+          loc: 217,
+          self: 1,
+          c: '--l3',
+        },
+        {
+          id: 'la',
+          label: 'lib/auth',
+          x: 892,
+          y: 330,
+          w: 140,
+          files: 6,
+          loc: 252,
+          self: 7,
+          c: '--l3',
+        },
+
+        // L4 공용
+        {
+          id: 'i18',
+          label: 'i18n',
+          x: 190,
+          y: 470,
+          w: 150,
+          files: 3,
+          loc: 659,
+          self: 0,
+          c: '--l4',
+        },
+        { id: 'dt', label: 'data', x: 375, y: 470, w: 140, files: 4, loc: 270, self: 0, c: '--l4' },
+        {
+          id: 'lr',
+          label: 'lib/(root)',
+          x: 550,
+          y: 470,
+          w: 160,
+          files: 3,
+          loc: 102,
+          self: 0,
+          c: '--l4',
+        },
+        {
+          id: 'lc',
+          label: 'lib/crypto',
+          x: 760,
+          y: 470,
+          w: 160,
+          files: 1,
+          loc: 58,
+          self: 0,
+          c: '--l4',
+        },
+
+        // L5 데이터 접근
+        {
+          id: 'db',
+          label: 'lib/db',
+          x: 470,
+          y: 600,
+          w: 200,
+          files: 6,
+          loc: 463,
+          self: 11,
+          c: '--l5',
+        },
+
+        // L6 인프라
+        {
+          id: 'd1',
+          label: 'D1 · tcn-content',
+          x: 300,
+          y: 710,
+          w: 176,
+          files: 0,
+          loc: 0,
+          self: 0,
+          c: '--l6',
+        },
+        {
+          id: 'r2',
+          label: 'R2 · tcn-media',
+          x: 496,
+          y: 710,
+          w: 168,
+          files: 0,
+          loc: 0,
+          self: 0,
+          c: '--l6',
+        },
+        {
+          id: 'as',
+          label: 'ASSETS · ./dist',
+          x: 684,
+          y: 710,
+          w: 176,
+          files: 0,
+          loc: 0,
+          self: 0,
+          c: '--l6',
+        },
+      ];
+
+      const NH = 46; // node height
+
+      // ---- 엣지: [from, to, weight]
+      const EDGES = [
+        ['pp', 'i18', 18],
+        ['pp', 'ly', 13],
+        ['pp', 'cr', 11],
+        ['pp', 'db', 10],
+        ['pp', 'ls', 10],
+        ['pp', 'cm', 3],
+        ['pp', 'cq', 3],
+        ['pp', 'lq', 3],
+        ['pp', 'dt', 1],
+
+        ['pi', 'db', 11],
+        ['pi', 'la', 10],
+        ['pi', 'lq', 10],
+        ['pi', 'lm', 2],
+        ['pi', 'ln', 2],
+        ['pi', 'lp', 2],
+        ['pi', 'ls', 2],
+
+        ['pa', 'ly', 6],
+        ['pa', 'la', 6],
+        ['pa', 'db', 6],
+        ['pa', 'lq', 4],
+        ['pa', 'ca', 2],
+        ['pa', 'ls', 2],
+        ['pa', 'lr', 1],
+        ['pa', 'cq', 1],
+        ['pa', 'sc', 1],
+
+        ['mw', 'lr', 1],
+
+        ['ly', 'cr', 4],
+        ['ly', 'i18', 4],
+        ['ly', 'db', 2],
+        ['ly', 'lq', 1],
+        ['ly', 'lr', 1],
+        ['ly', 'cm', 1],
+        ['ly', 'lp', 1],
+        ['ly', 'ls', 1],
+        ['cr', 'i18', 6],
+        ['cr', 'lr', 1],
+        ['cm', 'lm', 5],
+        ['cm', 'i18', 4],
+        ['cm', 'ls', 2],
+        ['cq', 'db', 1],
+        ['ca', 'lm', 5],
+        ['ca', 'lr', 2],
+        ['ca', 'lp', 2],
+        ['ca', 'ls', 1],
+
+        ['la', 'lc', 3],
+        ['la', 'db', 1],
+        ['lq', 'db', 3],
+        ['lq', 'la', 2],
+        ['lq', 'lc', 1],
+        ['ls', 'db', 2],
+        ['lp', 'db', 1],
+        ['lp', 'lm', 1],
+        ['lm', 'dt', 1],
+        ['lm', 'ls', 1],
+        ['lm', 'db', 1],
+        ['ln', 'ls', 1],
+        ['lr', 'i18', 1],
+        ['dt', 'ls', 1],
+
+        ['db', 'd1', 3],
+        ['db', 'r2', 2],
+        ['db', 'as', 1],
+      ];
+
+      const LAYERS = [
+        { y: 24, h: 78, label: '진입 · Entry' },
+        { y: 164, h: 78, label: '프레젠테이션 · Presentation' },
+        { y: 314, h: 78, label: '도메인 · Domain' },
+        { y: 454, h: 78, label: '공용 · Shared' },
+        { y: 584, h: 78, label: '데이터 접근 · Data access' },
+        { y: 694, h: 78, label: '인프라 · Bindings' },
+      ];
+
+      const NS = 'http://www.w3.org/2000/svg';
+      const svg = document.getElementById('g');
+      const byId = Object.fromEntries(NODES.map((n) => [n.id, n]));
+      const el = (t, a) => {
+        const e = document.createElementNS(NS, t);
+        for (const k in a) e.setAttribute(k, a[k]);
+        return e;
+      };
+
+      // 레이어 밴드
+      const gBands = el('g', {});
+      LAYERS.forEach((L) => {
+        gBands.appendChild(
+          el('rect', { class: 'layerband', x: 8, y: L.y, width: 1224, height: L.h, rx: 8 }),
+        );
+        const t = el('text', { class: 'layerlabel', x: 18, y: L.y + 14 });
+        t.textContent = L.label;
+        gBands.appendChild(t);
+      });
+      svg.appendChild(gBands);
+
+      // 엣지 경로
+      const gEdges = el('g', {});
+      const cx = (n) => n.x + n.w / 2;
+      function path(a, b) {
+        const sameRow = Math.abs(a.y - b.y) < 40;
+        if (sameRow) {
+          // 같은 층: 아래쪽으로 얕게 도는 호
+          const sx = a.x < b.x ? a.x + a.w : a.x;
+          const ex = a.x < b.x ? b.x : b.x + b.w;
+          const y = a.y + NH / 2;
+          const dip = 34;
+          return `M ${sx} ${y} C ${sx + (ex - sx) * 0.25} ${y + dip}, ${sx + (ex - sx) * 0.75} ${y + dip}, ${ex} ${y}`;
+        }
+        const down = b.y > a.y;
+        const sy = down ? a.y + NH : a.y;
+        const ey = down ? b.y : b.y + NH;
+        const k = down ? 1 : -1;
+        const d = Math.max(28, Math.abs(ey - sy) * 0.42);
+        return `M ${cx(a)} ${sy} C ${cx(a)} ${sy + k * d}, ${cx(b)} ${ey - k * d}, ${cx(b)} ${ey}`;
+      }
+      const edgeEls = [];
+      EDGES.forEach(([f, t, w]) => {
+        const a = byId[f],
+          b = byId[t];
+        const back = b.y < a.y - 40;
+        const p = el('path', {
+          class: 'edge' + (back ? ' back' : ''),
+          d: path(a, b),
+          'stroke-width': Math.min(5.5, 0.85 + w * 0.34),
+        });
+        p.dataset.from = f;
+        p.dataset.to = t;
+        gEdges.appendChild(p);
+        edgeEls.push(p);
+      });
+      svg.appendChild(gEdges);
+
+      // 노드
+      const gNodes = el('g', {});
+      const nodeEls = {};
+      NODES.forEach((n) => {
+        const g = el('g', { class: 'node', tabindex: '0', role: 'button' });
+        g.dataset.id = n.id;
+        const col = `var(${n.c})`;
+        g.appendChild(el('rect', { x: n.x, y: n.y, width: n.w, height: NH, stroke: col }));
+        const t1 = el('text', { class: 'nm', x: n.x + 12, y: n.y + 20 });
+        t1.textContent = n.label;
+        g.appendChild(t1);
+        const t2 = el('text', { class: 'meta', x: n.x + 12, y: n.y + 35 });
+        t2.textContent = n.files
+          ? `${n.files}f · ${n.loc}L` + (n.self ? `  ↻${n.self}` : '')
+          : 'binding';
+        g.appendChild(t2);
+        gNodes.appendChild(g);
+        nodeEls[n.id] = g;
+      });
+      svg.appendChild(gNodes);
+
+      // 상호작용
+      const ro = document.getElementById('ro');
+      let locked = null;
+
+      function focus(id) {
+        if (!id) {
+          svg.classList.remove('focused');
+          edgeEls.forEach((e) => e.classList.remove('on-out', 'on-in'));
+          Object.values(nodeEls).forEach((g) => g.classList.remove('on'));
+          ro.innerHTML =
+            '<b>모듈을 선택하세요</b><div class="row">각 모듈의 의존 대상과 역의존 관계를 여기에 펼칩니다.</div>';
+          return;
+        }
+        svg.classList.add('focused');
+        const outs = [],
+          ins = [];
+        edgeEls.forEach((e) => {
+          e.classList.remove('on-out', 'on-in');
+          if (e.dataset.from === id) {
+            e.classList.add('on-out');
+            outs.push([e.dataset.to, e]);
+          } else if (e.dataset.to === id) {
+            e.classList.add('on-in');
+            ins.push([e.dataset.from, e]);
+          }
+        });
+        const keep = new Set([id, ...outs.map((o) => o[0]), ...ins.map((i) => i[0])]);
+        Object.entries(nodeEls).forEach(([k, g]) => g.classList.toggle('on', keep.has(k)));
+
+        const n = byId[id];
+        const wOf = (from, to) => (EDGES.find((e) => e[0] === from && e[1] === to) || [, , 0])[2];
+        const fmt = (arr, dir) =>
+          arr
+            .map(
+              ([o]) =>
+                `${byId[o].label}<span style="opacity:.5"> ×${dir === 'out' ? wOf(id, o) : wOf(o, id)}</span>`,
+            )
+            .join('<span style="opacity:.35"> · </span>') || '<span style="opacity:.5">없음</span>';
+
+        ro.innerHTML =
+          `<b>${n.label}</b>` +
+          `<span style="color:var(--ink-3);font-size:12px;margin-left:10px">` +
+          (n.files
+            ? `${n.files} 파일 · ${n.loc} 라인 · 내부 결합 ${n.self}`
+            : 'Cloudflare 바인딩') +
+          `</span>` +
+          `<div class="row"><em>의존</em>${fmt(outs, 'out')}</div>` +
+          `<div class="row"><em>역의존</em>${fmt(ins, 'in')}</div>`;
+      }
+
+      Object.entries(nodeEls).forEach(([id, g]) => {
+        g.addEventListener('mouseenter', () => {
+          if (!locked) focus(id);
+        });
+        g.addEventListener('mouseleave', () => {
+          if (!locked) focus(null);
+        });
+        g.addEventListener('focus', () => {
+          if (!locked) focus(id);
+        });
+        g.addEventListener('click', (e) => {
+          e.stopPropagation();
+          locked = locked === id ? null : id;
+          focus(locked || null);
+        });
+        g.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            locked = locked === id ? null : id;
+            focus(locked || null);
+          }
+        });
+      });
+      svg.addEventListener('click', () => {
+        locked = null;
+        focus(null);
+      });
+
+      // ---- 막대 차트
+      const MODULES = [
+        ['components/admin', 1669, 6],
+        ['lib/qna', 836, 4],
+        ['components/media', 672, 1],
+        ['i18n', 659, 1],
+        ['layouts', 806, 0],
+        ['lib/media', 480, 7],
+        ['scripts', 469, 1],
+        ['lib/db', 463, 2],
+        ['lib/auth', 252, 6],
+        ['lib/seminars', 237, 2],
+        ['components/qna', 229, 0],
+        ['lib/notify', 217, 1],
+        ['lib/posts', 213, 2],
+        ['lib/crypto', 58, 1],
+        ['lib/routes', 0, 10],
+      ];
+      const maxLoc = Math.max(...MODULES.map((m) => m[1]));
+      document.getElementById('bars').innerHTML = MODULES.map(
+        ([name, loc, tests]) => `
+        <div class="bar">
+          <span class="lbl">${name}</span>
+          <span class="track">
+            <span class="fill" style="width:${(loc / maxLoc) * 100}%"></span>
+            <span class="fill t" style="width:${(tests / 10) * 14}%"></span>
+          </span>
+          <span class="val">${loc}L · 테스트 ${tests}</span>
+        </div>`,
+      ).join('');
+    </script>
+  </body>
+</html>

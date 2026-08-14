@@ -1,0 +1,112 @@
+flowchart TB
+  subgraph ENTRY["Entry"]
+    mw["middleware.ts"]
+    pp["pages/(public)"]
+    pa["pages/admin"]
+    pi["pages/api"]
+  end
+
+  subgraph PRESENTATION["Presentation"]
+    ly["layouts"]
+    cr["components/(root)"]
+    cm["components/media"]
+    cq["components/qna"]
+    cs["components/seminars"]
+    ca["components/admin"]
+    sc["scripts"]
+  end
+
+  subgraph DOMAIN["Domain"]
+    ls["lib/seminars"]
+    lp["lib/posts"]
+    lq["lib/qna"]
+    lm["lib/media"]
+    ln["lib/notify"]
+    la["lib/auth"]
+  end
+
+  subgraph SHARED["Shared"]
+    i18["i18n"]
+    dt["data"]
+    lr["lib/(root)"]
+  end
+
+  subgraph DATA_ACCESS["Data access"]
+    db["lib/db"]
+  end
+
+  subgraph BINDINGS["Cloudflare bindings"]
+    d1[("D1 · tcn-content")]
+    r2[("R2 · tcn-media")]
+    assets["ASSETS · ./dist"]
+  end
+
+  pp -->|18| i18
+  pp -->|12| ly
+  pp -->|11| cr
+  pp -->|10| db
+  pp -->|10| ls
+  pp -->|3| cm
+  pp -->|3| cq
+  pp -->|3| lq
+  pp --> dt
+  pp --> cs
+
+  pi -->|11| db
+  pi -->|10| la
+  pi -->|10| lq
+  pi -->|2| lm
+  pi -->|2| ln
+  pi -->|2| lp
+  pi -->|2| ls
+
+  pa -->|6| ly
+  pa -->|6| la
+  pa -->|6| db
+  pa -->|4| lq
+  pa -->|2| ca
+  pa -->|2| ls
+  pa --> lr
+  pa --> cq
+  pa --> sc
+
+  mw --> lr
+
+  ly -->|4| cr
+  ly -->|2| i18
+  ly --> db
+  ly --> lq
+  ly --> lr
+  cr -->|6| i18
+  cr --> lr
+  cm -->|5| lm
+  cm -->|4| i18
+  cm -->|2| ls
+  cq --> db
+  cs -->|2| i18
+  cs --> ly
+  cs --> cm
+  cs --> lp
+  cs --> db
+  cs --> ls
+  ca -->|5| lm
+  ca -->|2| lr
+  ca -->|2| lp
+  ca --> ls
+
+  lq -->|3| db
+  lq -->|3| la
+  la --> db
+  ls -->|2| db
+  lp --> db
+  lp --> lm
+  lm --> dt
+  lm --> ls
+  lm --> db
+  ln --> ls
+  lr --> i18
+  dt --> ls
+
+  db -->|3| d1
+  db -->|2| r2
+  db --> assets

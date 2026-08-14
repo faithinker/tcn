@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Documentation
 - Added the product brief and archived the UI modification plan, result report, and verification screenshots; synchronized `DESIGN.md` and the Impeccable design contract with the implemented link-affordance rule. (Branch: `fix/link-affordance-polish`) - Implemented by Codex
+- Added a dated TCN architecture analysis with Mermaid source and three focused HTML views covering the system, module layers, and domain dependencies. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
+- Added Korean detailed summaries of DoorDash Engineering articles on mobile app-size governance, passkey rollout, and migrating XCTest suites to Swift Testing. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
 
 ## [2026-08-12]
 
