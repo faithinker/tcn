@@ -330,6 +330,11 @@
         "name": "The Grounded Component Rule",
         "body": "A component in document flow earns separation through spacing, tone, or a hairline. Do not turn every section, profile, or list item into a rounded card.",
         "section": "components"
+      },
+      {
+        "name": "Link Affordance by Context",
+        "body": "Persistent underlines are reserved for prose links, contact values, downloadable filenames, and literal URLs. Structured navigation, tables of contents, tabs, cards, buttons, and administrative actions use grouping, hover surfaces, focus rings, and current-state indicators instead of resting text underlines.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -339,7 +344,8 @@
       "Do use 48px primary controls and preserve a 44px floor for compact secondary controls.",
       "Do build responsive behavior around the actual 576px, 640px, 768px, 896px, 1024px, and 1152px thresholds, and keep the narrower ones scoped to the components that need them.",
       "Do keep content visible without JavaScript and remove nonessential motion for reduced-motion users.",
-      "Do use paper tone, whitespace, and hairlines before introducing another container."
+      "Do use paper tone, whitespace, and hairlines before introducing another container.",
+      "Do keep persistent underlines on prose links, contact values, downloadable filenames, and literal URLs so they remain identifiable without colour alone."
     ],
     "donts": [
       "Don't invent tokens or components that are absent from the codebase; primary, body-sans-strong, story-card, story-row, and officer-card are not part of the current system. There are no --spacing-* tokens either: spacing comes from Tailwind's numeric scale, so cite the actual utility or pixel value rather than a named step.",
@@ -349,7 +355,8 @@
       "Don't treat 768px as the universal mobile/desktop boundary or assume every academic document has an aside.",
       "Don't apply public dark-theme claims to admin pages until admin has an explicit theme mechanism.",
       "Don't reuse the local 11–13px exceptions for readable copy, navigation, captions, or form help.",
-      "Don't add shadows to grounded surfaces; the overlay shadow belongs only to overlapping layers."
+      "Don't add shadows to grounded surfaces; the overlay shadow belongs only to overlapping layers.",
+      "Don't use resting text underlines in structured navigation, tables of contents, tabs, cards, buttons, or administrative action controls."
     ]
   }
 }

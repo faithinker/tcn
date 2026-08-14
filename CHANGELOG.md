@@ -4,10 +4,27 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-08-13]
 
+### Refactor
+- Promoted `lib/auth/_crypto.ts` to a shared `lib/crypto` module and collapsed three duplicated primitives into it. `auth/session.ts` and `qna/security.ts` each carried a byte-identical HMAC-SHA256 helper down to the `as BufferSource` cast, and `auth/rate-limit.ts` and `qna/security.ts` each carried their own SHA-256 digest differing only in output encoding. The new module exposes `hmacSha256`, `sha256`, and `bytesToHex` alongside the existing base64 helpers, so `lib/auth` drops from 296 to 252 lines. This also closes a boundary leak: the `_` prefix marked the old module private to `lib/auth` and `auth/index.ts` never re-exported it, yet `lib/qna` imported it directly. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+- Replaced the copy-pasted origin check inside `requireAdminMutation` with a call to `requireSameOrigin`, which sat six lines below it in the same file with byte-identical origin-match and `sec-fetch-site` cross-site logic. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+- Moved `components/seminars/CommunityPost.astro` to `layouts/SeminarPostLayout.astro`. The file wrapped `BaseLayout` and was used by exactly one page, so it was a page template carrying a component's name; it was also the only remaining runtime layering violation in the dependency graph, which is now free of them. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+
+### Security
+- Dropped the `x-forwarded-for` fallback from the login rate limiter's client-IP resolution, leaving `cf-connecting-ip` as the only source and matching what the Q&A limiter already did. `x-forwarded-for` is client-controlled, so accepting it as a rate-limit bucket key lets a caller rotate the header to escape the per-IP counter. Workers always populates `cf-connecting-ip`, so the fallback was unreachable in production, but it would have activated behind any other proxy or in a test harness. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+
+### Test
+- Added D1-backed characterization tests for both rate limiters, covering behavior that was previously untested. Both limiters keep their decision logic inside SQL, and the existing suites mock D1 entirely — they assert on bind arguments and query substrings, so window rollover, lockout expiry, and Retry-After selection were never exercised. The new suites run the real `migrations/` schema on Node's built-in `node:sqlite` behind a small D1-shaped adapter, adding 12 tests that pin the fifth-failure lockout, the window reset that clears `blocked_until`, either-identifier blocking, the refused-call counter freeze, and the day-limit path that the 3-per-10-minutes short window otherwise hides. The adapter adds no dependency and avoids coupling test infrastructure to miniflare, whose version is chosen by wrangler and currently resolves to a 5.x alpha with a redesigned constructor. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+- Replaced `lib/qna/admin-ui.test.ts` with a repository-wide Astro template guard. The old test read one `.astro` file with `readFileSync` and regex-matched a literal `set:text={question.answer?.body ?? ''}`, so template reformatting broke it while the same defect in any other page went unnoticed. The guard now parses every `<textarea>` under `src/` — tracking brace depth and quotes so expressions containing `>` do not truncate the tag — and fails any that interpolates its value as a child node, which is the actual bug: Astro serializes the surrounding indentation into the field. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
+
 ### Chore
+- Removed project-local MCP overrides that declared only `enabled` without their own `command` or `url`, leaving the inherited Cloudflare API transport and the intentional XcodeBuildMCP disablement. (Branch: `chore/codex-mcp-config`) - Implemented by Codex
 - Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
+### Changed
+- Refined link affordance by context: structured navigation, table-of-contents links, cards, and admin actions now use grouping, hover surfaces, focus treatment, and current-state indicators instead of resting underlines; prose/contact/download links retain persistent non-colour cues, and the mobile footer gains a balanced two-column layout. (Branch: `fix/link-affordance-polish`) - Implemented by Codex
+
 ### Documentation
+- Added the product brief and archived the UI modification plan, result report, and verification screenshots; synchronized `DESIGN.md` and the Impeccable design contract with the implemented link-affordance rule. (Branch: `fix/link-affordance-polish`) - Implemented by Codex
 - Added a dated TCN architecture analysis with Mermaid source and three focused HTML views covering the system, module layers, and domain dependencies. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
 - Added Korean detailed summaries of DoorDash Engineering articles on mobile app-size governance, passkey rollout, and migrating XCTest suites to Swift Testing. (Branch: `docs/architecture-and-mobile-research`) - Implemented by Codex
 

@@ -1,3 +1,5 @@
+import { bytesToHex, sha256 } from '../crypto';
+
 const WINDOW_SECONDS = 15 * 60;
 const MAX_ATTEMPTS = 5;
 
@@ -8,9 +10,7 @@ function nowSeconds(): number {
 }
 
 async function digest(value: string): Promise<string> {
-  const bytes = new TextEncoder().encode(value);
-  const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
-  return Array.from(hash, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return bytesToHex(await sha256(value));
 }
 
 export async function getLoginRateLimitKeys(
@@ -18,10 +18,7 @@ export async function getLoginRateLimitKeys(
   username: string,
 ): Promise<[string, string]> {
   const account = username.trim().toLocaleLowerCase('en-US').slice(0, 200);
-  const ip =
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-forwarded-for')?.split(',', 1)[0]?.trim() ??
-    'unknown';
+  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
   const [accountHash, ipHash] = await Promise.all([
     digest(`account:${account}`),
     digest(`ip:${ip}`),

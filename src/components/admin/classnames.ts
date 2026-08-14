@@ -4,4 +4,4 @@ export const field =
   'w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent';
 export const labelText = 'mb-1 block text-caption font-bold text-body-muted';
 export const mediaAction =
-  'inline-flex min-h-11 items-center font-bold underline hover:bg-canvas-soft';
+  'inline-flex min-h-11 items-center rounded-sm px-2 font-bold no-underline hover:bg-canvas-soft';

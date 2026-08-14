@@ -271,15 +271,14 @@ where the control has a tab edge. This keeps hover distinct from selection in bo
 making every interactive state look current. Icon-only theme controls follow the same neutral hover
 treatment; their pointer cursor, surface change, and persistent boundary provide the affordance.
 
-**The Underlined Ink Link Rule.** Blue is not the only way to mark a link, and on link-dense
-surfaces it stops being restraint. Where a set of sibling links sits next to a current-position
-marker — the related-documents nav and the bylaws table of contents — the resting links use warm ink
-plus an underline, and blue is reserved for the one entry that is current (`aria-current`). Hover
-thickens the underline rather than shifting hue. Contact details follow the same rule: the telephone
-and email links are real `tel:`/`mailto:` targets in ink with an underline, and the footer's email
-link uses `on-footer` with an underline because the footer is permanently dark. Never mark a
-non-navigable current item in blue while its navigable siblings are muted grey — that inverts the
-affordance.
+**Link Affordance by Context.** Persistent underlines are reserved for links embedded in prose,
+contact values, downloadable filenames, and literal URLs. These links remain identifiable without
+relying on colour alone. Structured navigation, tables of contents, tabs, cards, and standalone
+actions do not use resting text underlines. Their affordance comes from grouping, position, labels,
+neutral hover surfaces, focus rings, and current-state indicators. Institutional blue marks selection
+and current location. Header and tab bottom borders are structural state indicators, not text
+decoration. Standalone text actions may reveal an underline on hover, while buttons and administrative
+action controls never use underlines.
 
 **The Public Theme Boundary Rule.** Dark-mode guidance applies to public pages only until the admin
 layout gains its own theme bootstrap and control.
