@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Replaced `lib/qna/admin-ui.test.ts` with a repository-wide Astro template guard. The old test read one `.astro` file with `readFileSync` and regex-matched a literal `set:text={question.answer?.body ?? ''}`, so template reformatting broke it while the same defect in any other page went unnoticed. The guard now parses every `<textarea>` under `src/` — tracking brace depth and quotes so expressions containing `>` do not truncate the tag — and fails any that interpolates its value as a child node, which is the actual bug: Astro serializes the surrounding indentation into the field. (Branch: `refactor/shared-crypto-and-rate-limit-tests`) - Implemented by Claude
 
 ### Chore
+- Removed project-local MCP overrides that declared only `enabled` without their own `command` or `url`, leaving the inherited Cloudflare API transport and the intentional XcodeBuildMCP disablement. (Branch: `chore/codex-mcp-config`) - Implemented by Codex
 - Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
 ### Changed

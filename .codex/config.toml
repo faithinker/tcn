@@ -28,25 +28,5 @@ enabled = false
 [mcp_servers.cloudflare-api]
 enabled = true
 
-[mcp_servers.cloudflare-docs]
-enabled = true
-
-[mcp_servers.cloudflare-bindings]
-enabled = true
-
-[mcp_servers.cloudflare-builds]
-enabled = true
-
-[mcp_servers.cloudflare-observability]
-enabled = true
-
-# Apple-native tooling stays available globally for current and future iOS
-# projects, but is unnecessary in this web repository.
-[mcp_servers.apple-docs]
-enabled = false
-
 [mcp_servers.XcodeBuildMCP]
-enabled = false
-
-[mcp_servers.mobile-mcp]
 enabled = false
