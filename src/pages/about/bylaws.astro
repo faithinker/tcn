@@ -73,7 +73,7 @@ const copy = content.bylaws;
             <a
               data-toc-link
               href={`#${chapter.id}`}
-              class="toc-jump flex min-h-[44px] items-center text-body-sm font-bold text-ink underline hover:decoration-2"
+              class="toc-jump flex min-h-[44px] items-center rounded-sm px-2 text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
             >
               <span class="mr-2 tabular-nums text-accent">{index + 1}</span>
               {chapter.title}
@@ -85,7 +85,7 @@ const copy = content.bylaws;
         <a
           data-toc-link
           href={`#${copy.addenda.id}`}
-          class="toc-jump flex min-h-[44px] items-center text-body-sm font-bold text-ink underline hover:decoration-2"
+          class="toc-jump flex min-h-[44px] items-center rounded-sm px-2 text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft"
         >
           <span class="mr-2 text-accent">§</span>{copy.addenda.title}
         </a>
@@ -242,7 +242,7 @@ const copy = content.bylaws;
     font-weight: 700;
   }
 
-  /* 현재 위치만 파란색을 쓴다 — 쉬는 상태의 링크는 잉크색 + 밑줄(DESIGN.md 213-214). */
+  /* 구조화된 목차는 밑줄 없이 그룹과 hover surface로 링크를, 파란색으로 현재 위치를 표시한다. */
   [data-toc-link].is-active {
     color: var(--color-accent);
     text-decoration: none;

@@ -19,6 +19,12 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Chore
 - Refreshed the dependency lockfile to patched transitive releases for Cloudflare tooling, YAML/schema parsing, CSS processing, and HTTP handling, clearing the dependency-audit gate without changing declared dependency ranges. (Branch: `chore/dependency-audit-fix`) - Implemented by Codex
 
+### Changed
+- Refined link affordance by context: structured navigation, table-of-contents links, cards, and admin actions now use grouping, hover surfaces, focus treatment, and current-state indicators instead of resting underlines; prose/contact/download links retain persistent non-colour cues, and the mobile footer gains a balanced two-column layout. (Branch: `fix/link-affordance-polish`) - Implemented by Codex
+
+### Documentation
+- Added the product brief and archived the UI modification plan, result report, and verification screenshots; synchronized `DESIGN.md` and the Impeccable design contract with the implemented link-affordance rule. (Branch: `fix/link-affordance-polish`) - Implemented by Codex
+
 ## [2026-08-12]
 
 ### Fix
