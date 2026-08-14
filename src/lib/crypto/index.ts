@@ -1,7 +1,30 @@
-// Workers·Node20+ 공통 crypto 유틸. 외부 import 없음(테스트에서 단독 사용 가능).
-// btoa/atob·crypto.subtle 은 workerd와 Node 모두 전역 제공.
+// Workers·Node 20+ common crypto helpers. Keep this module dependency-free.
+// btoa/atob and crypto.subtle are global in both runtimes.
 
 export const textEncoder = new TextEncoder();
+
+function toBytes(value: string | Uint8Array): Uint8Array {
+  return typeof value === 'string' ? textEncoder.encode(value) : value;
+}
+
+export async function hmacSha256(value: string | Uint8Array, secret: string): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    textEncoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  return new Uint8Array(await crypto.subtle.sign('HMAC', key, toBytes(value) as BufferSource));
+}
+
+export async function sha256(value: string | Uint8Array): Promise<Uint8Array> {
+  return new Uint8Array(await crypto.subtle.digest('SHA-256', toBytes(value) as BufferSource));
+}
+
+export function bytesToHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 
 export function bytesToBase64(bytes: Uint8Array): string {
   let binary = '';
@@ -26,7 +49,7 @@ export function base64UrlDecode(value: string): Uint8Array {
   return base64ToBytes(normalized + pad);
 }
 
-// 길이·내용 비교를 상수시간으로(타이밍 공격 완화).
+// Compare length and content without data-dependent early exits.
 export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;

@@ -15,6 +15,21 @@ describe('login rate limiting', () => {
     expect(keys.join(' ')).not.toContain('203.0.113.10');
   });
 
+  it('does not trust a client-provided forwarded IP fallback', async () => {
+    const forged = await getLoginRateLimitKeys(
+      new Request('https://tcn.example/api/auth/login', {
+        headers: { 'x-forwarded-for': '203.0.113.10' },
+      }),
+      'Editor',
+    );
+    const unknown = await getLoginRateLimitKeys(
+      new Request('https://tcn.example/api/auth/login'),
+      'Editor',
+    );
+
+    expect(forged[1]).toBe(unknown[1]);
+  });
+
   it('checks either identifier for an active block', async () => {
     const first = vi.fn().mockResolvedValue({ blocked: 1 });
     const bind = vi.fn(() => ({ first }));
