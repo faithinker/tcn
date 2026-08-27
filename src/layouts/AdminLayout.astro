@@ -14,7 +14,7 @@ const activeSection = pathname.startsWith('/admin/questions') ? 'questions' : 'p
 const waitingCount =
   user === null ? 0 : (waitingQuestionCount ?? (await countAdminQuestions(getDB(), 'waiting')));
 // astro.config.mjs 의 site — 로컬에서 편집 중이어도 퀵링크는 항상 운영 사이트를 가리킨다.
-const liveSiteUrl = (Astro.site ?? new URL('https://tcn.faithinker12.workers.dev')).href;
+const liveSiteUrl = (Astro.site ?? new URL('https://thetcn.org')).href;
 ---
 
 <!doctype html>
