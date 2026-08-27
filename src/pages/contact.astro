@@ -10,9 +10,8 @@ const copy = content.contact;
 <BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
-      <p class="eyebrow">{copy.eyebrow}</p>
       <h1
-        class="mt-3 max-w-[16ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
+        class="max-w-[16ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
       >
         {copy.heroTitle}
       </h1>
@@ -102,7 +101,7 @@ const copy = content.contact;
     </ul>
   </SectionTile>
 
-  <SectionTile variant="canvas" eyebrow={copy.contactEyebrow} title={copy.contactTitle}>
+  <SectionTile variant="canvas" title={copy.contactTitle}>
     <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
       {copy.contactBody}
     </p>

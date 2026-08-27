@@ -24,7 +24,6 @@ export const ui = {
   'common.language': 'Language',
   'common.themeToggle': 'Dark theme',
   'common.backToTop': 'Back to top',
-  'qna.eyebrow': 'Community desk',
   'qna.title': 'Questions & Answers',
   'qna.description': 'Ask a question. An administrator will publish one official answer.',
   'qna.ask': 'Ask a question',

@@ -29,8 +29,7 @@ try {
 <BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 pt-12 pb-8 sm:pt-24 sm:pb-14">
     <div class="mx-auto max-w-[75rem]">
-      <p class="eyebrow">{copy.eyebrow}</p>
-      <h1 class="mt-3 font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
+      <h1 class="font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
         {copy.heroTitle}
       </h1>
       <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">{copy.heroBody}</p>
@@ -46,7 +45,6 @@ try {
             class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
           >
             <div class="flex flex-wrap items-center gap-3">
-              <p class="eyebrow">{copy.nextEyebrow}</p>
               <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
                 {next.status === 'today' ? copy.todayBadge : copy.upcomingBadge}
               </span>
@@ -86,7 +84,7 @@ try {
           {rest.length ? (
             rest.map((post) => (
               <a href={post.href} class="group block bg-canvas p-5 no-underline sm:p-8">
-                <p class="font-sans text-caption font-bold uppercase text-accent">
+                <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
                   {formatDate(post.eventDate)}
                 </p>
                 <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink group-hover:text-link">
@@ -113,14 +111,14 @@ try {
     )
   }
 
-  <SectionTile variant="canvas" eyebrow={copy.pastEyebrow} title={copy.pastTitle}>
+  <SectionTile variant="canvas" title={copy.pastTitle}>
     <div class="mt-8 grid gap-4">
       {
         past.length ? (
           past.map((post) => (
             <a href={post.href} class="group block border-t border-hairline py-7 no-underline">
               {post.eventDate && (
-                <p class="font-sans text-caption font-bold uppercase text-accent">
+                <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
                   {formatDate(post.eventDate)}
                 </p>
               )}

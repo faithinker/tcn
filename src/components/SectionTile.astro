@@ -1,13 +1,12 @@
 ---
 interface Props {
   variant?: 'canvas' | 'band' | 'soft';
-  eyebrow?: string;
   title?: string;
   id?: string;
   class?: string;
 }
 
-const { variant = 'canvas', eyebrow, title, id, class: cls = '' } = Astro.props;
+const { variant = 'canvas', title, id, class: cls = '' } = Astro.props;
 
 const bg: Record<NonNullable<Props['variant']>, string> = {
   canvas: 'bg-canvas',
@@ -18,10 +17,9 @@ const bg: Record<NonNullable<Props['variant']>, string> = {
 
 <section id={id} class={`${bg[variant]} px-5 py-12 sm:py-24 ${cls}`.trim()}>
   <div class="mx-auto max-w-[75rem]">
-    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
     {
       title && (
-        <h2 class="mt-3 font-serif text-display-md font-semibold text-ink sm:text-display-lg">
+        <h2 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">
           {title}
         </h2>
       )

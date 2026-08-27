@@ -29,9 +29,8 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
 <BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
-      <p class="eyebrow">{copy.eyebrow}</p>
       <h1
-        class="mt-3 max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
+        class="max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
       >
         {copy.heroTitle}
       </h1>
@@ -41,7 +40,7 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
     </div>
   </section>
 
-  <SectionTile variant="band" eyebrow={copy.missionEyebrow} title={copy.missionTitle}>
+  <SectionTile variant="band" title={copy.missionTitle}>
     <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
       <p class="max-w-prose font-serif text-body-serif text-body">
         {copy.missionBodies[0]}
@@ -52,13 +51,7 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
     </div>
   </SectionTile>
 
-  <SectionTile
-    id="history"
-    class="scroll-mt-24"
-    variant="canvas"
-    eyebrow={copy.historyEyebrow}
-    title={copy.historyTitle}
-  >
+  <SectionTile id="history" class="scroll-mt-24" variant="canvas" title={copy.historyTitle}>
     <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.historyBody}
     </p>

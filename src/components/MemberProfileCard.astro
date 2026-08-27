@@ -13,7 +13,7 @@ const { member, currentLabel, expertiseLabel, compact = false } = Astro.props;
 
 <article class:list={['profile-card', { 'profile-card-compact': compact }]}>
   <div class="flex min-h-10 items-start justify-between gap-5">
-    <p class="font-sans text-caption font-bold uppercase text-accent">{member.role}</p>
+    <p class="font-sans text-caption font-bold uppercase text-ink">{member.role}</p>
     <p class="text-right font-sans text-caption font-bold text-body-muted">{member.country}</p>
   </div>
   <h2
