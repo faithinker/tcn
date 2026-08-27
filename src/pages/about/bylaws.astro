@@ -218,25 +218,22 @@ const copy = content.bylaws;
     align-items: start;
   }
 
+  /* 조문 번호는 기록 참조다. 색 있는 원 안의 숫자는 장식이므로 쓰지 않는다(DESIGN.md 7). */
   .clause-list > li::before {
     content: counter(clause);
-    display: grid;
-    place-items: center;
-    width: 1.35rem;
-    height: 1.35rem;
-    margin-top: 0.32rem;
-    border: 1.5px solid var(--color-accent);
-    border-radius: 9999px;
-    color: var(--color-accent);
+    display: block;
+    margin-top: 0.45rem;
+    text-align: right;
+    color: var(--color-body-muted);
     font-family: var(--font-sans);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 1;
   }
 
   .number-list > li::marker {
-    color: var(--color-accent);
+    color: var(--color-body-muted);
     font-family: var(--font-sans);
     font-weight: 700;
   }
