@@ -32,7 +32,7 @@ export const content = {
     highlightsEyebrow: 'At a Glance',
     highlights: [
       { value: '2025', label: 'Founded' },
-      { value: '15', label: 'Founding Countries' },
+      { value: '6', label: 'Founding Countries' },
       { value: '1', label: 'Seminar' },
       { value: 'Ganghwa', label: 'Secretariat' },
     ],
