@@ -5,7 +5,7 @@ import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 
 export default defineConfig({
-  site: 'https://tcn.faithinker12.workers.dev',
+  site: 'https://thetcn.org',
   integrations: [react()],
   build: {
     format: 'file',
