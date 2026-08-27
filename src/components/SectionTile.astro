@@ -1,21 +1,30 @@
 ---
 interface Props {
-  variant?: 'canvas' | 'band' | 'soft';
+  variant?: 'canvas' | 'soft';
+  space?: 'default' | 'tight' | 'loose';
   title?: string;
   id?: string;
   class?: string;
 }
 
-const { variant = 'canvas', title, id, class: cls = '' } = Astro.props;
+const { variant = 'canvas', space = 'default', title, id, class: cls = '' } = Astro.props;
 
+// DESIGN.md 1.2: 섹션 표면은 canvas와 soft 둘뿐이다. soft는 리듬이 아니라 예외 표시다.
 const bg: Record<NonNullable<Props['variant']>, string> = {
   canvas: 'bg-canvas',
-  band: 'bg-canvas-band',
   soft: 'bg-canvas-soft',
+};
+
+// DESIGN.md 2 (No alternating section surfaces): 섹션 높이는 내용을 따른다.
+// 한 값을 하드코딩하면 모든 섹션이 같은 높이가 되어 리듬이 구조에 박힌다.
+const pad: Record<NonNullable<Props['space']>, string> = {
+  tight: 'py-10 sm:py-16',
+  default: 'py-12 sm:py-24',
+  loose: 'py-16 sm:py-32',
 };
 ---
 
-<section id={id} class={`${bg[variant]} px-5 py-12 sm:py-24 ${cls}`.trim()}>
+<section id={id} class={`${bg[variant]} px-5 ${pad[space]} ${cls}`.trim()}>
   <div class="mx-auto max-w-[75rem]">
     {
       title && (

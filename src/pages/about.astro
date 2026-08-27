@@ -40,7 +40,7 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
     </div>
   </section>
 
-  <SectionTile variant="band" title={copy.missionTitle}>
+  <SectionTile variant="canvas" title={copy.missionTitle}>
     <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
       <p class="max-w-prose font-serif text-body-serif text-body">
         {copy.missionBodies[0]}
@@ -115,7 +115,7 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
   </SectionTile>
 
   {/* foundingEyebrow 와 foundingTitle 은 같은 문자열이었다 — 같은 말을 두 번 하지 않는다. */}
-  <SectionTile variant="band" title={copy.foundingTitle}>
+  <SectionTile variant="canvas" title={copy.foundingTitle}>
     <p class="mt-6 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
       {copy.foundingBody}
     </p>
