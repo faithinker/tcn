@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-08-27]
+
+### Fix
+- Corrected the homepage founding-countries figure from 15 to 6. `src/data/members.json` carries exactly six countries (China, Laos, Republic of Korea, United States, Uzbekistan, Vietnam), so the "15 Founding Countries" stat on the live homepage asserted a number the site's own data contradicts. The mismatch surfaced while auditing member data for the record-reference work. (Branch: `fix/founding-countries-count`) - Implemented by Claude
+
 ## [2026-08-13]
 
 ### Refactor
