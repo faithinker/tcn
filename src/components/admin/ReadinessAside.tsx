@@ -10,9 +10,7 @@ export default function ReadinessAside({ readiness, hasPost, publicHref }: Reado
   return (
     <aside className="space-y-4 lg:sticky lg:top-6" aria-label="Public page readiness">
       <section className="border-t-2 border-hairline-strong bg-canvas-soft p-4">
-        <p className="text-caption font-bold uppercase tracking-wider text-accent">
-          Public page readiness
-        </p>
+        <h2 className="font-sans text-caption font-bold text-ink">Public page readiness</h2>
         <p className="mt-2 font-serif text-display-sm font-semibold text-ink">
           {readinessPercent(readiness)}%
         </p>
@@ -42,9 +40,7 @@ export default function ReadinessAside({ readiness, hasPost, publicHref }: Reado
         )}
       </section>
       <section className="border border-hairline bg-canvas p-4">
-        <p className="text-caption font-bold uppercase tracking-wider text-accent">
-          Automatic mapping
-        </p>
+        <h2 className="font-sans text-caption font-bold text-ink">Automatic mapping</h2>
         <dl className="mt-3 divide-y divide-hairline text-caption">
           {[
             ['Title', 'Featured presentation'],
