@@ -8,12 +8,11 @@ interface Props {
   title: string;
   description: string;
   type?: 'website' | 'article';
-  eyebrow: string;
   heading: string;
   current: 'declaration' | 'bylaws' | 'founding';
 }
 
-const { title, description, type = 'website', eyebrow, heading, current } = Astro.props;
+const { title, description, type = 'website', heading, current } = Astro.props;
 const hasAside = Astro.slots.has('aside');
 ---
 
@@ -27,8 +26,7 @@ const hasAside = Astro.slots.has('aside');
       >
 
       <header>
-        <p class="eyebrow mt-4">{eyebrow}</p>
-        <div class="mt-2 border-y border-hairline-strong py-8">
+        <div class="mt-4 border-y border-hairline-strong py-8">
           <h1 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">
             {heading}
           </h1>

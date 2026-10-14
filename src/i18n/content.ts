@@ -1,14 +1,12 @@
 export const content = {
   home: {
     title: 'Transcultural Network',
-    eyebrow: 'International Scholarly Network',
     name: 'Transcultural Network',
     alternateName: '',
     lead: 'An international scholarly network creating a new third culture beyond the boundaries of nation, ethnicity, language, and culture.',
     sublead: 'We study cultural exchange and creation in the digital and AI era.',
     aboutButton: 'About TCN',
     declarationButton: 'Founding Declaration',
-    missionEyebrow: 'Mission',
     missionTitle: 'Why We Were Founded',
     missionBody:
       'Cultural exchange and the creation of new cultures continue to flourish in a borderless digital and AI era. The Transcultural Network seeks to understand these processes and contribute to a better culture for all.',
@@ -17,7 +15,6 @@ export const content = {
       'We aspire to create cultures in which humanity coexists and every person is respected.',
     missionLabel: 'Mission',
     missionShort: 'Experts from around the world share their knowledge and experience.',
-    activitiesEyebrow: 'What We Do',
     activitiesTitle: 'Core Activities',
     activities: [
       'International Seminars',
@@ -25,18 +22,16 @@ export const content = {
       'Academic Exchange',
       'Policy Recommendations',
     ],
-    seminarEyebrow: 'Seminar',
-    pastEvent: 'Past event',
+    recentSeminarTitle: 'Recent Seminar',
     seminarFallback: 'The theme and speakers will be announced.',
     seminarButton: 'View all seminars',
-    highlightsEyebrow: 'At a Glance',
+    highlightsTitle: 'The Network So Far',
     highlights: [
       { value: '2025', label: 'Founded' },
       { value: '6', label: 'Founding Countries' },
       { value: '1', label: 'Seminar' },
       { value: 'Ganghwa', label: 'Secretariat' },
     ],
-    joinEyebrow: 'Get Involved',
     joinTitle: 'Membership & Enquiries',
     joinBody:
       'Contact us if you would like to take part in the Transcultural Network’s research and international scholarly collaboration.',
@@ -44,17 +39,14 @@ export const content = {
   about: {
     title: 'About',
     description: 'The purpose and vision of the Transcultural Network',
-    eyebrow: 'About TCN',
     heroTitle: 'An international scholarly community for the transcultural era',
     heroBody:
       'The Transcultural Network studies cultural phenomena being reshaped across national, ethnic, linguistic, and cultural boundaries amid digital transformation and the spread of artificial intelligence.',
-    missionEyebrow: 'Mission & Vision',
     missionTitle: 'A scholarly network for intersection, convergence, and creation',
     missionBodies: [
       'We take a multidisciplinary approach to changing realities—including intercultural contact and mobility, platform-based societies, and digital creative ecosystems—to advance new theories and methods of transcultural research.',
       'Working through our secretariat in Ganghwa, Incheon, experts from diverse regions collaborate through conferences, research projects, joint publications, and policy studies to build a lasting foundation for international scholarly cooperation.',
     ],
-    historyEyebrow: 'History',
     historyTitle: 'Milestones',
     historyBody:
       'A record of the Transcultural Network’s major activities, from preparations for its founding to its international seminars.',
@@ -63,12 +55,10 @@ export const content = {
     historyUpcomingLabel: 'Upcoming',
     historyTodayLabel: 'Today',
     historyViewSeminar: 'View seminar',
-    declarationEyebrow: 'Founding Declaration',
     declarationTitle: 'Founding Declaration',
     declarationBody:
       'The declaration sets out the Network’s founding purpose and four missions for transcultural research and international scholarly collaboration in the digital and AI era.',
     declarationButton: 'Read the Founding Declaration',
-    foundingEyebrow: 'Founding Ceremony',
     foundingTitle: 'Founding Ceremony',
     foundingBody:
       'The full invitation and event overview from the founding ceremony held on 12 December 2025 at Sungkyunkwan University, Myeongnyun Campus.',
@@ -78,7 +68,6 @@ export const content = {
   declaration: {
     title: 'Founding Declaration',
     description: 'Founding Declaration of the Transcultural Network',
-    eyebrow: 'Founding Declaration',
     heroTitle: 'Founding Declaration of the Transcultural Network',
     intro: [
       'Distinguished guests, professors, and experts joining us from around the world: thank you sincerely for celebrating the launch of the Transcultural Network with us today.',
@@ -124,7 +113,6 @@ export const content = {
   bylaws: {
     title: 'Bylaws',
     description: 'Bylaws governing the organization and operation of the Transcultural Network',
-    eyebrow: 'Bylaws',
     heroTitle: 'Bylaws of the Transcultural Network',
     adoptionLabel: 'Effective',
     adoptionDate: '12 December 2025 (adopted at the founding assembly)',
@@ -424,15 +412,12 @@ export const content = {
   people: {
     title: 'People',
     description: 'Leadership and international members of the Transcultural Network',
-    eyebrow: 'People',
     heroTitle: 'Our People',
     heroBody:
       'Experts from diverse regions and disciplines work together to advance transcultural research and international scholarly collaboration.',
-    boardEyebrow: 'Board',
     boardTitle: 'Directors',
     boardBody:
       'The board leads the network’s scholarly direction and connects research, education, and international exchange across regions.',
-    supportEyebrow: 'Audit & Advisory',
     supportTitle: 'Audit and Advisory',
     supportBody:
       'Academic and private-sector experience supports the network’s governance and external collaboration.',
@@ -441,18 +426,14 @@ export const content = {
   seminars: {
     title: 'Seminars',
     description: 'Upcoming and past international seminars from the Transcultural Network',
-    eyebrow: 'Seminars',
     heroTitle: 'International Seminars',
     heroBody:
       'A forum for scholarly exchange where new perspectives on transcultural research meet the experience of experts from around the world.',
-    upcomingEyebrow: 'Upcoming',
     upcomingTitle: 'Upcoming Seminars',
-    pastEyebrow: 'Archive',
     pastTitle: 'Past Seminars',
     details: 'The theme and programme will be announced.',
     empty: 'There are no seminars to announce at this time.',
     loadError: 'Seminar information is temporarily unavailable. Please try again shortly.',
-    nextEyebrow: 'Upcoming Seminar',
     upcomingBadge: 'Upcoming',
     todayBadge: 'Today',
     pastBadge: 'Past',
@@ -477,11 +458,9 @@ export const content = {
     title: 'Membership & Enquiries',
     description:
       'Membership opportunities, activities, and application process for the Transcultural Network',
-    eyebrow: 'Join TCN',
     heroTitle: 'Membership & Enquiries',
     heroBody:
       'We welcome researchers, educators, and professionals interested in transcultural research and international scholarly collaboration.',
-    benefitsEyebrow: 'Membership',
     benefitsTitle: 'Ways to Get Involved',
     benefits: [
       'Take part in international seminars and scholarly events',
@@ -489,7 +468,6 @@ export const content = {
       'Connect with a network of transcultural researchers and experts',
       'Contribute to policy research and knowledge sharing',
     ],
-    applicationEyebrow: 'Application',
     applicationTitle: 'How to Apply',
     steps: [
       {
@@ -510,7 +488,6 @@ export const content = {
       'Applications will open after membership categories, fees, and the personal-data policy have been finalised.',
     onlineOpen: 'Open application form',
     onlinePending: 'Application form coming soon',
-    beforeEyebrow: 'Before Applying',
     beforeTitle: 'Information to Prepare',
     beforeBody:
       'We plan to request only the information needed to review your interests and respond to your application.',
@@ -521,7 +498,6 @@ export const content = {
       'Reason for joining and activities of interest',
       'Email address for our response',
     ],
-    contactEyebrow: 'Contact',
     contactTitle: 'Secretariat Enquiries',
     contactBody:
       'The Secretariat can be reached by telephone or email. Please use the contact details below and we will respond in turn.',
@@ -531,7 +507,6 @@ export const content = {
     emailAddress: 'mingoo@aks.ac.kr',
   },
   eventRecord: {
-    eyebrow: 'Event Record',
     title: 'The Assembly, in Photographs',
     meta: '12 December 2025 · Myeongnyun Campus, Seoul · seven photographs and a short film',
   },
