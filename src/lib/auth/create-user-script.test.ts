@@ -25,7 +25,7 @@ describe('scripts/create-user.mjs input handling', () => {
   });
 
   it('refuses a weak password before touching any database', () => {
-    const result = run(['someone'], { TCN_USER_PASSWORD: 'short' });
+    const result = run(['someone', '--role', 'member'], { TCN_USER_PASSWORD: 'short' });
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/at least 12/);
@@ -33,10 +33,20 @@ describe('scripts/create-user.mjs input handling', () => {
   });
 
   it('refuses a password that contains the username', () => {
-    const result = run(['someone'], { TCN_USER_PASSWORD: 'someone-is-here-1234' });
+    const result = run(['someone', '--role', 'member'], {
+      TCN_USER_PASSWORD: 'someone-is-here-1234',
+    });
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/username/);
+  });
+
+  it('checks the role before it asks for a password', () => {
+    const result = run(['someone'], { TCN_USER_PASSWORD: 'correct horse battery staple' });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('--role');
+    expect(result.stderr).not.toMatch(/No password provided/);
   });
 
   it('requires a username', () => {
@@ -47,7 +57,7 @@ describe('scripts/create-user.mjs input handling', () => {
   });
 
   it('asks for a password on stdin when no terminal and no variable is available', () => {
-    const result = run(['someone']);
+    const result = run(['someone', '--role', 'member']);
 
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/password/i);
