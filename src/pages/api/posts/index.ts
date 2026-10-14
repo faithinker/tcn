@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSessionUid } from '../../../lib/auth';
+import { requireOfficer } from '../../../lib/auth';
 import { createPost, getDB, listSeminarPosts } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
 import { parsePostPayload } from '../../../lib/posts';
@@ -7,10 +7,10 @@ import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/se
 
 export const prerender = false;
 
-// 글 생성: 인증 필요. 권한 없음(인증된 누구나) — 설계상 flat.
+// 글 생성: 승인된 임원만. 세션만 확인하고 CSRF 는 요구하지 않는다(기존 동작 유지).
 export const POST: APIRoute = async ({ request }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await requireOfficer(request);
+  if (!guard.ok) return guard.response;
 
   const parsed = parsePostPayload(await request.json().catch(() => null));
   if (!parsed.ok) return Response.json({ ok: false, error: parsed.error }, { status: 400 });
@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
       address: payload.address,
       body: payload.body,
       heroMediaId: null,
-      authorId: uid,
+      authorId: guard.user.id,
     });
   } catch (error) {
     if (isSeminarDateConflictError(error)) {

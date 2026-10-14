@@ -5,7 +5,7 @@ const {
   getDB,
   getMediaById,
   getPost,
-  getSessionUid,
+  getSessionUser,
   listSeminarPosts,
   notifyPostChange,
   PostRevisionConflictError,
@@ -16,7 +16,7 @@ const {
   getDB: vi.fn(() => ({})),
   getMediaById: vi.fn(),
   getPost: vi.fn(),
-  getSessionUid: vi.fn(),
+  getSessionUser: vi.fn(),
   listSeminarPosts: vi.fn(),
   notifyPostChange: vi.fn(),
   PostRevisionConflictError: class PostRevisionConflictError extends Error {
@@ -28,7 +28,11 @@ const {
   updatePost: vi.fn(),
 }));
 
-vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../auth/guard', () => ({
+  getSessionUid: vi.fn(),
+  getSessionSecret: vi.fn(),
+  getSessionUser,
+}));
 vi.mock('../db', () => ({
   createPost,
   getDB,
@@ -43,6 +47,16 @@ vi.mock('../notify', () => ({ notifyPostChange }));
 
 import { DELETE, PUT } from '../../pages/api/posts/[id]';
 import { POST } from '../../pages/api/posts/index';
+
+const OFFICER = {
+  id: 'editor-1',
+  username: 'editor',
+  displayName: 'Editor',
+  role: 'officer',
+  status: 'approved',
+  isExecutive: false,
+} as const;
+const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
 
 const validPayload = {
   title: '  Third seminar  ',
@@ -81,13 +95,24 @@ function itemContext(
 describe('POST /api/posts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('editor-1');
+    getSessionUser.mockResolvedValue(OFFICER);
     listSeminarPosts.mockResolvedValue([]);
     createPost.mockResolvedValue({ id: 'post-1', title: 'Third seminar' });
   });
 
+  it('rejects a signed-in account that is not an officer before parsing or opening D1', async () => {
+    getSessionUser.mockResolvedValue(MEMBER);
+
+    const response = await POST!(createContext());
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ ok: false, error: 'forbidden' });
+    expect(getDB).not.toHaveBeenCalled();
+    expect(createPost).not.toHaveBeenCalled();
+  });
+
   it('rejects an unauthenticated request before parsing or opening D1', async () => {
-    getSessionUid.mockResolvedValue(null);
+    getSessionUser.mockResolvedValue(null);
 
     const response = await POST!(createContext());
 
@@ -156,10 +181,21 @@ describe('POST /api/posts', () => {
 describe('PUT /api/posts/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('editor-1');
+    getSessionUser.mockResolvedValue(OFFICER);
     getPost.mockResolvedValue({ id: 'post-1', eventDate: '2027-01-15' });
     listSeminarPosts.mockResolvedValue([{ id: 'post-1', eventDate: '2027-01-15' }]);
     updatePost.mockResolvedValue({ id: 'post-1', title: 'Third seminar', revision: 3 });
+  });
+
+  it('answers 401 without a session and 403 to a non-officer before any read', async () => {
+    getSessionUser.mockResolvedValue(null);
+    expect((await PUT!(itemContext('PUT'))).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(MEMBER);
+    const response = await PUT!(itemContext('PUT'));
+    expect(response.status).toBe(403);
+    expect(getPost).not.toHaveBeenCalled();
+    expect(updatePost).not.toHaveBeenCalled();
   });
 
   it('requires a revision before reading the current post', async () => {
@@ -228,8 +264,18 @@ describe('PUT /api/posts/[id]', () => {
 describe('DELETE /api/posts/[id]', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('editor-1');
+    getSessionUser.mockResolvedValue(OFFICER);
     softDeletePost.mockResolvedValue(true);
+  });
+
+  it('answers 401 without a session and 403 to a non-officer before any write', async () => {
+    getSessionUser.mockResolvedValue(null);
+    expect((await DELETE!(itemContext('DELETE'))).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(MEMBER);
+    const response = await DELETE!(itemContext('DELETE'));
+    expect(response.status).toBe(403);
+    expect(softDeletePost).not.toHaveBeenCalled();
   });
 
   it('soft-deletes an authenticated post and reports missing rows', async () => {

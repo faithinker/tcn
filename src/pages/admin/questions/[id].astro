@@ -5,10 +5,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import {
   createCsrfToken,
   getSessionSecret,
-  getSessionUid,
   readSessionToken,
+  requireOfficerPage,
 } from '../../../lib/auth';
-import { getDB, getUserById } from '../../../lib/db';
+import { getDB } from '../../../lib/db';
 import { getAdminQuestion } from '../../../lib/qna/repository';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
@@ -16,15 +16,14 @@ Astro.response.headers.set('Cache-Control', 'no-store');
 const id = Astro.params.id ?? '';
 const returnPath = `/admin/questions/${encodeURIComponent(id)}`;
 const loginUrl = `/admin/login?returnTo=${encodeURIComponent(returnPath)}`;
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect(loginUrl);
+const guard = await requireOfficerPage(Astro, { loginUrl });
+if (!guard.ok) return guard.response;
+const { user } = guard;
 
 const sessionToken = readSessionToken(Astro.request);
 if (!sessionToken) return Astro.redirect(loginUrl);
 
-const db = getDB();
-const [user, question] = await Promise.all([getUserById(db, uid), getAdminQuestion(db, id)]);
-if (!user) return Astro.redirect(loginUrl);
+const question = await getAdminQuestion(getDB(), id);
 if (!question) Astro.response.status = 404;
 
 const csrfToken = await createCsrfToken('qna', sessionToken, getSessionSecret());

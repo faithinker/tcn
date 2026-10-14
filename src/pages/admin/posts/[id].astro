@@ -2,20 +2,17 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
-import { getSessionUid } from '../../../lib/auth';
-import { getDB, getPost, getUserById, listMediaForPost } from '../../../lib/db';
+import { requireOfficerPage } from '../../../lib/auth';
+import { getDB, getPost, listMediaForPost } from '../../../lib/db';
 import { getSeminarCollection } from '../../../lib/seminars/service';
 
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect('/admin/login');
+const guard = await requireOfficerPage(Astro);
+if (!guard.ok) return guard.response;
+const { user } = guard;
 
 const db = getDB();
 const id = Astro.params.id!;
-const [user, post, seminars] = await Promise.all([
-  getUserById(db, uid),
-  getPost(db, id),
-  getSeminarCollection(db),
-]);
+const [post, seminars] = await Promise.all([getPost(db, id), getSeminarCollection(db)]);
 if (!post) return Astro.redirect('/admin');
 const media = await listMediaForPost(db, id);
 const seminarSequence =

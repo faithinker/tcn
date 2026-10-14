@@ -2,14 +2,15 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
-import { getSessionUid } from '../../../lib/auth';
-import { getDB, getUserById } from '../../../lib/db';
+import { requireOfficerPage } from '../../../lib/auth';
+import { getDB } from '../../../lib/db';
 import { getSeminarCollection } from '../../../lib/seminars/service';
 
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect('/admin/login');
-const db = getDB();
-const [user, seminars] = await Promise.all([getUserById(db, uid), getSeminarCollection(db)]);
+const guard = await requireOfficerPage(Astro);
+if (!guard.ok) return guard.response;
+const { user } = guard;
+
+const seminars = await getSeminarCollection(getDB());
 const seminarSequence = seminars.chronological.length + 1;
 ---
 

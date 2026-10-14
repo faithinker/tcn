@@ -1,20 +1,34 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UPLOAD_LIMITS } from '../media/validate';
 
-const { addMedia, bucket, getBucket, getDB, getPost, getSessionUid, newId } = vi.hoisted(() => ({
+const { addMedia, bucket, getBucket, getDB, getPost, getSessionUser, newId } = vi.hoisted(() => ({
   addMedia: vi.fn(),
   bucket: { put: vi.fn(), delete: vi.fn() },
   getBucket: vi.fn(),
   getDB: vi.fn(() => ({})),
   getPost: vi.fn(),
-  getSessionUid: vi.fn(),
+  getSessionUser: vi.fn(),
   newId: vi.fn(() => 'media-id'),
 }));
 
-vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../auth/guard', () => ({
+  getSessionUid: vi.fn(),
+  getSessionSecret: vi.fn(),
+  getSessionUser,
+}));
 vi.mock('../db', () => ({ addMedia, getBucket, getDB, getPost, newId }));
 
 import { POST } from '../../pages/api/media/index';
+
+const OFFICER = {
+  id: 'user-1',
+  username: 'editor',
+  displayName: 'Editor',
+  role: 'officer',
+  status: 'approved',
+  isExecutive: false,
+} as const;
+const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
 
 function context({
   mime = 'video/mp4',
@@ -44,7 +58,7 @@ function context({
 describe('POST /api/media', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('user-1');
+    getSessionUser.mockResolvedValue(OFFICER);
     getBucket.mockReturnValue(bucket);
     getPost.mockResolvedValue({ id: 'post-1' });
     bucket.put.mockResolvedValue({});
@@ -55,6 +69,17 @@ describe('POST /api/media', () => {
       r2Key: 'post-1/media-id.mp4',
       kind: 'video',
     });
+  });
+
+  it('answers 401 without a session and 403 to a non-officer before reading the body', async () => {
+    getSessionUser.mockResolvedValue(null);
+    expect((await POST!(context())).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(MEMBER);
+    const response = await POST!(context());
+    expect(response.status).toBe(403);
+    expect(getPost).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
   });
 
   it('streams non-image request bodies to R2 before recording metadata', async () => {

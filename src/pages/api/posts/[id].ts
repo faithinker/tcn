@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSessionUid } from '../../../lib/auth';
+import { requireOfficer } from '../../../lib/auth';
 import {
   getDB,
   getMediaById,
@@ -30,10 +30,10 @@ function seminarDateErrorResponse(error: string): Response {
   return Response.json({ ok: false, error }, { status: invalid ? 400 : 409 });
 }
 
-// 글 수정(전체 저장). 인증 필요, 권한 없음(flat).
+// 글 수정(전체 저장). 승인된 임원만.
 export const PUT: APIRoute = async ({ request, params }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await requireOfficer(request);
+  if (!guard.ok) return guard.response;
 
   const id = params.id;
   if (!id) return Response.json({ ok: false, error: 'missing_id' }, { status: 400 });
@@ -92,8 +92,8 @@ export const PUT: APIRoute = async ({ request, params }) => {
 };
 
 export const DELETE: APIRoute = async ({ request, params }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await requireOfficer(request);
+  if (!guard.ok) return guard.response;
 
   const id = params.id;
   if (!id) return Response.json({ ok: false, error: 'missing_id' }, { status: 400 });

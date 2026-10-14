@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { clearSessionCookie, getDB, getSessionUid, getUserById, revokeUserSessions } = vi.hoisted(
+const { clearSessionCookie, getDB, getSessionUid, getSessionUser, revokeUserSessions } = vi.hoisted(
   () => ({
     clearSessionCookie: vi.fn(({ secure }: { secure: boolean }) =>
       secure ? 'expired; Secure' : 'expired',
     ),
     getDB: vi.fn(() => ({})),
     getSessionUid: vi.fn(),
-    getUserById: vi.fn(),
+    getSessionUser: vi.fn(),
     revokeUserSessions: vi.fn(),
   }),
 );
 
-vi.mock('../auth', () => ({ clearSessionCookie, getSessionUid }));
-vi.mock('../db', () => ({ getDB, getUserById, revokeUserSessions }));
+vi.mock('../auth', () => ({ clearSessionCookie, getSessionUid, getSessionUser }));
+vi.mock('../db', () => ({ getDB, revokeUserSessions }));
 
 import { POST as logout } from '../../pages/api/auth/logout';
 import { GET as me } from '../../pages/api/auth/me';
@@ -56,35 +56,53 @@ describe('POST /api/auth/logout', () => {
 describe('GET /api/auth/me', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('user-1');
-    getUserById.mockResolvedValue({
+    getSessionUser.mockResolvedValue({
       id: 'user-1',
       username: 'editor',
       displayName: 'TCN Editor',
-      passwordHash: 'must-not-leak',
+      role: 'officer',
+      status: 'approved',
+      isExecutive: true,
     });
   });
 
-  it('returns only the public administrator identity fields', async () => {
+  it('returns the identity fields plus role and status, never the executive flag', async () => {
     const response = await me!(context('/api/auth/me'));
 
     await expect(response.json()).resolves.toEqual({
       ok: true,
       authenticated: true,
-      user: { id: 'user-1', username: 'editor', displayName: 'TCN Editor' },
+      user: {
+        id: 'user-1',
+        username: 'editor',
+        displayName: 'TCN Editor',
+        role: 'officer',
+        status: 'approved',
+      },
+    });
+  });
+
+  it('reports pending and rejected accounts as authenticated with their status', async () => {
+    getSessionUser.mockResolvedValue({
+      id: 'user-2',
+      username: 'new@example.org',
+      displayName: null,
+      role: 'member',
+      status: 'pending',
+      isExecutive: false,
+    });
+
+    const body = await (await me!(context('/api/auth/me'))).json();
+
+    expect(body).toMatchObject({
+      authenticated: true,
+      user: { role: 'member', status: 'pending' },
     });
   });
 
   it('treats a missing session or deleted user as unauthenticated', async () => {
-    getSessionUid.mockResolvedValue(null);
-    await expect((await me!(context('/api/auth/me'))).json()).resolves.toEqual({
-      ok: true,
-      authenticated: false,
-    });
-    expect(getUserById).not.toHaveBeenCalled();
+    getSessionUser.mockResolvedValue(null);
 
-    getSessionUid.mockResolvedValue('deleted-user');
-    getUserById.mockResolvedValue(null);
     await expect((await me!(context('/api/auth/me'))).json()).resolves.toEqual({
       ok: true,
       authenticated: false,

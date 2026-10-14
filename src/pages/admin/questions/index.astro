@@ -6,10 +6,10 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import {
   createCsrfToken,
   getSessionSecret,
-  getSessionUid,
   readSessionToken,
+  requireOfficerPage,
 } from '../../../lib/auth';
-import { getDB, getUserById } from '../../../lib/db';
+import { getDB } from '../../../lib/db';
 import type { QnaAdminStatus } from '../../../lib/db/types';
 import { listAdminQuestions } from '../../../lib/qna/repository';
 import { formatWaitingAge } from '../../../scripts/admin-qna-utils';
@@ -18,8 +18,9 @@ Astro.response.headers.set('Cache-Control', 'no-store');
 
 const currentPath = `${Astro.url.pathname}${Astro.url.search}`;
 const loginUrl = `/admin/login?returnTo=${encodeURIComponent(currentPath)}`;
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect(loginUrl);
+const guard = await requireOfficerPage(Astro, { loginUrl });
+if (!guard.ok) return guard.response;
+const { user } = guard;
 
 const sessionToken = readSessionToken(Astro.request);
 if (!sessionToken) return Astro.redirect(loginUrl);
@@ -48,13 +49,11 @@ const requestedPage =
 if (requestedPage === 0) return Astro.redirect(hrefFor(status));
 
 const db = getDB();
-const [user, waitingFirst, answeredFirst, hiddenFirst] = await Promise.all([
-  getUserById(db, uid),
+const [waitingFirst, answeredFirst, hiddenFirst] = await Promise.all([
   listAdminQuestions(db, { status: 'waiting', page: 1 }),
   listAdminQuestions(db, { status: 'answered', page: 1 }),
   listAdminQuestions(db, { status: 'hidden', page: 1 }),
 ]);
-if (!user) return Astro.redirect(loginUrl);
 
 const firstPages = {
   waiting: waitingFirst,
