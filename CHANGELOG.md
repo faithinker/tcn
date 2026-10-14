@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-10]
+
+### Chore
+- Updated every non-major dependency to its latest release and refreshed the lockfile: astro 7.3.8, `@astrojs/cloudflare` 14.3.4, react/react-dom 19.3.0, the whole `@tiptap` family 3.31.4 (tiptap pins its sub-packages with exact peer ranges, so all 28 packages had to move together), marked 18.1.0, wrangler 4.149.0, playwright 1.64.0, lighthouse 13.5.0, prettier 3.9.9 and esbuild 0.28.2. The in-range lockfile refresh also pulls patched transitive releases, taking `npm audit` from 44 vulnerabilities (1 critical, 14 high, 29 moderate) to 0, which clears the `npm run audit` CI gate. (Branch: `chore/update-deps-2026-10`) - Implemented by Claude
+- Upgraded three majors: `@astrojs/react` 7.0.1 (drops the Babel JSX pipeline, 36 fewer transitive packages; client bundle size unchanged), `vitest` and `@vitest/coverage-v8` 5.0.3 (coverage thresholds still met), and `typescript` 6.0.3. (Branch: `chore/update-deps-2026-10`) - Implemented by Claude
+- Deliberately held two majors back. `typescript` stays on 6.x because `astro check` refuses TypeScript 7 ("astro check does not currently support TypeScript 7.0") and `@astrojs/check` declares `^5.0.0 || ^6.0.0`; revisit when the `@astrojs/ts-content-mapper` route for TypeScript 7.1+ is adopted. `prettier-plugin-astro` stays on 0.14.x because 1.x reformats 35 `.astro` files and no longer wraps tag attributes at the configured `printWidth` of 100, so `format:check` fails without a repository-wide style change. (Branch: `chore/update-deps-2026-10`) - Implemented by Claude
+
 ## [2026-08-27]
 
 ### Fix
