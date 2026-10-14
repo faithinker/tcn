@@ -2,10 +2,14 @@
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getSessionSecret, getSessionUid, readSessionToken } from '../../../lib/auth';
+import {
+  createCsrfToken,
+  getSessionSecret,
+  getSessionUid,
+  readSessionToken,
+} from '../../../lib/auth';
 import { getDB, getUserById } from '../../../lib/db';
 import { getAdminQuestion } from '../../../lib/qna/repository';
-import { createCsrfToken } from '../../../lib/qna/security';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
 
@@ -23,7 +27,7 @@ const [user, question] = await Promise.all([getUserById(db, uid), getAdminQuesti
 if (!user) return Astro.redirect(loginUrl);
 if (!question) Astro.response.status = 404;
 
-const csrfToken = await createCsrfToken(sessionToken, getSessionSecret());
+const csrfToken = await createCsrfToken('qna', sessionToken, getSessionSecret());
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'long',
   day: 'numeric',
