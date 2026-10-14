@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-12]
+
+### Docs
+- Added the boards-and-roles design spec at `docs/superpowers/specs/2026-10-12-boards-and-roles-design.md`. It defines two roles (`officer`, `member`) plus an account status (`pending`, `approved`, `rejected`), an officers-only forum and an approved-members-only assembly forum, account-first signup with officer approval from an admin user list, and a three-phase rollout whose first phase preserves current behavior by backfilling existing accounts as officer and approved. Signup stays off by default behind `SIGNUP_ENABLED` until spam defense and a privacy policy exist. This is a specification only: no product code, migration, or route changed. (Branch: `docs/boards-and-roles-spec`) - Implemented by Claude
+
 ## [2026-10-10]
 
 ### Chore
