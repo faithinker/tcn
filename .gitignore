@@ -42,3 +42,6 @@ coverage/
 
 # Impeccable UI 크리틱 산출물 (어드민 취약점 인벤토리 — 공개 저장소 제외, 로컬 보관)
 .impeccable/critique/
+
+# 외부 저장소 참조용 shallow clone (tiptap 스킬이 필요할 때 생성 — 추적 제외)
+.reference/

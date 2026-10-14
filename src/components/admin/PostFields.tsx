@@ -102,7 +102,7 @@ export default function PostFields({
       </div>
 
       <div className="border-y border-hairline-strong bg-canvas-soft px-4 py-4">
-        <p className="text-caption font-bold uppercase text-accent">Public seminar identity</p>
+        <p className="text-caption font-bold uppercase text-ink">Public seminar identity</p>
         {publicHref ? (
           <>
             <p className="mt-2 font-serif text-body-serif font-semibold text-ink">{ordinalLabel}</p>

@@ -8,7 +8,6 @@ const copy = content.declaration;
 <DocumentLayout
   title={copy.title}
   description={copy.description}
-  eyebrow={copy.eyebrow}
   heading={copy.heroTitle}
   current="declaration"
 >
@@ -20,7 +19,7 @@ const copy = content.declaration;
     {
       copy.missions.map((mission) => (
         <li class="bg-canvas-soft p-5 sm:p-6">
-          <p class="font-sans text-caption font-bold uppercase text-accent">{mission.label}</p>
+          <p class="font-sans text-caption font-bold text-body-muted">{mission.label}</p>
           <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{mission.title}</h2>
           <p class="mt-4 font-serif text-body-serif text-body">{mission.body}</p>
         </li>
