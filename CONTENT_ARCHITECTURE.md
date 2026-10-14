@@ -60,9 +60,9 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 
 ## 5. 운영
 
-- 로컬: `npm run dev` (wrangler platformProxy로 로컬 D1/R2). 시드: `node scripts/seed-seminar-posts.mjs`. 계정: `node scripts/create-user.mjs <id> [--remote]`(비밀번호는 숨김 프롬프트 또는 `TCN_USER_PASSWORD`).
+- 로컬: `npm run dev` (wrangler platformProxy로 로컬 D1/R2). 시드: `node scripts/seed-seminar-posts.mjs`. 계정: `node scripts/create-user.mjs <id> --role officer|member [--remote]`(비밀번호는 숨김 프롬프트 또는 `TCN_USER_PASSWORD`).
 - 시크릿: 로컬 `.dev.vars`, 원격은 단건 `wrangler secret put` 또는 gitignore된 `.dev.vars.production`을 `wrangler secret bulk`로 일괄 투입(운영 경로).
-- QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run verify:admin`(어드민 작성 플로) · `npm run verify:founding-media`(창립 미디어 갤러리) · `npm run verify:seminar-carousel`(세미나 캐러셀) · `npm run test:qna:d1`(Q&A D1 제약) · `npm run a11y`(Lighthouse) - 전부 `ci.yml` 게이트이고, 기본 경로에 글 상세를 포함한다. `npm run motion`은 게이트가 아닌 로컬 확인용. 실행법은 [`docs/development.md`](./docs/development.md#로컬-실행).
+- QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run verify:admin`(어드민 작성 플로) · `npm run verify:founding-media`(창립 미디어 갤러리) · `npm run verify:seminar-carousel`(세미나 캐러셀) · `npm run test:qna:d1`(Q&A D1 제약) · `npm run test:roles:d1`(역할 D1 제약) · `npm run a11y`(Lighthouse) - 전부 `ci.yml` 게이트이고, 기본 경로에 글 상세를 포함한다. `npm run motion`은 게이트가 아닌 로컬 확인용. 실행법은 [`docs/development.md`](./docs/development.md#로컬-실행).
 - 레거시 301: `public/_redirects` - `/ko/*`·`/en/*`·구 slug(`2025-laos` 등)·구 회차 허브 전부 영구 이전.
 - 슬래시 정규화: SSR 페이지는 미들웨어가 301, 프리렌더 정적 페이지(`/people/` 등)는 Workers Static Assets `drop-trailing-slash`가 **307**로 처리(플랫폼 기본값 수용 — 2026-07-27 결정).
 

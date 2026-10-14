@@ -117,6 +117,7 @@ D1 스키마 검증은 서버 없이 `wrangler`로 로컬 D1을 직접 두드립
 
 ```bash
 npm run test:qna:d1    # Q&A 유니크·CHECK 제약이 실제로 거부하는지 확인
+npm run test:roles:d1  # 역할 마이그레이션의 백필·기본값·CHECK 제약 확인
 ```
 
 ## AI 에이전트 설정

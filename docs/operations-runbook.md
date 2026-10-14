@@ -79,6 +79,30 @@ npx wrangler d1 execute tcn-content --remote \
 
 `qna_audit_events` grows without bound too, one row per administrator answer or visibility change. That table is the audit record — do not prune it.
 
+## Account roles and executive authority
+
+An account has a role (`officer` or `member`), a status (`pending`, `approved`, `rejected`) and an executive flag (`is_executive`, for the president and vice presidents). The admin screens and the seminar, media and Q&A answer APIs require an approved officer. Deciding sign-ups and hiding other people's forum posts (later phases) require an approved officer with the executive flag. The site reads all three values from D1 on every request, so a change takes effect immediately and no session has to be revoked.
+
+Nothing in the product grants the officer role or the executive flag. Use the scripts, and run production changes with `--dry-run` first to read the SQL before it touches data:
+
+```bash
+node scripts/create-user.mjs <username> --role officer --display "Name" --remote
+node scripts/set-user-role.mjs <username> --role officer --executive --remote --dry-run
+node scripts/set-user-role.mjs <username> --role officer --executive --remote
+```
+
+`create-user.mjs` asks for the password with hidden input (or reads `TCN_USER_PASSWORD`); it never takes it as an argument. `--role` is required and the result is fully determined by the flags: without `--executive` the flag is turned off. The officer role can only be given to an `approved` account, and the script re-reads the account afterwards and exits with an error if the values are not what it asked for. An unknown username and a not-yet-approved account both fail loudly instead of reporting success.
+
+Migration `0008` backfilled every account that existed before the roles feature as `officer`, `approved`, without the executive flag, so the first release changed nobody's permissions. The deploy workflow applies remote migrations before it deploys the Worker, after recording a Time Travel bookmark, and the migration only adds columns, so rolling the Worker back needs no data restore.
+
+Before the release that opens the forums, audit the roster:
+
+1. Read the accounts: `npx wrangler d1 execute tcn-content --remote --command 'select username, display_name from users'`. This is read-only but it reads production data, so run it yourself or get explicit approval first.
+2. Compare them with the titles in `src/data/members.json`.
+3. Demote accounts that are not officers (auditor, senior adviser) with `set-user-role.mjs --role member`. They lose their seminar and Q&A write access, so tell them.
+4. Fill in the display name of every officer account that has none.
+5. Grant the executive flag to the president and vice presidents. Confirm whether the senior vice president counts as a vice president. Without an executive account nobody can hide a post or approve a sign-up.
+
 ## Readiness triage
 
 `/api/ready` is fail closed. It answers `503` unless the `DB` and `MEDIA` bindings and all five of `SESSION_SECRET`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `QNA_TURNSTILE_HOSTNAMES`, and `QNA_RATE_LIMIT_SECRET` are present, and only reaches D1 and R2 after that check passes. A missing secret and broken code return the same `{"ok":false}`, and `/api/health` stays `200` through both — it is liveness only and checks nothing external.
