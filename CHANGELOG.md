@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-14]
+
+### Chore
+- Added three agent skills with the `skills` CLI and recorded them in `skills-lock.json`: `tiptap` from `ueberdosis/tiptap` (Tiptap 3 integration guidance; the project depends on `@tiptap/*` 3.x), and `accessibility` and `core-web-vitals` from `addyosmani/web-quality-skills` (WCAG 2.2 and LCP/INP/CLS checklists that go beyond the Lighthouse accessibility score `npm run a11y` enforces). `.agents/skills/` holds the files and `.claude/skills/` symlinks to them. The same install also pulled in `create-pr` from the Tiptap repository, which was removed again: it writes PR descriptions in plain English and fits them to a PR template this repository does not have, so it competes with the `pr-changelog` rule. Also added `.reference/` to `.gitignore`, the folder the `tiptap` skill shallow-clones Tiptap source into when `node_modules` is not enough, so a reference clone cannot be committed by accident. (Branch: `chore/consolidate-2026-10`) - Implemented by Claude
+
 ## [2026-10-12]
 
 ### Docs
