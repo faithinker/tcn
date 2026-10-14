@@ -97,6 +97,9 @@ jobs:
       - name: Verify Q&A D1 constraints
         run: npm run test:qna:d1
 
+      - name: Verify user role migration
+        run: npm run test:roles:d1
+
       - name: Test
         run: npm run test
 

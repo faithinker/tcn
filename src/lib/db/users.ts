@@ -2,22 +2,31 @@ import { newId } from './client';
 import type { User } from './types';
 
 const COLUMNS = `id, username, password_hash as passwordHash, display_name as displayName,
-  session_version as sessionVersion, created_at as createdAt`;
+  session_version as sessionVersion, created_at as createdAt,
+  role, status, is_executive as isExecutive`;
+
+type UserRow = Omit<User, 'isExecutive'> & { isExecutive: number };
+
+// SQLite 에는 boolean 이 없어 0/1 로 저장된다.
+function toUser(row: UserRow): User {
+  return { ...row, isExecutive: row.isExecutive === 1 };
+}
 
 // 비밀번호 비교는 auth 레이어에서 수행한다.
 export async function getUserByUsername(db: D1Database, username: string): Promise<User | null> {
-  return (
-    (await db
-      .prepare(`select ${COLUMNS} from users where username = ?1`)
-      .bind(username)
-      .first<User>()) ?? null
-  );
+  const row = await db
+    .prepare(`select ${COLUMNS} from users where username = ?1`)
+    .bind(username)
+    .first<UserRow>();
+  return row ? toUser(row) : null;
 }
 
 export async function getUserById(db: D1Database, id: string): Promise<User | null> {
-  return (
-    (await db.prepare(`select ${COLUMNS} from users where id = ?1`).bind(id).first<User>()) ?? null
-  );
+  const row = await db
+    .prepare(`select ${COLUMNS} from users where id = ?1`)
+    .bind(id)
+    .first<UserRow>();
+  return row ? toUser(row) : null;
 }
 
 // 계정 발급(수동 스크립트에서 사용). passwordHash 는 이미 해시된 값이어야 한다.
