@@ -16,9 +16,8 @@ function reveal(): void {
   }
 
   let remaining = targets.length;
-  // threshold 는 0 이어야 한다. 비율 임계값(예: 0.15)을 쓰면 뷰포트보다 훨씬 긴 섹션은
-  // 최대 intersectionRatio 가 임계값에 못 미쳐 영구히 opacity:0 으로 남는다.
-  // 진입 시점은 rootMargin 의 하단 여백이 담당한다.
+  // threshold 는 0 이어야 한다. 비율 임계값이면 뷰포트보다 긴 섹션이 영구히 opacity:0 으로 남는다.
+  // 진입 시점은 rootMargin 하단 여백이 담당한다.
   const io = new IntersectionObserver(
     (entries, observer) => {
       for (const entry of entries) {

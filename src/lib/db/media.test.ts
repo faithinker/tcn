@@ -1,93 +1,80 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { openTestD1, type TestD1 } from '../../test-support/d1';
 
-vi.mock('./client', () => ({ newId: vi.fn(() => 'new-id') }));
+vi.mock('./client', () => ({ newId: () => crypto.randomUUID() }));
 
-import * as mediaDb from './media';
+import {
+  addMedia,
+  deleteMediaAndQueueCleanup,
+  getMediaById,
+  getPublicMediaByKey,
+  listMediaCleanupKeys,
+  updateMediaMetadata,
+} from './media';
+import { createPost, softDeletePost } from './posts';
+
+let harness: TestD1;
+const db = () => harness.db;
+
+beforeAll(async () => {
+  harness = await openTestD1();
+});
+afterAll(async () => {
+  await harness.dispose();
+});
+afterEach(async () => {
+  await db().prepare('delete from posts').run();
+  await db().prepare('delete from media_cleanup_queue').run();
+});
+
+async function seedMedia(r2Key = 'p1/file.webp') {
+  const post = await createPost(db(), { title: 'Seminar' });
+  const media = await addMedia(db(), { postId: post.id, r2Key, kind: 'image' });
+  return { post, media };
+}
 
 describe('getPublicMediaByKey', () => {
-  it('requires a visible parent post', async () => {
-    const media = { id: 'm1', postId: 'p1', r2Key: 'p1/file.webp' };
-    const first = vi.fn().mockResolvedValue(media);
-    const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
+  it('serves media of a visible post and hides it once the post is deleted', async () => {
+    const { post, media } = await seedMedia();
 
-    await expect(mediaDb.getPublicMediaByKey(db, 'p1/file.webp')).resolves.toEqual(media);
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('join posts p'));
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('p.deleted_at is null'));
-    expect(bind).toHaveBeenCalledWith('p1/file.webp');
+    await expect(getPublicMediaByKey(db(), 'p1/file.webp')).resolves.toMatchObject({
+      id: media.id,
+    });
+
+    await softDeletePost(db(), post.id);
+    await expect(getPublicMediaByKey(db(), 'p1/file.webp')).resolves.toBeNull();
   });
 });
 
 describe('updateMediaMetadata', () => {
   it('updates caption and position and returns the refreshed media row', async () => {
-    const updated = { id: 'm1', caption: 'Seminar discussion', position: 2 };
-    const run = vi.fn().mockResolvedValue({ meta: { changes: 1 } });
-    const first = vi.fn().mockResolvedValue(updated);
-    const bind = vi.fn().mockReturnValueOnce({ run }).mockReturnValueOnce({ first });
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-    const updateMediaMetadata = (
-      mediaDb as {
-        updateMediaMetadata?: (
-          db: D1Database,
-          id: string,
-          input: { caption: string | null; position: number },
-        ) => Promise<unknown>;
-      }
-    ).updateMediaMetadata;
-
-    expect(updateMediaMetadata).toBeTypeOf('function');
-    if (!updateMediaMetadata) return;
+    const { media } = await seedMedia();
 
     await expect(
-      updateMediaMetadata(db, 'm1', { caption: 'Seminar discussion', position: 2 }),
-    ).resolves.toEqual(updated);
-    expect(prepare).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining('update media set caption = ?2, position = ?3'),
-    );
-    expect(bind).toHaveBeenNthCalledWith(1, 'm1', 'Seminar discussion', 2);
+      updateMediaMetadata(db(), media.id, { caption: 'Seminar discussion', position: 2 }),
+    ).resolves.toMatchObject({ id: media.id, caption: 'Seminar discussion', position: 2 });
   });
 
   it('returns null when the media row does not exist', async () => {
-    const run = vi.fn().mockResolvedValue({ meta: { changes: 0 } });
-    const bind = vi.fn(() => ({ run }));
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-    const updateMediaMetadata = (
-      mediaDb as {
-        updateMediaMetadata?: (
-          db: D1Database,
-          id: string,
-          input: { caption: string | null; position: number },
-        ) => Promise<unknown>;
-      }
-    ).updateMediaMetadata;
-
-    expect(updateMediaMetadata).toBeTypeOf('function');
-    if (!updateMediaMetadata) return;
-
     await expect(
-      updateMediaMetadata(db, 'missing', { caption: null, position: 0 }),
+      updateMediaMetadata(db(), 'missing', { caption: null, position: 0 }),
     ).resolves.toBeNull();
   });
 });
 
 describe('deleteMediaAndQueueCleanup', () => {
-  it('uses one D1 batch so the cleanup record and media deletion are atomic', async () => {
-    const bind = vi.fn(function (this: unknown) {
-      return this;
-    });
-    const prepare = vi.fn(() => ({ bind }));
-    const batch = vi.fn().mockResolvedValue([{ meta: { changes: 1 } }, { meta: { changes: 1 } }]);
-    const db = { prepare, batch } as unknown as D1Database;
+  it('removes the row and queues its R2 key for cleanup', async () => {
+    const { media } = await seedMedia();
 
-    await expect(mediaDb.deleteMediaAndQueueCleanup(db, 'm1', 'post-1/file.webp')).resolves.toBe(
-      true,
-    );
-    expect(batch).toHaveBeenCalledOnce();
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('media_cleanup_queue'));
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('delete from media'));
+    await expect(deleteMediaAndQueueCleanup(db(), media.id, 'p1/file.webp')).resolves.toBe(true);
+
+    await expect(getMediaById(db(), media.id)).resolves.toBeNull();
+    await expect(listMediaCleanupKeys(db())).resolves.toEqual(['p1/file.webp']);
+  });
+
+  it('queues nothing for a row that is already gone', async () => {
+    await expect(deleteMediaAndQueueCleanup(db(), 'missing', 'p1/file.webp')).resolves.toBe(false);
+
+    await expect(listMediaCleanupKeys(db())).resolves.toEqual([]);
   });
 });

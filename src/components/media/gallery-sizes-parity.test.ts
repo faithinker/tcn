@@ -1,10 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// EventGallery 의 sizes 값은 DocumentLayout 의 실측 폭에서 나온 숫자다(주석에 근거가 적혀 있다).
-// 레이아웃 폭이 바뀌면 sizes 는 조용히 틀린 값이 되고, 증상은 "상세보기에서 흐려짐" 뿐이라
-// 빌드도 브라우저 게이트도 잡지 못한다. 그래서 두 파일의 숫자를 여기서 다시 계산해 맞춘다.
-// 상한(1.1배)도 함께 둔다 — 근거 없이 키운 값은 큰 변형을 내려받게 만든다.
+// EventGallery 의 sizes 는 DocumentLayout 실측 폭에서 나온 값이다. 레이아웃 폭이 바뀌면 조용히 틀려 빌드도 브라우저 게이트도 못 잡으므로
+// 두 파일의 숫자를 다시 계산해 맞춘다. 상한(1.1배)은 근거 없이 키우는 것을 막는다.
 const LAYOUT = readFileSync(new URL('../../layouts/DocumentLayout.astro', import.meta.url), 'utf8');
 const GALLERY = readFileSync(new URL('./EventGallery.astro', import.meta.url), 'utf8');
 const TAILWIND_SPACING_REM = 0.25;

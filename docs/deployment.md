@@ -64,5 +64,6 @@ TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy
 | `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID                                     |
 
 - 로컬은 `.dev.vars`를 사용하며 커밋에서 제외합니다(키 목록은 `.env.example`). 로컬 Q&A 제출 검증에는 localhost를 허용한 전용 Turnstile widget과 `QNA_TURNSTILE_HOSTNAMES=localhost`를 씁니다. Turnstile 공식 dummy key 응답에는 hostname이 없어 단위·CI 테스트는 Siteverify를 mock합니다.
+- 관리자 로그인도 같은 Turnstile 위젯·키를 씁니다(`data-action="admin_login"`이라 Q&A 토큰으로는 통과하지 못합니다). 그래서 **로그인이 되려면 `thetcn.org`가 위젯의 Hostnames와 `QNA_TURNSTILE_HOSTNAMES`에 모두 있어야** 하고, 둘 중 하나가 빠지면 로그인 화면이 위젯을 못 띄우거나 서버가 403으로 닫습니다. `LOGIN_CHALLENGE=off`는 로컬·CI의 `.dev.vars` 전용 스위치로, 요청이 `localhost`일 때만 챌린지를 건너뜁니다(운영에는 설정하지 않으며 설정돼도 운영 호스트에선 무효).
 - Q&A 4종이 하나라도 없거나 검증이 실패하면 질문 생성과 readiness는 fail closed됩니다. 알림 시크릿이 없으면 해당 채널만 건너뛰고 글 저장·공개에는 영향이 없습니다.
 - `PUBLIC_MEMBERSHIP_FORM_URL`은 시크릿이 아니라 공개 환경변수입니다(`.env.example`). 비어 두면 `/contact`의 가입 링크 자리에 "Application form coming soon" 비활성 표시가 노출됩니다.

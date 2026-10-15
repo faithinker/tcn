@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { getLoginRateLimitKeys, isLoginRateLimited, recordLoginFailure } from './rate-limit';
+import { describe, expect, it } from 'vitest';
+import { getLoginRateLimitKeys } from './rate-limit';
 
 describe('login rate limiting', () => {
   it('hashes normalized account and IP identifiers before persistence', async () => {
@@ -15,46 +15,23 @@ describe('login rate limiting', () => {
     expect(keys.join(' ')).not.toContain('203.0.113.10');
   });
 
-  it('does not trust a client-provided forwarded IP fallback', async () => {
-    const forged = await getLoginRateLimitKeys(
-      new Request('https://tcn.example/api/auth/login', {
-        headers: { 'x-forwarded-for': '203.0.113.10' },
-      }),
-      'Editor',
-    );
-    const unknown = await getLoginRateLimitKeys(
-      new Request('https://tcn.example/api/auth/login'),
-      'Editor',
-    );
+  // client-ip.test.ts 는 헬퍼만 본다. 로그인 키가 그 헬퍼를 실제로 쓰는지는 여기서만 잠긴다.
+  it('counts every address of one IPv6 /64 as the same client', async () => {
+    const keysFor = (ip: string) =>
+      getLoginRateLimitKeys(
+        new Request('https://tcn.example/api/auth/login', {
+          headers: { 'cf-connecting-ip': ip },
+        }),
+        'Editor',
+      );
 
-    expect(forged[1]).toBe(unknown[1]);
-  });
-
-  it('checks either identifier for an active block', async () => {
-    const first = vi.fn().mockResolvedValue({ blocked: 1 });
-    const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-
-    await expect(isLoginRateLimited(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(true);
-    expect(bind).toHaveBeenCalledWith('account:key', 'ip:key', 1_000);
-  });
-
-  it('updates account and IP counters in one D1 batch before rechecking', async () => {
-    const writeBind = vi.fn((...args: unknown[]) => ({ args }));
-    const first = vi.fn().mockResolvedValue(null);
-    const readBind = vi.fn(() => ({ first }));
-    const prepare = vi
-      .fn()
-      .mockReturnValueOnce({ bind: writeBind })
-      .mockReturnValueOnce({ bind: readBind });
-    const batch = vi.fn().mockResolvedValue([]);
-    const db = { prepare, batch } as unknown as D1Database;
-
-    await expect(recordLoginFailure(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(false);
-    expect(batch).toHaveBeenCalledWith([
-      { args: ['account:key', 1_000] },
-      { args: ['ip:key', 1_000] },
+    const [first, second, other] = await Promise.all([
+      keysFor('2001:db8:1:2:aaaa:bbbb:cccc:dddd'),
+      keysFor('2001:db8:1:2::1'),
+      keysFor('2001:db8:1:3::1'),
     ]);
+
+    expect(second[1]).toBe(first[1]);
+    expect(other[1]).not.toBe(first[1]);
   });
 });

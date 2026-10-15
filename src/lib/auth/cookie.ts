@@ -15,9 +15,26 @@ export function clearSessionCookie(opts: { secure: boolean }): string {
   return `${SESSION_COOKIE}=; ${flags.join('; ')}`;
 }
 
+// 이름이 정확히 같은 쿠키 하나를 읽는다. 값이 비었거나 퍼센트 인코딩이 깨졌으면 null —
+// 깨진 쿠키를 보낸 요청이 예외로 500 을 만들지 않게 한다.
+export function readCookie(request: Request, name: string): string | null {
+  const header = request.headers.get('cookie');
+  if (!header) return null;
+
+  for (const part of header.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0 || part.slice(0, separator).trim() !== name) continue;
+    const raw = part.slice(separator + 1).trim();
+    if (!raw) return null;
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 export function readSessionToken(request: Request): string | null {
-  const cookie = request.headers.get('cookie');
-  if (!cookie) return null;
-  const match = cookie.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`));
-  return match ? decodeURIComponent(match[1]) : null;
+  return readCookie(request, SESSION_COOKIE);
 }

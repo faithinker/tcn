@@ -1,13 +1,6 @@
-// Astro 템플릿의 소스 형태를 지키는 가드다. 동작 테스트가 아니다.
-//
-// 이전에는 lib/qna/admin-ui.test.ts 가 관리자 Q&A 페이지 한 곳을 정규식으로 grep 해서
-// `set:text={question.answer?.body ?? ''}` 라는 문자열이 있는지 확인했다. 그 문자열이
-// 조금만 바뀌어도 깨지면서, 정작 같은 버그가 다른 페이지에서 나면 못 잡았다.
-// 여기서는 문자열 대신 버그 클래스를 막는다.
-//
-// 막으려는 것: <textarea>{value}</textarea>
-// Astro 는 자식 노드의 들여쓰기·줄바꿈을 그대로 textarea 의 값으로 직렬화한다.
-// 사용자가 저장하지 않은 공백이 값에 섞여 들어가므로 항상 set:text= 를 써야 한다.
+// Astro 템플릿의 소스 형태 가드(동작 테스트가 아니다).
+// 막으려는 것: <textarea>{value}</textarea>. Astro 는 자식 노드의 들여쓰기·줄바꿈을 그대로 값으로 직렬화해
+// 저장하지 않은 공백이 섞이므로 항상 set:text= 를 써야 한다.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';

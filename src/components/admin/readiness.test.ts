@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { postReadiness } from './readiness';
+import { postReadiness, readinessPercent } from './readiness';
 
 const empty = {
   eventDate: '',
@@ -46,5 +46,35 @@ describe('postReadiness', () => {
     expect(byLabel['Cover image']).toBe(true);
     expect(byLabel['Body content']).toBe(true);
     expect(byLabel['Photos or materials']).toBe(true);
+  });
+});
+
+describe('readinessPercent', () => {
+  it('rounds the share of completed items to a whole percent', () => {
+    const filled = {
+      ...empty,
+      eventDate: '2099-12-31',
+      heroMediaId: 'media-1',
+      bodyHasContent: true,
+      mediaCount: 2,
+    };
+
+    expect(readinessPercent(postReadiness(filled))).toBe(71);
+    expect(readinessPercent(postReadiness({ ...filled, address: 'Seoul' }))).toBe(86);
+    expect(readinessPercent(postReadiness(empty))).toBe(14);
+  });
+
+  it('reaches 100 only when every item is complete', () => {
+    const complete = {
+      eventDate: '2099-12-31',
+      address: 'Seoul',
+      summary: 'Lead',
+      heroMediaId: 'media-1',
+      bodyHasContent: true,
+      mediaCount: 2,
+      videoCaptions: ['spoken words'],
+    };
+
+    expect(readinessPercent(postReadiness(complete))).toBe(100);
   });
 });

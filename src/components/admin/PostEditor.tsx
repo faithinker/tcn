@@ -1,8 +1,5 @@
-// 글 작성 컨테이너. 모든 상태와 API 호출은 여기 산다 — 하위 컴포넌트
-// (PostFields·BodyEditor·MediaManager·ReadinessAside)는 값·콜백만 받는 표현 계층이다.
-// 미디어는 선택 즉시 올리지 않고 스테이징만 하고, Save 한 번이 [글 저장 → 업로드 → 메타] 를
-// 순서대로 처리한다. 미디어 행은 글이 있어야 만들 수 있어서 새 글은 그 안에서 먼저 생성된다.
-// 행동 계약은 scripts/verify-admin-authoring.mjs 브라우저 게이트가 잠근다.
+// 글 작성 컨테이너. 모든 상태와 API 호출이 여기 있고 하위 컴포넌트는 값·콜백만 받는다.
+// 미디어는 선택 즉시 올리지 않고 스테이징하며, Save 한 번이 [글 저장 → 업로드 → 메타] 를 순서대로 처리한다(새 글은 그 안에서 먼저 생성).
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import { useEditor } from '@tiptap/react';

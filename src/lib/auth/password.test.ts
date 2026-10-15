@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { hashPassword, verifyPassword } from './password';
+import { describe, expect, it, vi } from 'vitest';
+import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './password';
 
 describe('password hashing', () => {
   it('produces a self-describing pbkdf2 string', async () => {
@@ -31,9 +31,7 @@ describe('password hashing', () => {
     expect(await verifyPassword('x', 'pbkdf2$50000$@@bad-base64@@$@@bad@@')).toBe(false);
   });
 
-  // Workers 무료 플랜은 요청당 CPU 10ms. 로그인은 PBKDF2 외에 D1 조회·세션 HMAC 으로
-  // ~3ms 를 더 쓰므로, 해시 파라미터가 이 예산을 넘지 않도록 고정한다.
-  // 이 값을 올리려면 Workers Paid 로 올리고 이 테스트를 함께 조정해야 한다.
+  // Workers 무료 플랜은 요청당 CPU 10ms. 로그인은 PBKDF2 외에 ~3ms 를 더 쓰므로 해시 파라미터가 예산을 넘지 않게 고정한다.
   it('keeps the work factor within the free-plan CPU budget', async () => {
     const hash = await hashPassword('budget check');
     const iterations = Number(hash.split('$')[1]);
@@ -46,5 +44,29 @@ describe('password hashing', () => {
     const low = 'pbkdf2$1000$' + (await hashPassword('x')).split('$').slice(2).join('$');
     // (파라미터가 다르면 검증은 실패하되 예외 없이 false 여야 한다)
     expect(await verifyPassword('x', low)).toBe(false);
+  });
+
+  // 없는 아이디도 PBKDF2 한 번을 똑같이 돌려야 응답 시간으로 아이디 존재 여부를 알아낼 수 없다.
+  describe('DUMMY_PASSWORD_HASH', () => {
+    it('is a well-formed hash that makes verifyPassword do a full derivation', async () => {
+      const [scheme, iterations, saltB64, hashB64] = DUMMY_PASSWORD_HASH.split('$');
+      expect(scheme).toBe('pbkdf2');
+      expect(Buffer.from(saltB64, 'base64')).toHaveLength(16);
+      expect(Buffer.from(hashB64, 'base64')).toHaveLength(32);
+
+      const derive = vi.spyOn(crypto.subtle, 'deriveBits');
+      try {
+        await expect(verifyPassword('anything', DUMMY_PASSWORD_HASH)).resolves.toBe(false);
+        expect(derive).toHaveBeenCalledTimes(1);
+        expect(derive.mock.calls[0][0]).toMatchObject({ iterations: Number(iterations) });
+      } finally {
+        derive.mockRestore();
+      }
+    });
+
+    it('uses the same work factor as every real hash', async () => {
+      const real = await hashPassword('work factor');
+      expect(DUMMY_PASSWORD_HASH.split('$')[1]).toBe(real.split('$')[1]);
+    });
   });
 });

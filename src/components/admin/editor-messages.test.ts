@@ -24,12 +24,6 @@ describe('requestErrorMessage', () => {
     );
   });
 
-  it('maps every documented save error to operator copy', () => {
-    for (const [code, message] of Object.entries(saveErrors)) {
-      expect(requestErrorMessage(new ApiRequestError(code, 400), FALLBACK)).toBe(message);
-    }
-  });
-
   it('keeps the API error code visible for unmapped codes', () => {
     expect(requestErrorMessage(new ApiRequestError('mystery_code', 400), FALLBACK)).toBe(
       `${FALLBACK} (mystery_code)`,

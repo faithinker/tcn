@@ -1,10 +1,5 @@
-// 관리자 저작 플로우 브라우저 게이트.
-// 로그인 → 글 생성 → 본문 작성 → 이미지 업로드/캡션/정렬 → 저장 → 공개 반영 → 삭제까지
-// 실제 브라우저로 밟는다. PostEditor 구조 변경(분해 등) 전후로 이 게이트가 같은 초록이면
-// "행동 불변"이 증명된다. 전제: wrangler dev(:4321) + 로컬 D1 마이그레이션/시드.
-//
-// 멱등: 계정은 시작 시 삭제 후 재생성, 글은 마지막에 soft delete(가시 event_date 유니크
-// 인덱스는 visible 행만 대상이라 재실행 충돌 없음).
+// 관리자 저작 플로우 브라우저 게이트: 로그인 → 글 작성 → 이미지 업로드/캡션/정렬 → 저장 → 공개 반영 → 삭제.
+// 전제: wrangler dev(:4321) + 로컬 D1 마이그레이션/시드. 계정은 시작 시 재생성하고 글은 마지막에 soft delete 해 재실행해도 충돌하지 않는다.
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
@@ -42,8 +37,10 @@ function d1(sql) {
 
 // 계정 준비(멱등). 해시 포맷은 create-user.mjs가 password.ts와 동일하게 만든다.
 d1(`DELETE FROM users WHERE username='${USERNAME}';`);
-execFileSync(process.execPath, ['scripts/create-user.mjs', USERNAME, PASSWORD], {
+// 비밀번호는 인자가 아니라 환경변수로 넘긴다(create-user.mjs 는 인자 비밀번호를 거부한다).
+execFileSync(process.execPath, ['scripts/create-user.mjs', USERNAME], {
   cwd: ROOT,
+  env: { ...process.env, TCN_USER_PASSWORD: PASSWORD },
   stdio: 'pipe',
 });
 
@@ -200,7 +197,6 @@ try {
   );
 
   // A9 — readiness 패널: 날짜·본문·사진·대표 충족 반영(7항목 중 ≥5 = 71% 이상).
-  // 이 임계값과 체크리스트의 일치는 src/components/admin/readiness-gate-parity.test.ts 가 잠근다.
   const readinessText = await page
     .locator('aside[aria-label="Public page readiness"] p.font-serif')
     .first()

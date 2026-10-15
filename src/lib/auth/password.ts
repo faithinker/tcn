@@ -1,8 +1,7 @@
 import { base64ToBytes, bytesToBase64, textEncoder, timingSafeEqual } from '../crypto';
 
-// PBKDF2-SHA256. 저장 포맷은 자기서술형: `pbkdf2$<iterations>$<saltB64>$<hashB64>`.
-// iterations 를 문자열에 담아 verify 가 파라미터를 그대로 재현하므로, 향후 값을 올려도 기존 해시 검증 가능.
-// PBKDF2는 Workers 요청 CPU 예산을 사용하므로 반복 횟수 변경 시 password.test.ts의 예산도 검증해야 한다.
+// PBKDF2-SHA256. 저장 포맷은 자기서술형 `pbkdf2$<iterations>$<saltB64>$<hashB64>` 라 iterations 를 올려도 기존 해시를 검증한다.
+// 반복 횟수는 Workers 요청 CPU 예산을 쓰므로 바꿀 때 password.test.ts 의 예산도 확인한다.
 const ITERATIONS = 50_000;
 const KEY_BITS = 256;
 const SALT_BYTES = 16;
@@ -24,6 +23,12 @@ async function derive(plain: string, salt: Uint8Array, iterations: number): Prom
   );
   return new Uint8Array(bits);
 }
+
+// 없는 아이디로 로그인할 때 대신 검증하는 해시. PBKDF2 를 건너뛰면 응답 시간으로 아이디 존재가 드러난다.
+// 요청 중에 만들면 첫 요청 CPU 가 두 배가 되어 오히려 신호가 되므로 ITERATIONS 와 같은 작업량의 값을 고정해 둔다. 원문은 버렸다.
+// ITERATIONS 를 바꾸면 이 값도 다시 만들어야 하며 password.test.ts 가 일치를 잠근다.
+export const DUMMY_PASSWORD_HASH =
+  'pbkdf2$50000$bjzxg4Gz5wa6xWhVNy48hQ==$Sn9nja1fQgD/X3lb06fdAOt2g3fXIYy8f7G8WzDzlek=';
 
 export async function hashPassword(plain: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));

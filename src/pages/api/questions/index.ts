@@ -17,6 +17,7 @@ import {
   requireSameOrigin,
   verifyTurnstile,
 } from '../../../lib/qna/security';
+import { parseHostnames } from '../../../lib/turnstile';
 
 export const prerender = false;
 
@@ -69,12 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
       request.headers.get('cf-connecting-ip'),
       {
         secret: config.TURNSTILE_SECRET_KEY ?? '',
-        hostnames: new Set(
-          (config.QNA_TURNSTILE_HOSTNAMES ?? '')
-            .split(',')
-            .map((hostname) => hostname.trim())
-            .filter(Boolean),
-        ),
+        hostnames: parseHostnames(config.QNA_TURNSTILE_HOSTNAMES),
         action: 'qna_question',
       },
     );

@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { inspectUploadCandidate, UPLOAD_ACCEPT_ATTRIBUTE } from './accept';
 import { classifyUpload } from './validate';
 
-// accept.ts 는 "서버 허용 목록과 짝을 맞춰 유지한다"고 선언하지만 두 목록은 별도로 적혀 있다.
-// 한쪽만 바뀌면 사용자가 고를 수 있는 파일이 업로드에서 415 로 죽거나(클라이언트가 넓음),
-// 서버가 받는 형식을 파일 선택창이 내주지 않는다(서버가 넓음). 양방향을 모두 잠근다.
+// accept.ts 와 서버 허용 목록은 따로 적혀 있어 한쪽만 바뀌면 업로드가 415 로 죽거나 파일 선택창이 서버 형식을 안 내준다. 양방향을 잠근다.
 const SIZE = 1_024;
 
 const offered = UPLOAD_ACCEPT_ATTRIBUTE.split(',').map((entry) => entry.trim());

@@ -1,12 +1,13 @@
 import { getSessionSecret, getSessionUid } from '../auth/guard';
 import { readSessionToken } from '../auth/cookie';
+import { clientIpKey } from '../client-ip';
 import { base64UrlEncode, hmacSha256, sha256, textEncoder, timingSafeEqual } from '../crypto';
+import { checkTurnstile, TURNSTILE_TOKEN_TTL_MS, TurnstileError } from '../turnstile';
 
 const SHORT_WINDOW_SECONDS = 10 * 60;
 const DAY_WINDOW_SECONDS = 24 * 60 * 60;
 const SHORT_LIMIT = 3;
 const DAY_LIMIT = 20;
-const TURNSTILE_TTL_MS = 5 * 60 * 1_000;
 
 export class QnaSecurityError extends Error {
   readonly code: string;
@@ -70,7 +71,7 @@ export function requireSameOrigin(request: Request): void {
 
 export async function getQnaRateLimitKey(request: Request, secret: string): Promise<string> {
   if (!secret) throw new QnaSecurityError('security_not_configured', 503);
-  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  const ip = clientIpKey(request);
   return `qna:${base64UrlEncode(await hmacSha256(`qna-ip:${ip}`, secret))}`;
 }
 
@@ -139,13 +140,8 @@ export async function consumeQuestionRateLimit(
   return { allowed: false, retryAfter: Math.max(1, ...waits) };
 }
 
-interface SiteverifyResult {
-  success?: unknown;
-  hostname?: unknown;
-  action?: unknown;
-  challenge_ts?: unknown;
-}
-
+// Siteverify 검증 자체는 공용 모듈이 맡는다(로그인도 쓴다). 여기서는 Q&A 가 얹는 한 겹 —
+// 토큰 다이제스트 재사용 방지 — 만 둔다.
 export async function verifyTurnstile(
   db: D1Database,
   token: string,
@@ -158,51 +154,14 @@ export async function verifyTurnstile(
     fetch?: typeof fetch;
   },
 ): Promise<void> {
-  if (!options.secret || options.hostnames.size === 0) {
-    throw new QnaSecurityError('security_not_configured', 503);
-  }
-  if (!token || token.length > 2_048) throw new QnaSecurityError('turnstile_failed', 403);
-
-  const form = new URLSearchParams({
-    secret: options.secret,
-    response: token,
-    idempotency_key: crypto.randomUUID(),
-  });
-  if (remoteIp) form.set('remoteip', remoteIp);
-
-  let result: SiteverifyResult;
   try {
-    const response = await (options.fetch ?? fetch)(
-      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-      {
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: form,
-        signal: AbortSignal.timeout(8_000),
-      },
-    );
-    if (!response.ok) throw new Error(`siteverify_${response.status}`);
-    result = (await response.json()) as SiteverifyResult;
-  } catch {
-    throw new QnaSecurityError('turnstile_failed', 403);
+    await checkTurnstile(token, remoteIp, options);
+  } catch (error) {
+    if (error instanceof TurnstileError) throw new QnaSecurityError(error.code, error.status);
+    throw error;
   }
 
   const now = options.now ?? Date.now();
-  const challengedAt =
-    typeof result.challenge_ts === 'string' ? Date.parse(result.challenge_ts) : Number.NaN;
-  const age = now - challengedAt;
-  if (
-    result.success !== true ||
-    typeof result.hostname !== 'string' ||
-    !options.hostnames.has(result.hostname) ||
-    result.action !== options.action ||
-    !Number.isFinite(challengedAt) ||
-    age < -30_000 ||
-    age > TURNSTILE_TTL_MS
-  ) {
-    throw new QnaSecurityError('turnstile_failed', 403);
-  }
-
   const tokenHash = await digest(token);
   const nowSeconds = Math.floor(now / 1_000);
   try {
@@ -213,7 +172,7 @@ export async function verifyTurnstile(
           `insert into qna_turnstile_tokens (token_hash, expires_at, created_at)
            values (?1, ?2, ?3)`,
         )
-        .bind(tokenHash, nowSeconds + TURNSTILE_TTL_MS / 1_000, nowSeconds),
+        .bind(tokenHash, nowSeconds + TURNSTILE_TOKEN_TTL_MS / 1_000, nowSeconds),
     ]);
   } catch (error) {
     if (error instanceof Error && /UNIQUE constraint failed/i.test(error.message)) {

@@ -1,8 +1,5 @@
-// Baseline security headers for every response.
-//
-// Prerendered pages are served by Workers Static Assets and never reach the
-// middleware, so `public/_headers` carries the same set under `/*`. A test keeps
-// the two in sync; change both together.
+// Baseline security headers for every response. Prerendered pages never reach the middleware,
+// so `public/_headers` carries the same set under `/*`; a test keeps the two in sync.
 
 const TURNSTILE = 'https://challenges.cloudflare.com';
 

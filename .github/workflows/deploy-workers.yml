@@ -84,10 +84,8 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
 
-      # 배포 API가 성공해도 트래픽 전환은 즉시가 아니다. 스모크가 이전 버전에 닿으면 초록이어도
-      # 방금 올린 버전을 검증하지 않은 셈이 되고, 결함은 다음 배포에서 터진다 — 2026-07-29 배포가
-      # 그렇게 통과했고(누락된 Q&A 시크릿), 다음 배포가 롤백됐다. 그래서 스모크 전에 방금 올린
-      # 버전 ID가 실제로 100% 트래픽을 받는지 확인한다. 값은 env 로 넘겨 셸 주입을 막는다.
+      # 트래픽 전환은 즉시가 아니므로, 스모크 전에 방금 올린 버전이 100% 트래픽을 받는지 확인한다.
+      # 값은 env 로 넘겨 셸 주입을 막는다.
       - name: Wait for the deployed version to serve traffic
         env:
           DEPLOY_OUTPUT: ${{ steps.deploy.outputs.command-output }}

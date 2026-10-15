@@ -1,69 +1,88 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { openTestD1, type TestD1 } from '../../test-support/d1';
 
-vi.mock('./client', () => ({ newId: vi.fn(() => 'new-id') }));
+vi.mock('./client', () => ({ newId: () => crypto.randomUUID() }));
 
-import * as postsDb from './posts';
+import {
+  createPost,
+  getPostByEventDate,
+  listSeminarPosts,
+  PostRevisionConflictError,
+  softDeletePost,
+  updatePost,
+} from './posts';
+
+let harness: TestD1;
+const db = () => harness.db;
+
+beforeAll(async () => {
+  harness = await openTestD1();
+});
+afterAll(async () => {
+  await harness.dispose();
+});
+afterEach(async () => {
+  await db().prepare('delete from posts').run();
+});
 
 describe('getPostByEventDate', () => {
-  it('looks up a visible post by its event date', async () => {
-    const post = { id: 'p1', eventDate: '2025-12-26' };
-    const first = vi.fn().mockResolvedValue(post);
-    const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-    const getPostByEventDate = (
-      postsDb as { getPostByEventDate?: (db: D1Database, eventDate: string) => Promise<unknown> }
-    ).getPostByEventDate;
+  it('finds the visible post of a date and ignores a soft-deleted one', async () => {
+    const hidden = await createPost(db(), { title: 'Hidden', eventDate: '2025-12-26' });
+    await softDeletePost(db(), hidden.id);
+    const visible = await createPost(db(), { title: 'Visible', eventDate: '2025-12-26' });
 
-    expect(getPostByEventDate).toBeTypeOf('function');
-    if (!getPostByEventDate) return;
-
-    await expect(getPostByEventDate(db, '2025-12-26')).resolves.toEqual(post);
-    expect(prepare).toHaveBeenCalledWith(
-      expect.stringContaining('event_date = ?1 and deleted_at is null'),
-    );
-    expect(bind).toHaveBeenCalledWith('2025-12-26');
+    await expect(getPostByEventDate(db(), '2025-12-26')).resolves.toMatchObject({
+      id: visible.id,
+    });
+    await expect(getPostByEventDate(db(), '2025-01-01')).resolves.toBeNull();
   });
 });
 
 describe('listSeminarPosts', () => {
   it('returns only visible dated posts in chronological order', async () => {
-    const posts = [{ id: 'p1', eventDate: '2025-12-26' }];
-    const all = vi.fn().mockResolvedValue({ results: posts });
-    const prepare = vi.fn(() => ({ all }));
-    const db = { prepare } as unknown as D1Database;
-    const listSeminarPosts = (
-      postsDb as { listSeminarPosts?: (db: D1Database) => Promise<unknown> }
-    ).listSeminarPosts;
+    await createPost(db(), { title: 'Later', eventDate: '2026-10-30' });
+    await createPost(db(), { title: 'Undated' });
+    const removed = await createPost(db(), { title: 'Removed', eventDate: '2026-01-01' });
+    await softDeletePost(db(), removed.id);
+    await createPost(db(), { title: 'Earlier', eventDate: '2025-12-26' });
 
-    expect(listSeminarPosts).toBeTypeOf('function');
-    if (!listSeminarPosts) return;
+    const posts = await listSeminarPosts(db());
 
-    await expect(listSeminarPosts(db)).resolves.toEqual(posts);
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('event_date is not null'));
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('deleted_at is null'));
-    expect(prepare).toHaveBeenCalledWith(expect.stringContaining('order by event_date asc'));
+    expect(posts.map((post) => post.title)).toEqual(['Earlier', 'Later']);
   });
 });
 
 describe('updatePost', () => {
-  it('uses optimistic concurrency and increments the revision', async () => {
-    const updated = { id: 'p1', revision: 4 };
-    const run = vi.fn().mockResolvedValue({ meta: { changes: 1 } });
-    const first = vi.fn().mockResolvedValue(updated);
-    const bind = vi.fn().mockReturnValueOnce({ run }).mockReturnValueOnce({ first });
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
+  it('saves the form and bumps the revision', async () => {
+    const created = await createPost(db(), { title: 'Draft', eventDate: '2025-12-26' });
+
+    const updated = await updatePost(db(), created.id, {
+      title: 'Updated',
+      eventDate: '2025-12-26',
+      expectedRevision: created.revision,
+    });
+
+    expect(updated).toMatchObject({ title: 'Updated', revision: created.revision + 1 });
+  });
+
+  it('refuses a save made against a stale revision', async () => {
+    const created = await createPost(db(), { title: 'Draft' });
+    await updatePost(db(), created.id, { title: 'First', expectedRevision: created.revision });
 
     await expect(
-      postsDb.updatePost(db, 'p1', {
-        title: 'Updated',
-        eventDate: '2025-12-26',
-        expectedRevision: 3,
-      }),
-    ).resolves.toEqual(updated);
-    expect(prepare).toHaveBeenNthCalledWith(1, expect.stringContaining('revision = revision + 1'));
-    expect(prepare).toHaveBeenNthCalledWith(1, expect.stringContaining('revision = ?8'));
-    expect(bind).toHaveBeenNthCalledWith(1, 'p1', 'Updated', null, '2025-12-26', null, '', null, 3);
+      updatePost(db(), created.id, { title: 'Second', expectedRevision: created.revision }),
+    ).rejects.toBeInstanceOf(PostRevisionConflictError);
+  });
+
+  it('returns null for a post that does not exist or was deleted', async () => {
+    await expect(
+      updatePost(db(), 'missing', { title: 'Nothing', expectedRevision: 1 }),
+    ).resolves.toBeNull();
+
+    const created = await createPost(db(), { title: 'Gone' });
+    await softDeletePost(db(), created.id);
+    await expect(
+      updatePost(db(), created.id, { title: 'Late', expectedRevision: created.revision }),
+    ).resolves.toBeNull();
   });
 });

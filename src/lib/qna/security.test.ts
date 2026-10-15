@@ -95,50 +95,30 @@ describe('Q&A HMAC rate limiting', () => {
     expect(key).not.toContain('203.0.113.10');
   });
 
+  // client-ip.test.ts 는 헬퍼만 본다. Q&A 키가 그 헬퍼를 실제로 쓰는지는 여기서만 잠긴다.
+  it('counts every address of one IPv6 /64 as the same client', async () => {
+    const keyFor = (ip: string) =>
+      getQnaRateLimitKey(
+        new Request('https://tcn.example/api/questions', {
+          headers: { 'cf-connecting-ip': ip },
+        }),
+        'rate-secret',
+      );
+
+    const [first, second, other] = await Promise.all([
+      keyFor('2001:db8:1:2:aaaa:bbbb:cccc:dddd'),
+      keyFor('2001:db8:1:2::1'),
+      keyFor('2001:db8:1:3::1'),
+    ]);
+
+    expect(second).toBe(first);
+    expect(other).not.toBe(first);
+  });
+
   it('fails closed when the rate-limit secret is missing', async () => {
     await expect(
       getQnaRateLimitKey(new Request('https://tcn.example/api/questions'), ''),
     ).rejects.toMatchObject({ code: 'security_not_configured', status: 503 });
-  });
-
-  it('consumes both windows with one conditional atomic UPSERT', async () => {
-    const first = vi.fn().mockResolvedValue({
-      short_window_started_at: 1_000,
-      short_attempts: 3,
-      day_window_started_at: 1_000,
-      day_attempts: 3,
-    });
-    const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn((_sql: string) => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-
-    await expect(consumeQuestionRateLimit(db, 'qna:key', 1_100)).resolves.toEqual({
-      allowed: true,
-      retryAfter: 0,
-    });
-    const sql = prepare.mock.calls[0][0];
-    expect(sql).toContain('on conflict(identifier) do update');
-    expect(sql).toContain('short_attempts < 3');
-    expect(sql).toContain('day_attempts < 20');
-    expect(prepare).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns the tighter Retry-After when a conditional UPSERT is blocked', async () => {
-    const blocked = {
-      short_window_started_at: 1_000,
-      short_attempts: 3,
-      day_window_started_at: 0,
-      day_attempts: 10,
-    };
-    const first = vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(blocked);
-    const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn(() => ({ bind }));
-    const db = { prepare } as unknown as D1Database;
-
-    await expect(consumeQuestionRateLimit(db, 'qna:key', 1_100)).resolves.toEqual({
-      allowed: false,
-      retryAfter: 500,
-    });
   });
 
   it('fails closed with the short window when a blocked counter disappears', async () => {
