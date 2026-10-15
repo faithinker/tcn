@@ -18,14 +18,12 @@ const styles = {
 const cn = `${base} ${styles[variant]} ${cls}`.trim();
 ---
 
-{
-  href ? (
-    <a href={href} class={cn}>
-      <slot />
-    </a>
-  ) : (
-    <button type={type} class={cn}>
-      <slot />
-    </button>
-  )
-}
+{href ? (
+  <a href={href} class={cn}>
+    <slot />
+  </a>
+) : (
+  <button type={type} class={cn}>
+    <slot />
+  </button>
+)}

@@ -24,36 +24,30 @@ const { member, currentLabel, expertiseLabel, compact = false } = Astro.props;
   >
     {member.name}
   </h2>
-  {
-    member.position && (
-      <p class="mt-6 font-serif text-body-serif font-semibold text-ink">
-        <span class="current-label">{currentLabel}</span>
-        {member.position}
-      </p>
-    )
-  }
+  {member.position && (
+    <p class="mt-6 font-serif text-body-serif font-semibold text-ink">
+      <span class="current-label">{currentLabel}</span>
+      {member.position}
+    </p>
+  )}
   {member.summary && <p class="profile-summary">{member.summary}</p>}
-  {
-    member.highlights && (
-      <ul class="profile-highlights">
-        {member.highlights.map((item) => (
-          <li>
-            <span aria-hidden="true">·</span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    )
-  }
-  {
-    member.expertise && (
-      <ul class="expertise-list" aria-label={expertiseLabel}>
-        {member.expertise.map((item) => (
-          <li>{item}</li>
-        ))}
-      </ul>
-    )
-  }
+  {member.highlights && (
+    <ul class="profile-highlights">
+      {member.highlights.map((item) => (
+        <li>
+          <span aria-hidden="true">·</span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+  {member.expertise && (
+    <ul class="expertise-list" aria-label={expertiseLabel}>
+      {member.expertise.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  )}
 </article>
 
 <style>

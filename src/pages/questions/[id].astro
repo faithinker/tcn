@@ -41,115 +41,108 @@ const justCreated = Astro.url.searchParams.get('created') === '1';
         ← {t('qna.back')}
       </a>
 
-      {
-        loadFailed ? (
-          <div class="mt-5 max-w-[68ch] border border-hairline bg-canvas-band p-6" role="alert">
-            <h1 class="font-serif text-display-md font-semibold text-ink">
-              This question could not be loaded.
-            </h1>
-            <p class="mt-3 font-sans text-body-sans text-ink-soft">
-              Please try again. You can also return to the Q&A list.
-            </p>
-            <a
-              class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans text-button font-bold text-ink no-underline"
-              href={Astro.url.pathname + Astro.url.search}
+      {loadFailed ? (
+        <div class="mt-5 max-w-[68ch] border border-hairline bg-canvas-band p-6" role="alert">
+          <h1 class="font-serif text-display-md font-semibold text-ink">
+            This question could not be loaded.
+          </h1>
+          <p class="mt-3 font-sans text-body-sans text-ink-soft">
+            Please try again. You can also return to the Q&A list.
+          </p>
+          <a
+            class="mt-5 inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-5 font-sans text-button font-bold text-ink no-underline"
+            href={Astro.url.pathname + Astro.url.search}
+          >
+            Retry
+          </a>
+        </div>
+      ) : question ? (
+        <>
+          {justCreated && (
+            <div
+              id="question-published-banner"
+              class="mt-5 flex max-w-[68ch] flex-col items-start justify-between gap-4 border border-accent bg-canvas-soft p-5 text-ink sm:flex-row sm:items-center"
+              role="status"
+              aria-live="polite"
+              tabindex="-1"
             >
-              Retry
-            </a>
-          </div>
-        ) : question ? (
-          <>
-            {justCreated && (
-              <div
-                id="question-published-banner"
-                class="mt-5 flex max-w-[68ch] flex-col items-start justify-between gap-4 border border-accent bg-canvas-soft p-5 text-ink sm:flex-row sm:items-center"
-                role="status"
-                aria-live="polite"
-                tabindex="-1"
+              <div>
+                <strong class="block font-serif text-body-serif">{t('qna.published')}</strong>
+                <p class="mt-1 font-sans text-body-sm">{t('qna.bookmark')}</p>
+              </div>
+              <button
+                id="copy-question-link"
+                class="inline-flex min-h-12 shrink-0 items-center rounded-sm border border-current bg-transparent px-5 font-sans text-button font-bold"
+                type="button"
               >
-                <div>
-                  <strong class="block font-serif text-body-serif">{t('qna.published')}</strong>
-                  <p class="mt-1 font-sans text-body-sm">{t('qna.bookmark')}</p>
-                </div>
-                <button
-                  id="copy-question-link"
-                  class="inline-flex min-h-12 shrink-0 items-center rounded-sm border border-current bg-transparent px-5 font-sans text-button font-bold"
-                  type="button"
-                >
-                  {t('qna.copyLink')}
-                </button>
+                {t('qna.copyLink')}
+              </button>
+            </div>
+          )}
+
+          <article class="mt-8">
+            <header class="max-w-[68ch] border-b border-hairline pb-8">
+              <div class="mb-5 flex flex-wrap items-center gap-3">
+                <PublicStatusBadge status={question.answer ? 'answered' : 'waiting'} />
+                <time class="font-sans text-caption text-body-muted" datetime={question.createdAt}>
+                  {formatDate(question.createdAt)}
+                </time>
               </div>
-            )}
+              <h1 class="font-serif text-display-md font-semibold break-words text-ink sm:text-display-lg">
+                {question.title}
+              </h1>
+            </header>
 
-            <article class="mt-8">
-              <header class="max-w-[68ch] border-b border-hairline pb-8">
-                <div class="mb-5 flex flex-wrap items-center gap-3">
-                  <PublicStatusBadge status={question.answer ? 'answered' : 'waiting'} />
-                  <time
-                    class="font-sans text-caption text-body-muted"
-                    datetime={question.createdAt}
-                  >
-                    {formatDate(question.createdAt)}
-                  </time>
-                </div>
-                <h1 class="font-serif text-display-md font-semibold break-words text-ink sm:text-display-lg">
-                  {question.title}
-                </h1>
-              </header>
+            <div class="max-w-[68ch] py-9">
+              <p class="whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
+                {question.body}
+              </p>
+            </div>
 
-              <div class="max-w-[68ch] py-9">
-                <p class="whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
-                  {question.body}
+            {question.answer ? (
+              <section
+                class="max-w-[68ch] border-t-2 border-accent pt-7"
+                aria-labelledby="official-answer-title"
+              >
+                <p class="font-sans text-caption font-bold text-body-muted">
+                  Official response · {t('qna.secretariat')} ·{' '}
+                  {formatDate(question.answer.updatedAt)}
                 </p>
-              </div>
-
-              {question.answer ? (
-                <section
-                  class="max-w-[68ch] border-t-2 border-accent pt-7"
-                  aria-labelledby="official-answer-title"
+                <h2
+                  id="official-answer-title"
+                  class="mt-3 font-serif text-display-sm font-semibold text-accent"
                 >
-                  <p class="font-sans text-caption font-bold text-body-muted">
-                    Official response · {t('qna.secretariat')} ·{' '}
-                    {formatDate(question.answer.updatedAt)}
-                  </p>
-                  <h2
-                    id="official-answer-title"
-                    class="mt-3 font-serif text-display-sm font-semibold text-accent"
-                  >
-                    {t('qna.officialAnswer')}
-                  </h2>
-                  <p class="mt-5 whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
-                    {question.answer.body}
-                  </p>
-                </section>
-              ) : (
-                <aside class="max-w-[68ch] border border-hairline bg-canvas-band p-6">
-                  <h2 class="font-serif text-body-serif font-semibold text-ink">
-                    {t('qna.waitingTitle')}
-                  </h2>
-                  <p class="mt-2 font-sans text-body-sm text-ink-soft">{t('qna.waitingNotice')}</p>
-                </aside>
-              )}
-            </article>
-          </>
-        ) : (
-          <div class="mt-5 max-w-[68ch] border-y border-hairline py-12">
-            <p class="font-sans text-caption font-bold tabular-nums text-body-muted">404</p>
-            <h1 class="mt-3 font-serif text-display-md font-semibold text-ink">
-              Question not found
-            </h1>
-            <p class="mt-4 font-sans text-body-sans text-ink-soft">
-              This question does not exist or is no longer visible in the public Q&A.
-            </p>
-            <a
-              class="mt-6 inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
-              href="/questions"
-            >
-              {t('qna.back')}
-            </a>
-          </div>
-        )
-      }
+                  {t('qna.officialAnswer')}
+                </h2>
+                <p class="mt-5 whitespace-pre-wrap break-words font-serif text-body-serif text-ink">
+                  {question.answer.body}
+                </p>
+              </section>
+            ) : (
+              <aside class="max-w-[68ch] border border-hairline bg-canvas-band p-6">
+                <h2 class="font-serif text-body-serif font-semibold text-ink">
+                  {t('qna.waitingTitle')}
+                </h2>
+                <p class="mt-2 font-sans text-body-sm text-ink-soft">{t('qna.waitingNotice')}</p>
+              </aside>
+            )}
+          </article>
+        </>
+      ) : (
+        <div class="mt-5 max-w-[68ch] border-y border-hairline py-12">
+          <p class="font-sans text-caption font-bold tabular-nums text-body-muted">404</p>
+          <h1 class="mt-3 font-serif text-display-md font-semibold text-ink">Question not found</h1>
+          <p class="mt-4 font-sans text-body-sans text-ink-soft">
+            This question does not exist or is no longer visible in the public Q&A.
+          </p>
+          <a
+            class="mt-6 inline-flex min-h-12 items-center rounded-sm border border-ink bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
+            href="/questions"
+          >
+            {t('qna.back')}
+          </a>
+        </div>
+      )}
     </div>
   </section>
 </BaseLayout>

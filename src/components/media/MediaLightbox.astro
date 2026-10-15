@@ -21,7 +21,6 @@ const single = entries.length < 2;
   data-lightbox-manifest={id}
   set:html={serializeLightboxEntries(entries)}
 />
-
 <dialog class="media-lightbox" data-lightbox-root={id} aria-label={copy.viewerLabel}>
   <div class="lb-shell">
     <div class="lb-stage" data-lb-stage></div>
@@ -30,20 +29,20 @@ const single = entries.length < 2;
       <p class="lb-caption" data-lb-caption></p>
       <p class="lb-meta" data-lb-meta></p>
       <div class="lb-controls">
-        {
-          !single && (
-            <>
-              <button type="button" data-lb-prev aria-label={copy.previous}>
-                ←
-              </button>
-              <span class="lb-count" data-lb-count aria-hidden="true" />
-              <button type="button" data-lb-next aria-label={copy.next}>
-                →
-              </button>
-            </>
-          )
-        }
-        <button type="button" data-lb-close>{copy.close}</button>
+        {!single && (
+          <>
+            <button type="button" data-lb-prev aria-label={copy.previous}>
+              ←
+            </button>
+            <span class="lb-count" data-lb-count aria-hidden="true" />
+            <button type="button" data-lb-next aria-label={copy.next}>
+              →
+            </button>
+          </>
+        )}
+        <button type="button" data-lb-close>
+          {copy.close}
+        </button>
       </div>
     </div>
   </div>

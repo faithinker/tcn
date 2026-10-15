@@ -26,13 +26,9 @@ const pad: Record<NonNullable<Props['space']>, string> = {
 
 <section id={id} class={`${bg[variant]} px-5 ${pad[space]} ${cls}`.trim()}>
   <div class="mx-auto max-w-[75rem]">
-    {
-      title && (
-        <h2 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">
-          {title}
-        </h2>
-      )
-    }
+    {title && (
+      <h2 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">{title}</h2>
+    )}
     <slot />
   </div>
 </section>

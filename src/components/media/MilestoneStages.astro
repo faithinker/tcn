@@ -12,26 +12,24 @@ const { id, stages } = Astro.props;
 ---
 
 <div class="milestone-stages">
-  {
-    stages.map((stage, index) => (
-      <section class="milestone-stage" aria-labelledby={`${id}-stage-${index}-title`}>
-        <time datetime={stage.date} class="milestone-stage-date">
-          {formatDate(stage.date)}
-        </time>
-        <div class="min-w-0">
-          <h4 id={`${id}-stage-${index}-title`} class="milestone-stage-title">
-            {stage.title}
-          </h4>
-          <p class="milestone-stage-description">{stage.description}</p>
-          <MilestoneGallery
-            id={`${id}-stage-${index}`}
-            items={stage.media}
-            label={`Photographs from ${formatDate(stage.date)}: ${stage.title}`}
-          />
-        </div>
-      </section>
-    ))
-  }
+  {stages.map((stage, index) => (
+    <section class="milestone-stage" aria-labelledby={`${id}-stage-${index}-title`}>
+      <time datetime={stage.date} class="milestone-stage-date">
+        {formatDate(stage.date)}
+      </time>
+      <div class="min-w-0">
+        <h4 id={`${id}-stage-${index}-title`} class="milestone-stage-title">
+          {stage.title}
+        </h4>
+        <p class="milestone-stage-description">{stage.description}</p>
+        <MilestoneGallery
+          id={`${id}-stage-${index}`}
+          items={stage.media}
+          label={`Photographs from ${formatDate(stage.date)}: ${stage.title}`}
+        />
+      </div>
+    </section>
+  ))}
 </div>
 
 <style>

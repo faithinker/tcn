@@ -29,25 +29,17 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
 <BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
-      <h1
-        class="max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
-      >
+      <h1 class="max-w-[18ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
         {copy.heroTitle}
       </h1>
-      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
-        {copy.heroBody}
-      </p>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">{copy.heroBody}</p>
     </div>
   </section>
 
   <SectionTile variant="canvas" title={copy.missionTitle}>
     <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
-      <p class="max-w-prose font-serif text-body-serif text-body">
-        {copy.missionBodies[0]}
-      </p>
-      <p class="max-w-prose font-serif text-body-serif text-body">
-        {copy.missionBodies[1]}
-      </p>
+      <p class="max-w-prose font-serif text-body-serif text-body">{copy.missionBodies[0]}</p>
+      <p class="max-w-prose font-serif text-body-serif text-body">{copy.missionBodies[1]}</p>
     </div>
   </SectionTile>
 
@@ -56,61 +48,59 @@ const history = mergeMilestones(organizationMilestones, seminars, today);
       {copy.historyBody}
     </p>
     <ol class="mt-10 border-t border-hairline-strong">
-      {
-        history.map((entry) => (
-          <li class="grid gap-4 border-b border-hairline py-7 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8 sm:py-9">
-            <time
-              datetime={entry.dateLabel ? undefined : entry.date}
-              class="font-sans text-body-sans font-bold text-accent"
-            >
-              {entry.dateLabel ?? formatDate(entry.date)}
-            </time>
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <h3 class="font-serif text-display-sm font-semibold text-ink">{entry.title}</h3>
-                <span
-                  class={`border px-2 py-1 font-sans text-caption font-bold ${entry.status !== 'held' ? 'border-accent text-accent' : 'border-hairline text-body-muted'}`}
-                >
-                  {entry.status === 'today'
-                    ? copy.historyTodayLabel
-                    : entry.status === 'upcoming'
-                      ? copy.historyUpcomingLabel
-                      : copy.historyPastLabel}
-                </span>
-              </div>
-              {entry.description && (
-                <p class="mt-4 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
-                  {entry.description}
-                </p>
-              )}
-              {entry.location && (
-                <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
-                  <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
-                  <dd class="text-body">{entry.location}</dd>
-                </dl>
-              )}
-              {entry.media && (
-                <MilestoneGallery
-                  id={`milestone-${entry.date}`}
-                  items={entry.media}
-                  label={`Photographs from ${entry.title}`}
-                />
-              )}
-              {entry.stages && (
-                <MilestoneStages id={`milestone-${entry.date}`} stages={entry.stages} />
-              )}
-              {entry.href && (
-                <a
-                  href={entry.href}
-                  class="mt-5 inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover hover:underline"
-                >
-                  {copy.historyViewSeminar} →
-                </a>
-              )}
+      {history.map((entry) => (
+        <li class="grid gap-4 border-b border-hairline py-7 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8 sm:py-9">
+          <time
+            datetime={entry.dateLabel ? undefined : entry.date}
+            class="font-sans text-body-sans font-bold text-accent"
+          >
+            {entry.dateLabel ?? formatDate(entry.date)}
+          </time>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h3 class="font-serif text-display-sm font-semibold text-ink">{entry.title}</h3>
+              <span
+                class={`border px-2 py-1 font-sans text-caption font-bold ${entry.status !== 'held' ? 'border-accent text-accent' : 'border-hairline text-body-muted'}`}
+              >
+                {entry.status === 'today'
+                  ? copy.historyTodayLabel
+                  : entry.status === 'upcoming'
+                    ? copy.historyUpcomingLabel
+                    : copy.historyPastLabel}
+              </span>
             </div>
-          </li>
-        ))
-      }
+            {entry.description && (
+              <p class="mt-4 max-w-[68ch] text-pretty font-serif text-body-serif text-body">
+                {entry.description}
+              </p>
+            )}
+            {entry.location && (
+              <dl class="mt-5 grid gap-x-6 gap-y-3 font-sans text-body-sm sm:grid-cols-[5rem_minmax(0,1fr)]">
+                <dt class="font-bold text-body-muted">{copy.historyLocationLabel}</dt>
+                <dd class="text-body">{entry.location}</dd>
+              </dl>
+            )}
+            {entry.media && (
+              <MilestoneGallery
+                id={`milestone-${entry.date}`}
+                items={entry.media}
+                label={`Photographs from ${entry.title}`}
+              />
+            )}
+            {entry.stages && (
+              <MilestoneStages id={`milestone-${entry.date}`} stages={entry.stages} />
+            )}
+            {entry.href && (
+              <a
+                href={entry.href}
+                class="mt-5 inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover hover:underline"
+              >
+                {copy.historyViewSeminar} →
+              </a>
+            )}
+          </div>
+        </li>
+      ))}
     </ol>
   </SectionTile>
 

@@ -88,7 +88,8 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
             maxlength="10000"
             required
             autocomplete="off"
-            aria-describedby="body-hint body-error"></textarea>
+            aria-describedby="body-hint body-error"
+          ></textarea>
           <p class="mt-2 font-sans text-caption text-body-muted" id="body-hint">
             {t('qna.plainText')}
           </p>
@@ -108,29 +109,27 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
           />
         </div>
 
-        {
-          siteKey ? (
-            <div class="mt-7 max-w-full overflow-x-auto">
-              {/* data-theme 은 아래 인라인 스크립트가 사이트 테마에 맞춰 세운다. */}
-              <div
-                class="cf-turnstile"
-                data-sitekey={siteKey}
-                data-action="qna_question"
-                data-callback="onQnaTurnstileSuccess"
-                data-expired-callback="onQnaTurnstileExpired"
-                data-error-callback="onQnaTurnstileError"
-              />
-            </div>
-          ) : (
-            <p
-              class="mt-7 border border-danger bg-danger-soft p-4 font-sans text-body-sm text-danger"
-              role="alert"
-            >
-              Question submission is temporarily unavailable because the security check is not
-              configured.
-            </p>
-          )
-        }
+        {siteKey ? (
+          <div class="mt-7 max-w-full overflow-x-auto">
+            {/* data-theme 은 아래 인라인 스크립트가 사이트 테마에 맞춰 세운다. */}
+            <div
+              class="cf-turnstile"
+              data-sitekey={siteKey}
+              data-action="qna_question"
+              data-callback="onQnaTurnstileSuccess"
+              data-expired-callback="onQnaTurnstileExpired"
+              data-error-callback="onQnaTurnstileError"
+            />
+          </div>
+        ) : (
+          <p
+            class="mt-7 border border-danger bg-danger-soft p-4 font-sans text-body-sm text-danger"
+            role="alert"
+          >
+            Question submission is temporarily unavailable because the security check is not
+            configured.
+          </p>
+        )}
 
         <div class="mt-7 flex flex-col gap-3 sm:flex-row">
           <button
@@ -404,11 +403,9 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
   });
 </script>
 
-{
-  /* Turnstile 기본값 auto 는 prefers-color-scheme 를 따르지만 TCN 테마는 html.dark 클래스로
+{/* Turnstile 기본값 auto 는 prefers-color-scheme 를 따르지만 TCN 테마는 html.dark 클래스로
     수동 전환된다 — OS 라이트 + 사이트 다크에서 라이트 위젯이 다크 폼 위에 얹히는 것을 막는다.
-    api.js 로드 전에 세워야 첫 렌더부터 맞는다. */
-}
+    api.js 로드 전에 세워야 첫 렌더부터 맞는다. */}
 <script is:inline>
   (function () {
     const widget = document.querySelector('.cf-turnstile');
