@@ -93,6 +93,30 @@ This is exactly what the 2026-07-29 incident was. The Q&A Turnstile secrets were
 
 Rotating `SESSION_SECRET` signs every administrator out. Sessions are stateless HMAC-SHA256 tokens with no server-side record, so the moment the signing key changes every existing `tcn_session` cookie fails signature verification. The Q&A administrator CSRF token derives from the same secret, so open editing screens fail their next write until re-login.
 
+## Administrator sign-in
+
+Several independent layers stand between the internet and `/api/auth/login`. They are listed outermost first so an incident can be located by which one answered.
+
+| Layer                                      | Where                                                                                                     | Answer when it stops a request                                                                |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| WAF rate limit (`Rate limit admin login`)  | Cloudflare dashboard, Security rules. Free plan: 5 requests per 10 seconds per IP, blocked for 10 seconds | `429` from Cloudflare, the Worker never runs                                                  |
+| Turnstile challenge (action `admin_login`) | Worker, before any D1 access                                                                              | `403 turnstile_failed`; `503 security_not_configured` when the secret or host list is missing |
+| Escalating lock                            | Worker, `auth_rate_limits`                                                                                | `429` with `Retry-After`: 15 minutes, then 1 hour, 4 hours, 24 hours as the cap               |
+
+Five wrong passwords in 15 minutes lock an account (any IP) and, separately, an IP. Every further lock for the same identifier is longer; the level is forgotten after a week without activity. A successful sign-in clears the IP and device counters but keeps the account's lock level.
+
+**Trusted browser.** A successful sign-in sets a `tcn_device` cookie (signed, HttpOnly, 90 days, sent only to `/api/auth/login`). A browser that presents it for the account it is signing in to skips the _account_ lock and is limited per device (ten attempts) and per IP instead, so an attacker cannot keep the real administrator out by spending guesses. Rotating `SESSION_SECRET` also invalidates these cookies; each administrator becomes an unknown browser until the next successful sign-in.
+
+**Watching for attacks.** A new lock writes one `login_locked` line (lock length, whether the request came from a trusted browser, and a short prefix of the account hash — never the username or IP). Search for it in Workers observability.
+
+**An administrator is locked out and has no trusted browser.** Wait out `Retry-After`, or clear every login counter. The identifiers are hashed, so a single account cannot be picked out:
+
+```bash
+npx wrangler d1 execute tcn-content --remote --command 'delete from auth_rate_limits'
+```
+
+**Sign-in shows "The security check did not pass", or answers `403`/`503`.** The widget and the Worker must agree on the host. Check that the host being used is in the Turnstile widget's Hostnames (Cloudflare dashboard, Turnstile) **and** in the `QNA_TURNSTILE_HOSTNAMES` Worker secret (`npx wrangler secret list` shows whether it exists). If the widget cannot be fixed quickly, roll back to the previous version (see [Incident rollback](#incident-rollback)); there is deliberately no switch that turns the challenge off in production.
+
 ## Incident rollback
 
 ```bash
