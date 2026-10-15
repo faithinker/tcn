@@ -7,7 +7,7 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 ## 1. 원칙
 
 - **콘텐츠 단일 원천 = D1** (`tcn-content`): 세미나·활동 글 전부 `posts` 테이블. 회차 개념 없음 - 미래 `event_date` 글이 곧 "차기 세미나".
-- **글 저장 = 즉시 공개**: 공개 페이지가 D1을 SSR로 조회하므로 재빌드·deploy hook 없음.
+- **글 저장 = 상세 페이지 즉시 공개·즉시 삭제**: `/seminars/[date]`는 D1을 SSR로 조회한다. 홈·`/about`·`/seminars`는 Worker 요청 한도(Free 10만/일)를 아끼려고 빌드 직전 D1 스냅샷으로 구운 정적 페이지이며, 변경은 최대 15분쯤 뒤 반영된다 - `refresh-static-content` 워크플로가 10분마다 지문을 비교해 재배포한다([`docs/deployment.md`](./docs/deployment.md#정적-공개-페이지와-자동-갱신)).
 - **영어 단일 사이트**: `/ko`·`/en` 프리픽스 없음. 구 URL은 `public/_redirects` 정적 301 표가 전담.
 - **대표 주소 = `https://thetcn.org`** (커스텀 도메인): `astro.config.mjs`의 `site`가 canonical·`og:url`·`sitemap.xml`의 기준이다. `public/robots.txt`의 `Sitemap:` 줄은 정적 파일이라 `site`에서 파생되지 않으므로 따로 맞춘다. `tcn.faithinker12.workers.dev`는 같은 Worker의 기본 주소로, 배포 smoke(`deploy-workers.yml`)가 아직 이 주소를 친다. 도메인 변경 시 맞출 곳은 [`docs/deployment.md`](./docs/deployment.md#도메인).
 - 공개 콘텐츠는 확정 사실만. 미정 정보는 명시적 폴백(`To be announced`).
@@ -16,11 +16,11 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 
 | 경로                                        | 렌더           | 소스                                                                                |
 | ------------------------------------------- | -------------- | ----------------------------------------------------------------------------------- |
-| `/`                                         | SSR            | D1 (차기/최신 글) + `i18n/content.ts` 카피                                          |
-| `/about`                                    | SSR            | `content.ts`, `data/organization-milestones.ts` + D1 세미나 병합 연혁               |
+| `/`                                         | 정적(스냅샷)   | D1 스냅샷 (차기/최신 글) + `i18n/content.ts` 카피                                   |
+| `/about`                                    | 정적(스냅샷)   | `content.ts`, `data/organization-milestones.ts` + D1 스냅샷 세미나 병합 연혁        |
 | `/about/{founding,declaration,bylaws}`      | 정적           | `content.ts`, `invitations.json`                                                    |
 | `/people`                                   | 정적           | `members.json`                                                                      |
-| `/seminars`                                 | SSR            | D1 `posts` (예정/지난 = `event_date` 파생)                                          |
+| `/seminars`                                 | 정적(스냅샷)   | D1 `posts` 스냅샷 (예정/지난 = `event_date` 파생)                                   |
 | `/seminars/[date]`                          | SSR            | D1 `posts`+`media` (마크다운→HTML, `lib/posts`). 구 `/seminars/p/[id]`는 여기로 301 |
 | `/contact`                                  | 정적           | `content.ts` (+`PUBLIC_MEMBERSHIP_FORM_URL` 설정 시 가입 CTA)                       |
 | `/questions`                                | SSR            | D1 `qna_questions`+`qna_answers` 공개 목록 (`Cache-Control: no-store`)              |

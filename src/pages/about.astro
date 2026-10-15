@@ -7,23 +7,17 @@ import MilestoneStages from '../components/media/MilestoneStages.astro';
 import { formatDate } from '../i18n/utils';
 import { content } from '../i18n/content';
 import { organizationMilestones } from '../data/organization-milestones';
-import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminars/service';
-import { mergeMilestones, siteToday, type SeminarView } from '../lib/seminars';
+import { getPublicSeminars } from '../lib/public-content/snapshot';
+import { mergeMilestones } from '../lib/seminars';
 
-// 연혁이 D1 세미나 기록과 합쳐지므로 SSR(프리렌더 시 바인딩 없음).
-export const prerender = false;
+// 연혁이 D1 세미나 기록과 합쳐지지만 정적 에셋으로 나간다(Worker 호출·D1 조회 0).
+// 세미나 기록은 빌드 직전 D1 스냅샷이고, 기관 고유 기록은 코드에 있어 항상 유지된다.
+export const prerender = true;
 
 const copy = content.about;
-const today = siteToday();
-let seminars: SeminarView[] = [];
-try {
-  seminars = (await getSeminarCollection(getDB(), today)).chronological;
-} catch {
-  // D1 미가용 시에도 기관 고유 기록은 유지한다.
-  seminars = [];
-}
-const history = mergeMilestones(organizationMilestones, seminars, today);
+const { snapshot, collection } = await getPublicSeminars();
+const today = snapshot.today;
+const history = mergeMilestones(organizationMilestones, collection.chronological, today);
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>

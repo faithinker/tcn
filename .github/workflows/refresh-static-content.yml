@@ -1,0 +1,72 @@
+name: Refresh static public pages
+
+# 홈·세미나 목록·소개 페이지는 빌드 때 D1 내용으로 구워진 정적 에셋이다(Worker 호출 0).
+# 세미나가 바뀌거나 KST 날짜가 넘어가면 구워진 내용이 낡으므로, 10분마다 라이브 D1 지문과
+# 배포본 지문을 비교해 다르면 운영 배포 워크플로를 다시 돌린다. 이 워크플로는 Cloudflare
+# 시크릿이 필요 없다 — 비교는 공개 엔드포인트만 쓰고, 재배포는 deploy-workers.yml이 한다.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: refresh-static-public-pages
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # deploy-workers.yml의 스모크 URL과 같은 주소를 쓴다. workers.dev를 끄면 함께 옮길 것
+      # (Bot Fight Mode가 켜진 존 도메인은 러너 IP의 비브라우저 요청을 챌린지할 수 있다).
+      PRODUCTION_URL: https://tcn.faithinker12.workers.dev
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Compare live content with the deployed pages
+        id: compare
+        run: node scripts/check-static-freshness.mjs
+
+      - name: Redeploy production
+        if: steps.compare.outputs.rebuild == 'true'
+        env:
+          REASON: ${{ steps.compare.outputs.reason }}
+        run: |
+          set -euo pipefail
+          echo "Reason: $REASON"
+
+          # 배포가 진행 중이면 기다린다. 운영 배포는 cancel-in-progress라 중복 디스패치가
+          # 진행 중인 배포를 죽인다.
+          active="$(gh run list --workflow deploy-workers.yml --limit 20 --json status \
+            --jq '[.[] | select(.status != "completed")] | length')"
+          if [ "$active" != "0" ]; then
+            echo "A production deploy is already running or queued — skipping."
+            exit 0
+          fi
+
+          # 방금 이 경로로 배포했는데도 지문이 다르면 내용 변경이 아니라 결함이다.
+          # 15분 안에는 다시 디스패치하지 않아 배포 루프를 막는다.
+          recent="$(gh run list --workflow deploy-workers.yml --event workflow_dispatch --limit 1 \
+            --json createdAt \
+            --jq 'if length == 0 then "none" else ((now - (.[0].createdAt | fromdateiso8601)) | floor | tostring) end')"
+          if [ "$recent" != "none" ] && [ "$recent" -lt 900 ]; then
+            echo "::warning::A deploy was dispatched ${recent}s ago and the pages are still stale — not dispatching again."
+            exit 0
+          fi
+
+          gh workflow run deploy-workers.yml --ref main
+          echo "Dispatched deploy-workers.yml on main."
