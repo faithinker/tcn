@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-16]
+
+### Fix
+- Made the Telegram and Discord notification steps in `ci.yml` run only when their secrets exist. Dependabot PRs read the separate Dependabot secret store, which holds no notification secrets, so the `if: always()` Telegram step failed the whole `CI Run` job with "missing telegram token or user list" even when every real gate passed, and with `CI Run` required and `enforce_admins` on, Dependabot PRs #75-#79 could not merge. A new `Detect notification secrets` step (same pattern as the Sonar token check) sets `telegram` and `discord` outputs that gate the two steps. The notification secrets are not copied into the Dependabot store. Dependabot PRs stay blocked on the required `SonarCloud Code Analysis` check until `SONAR_TOKEN` exists as a Dependabot secret or the required check changes; that is a repository setting and is not part of this diff. (Branch: `ci/skip-absent-notify-secrets`) - Implemented by Claude
+
 ## [2026-10-15]
 
 ### Feature
