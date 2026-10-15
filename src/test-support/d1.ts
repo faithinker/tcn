@@ -75,9 +75,23 @@ class SqliteStatement {
     });
   }
 
-  run(): Promise<{ success: true }> {
-    this.prepared().run(...(this.params as never[]));
-    return Promise.resolve({ success: true });
+  run(): Promise<{ success: true; meta: { changes: number } }> {
+    const { success, meta } = this.execute();
+    return Promise.resolve({ success, meta });
+  }
+
+  execute<T = Record<string, unknown>>(): {
+    results: T[];
+    success: true;
+    meta: { changes: number };
+  } {
+    const statement = this.prepared();
+    const params = this.params as never[];
+    if (statement.columns().length > 0) {
+      return { results: statement.all(...params) as T[], success: true, meta: { changes: 0 } };
+    }
+    const { changes } = statement.run(...params);
+    return { results: [], success: true, meta: { changes: Number(changes) } };
   }
 }
 
@@ -91,10 +105,8 @@ class SqliteD1 {
   /** D1 의 batch 는 순차 실행 + 결과 배열. 여기서는 트랜잭션 경계를 흉내내지 않는다. */
   async batch<T = Record<string, unknown>>(
     statements: SqliteStatement[],
-  ): Promise<{ results: T[]; success: true }[]> {
-    const results = [];
-    for (const statement of statements) results.push(await statement.all<T>());
-    return results;
+  ): Promise<{ results: T[]; success: true; meta: { changes: number } }[]> {
+    return statements.map((statement) => statement.execute<T>());
   }
 }
 

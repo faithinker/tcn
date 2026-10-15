@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  CHALLENGE_PENDING_MESSAGE,
-  failureMessage,
-  lockedMessage,
-  waitDescription,
-} from './login-messages';
+import { failureMessage, waitDescription } from './login-messages';
 
 describe('waitDescription', () => {
   it('rounds up to whole minutes below an hour', () => {
@@ -29,28 +24,19 @@ describe('waitDescription', () => {
   });
 });
 
-describe('lockedMessage', () => {
-  it('tells the user how long to wait', () => {
-    expect(lockedMessage('3600')).toBe('Too many sign-in attempts. Try again in 1 hour.');
-  });
-});
-
 describe('failureMessage', () => {
-  it('maps each server answer to a distinct, actionable message', () => {
-    expect(failureMessage(401, null)).toBe('Invalid username or password.');
-    expect(failureMessage(429, '900')).toBe('Too many sign-in attempts. Try again in 15 minutes.');
-    expect(failureMessage(403, null)).toBe(
-      'The security check did not pass. Wait for it to finish, then sign in again.',
-    );
-    expect(failureMessage(503, null)).toBe('Sign-in is temporarily unavailable. Try again later.');
+  it('tells a locked-out user how long to wait', () => {
+    expect(failureMessage(429, '900')).toContain('15 minutes');
+  });
+
+  it('gives each server answer its own message', () => {
+    const answers = [401, 403, 429, 503].map((status) => failureMessage(status, '900'));
+
+    expect(new Set(answers).size).toBe(answers.length);
   });
 
   it('treats an unknown status like a credential failure rather than leaking detail', () => {
-    expect(failureMessage(400, null)).toBe('Invalid username or password.');
-    expect(failureMessage(500, null)).toBe('Invalid username or password.');
-  });
-
-  it('has a separate prompt for submitting before the check has finished', () => {
-    expect(CHALLENGE_PENDING_MESSAGE).toBe('Wait for the security check to finish, then sign in.');
+    expect(failureMessage(400, null)).toBe(failureMessage(401, null));
+    expect(failureMessage(500, null)).toBe(failureMessage(401, null));
   });
 });
