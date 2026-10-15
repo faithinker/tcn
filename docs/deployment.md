@@ -1,0 +1,52 @@
+# 배포 가이드
+
+`main` 머지 → 자동 배포 흐름, 도메인, 시크릿을 정리합니다. 복구·롤백·장애 대응 절차는 [`operations-runbook.md`](./operations-runbook.md)가 단일 원천입니다.
+
+## 도메인
+
+| 주소                                                                         | 역할                                                                                                                  |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [https://thetcn.org](https://thetcn.org)                                     | **운영 대표 주소(커스텀 도메인)**. `astro.config.mjs`의 `site`, canonical·`og:url`·sitemap의 기준                     |
+| [https://tcn.faithinker12.workers.dev](https://tcn.faithinker12.workers.dev) | 같은 Worker의 `workers.dev` 기본 주소. 배포 후 smoke(`deploy-workers.yml`의 `PRODUCTION_URL`)가 아직 이 주소를 칩니다 |
+| [https://tcn-ezj.pages.dev](https://tcn-ezj.pages.dev)                       | 구버전 Pages 정적 사이트(`/ko/`·`/en/`). 갱신되지 않으며 참고용                                                       |
+
+도메인을 바꾸거나 더할 때 함께 맞출 곳입니다.
+
+- `astro.config.mjs`의 `site` - canonical·`og:url`·`sitemap.xml`이 여기서 파생됩니다.
+- `public/robots.txt`의 `Sitemap:` 줄 - 정적 파일이라 `site`에서 파생되지 않으므로 따로 고칩니다.
+- `QNA_TURNSTILE_HOSTNAMES` 시크릿 - 공개 Q&A는 Turnstile 검증 응답의 hostname이 이 **정확 일치 허용 목록**에 있어야 통과하고, 없으면 질문 생성과 `/api/ready`가 fail closed(503)됩니다. 방문자가 접속하는 모든 호스트(`thetcn.org` 등)를 쉼표로 넣어야 하며, Turnstile 위젯 자체에도 같은 호스트가 허용돼 있어야 합니다.
+- 배포 smoke 대상(`deploy-workers.yml`의 `PRODUCTION_URL`·`environment.url`) - 현재 `workers.dev`입니다. 커스텀 도메인으로 옮길지는 별도 결정입니다.
+
+## 자동 배포
+
+`main`에 머지되면 `deploy-workers.yml`이 전체 의존성 감사, check·test·build, D1 Time Travel bookmark와 migration 적용 후 Worker를 배포합니다. 배포 뒤 순서가 핵심입니다.
+
+1. **버전 전파 대기** - `wrangler deploy`가 보고한 version id가 실제로 트래픽 100%를 받을 때까지 `wrangler deployments status`를 5초 간격 12회 폴링합니다. 그 안에 도달하지 못하거나 deploy 출력에 version id가 없으면 워크플로를 실패시킵니다.
+2. **운영 smoke** - 그 다음에야 `/`, `/api/health`, `/api/ready`를 검사합니다.
+3. **자동 rollback** - smoke가 실패하면 `wrangler rollback`으로 직전 버전으로 되돌립니다.
+
+1번이 없으면 smoke가 이전 버전에 닿고도 초록이 됩니다. 이유와 사고 사례는 [`operations-runbook.md`](./operations-runbook.md)의 Release invariants를 보세요.
+
+수동 배포는:
+
+```bash
+npm run build && npx wrangler deploy
+```
+
+## 시크릿
+
+원격 시크릿은 개별 설정이면 `wrangler secret put <이름>`, 여러 건을 한 번에 맞출 때는 gitignore된 `.dev.vars.production`을 만들어 `npx wrangler secret bulk .dev.vars.production`으로 넣습니다(운영은 이 경로를 씁니다). `.gitignore`가 `.dev.vars`와 `.dev.vars.*`를 모두 제외하므로 커밋에 섞이지 않습니다.
+
+| 시크릿                           | 용도                                                            |
+| -------------------------------- | --------------------------------------------------------------- |
+| `SESSION_SECRET`                 | 세션 쿠키 서명 (직접 생성: `openssl rand -hex 32`)              |
+| `TURNSTILE_SITE_KEY`             | Q&A 작성 폼의 공개 Turnstile site key                           |
+| `TURNSTILE_SECRET_KEY`           | Q&A Siteverify Worker secret                                    |
+| `QNA_TURNSTILE_HOSTNAMES`        | Siteverify exact hostname allowlist (쉼표 구분, 위 도메인 참고) |
+| `QNA_RATE_LIMIT_SECRET`          | 원 IP 비저장 HMAC rate-limit key                                |
+| `DISCORD_WEBHOOK`                | 글 알림 - 디스코드 웹훅 URL                                     |
+| `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID                                     |
+
+- 로컬은 `.dev.vars`를 사용하며 커밋에서 제외합니다(키 목록은 `.env.example`). 로컬 Q&A 제출 검증에는 localhost를 허용한 전용 Turnstile widget과 `QNA_TURNSTILE_HOSTNAMES=localhost`를 씁니다. Turnstile 공식 dummy key 응답에는 hostname이 없어 단위·CI 테스트는 Siteverify를 mock합니다.
+- Q&A 4종이 하나라도 없거나 검증이 실패하면 질문 생성과 readiness는 fail closed됩니다. 알림 시크릿이 없으면 해당 채널만 건너뛰고 글 저장·공개에는 영향이 없습니다.
+- `PUBLIC_MEMBERSHIP_FORM_URL`은 시크릿이 아니라 공개 환경변수입니다(`.env.example`). 비어 두면 `/contact`의 가입 링크 자리에 "Application form coming soon" 비활성 표시가 노출됩니다.
