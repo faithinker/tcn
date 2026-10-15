@@ -5,6 +5,9 @@ dist/
 .wrangler/
 coverage/
 
+# 빌드 직전 D1에서 내보낸 공개 콘텐츠 스냅샷 (scripts/export-public-content.mjs)
+src/generated/
+
 # verify harness output (screenshots)
 verify/
 

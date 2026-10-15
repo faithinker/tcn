@@ -5,6 +5,11 @@
 /ko  /  301
 /en  /  301
 
+# 정적 에셋으로 나가게 된 페이지의 슬래시 변형. 에셋 계층의 기본 응답은 307(임시)이라
+# SSR 시절의 301(영구)을 유지하려고 명시한다. 슬래시 없는 URL이 정식 주소다.
+/about/     /about     301
+/seminars/  /seminars  301
+
 # 세미나 레거시 slug → 날짜 기반 정식 URL
 /ko/seminars/2025-laos   /seminars/2025-12-26  301
 /ko/seminars/2025-laos/  /seminars/2025-12-26  301
