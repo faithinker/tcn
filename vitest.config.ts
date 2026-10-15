@@ -12,7 +12,6 @@ export default defineConfig({
       // 선언형 콘텐츠와 브라우저 전용 코드는 각각 빌드·Playwright 게이트가 검증한다.
       include: [
         'src/components/admin/**/*.ts',
-        'src/data/organization-milestones.ts',
         'src/i18n/utils.ts',
         'src/lib/**/*.ts',
         'src/middleware.ts',
@@ -34,7 +33,7 @@ export default defineConfig({
         'src/lib/seminars/index.ts',
         '.astro/**',
       ],
-      // 커버리지 회귀를 막는다. 가치 낮은 테스트를 정리하면서 80% 바닥으로 낮췄다(분기는 71% 유지).
+      // 커버리지 회귀를 막는다.
       thresholds: {
         statements: 80,
         branches: 71,
