@@ -41,3 +41,10 @@ This repository is web-only (Astro + Cloudflare). iOS tooling stays installed gl
 - Never invoke `$qa`, `$design-review`, `$ship`, `$land-and-deploy`, or `$canary` unless the user explicitly requests the corresponding code mutation, commits, push, pull request, merge, deployment, or production verification.
 - Prefer report-only review first when the requested action is ambiguous.
 - **CRITICAL**: Before pushing a branch and creating a pull request, you MUST automatically apply the `pr-changelog` skill. Systematically record your changes in `CHANGELOG.md` by date, commit the changelog, and include the summary in the PR description.
+
+## Build and manual production deploy
+
+- `npm run build` (and `dev`/`start`) first runs `scripts/export-public-content.mjs`, which snapshots the public seminar list from D1 and bakes it into the static pages `/`, `/about`, `/seminars`. With no flag it reads the **local** D1 whenever `.wrangler/state` exists.
+- **CRITICAL**: A manual production deploy MUST be `TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy`. Never run `npx wrangler deploy` after a plain `npm run build` — that publishes local test seminars on the production home page.
+- CI deploys already set `TCN_REQUIRE_CONTENT=1`, which allows only production D1 and fails the build when it cannot be read. Do not remove it from the `Build` step of `deploy-workers.yml`.
+- Details and the 10-minute auto-refresh: `docs/deployment.md#정적-공개-페이지와-자동-갱신`.

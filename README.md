@@ -5,7 +5,7 @@
 - **운영 주소**: [https://thetcn.org](https://thetcn.org) - 커스텀 도메인. canonical·sitemap의 기준 주소입니다.
 - **기본 주소**: [https://tcn.faithinker12.workers.dev](https://tcn.faithinker12.workers.dev) - 같은 Cloudflare **Workers** 배포의 `workers.dev` 주소.
 - **이전 배포 (구버전)**: [https://tcn-ezj.pages.dev](https://tcn-ezj.pages.dev) - Cloudflare **Pages** · 한국어(`/ko/`)·영어(`/en/`) 정적 사이트. 갱신되지 않으며 참고용으로만 남아 있습니다.
-- **성격**: 영어 단일 사이트 + 인증 기반 글쓰기 CMS. 콘텐츠는 Cloudflare **D1**(DB)·**R2**(미디어)에 저장되며, 공개 페이지가 이를 실시간 조회(SSR)합니다. **글을 저장하면 즉시 공개**되고 재빌드가 필요 없습니다.
+- **성격**: 영어 단일 사이트 + 인증 기반 글쓰기 CMS. 콘텐츠는 Cloudflare **D1**(DB)·**R2**(미디어)에 저장됩니다. 세미나 상세 페이지는 D1을 실시간 조회(SSR)하므로 **글을 저장하면 즉시 공개**되고 삭제도 즉시 반영됩니다. 홈·소개·세미나 목록은 정적 페이지라 변경이 최대 15분쯤 뒤에 반영됩니다([`docs/deployment.md`](./docs/deployment.md#정적-공개-페이지와-자동-갱신)).
 
 ## 문서 안내
 
@@ -38,7 +38,7 @@
 
 ## 공개 페이지 구조
 
-영어 단일 루트 트리입니다. D1을 읽는 페이지(`/`·`/about`·`/seminars/**`·`/questions/**`)와 작성자 CMS(`/admin/**`, noindex)는 SSR, 그 밖의 소개 페이지(`/about/*`·`/people`·`/contact`)는 정적 프리렌더입니다. 라우트별 렌더 방식·데이터 소스·구 URL 301 이전은 [`CONTENT_ARCHITECTURE.md` §2](./CONTENT_ARCHITECTURE.md#2-라우트)가 단일 원천입니다.
+영어 단일 루트 트리입니다. 실시간으로 D1을 읽는 페이지(`/seminars/**`·`/questions/**`)와 작성자 CMS(`/admin/**`, noindex)는 SSR, 홈·`/about`·`/seminars`(빌드 직전 D1 스냅샷)와 그 밖의 소개 페이지(`/about/*`·`/people`·`/contact`)는 정적 프리렌더입니다. 라우트별 렌더 방식·데이터 소스·구 URL 301 이전은 [`CONTENT_ARCHITECTURE.md` §2](./CONTENT_ARCHITECTURE.md#2-라우트)가 단일 원천입니다.
 
 ## 콘텐츠 원칙
 
