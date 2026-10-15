@@ -10,3 +10,4 @@ package-lock.json
 .impeccable/
 migrations
 CHANGELOG.md
+docs/archive

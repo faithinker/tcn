@@ -34,147 +34,129 @@ try {
       <h1 class="font-serif font-semibold text-ink text-[1.75rem] leading-[1.2] sm:text-[2rem]">
         {copy.name}
       </h1>
-      {
-        copy.alternateName && (
-          <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
-            {copy.alternateName}
-          </p>
-        )
-      }
+      {copy.alternateName && (
+        <p class="mt-1 font-serif font-semibold text-body-muted text-[1.375rem] leading-[1.25] sm:text-[1.625rem]">
+          {copy.alternateName}
+        </p>
+      )}
       <p class="mt-6 max-w-[60ch] font-serif text-[1.3125rem] leading-[1.6] text-body">
         {copy.lead}
       </p>
-      <p class="mt-4 max-w-[60ch] font-sans text-body-sans text-body-muted">
-        {copy.sublead}
-      </p>
+      <p class="mt-4 max-w-[60ch] font-sans text-body-sans text-body-muted">{copy.sublead}</p>
       <div class="mt-8 grid gap-3 min-[28rem]:flex min-[28rem]:flex-wrap">
-        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto"
-          >{t('nav.cta')}</Button
-        >
-        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto"
-          >{copy.aboutButton}</Button
-        >
-        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto"
-          >{copy.declarationButton}</Button
-        >
+        <Button href="/contact" variant="primary" class="w-full min-[28rem]:w-auto">
+          {t('nav.cta')}
+        </Button>
+        <Button href="/about" variant="outline" class="w-full min-[28rem]:w-auto">
+          {copy.aboutButton}
+        </Button>
+        <Button href="/about/declaration" variant="outline" class="w-full min-[28rem]:w-auto">
+          {copy.declarationButton}
+        </Button>
       </div>
     </div>
   </section>
 
-  {
-    next && (
-      <section class="bg-canvas px-5 pb-12 sm:pb-20">
-        <div class="mx-auto max-w-[75rem]">
-          <a
-            href={next.href}
-            class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
-          >
-            <div class="flex flex-wrap items-center gap-3">
-              <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
-                {next.status === 'today' ? seminarCopy.todayBadge : seminarCopy.upcomingBadge}
-              </span>
-            </div>
-            <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
-              {formatDate(next.eventDate)}
-            </p>
-            <p class="mt-4 font-serif text-display-sm font-semibold text-ink">
-              {next.ordinalLabel}
-            </p>
-            <p class="mt-2 font-sans text-body-sans text-body-muted">
-              {[
-                next.title !== next.ordinalLabel ? next.title : null,
-                next.address,
-                next.summary ?? seminarCopy.details,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
-            <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link no-underline group-hover:text-link-hover group-hover:underline">
-              {seminarCopy.viewDetail} →
+  {next && (
+    <section class="bg-canvas px-5 pb-12 sm:pb-20">
+      <div class="mx-auto max-w-[75rem]">
+        <a
+          href={next.href}
+          class="group block border-y-2 border-accent bg-canvas-soft p-5 no-underline sm:p-10"
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center rounded-sm bg-accent px-2 py-0.5 font-sans text-caption font-bold uppercase text-on-primary">
+              {next.status === 'today' ? seminarCopy.todayBadge : seminarCopy.upcomingBadge}
             </span>
-          </a>
-        </div>
-      </section>
-    )
-  }
+          </div>
+          <p class="mt-5 font-serif text-display-lg font-semibold leading-none text-ink sm:text-display-hero">
+            {formatDate(next.eventDate)}
+          </p>
+          <p class="mt-4 font-serif text-display-sm font-semibold text-ink">{next.ordinalLabel}</p>
+          <p class="mt-2 font-sans text-body-sans text-body-muted">
+            {[
+              next.title !== next.ordinalLabel ? next.title : null,
+              next.address,
+              next.summary ?? seminarCopy.details,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          <span class="mt-6 inline-flex min-h-[44px] items-center font-sans text-body-sans font-bold text-link no-underline group-hover:text-link-hover group-hover:underline">
+            {seminarCopy.viewDetail} →
+          </span>
+        </a>
+      </div>
+    </section>
+  )}
 
   <SectionTile variant="canvas" title={copy.missionTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-lead text-body">
-      {copy.missionBody}
-    </p>
-    {
-      /* 섹션 아이브로우가 이미 "Mission"을 말한다 — 내부 라벨은 파란 아이브로우를 반복하지 않고
-        중립 메타데이터 라벨로 둔다(DESIGN.md 443-445). */
-    }
+    <p class="mt-6 max-w-[68ch] font-serif text-lead text-body">{copy.missionBody}</p>
+    {/* 섹션 아이브로우가 이미 "Mission"을 말한다 — 내부 라벨은 파란 아이브로우를 반복하지 않고
+        중립 메타데이터 라벨로 둔다(DESIGN.md 443-445). */}
     <div class="mt-10 grid gap-8 border-t border-hairline pt-8 sm:grid-cols-2">
       <div>
         <p class="font-sans text-caption font-bold uppercase tracking-widest text-body-muted">
           {copy.visionLabel}
         </p>
-        <p class="mt-2 max-w-[68ch] font-serif text-body-serif text-body">
-          {copy.visionBody}
-        </p>
+        <p class="mt-2 max-w-[68ch] font-serif text-body-serif text-body">{copy.visionBody}</p>
       </div>
       <div>
         <p class="font-sans text-caption font-bold uppercase tracking-widest text-body-muted">
           {copy.missionLabel}
         </p>
-        <p class="mt-2 max-w-[68ch] font-serif text-body-serif text-body">
-          {copy.missionShort}
-        </p>
+        <p class="mt-2 max-w-[68ch] font-serif text-body-serif text-body">{copy.missionShort}</p>
       </div>
     </div>
   </SectionTile>
 
   <SectionTile variant="canvas" title={copy.activitiesTitle}>
     <ul class="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-      {
-        copy.activities.map((a) => (
-          <li class="border-t border-hairline pt-4">
-            <p class="font-serif text-display-sm font-semibold text-ink">{a}</p>
-          </li>
-        ))
-      }
+      {copy.activities.map((a) => (
+        <li class="border-t border-hairline pt-4">
+          <p class="font-serif text-display-sm font-semibold text-ink">{a}</p>
+        </li>
+      ))}
     </ul>
   </SectionTile>
 
-  {
-    featured && (
-      <SectionTile variant="soft" title={copy.recentSeminarTitle}>
-        <article class="mt-6 max-w-[68ch]">
-          <h3 class="font-serif text-display-md font-semibold text-ink">{featured.ordinalLabel}</h3>
-          {(featured.eventDate || featured.address) && (
-            <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
-              {[formatDate(featured.eventDate), featured.address].filter(Boolean).join(' · ')}
-            </p>
-          )}
-          <p class="mt-4 font-serif text-body-serif text-body">
-            {[
-              featured.title !== featured.ordinalLabel ? featured.title : null,
-              featured.summary ?? copy.seminarFallback,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+  {featured && (
+    <SectionTile variant="soft" title={copy.recentSeminarTitle}>
+      <article class="mt-6 max-w-[68ch]">
+        <h3 class="font-serif text-display-md font-semibold text-ink">{featured.ordinalLabel}</h3>
+        {(featured.eventDate || featured.address) && (
+          <p class="mt-3 font-serif text-byline font-semibold text-body-muted">
+            {[formatDate(featured.eventDate), featured.address].filter(Boolean).join(' · ')}
           </p>
-          <div class="mt-6 flex flex-wrap items-center gap-5">
-            <Button href={featured.href} variant="outline">
-              {seminarCopy.viewDetail}
-            </Button>
-            <a
-              href="/seminars"
-              class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
-            >
-              {copy.seminarButton} →
-            </a>
-          </div>
-        </article>
-      </SectionTile>
-    )
-  }
+        )}
+        <p class="mt-4 font-serif text-body-serif text-body">
+          {[
+            featured.title !== featured.ordinalLabel ? featured.title : null,
+            featured.summary ?? copy.seminarFallback,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+        <div class="mt-6 flex flex-wrap items-center gap-5">
+          <Button href={featured.href} variant="outline">
+            {seminarCopy.viewDetail}
+          </Button>
+          <a
+            href="/seminars"
+            class="inline-flex min-h-[44px] items-center font-sans text-body-sm font-bold text-link no-underline hover:text-link-hover"
+          >
+            {copy.seminarButton} →
+          </a>
+        </div>
+      </article>
+    </SectionTile>
+  )}
 
   <SectionTile variant="canvas" space="tight" title={copy.highlightsTitle}>
     <div class="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
-      {copy.highlights.map((h) => <Stat value={h.value} label={h.label} />)}
+      {copy.highlights.map((h) => (
+        <Stat value={h.value} label={h.label} />
+      ))}
     </div>
   </SectionTile>
 
@@ -184,11 +166,11 @@ try {
       <h2 class="font-serif text-display-md font-semibold text-ink sm:text-display-lg">
         {copy.joinTitle}
       </h2>
-      <p class="mt-4 font-serif text-body-serif text-body">
-        {copy.joinBody}
-      </p>
+      <p class="mt-4 font-serif text-body-serif text-body">{copy.joinBody}</p>
       <div class="mt-8">
-        <Button href="/contact" variant="primary">{t('nav.cta')}</Button>
+        <Button href="/contact" variant="primary">
+          {t('nav.cta')}
+        </Button>
       </div>
     </div>
   </SectionTile>

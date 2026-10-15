@@ -1,32 +1,65 @@
-# Project-local workflow deduplication. Keep gstack installed globally, but
-# disable skills that overlap with Spec Kit or the project-local Impeccable.
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-spec/SKILL.md"
-enabled = false
+# Project-local Codex config for the TCN web repository.
+# MCP scoping below applies from this file. [[skills.config]] is ignored in a
+# project config, so skill scoping lives in the machine-local profile
+# ~/.codex/web.config.toml (run Codex as `codex --profile web`; iOS projects use
+# the counterpart `ios` profile).
+# See AGENTS.md "Tool scope (web vs iOS)".
 
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-autoplan/SKILL.md"
-enabled = false
-
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-design-consultation/SKILL.md"
-enabled = false
-
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-design-review/SKILL.md"
-enabled = false
-
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-design-shotgun/SKILL.md"
-enabled = false
-
-[[skills.config]]
-path = "/Users/jhkim/.codex/skills/gstack-design-html/SKILL.md"
-enabled = false
-
-# TCN is the only web/Cloudflare project. These override the global defaults.
+# TCN is the only web/Cloudflare project. The five Cloudflare servers are off
+# globally (iOS projects) and enabled only here.
 [mcp_servers.cloudflare-api]
+enabled = true
+
+[mcp_servers.cloudflare-docs]
+enabled = true
+
+[mcp_servers.cloudflare-bindings]
+enabled = true
+
+[mcp_servers.cloudflare-builds]
+enabled = true
+
+[mcp_servers.cloudflare-observability]
 enabled = true
 
 [mcp_servers.XcodeBuildMCP]
 enabled = false
+
+# Web-only docs server: defined here so it loads in this repository only.
+[mcp_servers.astro-docs]
+url = "https://mcp.docs.astro.build/mcp"
+
+# Web/iOS split: iOS- and Jira/Figma-only MCP servers stay on globally for iOS
+# projects but are off in this web repository. figma-console is already
+# disabled globally.
+[mcp_servers.apple-docs]
+enabled = false
+
+[mcp_servers.mobile-mcp]
+enabled = false
+
+[mcp_servers.figma-remote-mcp]
+enabled = false
+
+[mcp_servers.mcp-atlassian]
+enabled = false
+
+# Pinned MCP servers. Exact versions, so every machine runs the same code instead
+# of whatever `@latest` resolves to that day. Each pin was at least 7 days old when
+# chosen. Bump them with the dependency upgrade routine and keep .mcp.json (the
+# Claude Code side) on the same versions. astro-docs is a remote URL: nothing to pin.
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@4.2.0"]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@1.10.1"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.83"]
+
+[mcp_servers.markitdown]
+command = "uvx"
+args = ["markitdown-mcp==0.0.1a7"]

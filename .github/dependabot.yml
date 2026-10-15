@@ -1,0 +1,64 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    # Hold new releases back for a week so a compromised publish is caught before a PR.
+    # Security updates ignore the cooldown.
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps)'
+    # The first matching group wins, so the specific families come before the catch-all.
+    groups:
+      # Tiptap pins its sub-packages with exact peer ranges: all of them must move together.
+      tiptap:
+        patterns:
+          - '@tiptap/*'
+      astro:
+        patterns:
+          - astro
+          - '@astrojs/*'
+      vitest:
+        patterns:
+          - vitest
+          - '@vitest/*'
+      minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # `astro check` refuses TypeScript 7 and @astrojs/check declares ^5 || ^6.
+      # Drop this once astro check supports it (see CHANGELOG 2026-10-10).
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch

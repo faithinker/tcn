@@ -20,33 +20,31 @@ const entries = milestoneLightboxEntries(items);
   role="group"
   aria-label={label}
 >
-  {
-    items.map((item, index) => (
-      <figure class="milestone-figure">
-        <button
-          type="button"
-          class="media-trigger"
-          data-lightbox-open={id}
-          data-lightbox-index={index}
-          aria-label={`${viewer.viewPrefix}: ${item.caption || item.alt}`}
-        >
-          <img
-            src={entries[index].src}
-            alt={item.alt}
-            width="1200"
-            height="900"
-            loading="lazy"
-            decoding="async"
-            class="milestone-image"
-          />
-          <span class="media-hint" aria-hidden="true">
-            {viewer.viewHint}
-          </span>
-        </button>
-        {item.caption && <figcaption class="milestone-caption">{item.caption}</figcaption>}
-      </figure>
-    ))
-  }
+  {items.map((item, index) => (
+    <figure class="milestone-figure">
+      <button
+        type="button"
+        class="media-trigger"
+        data-lightbox-open={id}
+        data-lightbox-index={index}
+        aria-label={`${viewer.viewPrefix}: ${item.caption || item.alt}`}
+      >
+        <img
+          src={entries[index].src}
+          alt={item.alt}
+          width="1200"
+          height="900"
+          loading="lazy"
+          decoding="async"
+          class="milestone-image"
+        />
+        <span class="media-hint" aria-hidden="true">
+          {viewer.viewHint}
+        </span>
+      </button>
+      {item.caption && <figcaption class="milestone-caption">{item.caption}</figcaption>}
+    </figure>
+  ))}
 </div>
 
 <MediaLightbox id={id} entries={entries} />

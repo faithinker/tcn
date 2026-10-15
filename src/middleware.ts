@@ -1,13 +1,14 @@
 import { defineMiddleware } from 'astro:middleware';
 import { canonicalRedirectTarget } from './lib/canonical-url';
+import { applySecurityHeaders } from './lib/security-headers';
 
 export const onRequest = defineMiddleware(async ({ request, isPrerendered }, next) => {
   const canonical = canonicalRedirectTarget(request, isPrerendered);
   if (canonical) {
-    return Response.redirect(canonical, 301);
+    return applySecurityHeaders(Response.redirect(canonical, 301));
   }
 
-  const response = await next();
+  const response = applySecurityHeaders(await next());
   const pathname = new URL(request.url).pathname;
   if (
     pathname === '/questions' ||
@@ -18,12 +19,6 @@ export const onRequest = defineMiddleware(async ({ request, isPrerendered }, nex
     pathname.startsWith('/api/questions/')
   ) {
     response.headers.set('Cache-Control', 'no-store');
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    response.headers.set(
-      'Content-Security-Policy',
-      "frame-ancestors 'none'; base-uri 'self'; object-src 'none'",
-    );
   }
   return response;
 });

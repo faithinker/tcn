@@ -13,3 +13,8 @@
 # 79 files, verified as pure `prettier --write` output: each file matched the
 # formatter applied to its previous content byte for byte.
 b6f9427eb1d4f7c0f095742368bd995ea563d5e8
+
+# style(astro): apply prettier-plugin-astro 1.x formatting
+# 35 files, verified as pure `prettier --write` output: each file matched the
+# formatter applied to its previous content byte for byte.
+863e8c25e133bc41bd108e459f5ab383e1e38bd1

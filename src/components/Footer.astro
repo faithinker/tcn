@@ -12,12 +12,8 @@ const nav = [
 const year = 2026;
 ---
 
-<footer
-  class="border-t border-hairline-strong bg-footer text-on-footer pb-[env(safe-area-inset-bottom)]"
->
-  <div
-    class="mx-auto grid max-w-[75rem] grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-5 gap-y-8 px-4 py-10 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-9 sm:px-5 sm:py-16 lg:grid-cols-[1.5fr_1fr_1fr]"
-  >
+<footer class="border-t border-hairline-strong bg-footer text-on-footer pb-[env(safe-area-inset-bottom)]">
+  <div class="mx-auto grid max-w-[75rem] grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-x-5 gap-y-8 px-4 py-10 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-9 sm:px-5 sm:py-16 lg:grid-cols-[1.5fr_1fr_1fr]">
     <div class="col-span-2 lg:col-span-1">
       <p class="font-serif text-[1.375rem] font-semibold">{t('site.name')}</p>
       <p class="mt-4 max-w-[40ch] font-sans text-body-sm leading-relaxed text-on-footer/70">
@@ -30,18 +26,16 @@ const year = 2026;
         {t('common.menu')}
       </p>
       <ul class="mt-3 space-y-1">
-        {
-          nav.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-on-footer/90 no-underline hover:text-on-footer"
-              >
-                {t(item.key)}
-              </a>
-            </li>
-          ))
-        }
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="inline-flex min-h-[44px] items-center font-sans text-body-sans text-on-footer/90 no-underline hover:text-on-footer"
+            >
+              {t(item.key)}
+            </a>
+          </li>
+        ))}
       </ul>
     </nav>
 
@@ -50,10 +44,8 @@ const year = 2026;
         {t('footer.office')}
       </p>
       <p class="mt-3 font-sans text-body-sans text-on-footer/90">{t('footer.officeValue')}</p>
-      {
-        /* 푸터는 두 테마에서 영구 다크다 — 잉크색을 쓸 수 없으므로 표면 텍스트색 + 밑줄로
-          링크 어포던스를 만든다. 파란색은 도입하지 않는다. */
-      }
+      {/* 푸터는 두 테마에서 영구 다크다 — 잉크색을 쓸 수 없으므로 표면 텍스트색 + 밑줄로
+          링크 어포던스를 만든다. 파란색은 도입하지 않는다. */}
       <p class="mt-1">
         <a
           href={`mailto:${t('footer.contactEmail')}`}
@@ -67,7 +59,9 @@ const year = 2026;
 
   <div class="border-t border-on-footer/15">
     <div class="mx-auto max-w-[75rem] px-4 py-6 sm:px-5">
-      <p class="font-sans text-caption text-on-footer/60">© {year} {t('footer.copyright')}</p>
+      <p class="font-sans text-caption text-on-footer/60">
+        © {year} {t('footer.copyright')}
+      </p>
     </div>
   </div>
 </footer>

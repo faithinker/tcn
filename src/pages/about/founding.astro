@@ -18,27 +18,21 @@ const data = invitation?.data;
   heading={data?.title ?? about.foundingTitle}
   current="founding"
 >
-  {
-    data && (
-      <p slot="meta" class="mt-5 font-sans text-body-sans font-bold text-body-muted">
-        {formatDate(data.date)} {data.time}
-      </p>
-    )
-  }
+  {data && (
+    <p slot="meta" class="mt-5 font-sans text-body-sans font-bold text-body-muted">
+      {formatDate(data.date)} {data.time}
+    </p>
+  )}
 
   <Fragment slot="aside">
-    <p class="text-body-sm text-body-muted">
-      {data?.summary ?? about.foundingBody}
-    </p>
+    <p class="text-body-sm text-body-muted">{data?.summary ?? about.foundingBody}</p>
   </Fragment>
 
-  {
-    data ? (
-      <InvitationContent data={data} />
-    ) : (
-      <p class="font-serif text-body-serif text-body">{about.foundingBody}</p>
-    )
-  }
+  {data ? (
+    <InvitationContent data={data} />
+  ) : (
+    <p class="font-serif text-body-serif text-body">{about.foundingBody}</p>
+  )}
 
   <EventGallery />
 </DocumentLayout>

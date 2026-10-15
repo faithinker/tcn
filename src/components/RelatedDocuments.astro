@@ -18,22 +18,20 @@ const documents = [
   aria-label={t('common.relatedDocuments')}
 >
   <span class="mr-2 font-bold text-ink">{t('common.relatedDocuments')}</span>
-  {
-    documents.map((document) => {
-      const isCurrent = document.id === current;
-      // 구조화된 내비게이션은 그룹과 hover surface가 이동 가능성을, 파란색은 현재 위치를 표시한다.
-      return (
-        <a
-          href={document.href}
-          aria-current={isCurrent ? 'page' : undefined}
-          class:list={[
-            'inline-flex min-h-[44px] items-center rounded-sm px-2 font-bold no-underline transition-colors',
-            isCurrent ? 'text-accent' : 'text-ink hover:bg-canvas-soft',
-          ]}
-        >
-          {document.label}
-        </a>
-      );
-    })
-  }
+  {documents.map((document) => {
+    const isCurrent = document.id === current;
+    // 구조화된 내비게이션은 그룹과 hover surface가 이동 가능성을, 파란색은 현재 위치를 표시한다.
+    return (
+      <a
+        href={document.href}
+        aria-current={isCurrent ? 'page' : undefined}
+        class:list={[
+          'inline-flex min-h-[44px] items-center rounded-sm px-2 font-bold no-underline transition-colors',
+          isCurrent ? 'text-accent' : 'text-ink hover:bg-canvas-soft',
+        ]}
+      >
+        {document.label}
+      </a>
+    );
+  })}
 </nav>

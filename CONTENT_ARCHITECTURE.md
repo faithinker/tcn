@@ -1,14 +1,15 @@
 # TCN Content Architecture
 
-Updated: 2026-07-30 (공개 Q&A 라우트·D1 10테이블·Q&A 보안 설정 실측 동기화)
+Updated: 2026-10-15 (커스텀 도메인 `thetcn.org` canonical·TypeScript 6·Node 버전 `.nvmrc` 기준·CI 검증 게이트 목록 실측 동기화. 라우트·D1 10테이블·Q&A 보안 설정은 2026-07-30 이후 변경 없음을 재확인)
 
-Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정적 프리렌더 + 동적 SSR. 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`).
+Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정적 프리렌더 + 동적 SSR. TypeScript 6(`astro check`가 TS 7을 아직 지원하지 않아 6 계열 유지), 빌드·CI의 Node 버전은 `.nvmrc`가 기준. 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`). 버전의 단일 원천은 `package.json`.
 
 ## 1. 원칙
 
 - **콘텐츠 단일 원천 = D1** (`tcn-content`): 세미나·활동 글 전부 `posts` 테이블. 회차 개념 없음 - 미래 `event_date` 글이 곧 "차기 세미나".
 - **글 저장 = 즉시 공개**: 공개 페이지가 D1을 SSR로 조회하므로 재빌드·deploy hook 없음.
 - **영어 단일 사이트**: `/ko`·`/en` 프리픽스 없음. 구 URL은 `public/_redirects` 정적 301 표가 전담.
+- **대표 주소 = `https://thetcn.org`** (커스텀 도메인): `astro.config.mjs`의 `site`가 canonical·`og:url`·`sitemap.xml`의 기준이다. `public/robots.txt`의 `Sitemap:` 줄은 정적 파일이라 `site`에서 파생되지 않으므로 따로 맞춘다. `tcn.faithinker12.workers.dev`는 같은 Worker의 기본 주소로, 배포 smoke(`deploy-workers.yml`)가 아직 이 주소를 친다. 도메인 변경 시 맞출 곳은 [`docs/deployment.md`](./docs/deployment.md#도메인).
 - 공개 콘텐츠는 확정 사실만. 미정 정보는 명시적 폴백(`To be announced`).
 
 ## 2. 라우트
@@ -61,7 +62,7 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 
 - 로컬: `npm run dev` (wrangler platformProxy로 로컬 D1/R2). 시드: `node scripts/seed-seminar-posts.mjs`. 계정: `node scripts/create-user.mjs <id> <pw> [--remote]`.
 - 시크릿: 로컬 `.dev.vars`, 원격은 단건 `wrangler secret put` 또는 gitignore된 `.dev.vars.production`을 `wrangler secret bulk`로 일괄 투입(운영 경로).
-- QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run verify:admin`(어드민 작성 플로) · `npm run test:qna:d1`(Q&A D1 제약) · `npm run a11y`(Lighthouse) - 전부 `ci.yml` 게이트이고, 기본 경로에 글 상세를 포함한다.
+- QA: `npm test`(vitest) · `npm run verify`(3폭 렌더) · `npm run verify:admin`(어드민 작성 플로) · `npm run verify:founding-media`(창립 미디어 갤러리) · `npm run verify:seminar-carousel`(세미나 캐러셀) · `npm run test:qna:d1`(Q&A D1 제약) · `npm run a11y`(Lighthouse) - 전부 `ci.yml` 게이트이고, 기본 경로에 글 상세를 포함한다. `npm run motion`은 게이트가 아닌 로컬 확인용. 실행법은 [`docs/development.md`](./docs/development.md#로컬-실행).
 - 레거시 301: `public/_redirects` - `/ko/*`·`/en/*`·구 slug(`2025-laos` 등)·구 회차 허브 전부 영구 이전.
 - 슬래시 정규화: SSR 페이지는 미들웨어가 301, 프리렌더 정적 페이지(`/people/` 등)는 Workers Static Assets `drop-trailing-slash`가 **307**로 처리(플랫폼 기본값 수용 — 2026-07-27 결정).
 

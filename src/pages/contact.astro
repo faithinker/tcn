@@ -10,108 +10,80 @@ const copy = content.contact;
 <BaseLayout title={copy.title} description={copy.description}>
   <section class="bg-canvas px-5 py-12 sm:py-24">
     <div class="mx-auto max-w-[75rem]">
-      <h1
-        class="max-w-[16ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero"
-      >
+      <h1 class="max-w-[16ch] font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
         {copy.heroTitle}
       </h1>
-      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
-        {copy.heroBody}
-      </p>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">{copy.heroBody}</p>
     </div>
   </section>
 
-  {
-    /* 제목이 이미 범주를 말하는 섹션에서는 아이브로우를 겹치지 않는다.
-      서수 라벨도 파란 아이브로우가 아니라 중립 메타데이터로 둔다(DESIGN.md 443-445). */
-  }
+  {/* 제목이 이미 범주를 말하는 섹션에서는 아이브로우를 겹치지 않는다.
+      서수 라벨도 파란 아이브로우가 아니라 중립 메타데이터로 둔다(DESIGN.md 443-445). */}
   <SectionTile variant="canvas" title={copy.benefitsTitle}>
     <ul class="mt-8 grid gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2">
-      {
-        copy.benefits.map((benefit, index) => (
-          <li class="min-w-0 bg-canvas p-5 sm:p-8">
-            <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
-              {String(index + 1).padStart(2, '0')}
-            </p>
-            <p class="mt-2 font-serif text-display-sm font-semibold text-ink">{benefit}</p>
-          </li>
-        ))
-      }
+      {copy.benefits.map((benefit, index) => (
+        <li class="min-w-0 bg-canvas p-5 sm:p-8">
+          <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
+            {String(index + 1).padStart(2, '0')}
+          </p>
+          <p class="mt-2 font-serif text-display-sm font-semibold text-ink">{benefit}</p>
+        </li>
+      ))}
     </ul>
   </SectionTile>
 
   <SectionTile variant="canvas" title={copy.applicationTitle}>
     <ol class="mt-8 grid gap-8 lg:grid-cols-3">
-      {
-        copy.steps.map((step, index) => (
-          <li class="border-t border-hairline-strong pt-5">
-            <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
-              Step {String(index + 1).padStart(2, '0')}
-            </p>
-            <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{step.title}</h2>
-            <p class="mt-4 font-serif text-body-serif text-body">{step.body}</p>
-          </li>
-        ))
-      }
+      {copy.steps.map((step, index) => (
+        <li class="border-t border-hairline-strong pt-5">
+          <p class="font-sans text-caption font-bold tabular-nums text-body-muted">
+            Step {String(index + 1).padStart(2, '0')}
+          </p>
+          <h2 class="mt-2 font-serif text-display-sm font-semibold text-ink">{step.title}</h2>
+          <p class="mt-4 font-serif text-body-serif text-body">{step.body}</p>
+        </li>
+      ))}
     </ol>
 
-    <div
-      class="mt-10 grid gap-6 border-y border-hairline-strong bg-canvas-soft p-5 sm:mt-12 sm:gap-8 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center"
-    >
+    <div class="mt-10 grid gap-6 border-y border-hairline-strong bg-canvas-soft p-5 sm:mt-12 sm:gap-8 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
       <div>
         <h2 class="font-serif text-display-sm font-semibold text-ink">{copy.onlineTitle}</h2>
-        <p class="mt-3 max-w-[62ch] font-serif text-body-serif text-body">
-          {copy.onlineBody}
-        </p>
+        <p class="mt-3 max-w-[62ch] font-serif text-body-serif text-body">{copy.onlineBody}</p>
       </div>
-      {
-        membershipFormUrl ? (
-          <a
-            href={membershipFormUrl}
-            target="_blank"
-            rel="noreferrer"
-            class="inline-flex min-h-12 items-center justify-center rounded-sm bg-ink px-6 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
-          >
-            {copy.onlineOpen}
-          </a>
-        ) : (
-          <span
-            aria-disabled="true"
-            class="inline-flex min-h-12 items-center justify-center rounded-sm border border-hairline px-6 font-sans text-button font-bold text-body-muted"
-          >
-            {copy.onlinePending}
-          </span>
-        )
-      }
+      {membershipFormUrl ? (
+        <a
+          href={membershipFormUrl}
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex min-h-12 items-center justify-center rounded-sm bg-ink px-6 font-sans text-button font-bold text-on-primary no-underline hover:bg-ink-soft"
+        >
+          {copy.onlineOpen}
+        </a>
+      ) : (
+        <span
+          aria-disabled="true"
+          class="inline-flex min-h-12 items-center justify-center rounded-sm border border-hairline px-6 font-sans text-button font-bold text-body-muted"
+        >
+          {copy.onlinePending}
+        </span>
+      )}
     </div>
   </SectionTile>
 
   <SectionTile variant="soft" title={copy.beforeTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
-      {copy.beforeBody}
-    </p>
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">{copy.beforeBody}</p>
     <ul class="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-      {
-        copy.details.map((detail) => (
-          <li class="border-t border-hairline pt-4 font-serif text-body-serif text-body">
-            {detail}
-          </li>
-        ))
-      }
+      {copy.details.map((detail) => (
+        <li class="border-t border-hairline pt-4 font-serif text-body-serif text-body">{detail}</li>
+      ))}
     </ul>
   </SectionTile>
 
   <SectionTile variant="canvas" title={copy.contactTitle}>
-    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">
-      {copy.contactBody}
-    </p>
-    <dl
-      class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2"
-    >
-      {
-        /* 연락처는 실제로 걸고 보낼 수 있어야 한다. 링크 어포던스는 밑줄이 담당하고,
-          파란색은 쓰지 않는다 — 잉크색 유지(DESIGN.md 213-214, One Blue Rule). */
-      }
+    <p class="mt-6 max-w-[68ch] font-serif text-body-serif text-body">{copy.contactBody}</p>
+    <dl class="mt-8 grid max-w-[44rem] gap-px border-y border-hairline-strong bg-hairline sm:grid-cols-2">
+      {/* 연락처는 실제로 걸고 보낼 수 있어야 한다. 링크 어포던스는 밑줄이 담당하고,
+          파란색은 쓰지 않는다 — 잉크색 유지(DESIGN.md 213-214, One Blue Rule). */}
       <div class="bg-canvas p-5 sm:p-6">
         <dt class="font-sans text-caption font-bold uppercase text-body-muted">{copy.phone}</dt>
         <dd class="mt-4">

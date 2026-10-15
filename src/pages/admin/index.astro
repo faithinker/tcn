@@ -29,57 +29,58 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
     <a
       href="/admin/posts/new"
       class="inline-flex min-h-12 items-center bg-ink px-5 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-accent hover:text-on-primary"
-      >New post</a
     >
+      New post
+    </a>
   </header>
 
   <section class="border border-hairline bg-canvas" aria-labelledby="all-posts-title">
     <header class="flex min-h-16 items-center justify-between border-b border-hairline px-5">
-      <h2 id="all-posts-title" class="font-serif text-lead font-semibold text-ink">All posts</h2>
+      <h2 id="all-posts-title" class="font-serif text-lead font-semibold text-ink">
+        All posts
+      </h2>
       <p class="font-sans text-caption text-body-muted">
         {`${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`}
       </p>
     </header>
-    {
-      posts.length === 0 ? (
-        <div class="px-5 py-12 text-center">
-          <p class="font-sans text-body-sm text-body-muted">No posts yet. Create the first one.</p>
-        </div>
-      ) : (
-        <ul class="m-0 list-none divide-y divide-hairline p-0">
-          <li
-            class="hidden min-h-11 grid-cols-[minmax(0,1fr)_9rem] items-center gap-6 bg-canvas-soft px-5 font-sans text-caption font-bold text-body-muted sm:grid"
-            aria-hidden="true"
-          >
-            <span>Title</span>
-            <span>Updated</span>
-          </li>
-          {posts.map((post) => (
-            <li>
-              <a
-                href={`/admin/posts/${post.id}`}
-                class="grid min-h-21 min-w-0 items-center gap-2 px-5 py-4 text-ink no-underline hover:bg-canvas-soft sm:grid-cols-[minmax(0,1fr)_9rem] sm:gap-6"
+    {posts.length === 0 ? (
+      <div class="px-5 py-12 text-center">
+        <p class="font-sans text-body-sm text-body-muted">No posts yet. Create the first one.</p>
+      </div>
+    ) : (
+      <ul class="m-0 list-none divide-y divide-hairline p-0">
+        <li
+          class="hidden min-h-11 grid-cols-[minmax(0,1fr)_9rem] items-center gap-6 bg-canvas-soft px-5 font-sans text-caption font-bold text-body-muted sm:grid"
+          aria-hidden="true"
+        >
+          <span>Title</span>
+          <span>Updated</span>
+        </li>
+        {posts.map((post) => (
+          <li>
+            <a
+              href={`/admin/posts/${post.id}`}
+              class="grid min-h-21 min-w-0 items-center gap-2 px-5 py-4 text-ink no-underline hover:bg-canvas-soft sm:grid-cols-[minmax(0,1fr)_9rem] sm:gap-6"
+            >
+              <div class="min-w-0">
+                <span class="block font-serif text-body-sans font-semibold text-ink">
+                  {post.title}
+                </span>
+                <span class="mt-1 block truncate font-sans text-caption text-body-muted">
+                  {post.eventDate ?? 'no date'}
+                  {post.address ? ` · ${post.address}` : ''}
+                </span>
+              </div>
+              <time
+                class="font-sans text-caption text-body-muted sm:text-right"
+                datetime={new Date(post.updatedAt * 1000).toISOString()}
               >
-                <div class="min-w-0">
-                  <span class="block font-serif text-body-sans font-semibold text-ink">
-                    {post.title}
-                  </span>
-                  <span class="mt-1 block truncate font-sans text-caption text-body-muted">
-                    {post.eventDate ?? 'no date'}
-                    {post.address ? ` · ${post.address}` : ''}
-                  </span>
-                </div>
-                <time
-                  class="font-sans text-caption text-body-muted sm:text-right"
-                  datetime={new Date(post.updatedAt * 1000).toISOString()}
-                >
-                  {dateFormatter.format(new Date(post.updatedAt * 1000))}
-                </time>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )
-    }
+                {dateFormatter.format(new Date(post.updatedAt * 1000))}
+              </time>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
   </section>
 </AdminLayout>

@@ -22,57 +22,43 @@ const expertiseLabel = 'Areas of expertise';
       <h1 class="font-serif text-display-lg font-semibold text-ink sm:text-display-hero">
         {copy.heroTitle}
       </h1>
-      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">
-        {copy.heroBody}
-      </p>
+      <p class="mt-6 max-w-[62ch] font-serif text-lead text-body">{copy.heroBody}</p>
     </div>
   </section>
 
   <SectionTile variant="canvas" title={copy.boardTitle}>
     <p class="mt-5 max-w-[68ch] font-serif text-body-serif text-body">{copy.boardBody}</p>
-    <div
-      class="profile-grid mt-8 grid gap-px border-t border-hairline-strong bg-hairline lg:grid-cols-2"
-    >
-      {
-        leadership.map((member) => (
-          <MemberProfileCard
-            member={member.data}
-            currentLabel={copy.currentLabel}
-            expertiseLabel={expertiseLabel}
-          />
-        ))
-      }
+    <div class="profile-grid mt-8 grid gap-px border-t border-hairline-strong bg-hairline lg:grid-cols-2">
+      {leadership.map((member) => (
+        <MemberProfileCard
+          member={member.data}
+          currentLabel={copy.currentLabel}
+          expertiseLabel={expertiseLabel}
+        />
+      ))}
     </div>
-    <div
-      class="directors-grid profile-grid grid gap-px border-y border-hairline-strong bg-hairline md:grid-cols-2 lg:grid-cols-3"
-    >
-      {
-        directors.map((member) => (
-          <MemberProfileCard
-            member={member.data}
-            currentLabel={copy.currentLabel}
-            expertiseLabel={expertiseLabel}
-            compact
-          />
-        ))
-      }
+    <div class="directors-grid profile-grid grid gap-px border-y border-hairline-strong bg-hairline md:grid-cols-2 lg:grid-cols-3">
+      {directors.map((member) => (
+        <MemberProfileCard
+          member={member.data}
+          currentLabel={copy.currentLabel}
+          expertiseLabel={expertiseLabel}
+          compact
+        />
+      ))}
     </div>
   </SectionTile>
 
   <SectionTile variant="soft" title={copy.supportTitle}>
     <p class="mt-5 max-w-[68ch] font-serif text-body-serif text-body">{copy.supportBody}</p>
-    <div
-      class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2"
-    >
-      {
-        support.map((member) => (
-          <MemberProfileCard
-            member={member.data}
-            currentLabel={copy.currentLabel}
-            expertiseLabel={expertiseLabel}
-          />
-        ))
-      }
+    <div class="profile-grid mt-8 grid gap-px border-y border-hairline-strong bg-hairline lg:grid-cols-2">
+      {support.map((member) => (
+        <MemberProfileCard
+          member={member.data}
+          currentLabel={copy.currentLabel}
+          expertiseLabel={expertiseLabel}
+        />
+      ))}
     </div>
   </SectionTile>
 </BaseLayout>
