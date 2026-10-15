@@ -30,8 +30,24 @@
 수동 배포는:
 
 ```bash
-npm run build && npx wrangler deploy
+TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy
 ```
+
+`TCN_CONTENT_SOURCE=remote`를 빼면 빌드가 로컬 D1(`.wrangler/state`)의 세미나 목록으로 정적 페이지를 굽습니다. 테스트 데이터가 운영 홈에 나갈 수 있으니 수동 배포에서는 꼭 붙이세요. 실수로 나갔더라도 아래 자동 갱신이 10분 안에 바로잡습니다.
+
+## 정적 공개 페이지와 자동 갱신
+
+홈(`/`)·`/about`·`/seminars`는 빌드 때 구운 정적 에셋입니다. 정적 에셋 요청은 Worker 호출이 아니라 무료·무제한이라, Workers Free의 하루 10만 요청 한도를 방문자 수와 무관하게 쓰지 않습니다. 세미나 상세(`/seminars/<date>`)·`/media/*`·API는 삭제가 즉시 반영돼야 해서 계속 Worker가 처리합니다.
+
+- **데이터**: `npm run build`(와 `dev`·`start`) 앞에서 `scripts/export-public-content.mjs`가 D1의 공개 세미나 목록을 `src/generated/public-seminars.json`(gitignore)으로 내보내고, 세 페이지가 이 스냅샷으로 프리렌더됩니다. 출처는 환경에 따라 자동 선택됩니다.
+  - 운영 배포(`deploy-workers.yml`): `TCN_REQUIRE_CONTENT=1` - 운영 D1만 허용하고, 읽지 못하면 **빌드가 실패**합니다(빈 목록이나 로컬 데이터로 배포되지 않도록).
+  - `CLOUDFLARE_API_TOKEN`이 있으면 운영 D1, 없고 로컬 D1이 있으면 로컬, 둘 다 없으면 빈 스냅샷(CI의 PR 빌드). `TCN_CONTENT_SOURCE=remote|local|empty`로 직접 고를 수 있습니다.
+- **자동 갱신**: `refresh-static-content.yml`이 10분마다 라이브 지문(`/api/content-fingerprint`, D1 기준)과 배포본 지문(`/content-fingerprint.json`, 정적)을 비교합니다. 지문은 세미나 목록 + KST 날짜의 해시라서, 세미나를 추가·수정·삭제했거나 날짜가 넘어가 상태(예정/오늘/지난)가 바뀌면 달라집니다. 달라지면 `deploy-workers.yml`을 `workflow_dispatch`로 다시 돌립니다.
+  - 반영 지연은 최대 약 10분 + 배포 시간(약 5분)입니다. 본문·사진 변경은 상세 페이지가 즉시 반영하므로 이 지연과 무관합니다.
+  - 비교 자체가 실패하면(엔드포인트 장애, 챌린지 HTML 등) 배포하지 않고 워크플로를 실패로 표시합니다. 배포가 진행 중이면 건너뛰고, 직전 15분 안에 이 경로로 배포했는데도 어긋나면 루프 방지로 다시 배포하지 않습니다.
+  - `PRODUCTION_URL`은 배포 smoke와 같은 `workers.dev`입니다. `workers.dev`를 끄면 두 워크플로를 함께 옮겨야 하고, 존 도메인으로 옮길 때는 Bot Fight Mode가 러너 IP의 비브라우저 요청을 챌린지할 수 있어 깨질 수 있습니다.
+  - 저장소에 60일간 활동이 없으면 GitHub이 예약 워크플로를 멈춥니다. 멈추면 정적 페이지가 낡습니다.
+- **수동 갱신**: Actions 탭에서 `Deploy Cloudflare Workers`를 `main`에서 실행하면 즉시 다시 굽습니다.
 
 ## 시크릿
 

@@ -1,9 +1,6 @@
 import { newId } from './client';
+import { POST_COLUMNS as COLUMNS, SEMINAR_POSTS_SQL } from './post-sql';
 import type { Post, PostInput } from './types';
-
-const COLUMNS = `id, title, summary, event_date as eventDate, address, body,
-  hero_media_id as heroMediaId, author_id as authorId,
-  revision, created_at as createdAt, updated_at as updatedAt, deleted_at as deletedAt`;
 
 export class PostRevisionConflictError extends Error {
   constructor() {
@@ -23,13 +20,7 @@ export async function listPosts(db: D1Database): Promise<Post[]> {
 }
 
 export async function listSeminarPosts(db: D1Database): Promise<Post[]> {
-  const rs = await db
-    .prepare(
-      `select ${COLUMNS} from posts
-       where event_date is not null and deleted_at is null
-       order by event_date asc, created_at asc`,
-    )
-    .all<Post>();
+  const rs = await db.prepare(SEMINAR_POSTS_SQL).all<Post>();
   return rs.results;
 }
 

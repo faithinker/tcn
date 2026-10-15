@@ -8,8 +8,12 @@
     "node": ">=26 <27"
   },
   "scripts": {
+    "content:export": "node scripts/export-public-content.mjs",
+    "predev": "npm run content:export",
     "dev": "astro dev --host 0.0.0.0",
+    "prestart": "npm run content:export",
     "start": "astro dev --host 0.0.0.0",
+    "prebuild": "npm run content:export",
     "build": "astro build",
     "preview": "astro preview",
     "preview:mobile": "astro dev --host 0.0.0.0 --port 4341",
