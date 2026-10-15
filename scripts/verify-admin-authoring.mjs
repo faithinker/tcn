@@ -42,8 +42,10 @@ function d1(sql) {
 
 // 계정 준비(멱등). 해시 포맷은 create-user.mjs가 password.ts와 동일하게 만든다.
 d1(`DELETE FROM users WHERE username='${USERNAME}';`);
-execFileSync(process.execPath, ['scripts/create-user.mjs', USERNAME, PASSWORD], {
+// 비밀번호는 인자가 아니라 환경변수로 넘긴다(create-user.mjs 는 인자 비밀번호를 거부한다).
+execFileSync(process.execPath, ['scripts/create-user.mjs', USERNAME], {
   cwd: ROOT,
+  env: { ...process.env, TCN_USER_PASSWORD: PASSWORD },
   stdio: 'pipe',
 });
 
