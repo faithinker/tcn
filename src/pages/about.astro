@@ -10,8 +10,7 @@ import { organizationMilestones } from '../data/organization-milestones';
 import { getPublicSeminars } from '../lib/public-content/snapshot';
 import { mergeMilestones } from '../lib/seminars';
 
-// 연혁이 D1 세미나 기록과 합쳐지지만 정적 에셋으로 나간다(Worker 호출·D1 조회 0).
-// 세미나 기록은 빌드 직전 D1 스냅샷이고, 기관 고유 기록은 코드에 있어 항상 유지된다.
+// 정적 에셋으로 나간다. 세미나 기록은 빌드 직전 D1 스냅샷이고, 기관 고유 기록은 코드에 있다.
 export const prerender = true;
 
 const copy = content.about;

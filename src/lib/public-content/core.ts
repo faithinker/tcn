@@ -1,8 +1,5 @@
-// 정적 공개 페이지(홈·세미나 목록·소개)의 데이터 계약.
-//
-// 이 파일은 세 곳에서 같은 코드로 돈다: 빌드 전 내보내기 스크립트(Node가 직접 실행),
-// 프리렌더 페이지(Vite), 라이브 지문 엔드포인트(Worker). 그래서 런타임 전용 import 없이
-// 순수하게 유지한다 — 타입 import만 허용한다(Node의 타입 제거가 지운다).
+// 정적 공개 페이지(홈·세미나 목록·소개)의 데이터 계약. 내보내기 스크립트(Node 직접 실행)·
+// 프리렌더 페이지·Worker가 함께 쓰므로 타입 import 외의 런타임 import를 넣지 말 것.
 
 import type { Post } from '../db/types.ts';
 
@@ -12,7 +9,7 @@ export interface PublicSeminarSnapshot {
   schema: 1;
   source: SnapshotSource;
   generatedAt: string;
-  /** 상태(upcoming/today/held)를 계산한 기준일(KST). 페이지는 빌드 시각이 아니라 이 값을 쓴다. */
+  /** 상태 계산의 기준일(KST). 페이지는 빌드 시각이 아니라 이 값을 쓴다. */
   today: string;
   fingerprint: string;
   posts: Post[];
@@ -23,12 +20,10 @@ export interface FingerprintDoc {
   today: string;
 }
 
-// 정적 페이지가 실제로 그리는 필드만 지문에 넣는다. 본문(body)·리비전 변경은 상세 페이지(SSR)가
-// 곧바로 반영하므로 정적 페이지를 다시 빌드할 이유가 아니다.
+// 정적 페이지가 그리는 필드만 지문에 넣는다(본문·리비전 변경은 SSR 상세 페이지가 바로 반영한다).
 type FingerprintPost = Pick<Post, 'id' | 'title' | 'summary' | 'eventDate' | 'address'>;
 
-// model.ts의 siteToday와 같은 값을 내야 한다(model.ts는 확장자 없는 import라 Node가 못 읽어 복제한다).
-// 같은 결과를 내는지는 core.test.ts가 고정한다.
+// model.ts의 siteToday와 같은 값을 낸다(model.ts는 Node가 못 읽어 복제했고 core.test.ts가 일치를 고정한다).
 export function kstToday(now = new Date()): string {
   const parts = new Intl.DateTimeFormat('en', {
     timeZone: 'Asia/Seoul',
@@ -119,7 +114,7 @@ export function toPosts(rows: unknown[]): Post[] {
 export interface SourceDecision {
   mode: SnapshotSource;
   required: boolean;
-  /** local 자동 선택에서 실패하면 빈 스냅샷으로 빌드를 이어간다(마이그레이션 전 로컬 DB 등). */
+  /** local 자동 선택이 실패하면 빈 스냅샷으로 빌드를 이어간다. */
   fallbackToEmpty: boolean;
 }
 
