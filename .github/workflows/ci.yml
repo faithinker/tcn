@@ -139,11 +139,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-      # Dependabot이 연 PR 은 저장소 시크릿이 아니라 별도의 Dependabot 시크릿 저장소를 읽는다.
-      # 거기에 알림 시크릿이 없으면 아래 두 스텝이 "missing telegram token or user list" 로
-      # 잡 전체를 실패시켜, 필수 체크인 CI Run 때문에 Dependabot PR 이 머지되지 않는다.
-      # 시크릿이 있을 때만 알림을 보낸다(Sonar 감지 스텝과 같은 패턴). 알림 시크릿을
-      # Dependabot 저장소로 복제하지 않으므로 노출 범위도 늘지 않는다.
+      # Dependabot PR 은 알림 시크릿이 없어, 시크릿이 있을 때만 알림을 보낸다.
       - name: Detect notification secrets
         id: notify
         if: always()
