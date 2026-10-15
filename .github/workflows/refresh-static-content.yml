@@ -1,9 +1,8 @@
 name: Refresh static public pages
 
-# 홈·세미나 목록·소개 페이지는 빌드 때 D1 내용으로 구워진 정적 에셋이다(Worker 호출 0).
-# 세미나가 바뀌거나 KST 날짜가 넘어가면 구워진 내용이 낡으므로, 10분마다 라이브 D1 지문과
-# 배포본 지문을 비교해 다르면 운영 배포 워크플로를 다시 돌린다. 이 워크플로는 Cloudflare
-# 시크릿이 필요 없다 — 비교는 공개 엔드포인트만 쓰고, 재배포는 deploy-workers.yml이 한다.
+# 홈·세미나 목록·소개는 빌드 때 구워진 정적 에셋이라 세미나 변경이나 KST 날짜 변경 때 낡는다.
+# 10분마다 라이브 지문과 배포본 지문을 비교해 다르면 deploy-workers.yml을 다시 돌린다.
+# 공개 엔드포인트만 쓰므로 Cloudflare 시크릿이 필요 없다.
 on:
   schedule:
     - cron: '*/10 * * * *'
@@ -31,7 +30,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
 

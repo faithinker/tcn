@@ -1,9 +1,8 @@
 name: Deploy Cloudflare Workers
 
-# 8단계: Astro on Workers 단일 배포. 상세 페이지·API는 D1 실시간 조회(SSR)지만, 홈·세미나
-# 목록·소개 페이지는 빌드 때 운영 D1 내용으로 구워진 정적 에셋이다(Worker 호출 0).
-# 그래서 세미나가 바뀌면 재배포가 필요하다 — refresh-static-content 워크플로가 10분마다
-# 지문을 비교해 이 워크플로를 workflow_dispatch로 다시 돌린다.
+# 8단계: Astro on Workers 단일 배포. 상세 페이지·API는 D1 실시간 조회(SSR)지만 홈·세미나 목록·소개는
+# 빌드 때 운영 D1로 구워진 정적 에셋이라, 세미나가 바뀌면 refresh-static-content 워크플로가
+# 10분마다 지문을 비교해 이 워크플로를 workflow_dispatch로 다시 돌린다.
 on:
   push:
     branches:
@@ -38,7 +37,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -58,8 +57,7 @@ jobs:
       - name: Test
         run: npm test
 
-      # TCN_REQUIRE_CONTENT=1: 빌드 직전 운영 D1에서 세미나 목록을 내보내지 못하면 빌드를
-      # 실패시킨다. 빈 목록이나 로컬 DB 내용으로 정적 페이지가 나가는 사고를 막는다.
+      # TCN_REQUIRE_CONTENT=1: 운영 D1에서 세미나 목록을 못 읽으면 빌드를 실패시킨다(빈 목록·로컬 데이터 배포 방지).
       - name: Build
         env:
           TCN_REQUIRE_CONTENT: '1'
@@ -80,7 +78,7 @@ jobs:
 
       - name: Deploy to Cloudflare Workers
         id: deploy
-        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
