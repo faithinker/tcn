@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getLoginRateLimitKeys, isLoginRateLimited, recordLoginFailure } from './rate-limit';
+import { getLoginLockSeconds, getLoginRateLimitKeys, recordLoginFailure } from './rate-limit';
 
 describe('login rate limiting', () => {
   it('hashes normalized account and IP identifiers before persistence', async () => {
@@ -49,19 +49,26 @@ describe('login rate limiting', () => {
     expect(forged[1]).toBe(unknown[1]);
   });
 
-  it('checks either identifier for an active block', async () => {
-    const first = vi.fn().mockResolvedValue({ blocked: 1 });
+  it('asks D1 for the longest remaining lock among every identifier', async () => {
+    const first = vi.fn().mockResolvedValue({ blockedUntil: 1_900 });
     const bind = vi.fn(() => ({ first }));
     const prepare = vi.fn(() => ({ bind }));
     const db = { prepare } as unknown as D1Database;
 
-    await expect(isLoginRateLimited(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(true);
-    expect(bind).toHaveBeenCalledWith('account:key', 'ip:key', 1_000);
+    await expect(getLoginLockSeconds(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(900);
+    expect(bind).toHaveBeenCalledWith(1_000, 'account:key', 'ip:key');
   });
 
-  it('updates account and IP counters in one D1 batch before rechecking', async () => {
+  it('reports no lock when no identifier is blocked', async () => {
+    const first = vi.fn().mockResolvedValue({ blockedUntil: null });
+    const db = { prepare: () => ({ bind: () => ({ first }) }) } as unknown as D1Database;
+
+    await expect(getLoginLockSeconds(db, ['account:key'], 1_000)).resolves.toBe(0);
+  });
+
+  it('updates every identifier in one D1 batch, each with its own limit, before rechecking', async () => {
     const writeBind = vi.fn((...args: unknown[]) => ({ args }));
-    const first = vi.fn().mockResolvedValue(null);
+    const first = vi.fn().mockResolvedValue({ blockedUntil: null });
     const readBind = vi.fn(() => ({ first }));
     const prepare = vi
       .fn()
@@ -70,10 +77,14 @@ describe('login rate limiting', () => {
     const batch = vi.fn().mockResolvedValue([]);
     const db = { prepare, batch } as unknown as D1Database;
 
-    await expect(recordLoginFailure(db, ['account:key', 'ip:key'], 1_000)).resolves.toBe(false);
+    await expect(
+      recordLoginFailure(db, ['account:key', 'ip:key', 'device:key'], 1_000),
+    ).resolves.toBe(0);
     expect(batch).toHaveBeenCalledWith([
-      { args: ['account:key', 1_000] },
-      { args: ['ip:key', 1_000] },
+      { args: ['account:key', 1_000, 5] },
+      { args: ['ip:key', 1_000, 5] },
+      { args: ['device:key', 1_000, 10] },
     ]);
+    expect(readBind).toHaveBeenCalledWith(1_000, 'account:key', 'ip:key', 'device:key');
   });
 });

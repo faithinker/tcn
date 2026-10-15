@@ -8,9 +8,8 @@ import {
 } from '../../../lib/auth';
 import {
   clearLoginFailures,
+  getLoginLockSeconds,
   getLoginRateLimitKeys,
-  isLoginRateLimited,
-  LOGIN_RETRY_AFTER_SECONDS,
   recordLoginFailure,
 } from '../../../lib/auth/rate-limit';
 
@@ -32,6 +31,14 @@ async function readCredentials(request: Request): Promise<{ username: string; pa
   };
 }
 
+// 잠금 시간은 단계마다 다르다 — 남은 초를 그대로 알려서 클라이언트가 정확한 안내를 보이게 한다.
+function lockedResponse(retryAfterSeconds: number): Response {
+  return Response.json(
+    { ok: false, error: 'rate_limited' },
+    { status: 429, headers: { 'retry-after': String(retryAfterSeconds) } },
+  );
+}
+
 export const POST: APIRoute = async ({ request, url }) => {
   const { username, password } = await readCredentials(request);
   if (!username || !password) {
@@ -40,23 +47,14 @@ export const POST: APIRoute = async ({ request, url }) => {
 
   const db = getDB();
   const rateLimitKeys = await getLoginRateLimitKeys(request, username);
-  if (await isLoginRateLimited(db, rateLimitKeys)) {
-    return Response.json(
-      { ok: false, error: 'rate_limited' },
-      { status: 429, headers: { 'retry-after': String(LOGIN_RETRY_AFTER_SECONDS) } },
-    );
-  }
+  const lockedFor = await getLoginLockSeconds(db, rateLimitKeys);
+  if (lockedFor > 0) return lockedResponse(lockedFor);
 
   const user = await getUserByUsername(db, username);
   const valid = user ? await verifyPassword(password, user.passwordHash) : false;
   if (!user || !valid) {
-    const blocked = await recordLoginFailure(db, rateLimitKeys);
-    if (blocked) {
-      return Response.json(
-        { ok: false, error: 'rate_limited' },
-        { status: 429, headers: { 'retry-after': String(LOGIN_RETRY_AFTER_SECONDS) } },
-      );
-    }
+    const lockedNow = await recordLoginFailure(db, rateLimitKeys);
+    if (lockedNow > 0) return lockedResponse(lockedNow);
     // 동일 응답으로 사용자 존재 여부 누설 방지.
     return Response.json({ ok: false, error: 'invalid_credentials' }, { status: 401 });
   }

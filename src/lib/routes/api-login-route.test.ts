@@ -5,10 +5,10 @@ const {
   clearLoginFailures,
   createSessionToken,
   getDB,
+  getLoginLockSeconds,
   getLoginRateLimitKeys,
   getSessionSecret,
   getUserByUsername,
-  isLoginRateLimited,
   recordLoginFailure,
   verifyPassword,
 } = vi.hoisted(() => ({
@@ -16,10 +16,10 @@ const {
   clearLoginFailures: vi.fn(),
   createSessionToken: vi.fn(() => 'token'),
   getDB: vi.fn(() => ({})),
+  getLoginLockSeconds: vi.fn(),
   getLoginRateLimitKeys: vi.fn(() => Promise.resolve(['account:key', 'ip:key'])),
   getSessionSecret: vi.fn(() => 'secret'),
   getUserByUsername: vi.fn(),
-  isLoginRateLimited: vi.fn(),
   recordLoginFailure: vi.fn(),
   verifyPassword: vi.fn(),
 }));
@@ -32,9 +32,8 @@ vi.mock('../auth', () => ({
 }));
 vi.mock('../auth/rate-limit', () => ({
   clearLoginFailures,
+  getLoginLockSeconds,
   getLoginRateLimitKeys,
-  isLoginRateLimited,
-  LOGIN_RETRY_AFTER_SECONDS: 900,
   recordLoginFailure,
 }));
 vi.mock('../db', () => ({ getDB, getUserByUsername }));
@@ -58,31 +57,42 @@ function context() {
 describe('POST /api/auth/login', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    isLoginRateLimited.mockResolvedValue(false);
-    recordLoginFailure.mockResolvedValue(false);
+    getLoginLockSeconds.mockResolvedValue(0);
+    recordLoginFailure.mockResolvedValue(0);
     clearLoginFailures.mockResolvedValue(undefined);
   });
 
-  it('returns 429 before password work when an account or IP is blocked', async () => {
-    isLoginRateLimited.mockResolvedValue(true);
+  it('returns 429 with the remaining lock time before any password work', async () => {
+    getLoginLockSeconds.mockResolvedValue(3_600);
+
+    const response = await POST!(context());
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get('retry-after')).toBe('3600');
+    expect(getUserByUsername).not.toHaveBeenCalled();
+    expect(verifyPassword).not.toHaveBeenCalled();
+  });
+
+  it('answers 401 and records the failure when the credentials are wrong', async () => {
+    getUserByUsername.mockResolvedValue({ id: 'user-1', passwordHash: 'hash' });
+    verifyPassword.mockResolvedValue(false);
+
+    const response = await POST!(context());
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ ok: false, error: 'invalid_credentials' });
+    expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+  });
+
+  it('answers 429 with the new lock time on the failure that earns the lock', async () => {
+    getUserByUsername.mockResolvedValue({ id: 'user-1', passwordHash: 'hash' });
+    verifyPassword.mockResolvedValue(false);
+    recordLoginFailure.mockResolvedValue(900);
 
     const response = await POST!(context());
 
     expect(response.status).toBe(429);
     expect(response.headers.get('retry-after')).toBe('900');
-    expect(getUserByUsername).not.toHaveBeenCalled();
-    expect(verifyPassword).not.toHaveBeenCalled();
-  });
-
-  it('records failed credentials and blocks the threshold attempt', async () => {
-    getUserByUsername.mockResolvedValue({ id: 'user-1', passwordHash: 'hash' });
-    verifyPassword.mockResolvedValue(false);
-    recordLoginFailure.mockResolvedValue(true);
-
-    const response = await POST!(context());
-
-    expect(response.status).toBe(429);
-    expect(recordLoginFailure).toHaveBeenCalled();
   });
 
   it('clears failures and embeds the current session version after success', async () => {
@@ -98,7 +108,7 @@ describe('POST /api/auth/login', () => {
     const response = await POST!(context());
 
     expect(response.status).toBe(200);
-    expect(clearLoginFailures).toHaveBeenCalled();
+    expect(clearLoginFailures).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
     expect(createSessionToken).toHaveBeenCalledWith('user-1', 'secret', { sessionVersion: 7 });
   });
 });

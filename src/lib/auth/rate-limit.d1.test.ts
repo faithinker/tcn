@@ -1,14 +1,15 @@
 // 로그인 rate limiter 의 SQL 의미론을 실제 D1 에서 검증한다.
 //
 // rate-limit.test.ts 는 D1 을 목킹하므로 bind 인자와 batch 형태만 본다.
-// 윈도 리셋·잠금 해제 같은 판단은 전부 SQL 안에 있어서 목으로는 닿지 않는다.
+// 윈도 리셋·잠금 해제·잠금 단계 상승 같은 판단은 전부 SQL 안에 있어서 목으로는 닿지 않는다.
 // 여기서는 실제 SQLite 에 마이그레이션을 적용해 동작을 고정한다(test-support/d1.ts).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { openTestD1, type TestD1 } from '../../test-support/d1';
-import { clearLoginFailures, isLoginRateLimited, recordLoginFailure } from './rate-limit';
+import { clearLoginFailures, getLoginLockSeconds, recordLoginFailure } from './rate-limit';
 
 const WINDOW = 15 * 60;
-const KEYS: readonly [string, string] = ['account:a', 'ip:i'];
+const LOCKS = [15 * 60, 60 * 60, 4 * 60 * 60, 24 * 60 * 60];
+const KEYS: readonly string[] = ['account:a', 'ip:i'];
 const T0 = 1_700_000_000;
 
 let harness: TestD1;
@@ -27,66 +28,147 @@ afterEach(async () => {
 async function rowFor(identifier: string) {
   return db()
     .prepare(
-      'select attempts, window_started_at, blocked_until from auth_rate_limits where identifier = ?1',
+      `select attempts, window_started_at, blocked_until, lock_count
+       from auth_rate_limits where identifier = ?1`,
     )
     .bind(identifier)
-    .first<{ attempts: number; window_started_at: number; blocked_until: number }>();
+    .first<{
+      attempts: number;
+      window_started_at: number;
+      blocked_until: number;
+      lock_count: number;
+    }>();
+}
+
+/** 윈도를 채울 만큼 연속 실패시키고 마지막 호출의 남은 잠금 초를 돌려준다. */
+async function failUntilLocked(keys: readonly string[], at: number, attempts = 5): Promise<number> {
+  let last = 0;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    last = await recordLoginFailure(db(), keys, at);
+  }
+  return last;
 }
 
 describe('login rate limiting against a real D1', () => {
-  it('counts both identifiers in one call and blocks on the fifth failure', async () => {
+  it('counts both identifiers in one call and locks on the fifth failure', async () => {
     for (let attempt = 1; attempt <= 4; attempt += 1) {
-      await expect(recordLoginFailure(db(), KEYS, T0)).resolves.toBe(false);
+      await expect(recordLoginFailure(db(), KEYS, T0)).resolves.toBe(0);
     }
 
-    // 5회째에 잠금이 걸린다.
-    await expect(recordLoginFailure(db(), KEYS, T0)).resolves.toBe(true);
+    // 5회째에 15분 잠금이 걸리고, 남은 초를 돌려준다.
+    await expect(recordLoginFailure(db(), KEYS, T0)).resolves.toBe(LOCKS[0]);
 
-    // 하나의 prepared statement 를 두 번 bind 해도 두 행이 따로 쌓인다.
-    expect(await rowFor('account:a')).toMatchObject({ attempts: 5, blocked_until: T0 + WINDOW });
-    expect(await rowFor('ip:i')).toMatchObject({ attempts: 5, blocked_until: T0 + WINDOW });
-  });
-
-  it('keeps the block until blocked_until has passed', async () => {
-    for (let attempt = 1; attempt <= 5; attempt += 1) {
-      await recordLoginFailure(db(), KEYS, T0);
-    }
-
-    await expect(isLoginRateLimited(db(), KEYS, T0 + WINDOW - 1)).resolves.toBe(true);
-    await expect(isLoginRateLimited(db(), KEYS, T0 + WINDOW)).resolves.toBe(false);
-  });
-
-  it('resets the counter and clears the block once the window has rolled over', async () => {
-    for (let attempt = 1; attempt <= 5; attempt += 1) {
-      await recordLoginFailure(db(), KEYS, T0);
-    }
-
-    // 윈도가 지난 뒤의 첫 실패는 1회째로 다시 센다.
-    await expect(recordLoginFailure(db(), KEYS, T0 + WINDOW)).resolves.toBe(false);
+    // 하나의 prepared statement 를 여러 번 bind 해도 행이 따로 쌓인다.
     expect(await rowFor('account:a')).toMatchObject({
-      attempts: 1,
-      window_started_at: T0 + WINDOW,
-      blocked_until: 0,
+      attempts: 5,
+      blocked_until: T0 + LOCKS[0],
+      lock_count: 1,
+    });
+    expect(await rowFor('ip:i')).toMatchObject({
+      attempts: 5,
+      blocked_until: T0 + LOCKS[0],
+      lock_count: 1,
     });
   });
 
-  it('blocks when either identifier is blocked, not only when both are', async () => {
-    // IP 만 5회 실패시킨다.
-    for (let attempt = 1; attempt <= 5; attempt += 1) {
-      await recordLoginFailure(db(), ['ip:i', 'ip:i'], T0);
+  it('reports the seconds left on the lock and zero once it has passed', async () => {
+    await failUntilLocked(KEYS, T0);
+
+    await expect(getLoginLockSeconds(db(), KEYS, T0)).resolves.toBe(LOCKS[0]);
+    await expect(getLoginLockSeconds(db(), KEYS, T0 + 100)).resolves.toBe(LOCKS[0] - 100);
+    await expect(getLoginLockSeconds(db(), KEYS, T0 + LOCKS[0] - 1)).resolves.toBe(1);
+    await expect(getLoginLockSeconds(db(), KEYS, T0 + LOCKS[0])).resolves.toBe(0);
+  });
+
+  it('locks longer each time the lock is earned again, up to a 24 hour cap', async () => {
+    let at = T0;
+    for (const expected of [...LOCKS, LOCKS[3]]) {
+      await expect(failUntilLocked(KEYS, at)).resolves.toBe(expected);
+      // 잠금이 풀린 직후 새 윈도에서 다시 5회 실패한다.
+      at += expected;
     }
 
-    await expect(isLoginRateLimited(db(), ['account:untouched', 'ip:i'], T0)).resolves.toBe(true);
-    await expect(isLoginRateLimited(db(), ['account:untouched', 'ip:other'], T0)).resolves.toBe(
-      false,
+    expect(await rowFor('account:a')).toMatchObject({ lock_count: 5 });
+  });
+
+  it('does not count or extend anything for failures that arrive during a lock', async () => {
+    await failUntilLocked(KEYS, T0);
+    const before = await rowFor('account:a');
+
+    await expect(recordLoginFailure(db(), KEYS, T0 + 60)).resolves.toBe(LOCKS[0] - 60);
+
+    expect(await rowFor('account:a')).toEqual(before);
+  });
+
+  it('keeps a long lock alive after the counting window has rolled over', async () => {
+    // 1회차 잠금(15분)이 풀린 뒤 2회차(1시간)를 건다.
+    await failUntilLocked(KEYS, T0);
+    const second = T0 + LOCKS[0];
+    await failUntilLocked(KEYS, second);
+
+    // 윈도(15분)는 이미 지났지만 1시간 잠금은 유효하다 — 실패 한 번이 잠금을 풀면 안 된다.
+    const during = second + WINDOW + 60;
+    await expect(recordLoginFailure(db(), KEYS, during)).resolves.toBe(LOCKS[1] - WINDOW - 60);
+    expect(await rowFor('account:a')).toMatchObject({ blocked_until: second + LOCKS[1] });
+  });
+
+  it('starts a fresh window of attempts once the lock is over without lowering the lock level', async () => {
+    await failUntilLocked(KEYS, T0);
+
+    // 잠금이 끝난 뒤 첫 실패는 1회째로 다시 센다 — 잠금 단계는 그대로 유지한다.
+    await expect(recordLoginFailure(db(), KEYS, T0 + LOCKS[0])).resolves.toBe(0);
+    expect(await rowFor('account:a')).toMatchObject({
+      attempts: 1,
+      window_started_at: T0 + LOCKS[0],
+      blocked_until: 0,
+      lock_count: 1,
+    });
+  });
+
+  it('locks when either identifier is locked, not only when both are', async () => {
+    // IP 만 5회 실패시킨다.
+    await failUntilLocked(['ip:i'], T0);
+
+    await expect(getLoginLockSeconds(db(), ['account:untouched', 'ip:i'], T0)).resolves.toBe(
+      LOCKS[0],
+    );
+    await expect(getLoginLockSeconds(db(), ['account:untouched', 'ip:other'], T0)).resolves.toBe(0);
+  });
+
+  it('reports the longest remaining lock among the identifiers', async () => {
+    await failUntilLocked(['account:a'], T0);
+    await failUntilLocked(['account:a'], T0 + LOCKS[0]); // 1시간 잠금
+    await failUntilLocked(['ip:i'], T0 + LOCKS[0]); // 15분 잠금
+
+    await expect(getLoginLockSeconds(db(), ['account:a', 'ip:i'], T0 + LOCKS[0])).resolves.toBe(
+      LOCKS[1],
     );
   });
 
-  it('drops both rows on a successful login', async () => {
+  it('allows a device identifier ten failures before it locks', async () => {
+    for (let attempt = 1; attempt <= 9; attempt += 1) {
+      await expect(recordLoginFailure(db(), ['device:d'], T0)).resolves.toBe(0);
+    }
+
+    await expect(recordLoginFailure(db(), ['device:d'], T0)).resolves.toBe(LOCKS[0]);
+    expect(await rowFor('device:d')).toMatchObject({ attempts: 10, lock_count: 1 });
+  });
+
+  it('drops the rows of the given identifiers on a successful login', async () => {
     await recordLoginFailure(db(), KEYS, T0);
+    await recordLoginFailure(db(), ['device:d', 'ip:other'], T0);
+
     await clearLoginFailures(db(), KEYS);
 
     expect(await rowFor('account:a')).toBeNull();
     expect(await rowFor('ip:i')).toBeNull();
+    // 다른 식별자는 건드리지 않는다.
+    expect(await rowFor('device:d')).not.toBeNull();
+  });
+
+  it('is safe to call with no identifiers', async () => {
+    await expect(getLoginLockSeconds(db(), [], T0)).resolves.toBe(0);
+    await expect(recordLoginFailure(db(), [], T0)).resolves.toBe(0);
+    await expect(clearLoginFailures(db(), [])).resolves.toBeUndefined();
   });
 });

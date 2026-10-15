@@ -44,6 +44,8 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
     </form>
   </div>
   <script>
+    import { lockedMessage } from '../../scripts/login-messages';
+
     const form = document.getElementById('login-form') as HTMLFormElement | null;
     const errorEl = document.getElementById('login-error');
     const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
@@ -69,7 +71,7 @@ if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
         if (errorEl) {
           errorEl.textContent =
             response.status === 429
-              ? 'Too many sign-in attempts. Wait 15 minutes and try again.'
+              ? lockedMessage(response.headers.get('retry-after'))
               : 'Invalid username or password.';
           errorEl.classList.remove('hidden');
         }
