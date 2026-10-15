@@ -95,6 +95,26 @@ describe('Q&A HMAC rate limiting', () => {
     expect(key).not.toContain('203.0.113.10');
   });
 
+  // client-ip.test.ts 는 헬퍼만 본다. Q&A 키가 그 헬퍼를 실제로 쓰는지는 여기서만 잠긴다.
+  it('counts every address of one IPv6 /64 as the same client', async () => {
+    const keyFor = (ip: string) =>
+      getQnaRateLimitKey(
+        new Request('https://tcn.example/api/questions', {
+          headers: { 'cf-connecting-ip': ip },
+        }),
+        'rate-secret',
+      );
+
+    const [first, second, other] = await Promise.all([
+      keyFor('2001:db8:1:2:aaaa:bbbb:cccc:dddd'),
+      keyFor('2001:db8:1:2::1'),
+      keyFor('2001:db8:1:3::1'),
+    ]);
+
+    expect(second).toBe(first);
+    expect(other).not.toBe(first);
+  });
+
   it('fails closed when the rate-limit secret is missing', async () => {
     await expect(
       getQnaRateLimitKey(new Request('https://tcn.example/api/questions'), ''),
