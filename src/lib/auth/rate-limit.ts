@@ -117,3 +117,18 @@ export async function clearLoginFailures(db: D1Database, keys: readonly string[]
     .bind(...keys)
     .run();
 }
+
+/**
+ * 로그인에 성공한 뒤 계정 키를 정리한다: 실패 횟수만 0 으로 되돌리고 잠금 단계(`lock_count`)와
+ * 이미 걸린 잠금은 그대로 둔다. 행을 지워 버리면 관리자가 로그인할 때마다 공격자가 쌓아 둔
+ * 잠금 단계(15분 → 1시간 → …)가 처음으로 돌아가서, 단계 상승이 IP 를 돌리는 추측을 늦추지 못한다.
+ */
+export async function resetLoginAttempts(db: D1Database, keys: readonly string[]): Promise<void> {
+  if (keys.length === 0) return;
+  await db
+    .prepare(
+      `update auth_rate_limits set attempts = 0 where identifier in (${placeholders(keys.length, 1)})`,
+    )
+    .bind(...keys)
+    .run();
+}

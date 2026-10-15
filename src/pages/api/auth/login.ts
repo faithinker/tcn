@@ -9,6 +9,13 @@ import {
   verifyPassword,
 } from '../../../lib/auth';
 import {
+  buildDeviceCookie,
+  createDeviceToken,
+  deviceRateLimitKey,
+  readDeviceToken,
+  verifyDeviceToken,
+} from '../../../lib/auth/device';
+import {
   requireLoginChallenge,
   type LoginChallengeBindings,
 } from '../../../lib/auth/login-challenge';
@@ -17,6 +24,7 @@ import {
   getLoginLockSeconds,
   getLoginRateLimitKeys,
   recordLoginFailure,
+  resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
 import { TurnstileError } from '../../../lib/turnstile';
 
@@ -82,35 +90,53 @@ export const POST: APIRoute = async ({ request, url }) => {
   }
 
   const db = getDB();
-  const rateLimitKeys = await getLoginRateLimitKeys(request, username);
-  const lockedFor = await getLoginLockSeconds(db, rateLimitKeys);
+  const [accountKey, ipKey] = await getLoginRateLimitKeys(request, username);
+  const secret = getSessionSecret();
+
+  // 이 계정에 로그인해 본 적 있는 브라우저(서명된 신뢰 기기 쿠키)는 계정 단위 잠금 대신 기기 단위 한도를
+  // 쓴다. 계정 키는 IP 와 무관해서 누구나 걸 수 있는데, 그걸로 실제 관리자까지 쫓겨나면 안 되기 때문이다.
+  // 쿠키는 비밀번호를 대신하지 않는다 — 비밀번호와 챌린지는 그대로 요구하고, 기기 한도와 IP 한도도 계속 적용된다.
+  const trusted = await verifyDeviceToken(readDeviceToken(request), accountKey, secret);
+  const deviceKey = trusted ? await deviceRateLimitKey(trusted.deviceId) : null;
+  const limitKeys = deviceKey ? [deviceKey, ipKey] : [accountKey, ipKey];
+
+  const lockedFor = await getLoginLockSeconds(db, limitKeys);
   if (lockedFor > 0) return lockedResponse(lockedFor);
 
   const user = await getUserByUsername(db, username);
   // 없는 아이디도 같은 비용의 해시 검증을 돌려, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
-    const lockedNow = await recordLoginFailure(db, rateLimitKeys);
+    const lockedNow = await recordLoginFailure(db, limitKeys);
     if (lockedNow > 0) return lockedResponse(lockedNow);
     // 동일 응답으로 사용자 존재 여부 누설 방지.
     return Response.json({ ok: false, error: 'invalid_credentials' }, { status: 401 });
   }
 
-  await clearLoginFailures(db, rateLimitKeys);
-  const token = await createSessionToken(user.id, getSessionSecret(), {
+  // 성공 정리. IP·기기 카운터는 지우지만 계정 키는 잠금 단계를 보존한다 — 관리자가 로그인할 때마다
+  // 공격자가 쌓은 단계가 초기화되면 단계 상승이 의미가 없다. 신뢰 기기로 들어왔다면 계정 행은 아예
+  // 건드리지 않는다(잠금을 우회한 것이지 푼 것이 아니다). 새 기기에서 성공하면 실패 횟수만 비운다.
+  if (deviceKey) {
+    await clearLoginFailures(db, [ipKey, deviceKey]);
+  } else {
+    await clearLoginFailures(db, [ipKey]);
+    await resetLoginAttempts(db, [accountKey]);
+  }
+  const secure = url.protocol === 'https:';
+  const session = await createSessionToken(user.id, secret, {
     sessionVersion: user.sessionVersion,
   });
+  // 로그인할 때마다 갱신해서 자주 쓰는 기기는 만료되지 않는다. 기기 id 는 유지한다.
+  const device = await createDeviceToken(accountKey, secret, { deviceId: trusted?.deviceId });
+
+  const headers = new Headers({ 'content-type': 'application/json' });
+  headers.append('set-cookie', buildSessionCookie(session, { secure }));
+  headers.append('set-cookie', buildDeviceCookie(device.token, { secure }));
   return new Response(
     JSON.stringify({
       ok: true,
       user: { id: user.id, username: user.username, displayName: user.displayName },
     }),
-    {
-      status: 200,
-      headers: {
-        'content-type': 'application/json',
-        'set-cookie': buildSessionCookie(token, { secure: url.protocol === 'https:' }),
-      },
-    },
+    { status: 200, headers },
   );
 };

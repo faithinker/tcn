@@ -5,7 +5,12 @@
 // 여기서는 실제 SQLite 에 마이그레이션을 적용해 동작을 고정한다(test-support/d1.ts).
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { openTestD1, type TestD1 } from '../../test-support/d1';
-import { clearLoginFailures, getLoginLockSeconds, recordLoginFailure } from './rate-limit';
+import {
+  clearLoginFailures,
+  getLoginLockSeconds,
+  recordLoginFailure,
+  resetLoginAttempts,
+} from './rate-limit';
 
 const WINDOW = 15 * 60;
 const LOCKS = [15 * 60, 60 * 60, 4 * 60 * 60, 24 * 60 * 60];
@@ -166,9 +171,39 @@ describe('login rate limiting against a real D1', () => {
     expect(await rowFor('device:d')).not.toBeNull();
   });
 
+  it('resets the failure count after a success but keeps the lock level and an active lock', async () => {
+    // 1회차 잠금이 풀린 뒤 2회차 잠금(1시간)을 걸고, 그 안에서 성공 정리를 한다.
+    await failUntilLocked(['account:a'], T0);
+    const second = T0 + LOCKS[0];
+    await failUntilLocked(['account:a'], second);
+
+    await resetLoginAttempts(db(), ['account:a']);
+
+    expect(await rowFor('account:a')).toMatchObject({
+      attempts: 0,
+      blocked_until: second + LOCKS[1],
+      lock_count: 2,
+    });
+    // 잠금 단계가 남아 있으니 다음 잠금은 4시간이다 — 관리자의 성공이 공격자의 단계를 되돌리지 못한다.
+    await expect(failUntilLocked(['account:a'], second + LOCKS[1])).resolves.toBe(LOCKS[2]);
+  });
+
+  it('gives a clean slate for the next window when only some failures had accumulated', async () => {
+    await recordLoginFailure(db(), ['account:a'], T0);
+    await recordLoginFailure(db(), ['account:a'], T0);
+
+    await resetLoginAttempts(db(), ['account:a']);
+
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      await expect(recordLoginFailure(db(), ['account:a'], T0 + 10)).resolves.toBe(0);
+    }
+    await expect(recordLoginFailure(db(), ['account:a'], T0 + 10)).resolves.toBe(LOCKS[0]);
+  });
+
   it('is safe to call with no identifiers', async () => {
     await expect(getLoginLockSeconds(db(), [], T0)).resolves.toBe(0);
     await expect(recordLoginFailure(db(), [], T0)).resolves.toBe(0);
     await expect(clearLoginFailures(db(), [])).resolves.toBeUndefined();
+    await expect(resetLoginAttempts(db(), [])).resolves.toBeUndefined();
   });
 });

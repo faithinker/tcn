@@ -1,35 +1,54 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
+  buildDeviceCookie,
   buildSessionCookie,
   clearLoginFailures,
+  createDeviceToken,
   createSessionToken,
+  deviceRateLimitKey,
   env,
   getDB,
   getLoginLockSeconds,
   getLoginRateLimitKeys,
   getSessionSecret,
   getUserByUsername,
+  readDeviceToken,
   recordLoginFailure,
   requireLoginChallenge,
+  resetLoginAttempts,
+  verifyDeviceToken,
   verifyPassword,
 } = vi.hoisted(() => ({
+  buildDeviceCookie: vi.fn((token: string) => `tcn_device=${token}`),
   buildSessionCookie: vi.fn(() => 'tcn_session=token'),
   clearLoginFailures: vi.fn(),
+  createDeviceToken: vi.fn(),
   createSessionToken: vi.fn(() => 'token'),
+  deviceRateLimitKey: vi.fn(),
   env: { TURNSTILE_SECRET_KEY: 'turnstile-secret', QNA_TURNSTILE_HOSTNAMES: 'tcn.example' },
   getDB: vi.fn(() => ({})),
   getLoginLockSeconds: vi.fn(),
   getLoginRateLimitKeys: vi.fn(() => Promise.resolve(['account:key', 'ip:key'])),
   getSessionSecret: vi.fn(() => 'secret'),
   getUserByUsername: vi.fn(),
+  readDeviceToken: vi.fn(),
   recordLoginFailure: vi.fn(),
   requireLoginChallenge: vi.fn(),
+  resetLoginAttempts: vi.fn(),
+  verifyDeviceToken: vi.fn(),
   verifyPassword: vi.fn(),
 }));
 
 vi.mock('cloudflare:workers', () => ({ env }));
 vi.mock('../auth/login-challenge', () => ({ requireLoginChallenge }));
+vi.mock('../auth/device', () => ({
+  buildDeviceCookie,
+  createDeviceToken,
+  deviceRateLimitKey,
+  readDeviceToken,
+  verifyDeviceToken,
+}));
 vi.mock('../auth', () => ({
   buildSessionCookie,
   createSessionToken,
@@ -42,6 +61,7 @@ vi.mock('../auth/rate-limit', () => ({
   getLoginLockSeconds,
   getLoginRateLimitKeys,
   recordLoginFailure,
+  resetLoginAttempts,
 }));
 vi.mock('../db', () => ({ getDB, getUserByUsername }));
 
@@ -74,7 +94,12 @@ describe('POST /api/auth/login', () => {
     getLoginLockSeconds.mockResolvedValue(0);
     recordLoginFailure.mockResolvedValue(0);
     clearLoginFailures.mockResolvedValue(undefined);
+    resetLoginAttempts.mockResolvedValue(undefined);
     requireLoginChallenge.mockResolvedValue(undefined);
+    readDeviceToken.mockReturnValue(null);
+    verifyDeviceToken.mockResolvedValue(null);
+    deviceRateLimitKey.mockResolvedValue('device:key');
+    createDeviceToken.mockResolvedValue({ token: 'device-token', deviceId: 'new-device' });
   });
 
   describe('Turnstile challenge', () => {
@@ -212,7 +237,126 @@ describe('POST /api/auth/login', () => {
     const response = await POST!(context());
 
     expect(response.status).toBe(200);
-    expect(clearLoginFailures).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+    expect(clearLoginFailures).toHaveBeenCalledWith({}, ['ip:key']);
+    expect(resetLoginAttempts).toHaveBeenCalledWith({}, ['account:key']);
     expect(createSessionToken).toHaveBeenCalledWith('user-1', 'secret', { sessionVersion: 7 });
+  });
+
+  describe('trusted device', () => {
+    const user = {
+      id: 'user-1',
+      username: 'editor',
+      displayName: 'Editor',
+      passwordHash: 'hash',
+      sessionVersion: 7,
+    };
+
+    // 계정 키가 잠겨 있으면(공격자가 일부러 걸었다고 가정) 그 키를 보는 요청만 막힌다.
+    function accountKeyIsLocked() {
+      getLoginLockSeconds.mockImplementation((_db: unknown, keys: string[]) =>
+        Promise.resolve(keys.includes('account:key') ? 3_600 : 0),
+      );
+    }
+
+    it('checks the device token against the attempted account with the session secret', async () => {
+      readDeviceToken.mockReturnValue('cookie-value');
+      getUserByUsername.mockResolvedValue(null);
+
+      await POST!(context());
+
+      expect(verifyDeviceToken).toHaveBeenCalledWith('cookie-value', 'account:key', 'secret');
+    });
+
+    it('locks out an unknown browser while the account is locked', async () => {
+      accountKeyIsLocked();
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(429);
+      expect(getLoginLockSeconds).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+    });
+
+    it('lets a trusted device through an account lock an attacker set on purpose', async () => {
+      accountKeyIsLocked();
+      verifyDeviceToken.mockResolvedValue({ deviceId: 'd1' });
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(true);
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(200);
+      expect(getLoginLockSeconds).toHaveBeenCalledWith({}, ['device:key', 'ip:key']);
+    });
+
+    it('counts a trusted device failure against the device, not the account', async () => {
+      verifyDeviceToken.mockResolvedValue({ deviceId: 'd1' });
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(401);
+      expect(recordLoginFailure).toHaveBeenCalledWith({}, ['device:key', 'ip:key']);
+    });
+
+    it('still locks a trusted device that keeps failing', async () => {
+      verifyDeviceToken.mockResolvedValue({ deviceId: 'd1' });
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+      recordLoginFailure.mockResolvedValue(900);
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(429);
+      expect(response.headers.get('retry-after')).toBe('900');
+    });
+
+    it('issues a device cookie for a new browser and clears the account and IP counters', async () => {
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(true);
+
+      const response = await POST!(context());
+
+      expect(createDeviceToken).toHaveBeenCalledWith('account:key', 'secret', {
+        deviceId: undefined,
+      });
+      expect(clearLoginFailures).toHaveBeenCalledWith({}, ['ip:key']);
+      expect(resetLoginAttempts).toHaveBeenCalledWith({}, ['account:key']);
+      expect(response.headers.getSetCookie()).toEqual([
+        'tcn_session=token',
+        'tcn_device=device-token',
+      ]);
+    });
+
+    it('leaves the account row alone after a trusted-device success so an attacker keeps the lock level', async () => {
+      verifyDeviceToken.mockResolvedValue({ deviceId: 'd1' });
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(true);
+
+      await POST!(context());
+
+      expect(clearLoginFailures).toHaveBeenCalledWith({}, ['ip:key', 'device:key']);
+      expect(resetLoginAttempts).not.toHaveBeenCalled();
+    });
+
+    it('keeps the device id of a trusted browser and clears its device counter too', async () => {
+      verifyDeviceToken.mockResolvedValue({ deviceId: 'd1' });
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(true);
+
+      await POST!(context());
+
+      expect(createDeviceToken).toHaveBeenCalledWith('account:key', 'secret', { deviceId: 'd1' });
+    });
+
+    it('sets no device cookie when the sign-in fails', async () => {
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+
+      const response = await POST!(context());
+
+      expect(createDeviceToken).not.toHaveBeenCalled();
+      expect(response.headers.getSetCookie()).toEqual([]);
+    });
   });
 });
