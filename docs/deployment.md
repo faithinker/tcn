@@ -45,7 +45,7 @@ TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy
 - **자동 갱신**: `refresh-static-content.yml`이 10분마다 라이브 지문(`/api/content-fingerprint`, D1 기준)과 배포본 지문(`/content-fingerprint.json`, 정적)을 비교합니다. 지문은 세미나 목록 + KST 날짜의 해시라서, 세미나를 추가·수정·삭제했거나 날짜가 넘어가 상태(예정/오늘/지난)가 바뀌면 달라집니다. 달라지면 `deploy-workers.yml`을 `workflow_dispatch`로 다시 돌립니다.
   - 반영 지연은 최대 약 10분 + 배포 시간(약 5분)입니다. 본문·사진 변경은 상세 페이지가 즉시 반영하므로 이 지연과 무관합니다.
   - 비교 자체가 실패하면(엔드포인트 장애, 챌린지 HTML 등) 배포하지 않고 워크플로를 실패로 표시합니다. 배포가 진행 중이면 건너뛰고, 직전 15분 안에 이 경로로 배포했는데도 어긋나면 루프 방지로 다시 배포하지 않습니다.
-  - `PRODUCTION_URL`은 배포 smoke와 같은 `workers.dev`입니다. `workers.dev`를 끄면 두 워크플로를 함께 옮겨야 하고, 존 도메인으로 옮길 때는 Bot Fight Mode가 러너 IP의 비브라우저 요청을 챌린지할 수 있어 깨질 수 있습니다.
+  - `PRODUCTION_URL`은 존 도메인 `thetcn.org`입니다. Bot Fight Mode를 켜면 GitHub 러너의 요청이 403으로 막혀 이 워크플로가 실패하므로(2026-10-16 실측) 꺼 둔 상태를 유지해야 합니다. 배포 smoke를 `workers.dev`에서 `thetcn.org`로 옮길 때도 같은 이유로 꺼져 있어야 합니다.
   - 저장소에 60일간 활동이 없으면 GitHub이 예약 워크플로를 멈춥니다. 멈추면 정적 페이지가 낡습니다.
 - **수동 갱신**: Actions 탭에서 `Deploy Cloudflare Workers`를 `main`에서 실행하면 즉시 다시 굽습니다.
 
