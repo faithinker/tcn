@@ -1,3 +1,4 @@
+import { clientIpKey } from '../client-ip';
 import { bytesToHex, sha256 } from '../crypto';
 
 const WINDOW_SECONDS = 15 * 60;
@@ -18,7 +19,7 @@ export async function getLoginRateLimitKeys(
   username: string,
 ): Promise<[string, string]> {
   const account = username.trim().toLocaleLowerCase('en-US').slice(0, 200);
-  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  const ip = clientIpKey(request);
   const [accountHash, ipHash] = await Promise.all([
     digest(`account:${account}`),
     digest(`ip:${ip}`),

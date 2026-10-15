@@ -1,5 +1,6 @@
 import { getSessionSecret, getSessionUid } from '../auth/guard';
 import { readSessionToken } from '../auth/cookie';
+import { clientIpKey } from '../client-ip';
 import { base64UrlEncode, hmacSha256, sha256, textEncoder, timingSafeEqual } from '../crypto';
 
 const SHORT_WINDOW_SECONDS = 10 * 60;
@@ -70,7 +71,7 @@ export function requireSameOrigin(request: Request): void {
 
 export async function getQnaRateLimitKey(request: Request, secret: string): Promise<string> {
   if (!secret) throw new QnaSecurityError('security_not_configured', 503);
-  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+  const ip = clientIpKey(request);
   return `qna:${base64UrlEncode(await hmacSha256(`qna-ip:${ip}`, secret))}`;
 }
 
