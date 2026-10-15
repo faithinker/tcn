@@ -21,9 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      # deploy-workers.yml의 스모크 URL과 같은 주소를 쓴다. workers.dev를 끄면 함께 옮길 것
-      # (Bot Fight Mode가 켜진 존 도메인은 러너 IP의 비브라우저 요청을 챌린지할 수 있다).
-      PRODUCTION_URL: https://tcn.faithinker12.workers.dev
+      PRODUCTION_URL: https://thetcn.org
       GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
 
