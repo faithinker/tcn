@@ -40,7 +40,9 @@ jobs:
         run: |
           set -euo pipefail
           # 공개 라우트는 세션을 안 쓰지만, 게이트가 인증 경로를 밟아도 죽지 않도록 더미 시크릿을 둔다.
-          printf 'SESSION_SECRET=%s\n' "$(openssl rand -hex 32)" > .dev.vars
+          # verify:admin 은 로그인 폼을 밟는데 헤드리스 브라우저는 실제 Turnstile 위젯을 통과할 수 없다.
+          # LOGIN_CHALLENGE=off 는 localhost 로 들어온 요청에만 로그인 챌린지를 끈다(운영에선 무효).
+          printf 'SESSION_SECRET=%s\nLOGIN_CHALLENGE=off\n' "$(openssl rand -hex 32)" > .dev.vars
           npm run build
           ./node_modules/.bin/wrangler dev --port 4321 --local > /tmp/tcn-dev.log 2>&1 &
           dev_pid=$!

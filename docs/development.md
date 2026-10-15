@@ -96,6 +96,8 @@ npm run generate-types # wrangler types (D1/R2 바인딩 타입 생성)
 
 로컬은 `.dev.vars`로 시크릿을 주입하며 커밋에서 제외합니다. 필요한 키는 `.env.example`과 [`deployment.md`](./deployment.md)의 시크릿 표를 보세요.
 
+관리자 로그인에는 Turnstile 챌린지가 걸려 있습니다. 브라우저로 직접 로그인할 때는 `.dev.vars`의 Turnstile 키(localhost를 허용한 위젯)로 통과하면 되고, `npm run verify:admin`처럼 헤드리스 브라우저가 로그인 폼을 밟을 때는 `.dev.vars`에 `LOGIN_CHALLENGE=off`를 두세요(localhost 요청에만 효력이 있습니다).
+
 > ⚠️ npm 패키지를 바꾼 뒤 dev 서버가 500을 내면 vite 캐시가 스테일된 것입니다. Astro CLI에는 `stop` 명령이 없으니 dev 프로세스를 직접 끝내고(포그라운드면 Ctrl-C, 아니면 해당 PID에 `kill`) 다시 `npm run dev` 하세요.
 
 ## 브라우저 검증

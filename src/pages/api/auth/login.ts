@@ -1,3 +1,4 @@
+import { env } from 'cloudflare:workers';
 import type { APIRoute } from 'astro';
 import { getDB, getUserByUsername } from '../../../lib/db';
 import {
@@ -8,27 +9,45 @@ import {
   verifyPassword,
 } from '../../../lib/auth';
 import {
+  requireLoginChallenge,
+  type LoginChallengeBindings,
+} from '../../../lib/auth/login-challenge';
+import {
   clearLoginFailures,
   getLoginLockSeconds,
   getLoginRateLimitKeys,
   recordLoginFailure,
 } from '../../../lib/auth/rate-limit';
+import { TurnstileError } from '../../../lib/turnstile';
 
 export const prerender = false;
 
-async function readCredentials(request: Request): Promise<{ username: string; password: string }> {
+interface Credentials {
+  username: string;
+  password: string;
+  turnstileToken: string;
+}
+
+async function readCredentials(request: Request): Promise<Credentials> {
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
     const body = (await request.json().catch(() => ({}))) as {
       username?: unknown;
       password?: unknown;
+      turnstileToken?: unknown;
     };
-    return { username: String(body.username ?? ''), password: String(body.password ?? '') };
+    return {
+      username: String(body.username ?? ''),
+      password: String(body.password ?? ''),
+      turnstileToken: String(body.turnstileToken ?? ''),
+    };
   }
   const form = await request.formData().catch(() => new FormData());
   return {
     username: String(form.get('username') ?? ''),
     password: String(form.get('password') ?? ''),
+    // 위젯이 폼에 직접 넣는 표준 필드 이름.
+    turnstileToken: String(form.get('cf-turnstile-response') ?? ''),
   };
 }
 
@@ -41,9 +60,25 @@ function lockedResponse(retryAfterSeconds: number): Response {
 }
 
 export const POST: APIRoute = async ({ request, url }) => {
-  const { username, password } = await readCredentials(request);
+  const { username, password, turnstileToken } = await readCredentials(request);
   if (!username || !password) {
     return Response.json({ ok: false, error: 'missing_credentials' }, { status: 400 });
+  }
+
+  // 챌린지는 D1·락·비밀번호 작업보다 먼저 끝낸다. IP 를 돌려 가며 던지는 가짜 시도는 여기서 걸러져
+  // DB 쓰기 한도를 쓰지 못하고, 챌린지 실패는 비밀번호 실패가 아니라서 실제 계정의 락을 키우지도 않는다.
+  try {
+    await requireLoginChallenge({
+      token: turnstileToken,
+      remoteIp: request.headers.get('cf-connecting-ip'),
+      url,
+      bindings: env as unknown as LoginChallengeBindings,
+    });
+  } catch (error) {
+    if (error instanceof TurnstileError) {
+      return Response.json({ ok: false, error: error.code }, { status: error.status });
+    }
+    throw error;
   }
 
   const db = getDB();

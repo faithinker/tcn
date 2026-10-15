@@ -16,3 +16,15 @@ export function waitDescription(retryAfter: string | null): string {
 export function lockedMessage(retryAfter: string | null): string {
   return `Too many sign-in attempts. Try again in ${waitDescription(retryAfter)}.`;
 }
+
+export const CHALLENGE_PENDING_MESSAGE = 'Wait for the security check to finish, then sign in.';
+
+/** 서버 응답 상태를 로그인 화면 문구로 바꾼다. 알 수 없는 상태는 자격 증명 실패와 같게 보인다. */
+export function failureMessage(status: number, retryAfter: string | null): string {
+  if (status === 429) return lockedMessage(retryAfter);
+  if (status === 403) {
+    return 'The security check did not pass. Wait for it to finish, then sign in again.';
+  }
+  if (status === 503) return 'Sign-in is temporarily unavailable. Try again later.';
+  return 'Invalid username or password.';
+}
