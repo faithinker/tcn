@@ -30,3 +30,23 @@ enabled = true
 
 [mcp_servers.XcodeBuildMCP]
 enabled = false
+
+# Pinned MCP servers. Exact versions, so every machine runs the same code instead
+# of whatever `@latest` resolves to that day. Each pin was at least 7 days old when
+# chosen. Bump them with the dependency upgrade routine and keep .mcp.json (the
+# Claude Code side) on the same versions. astro-docs is a remote URL: nothing to pin.
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp@4.2.0"]
+
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@1.10.1"]
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.83"]
+
+[mcp_servers.markitdown]
+command = "uvx"
+args = ["markitdown-mcp==0.0.1a7"]
