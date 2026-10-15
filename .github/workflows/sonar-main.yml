@@ -1,11 +1,7 @@
 name: Sonar (main)
 
-# main 브랜치 분석. ci.yml 은 pull_request 에서만 돌기 때문에 이 워크플로가 없으면
-# SonarCloud Automatic Analysis 를 끈 뒤로 main 이 다시 분석되지 않는다 —
-# 그러면 PR 의 "New Code" 판정 기준선이 마지막 자동 분석 시점에 얼어붙는다.
-#
-# 브라우저 게이트는 여기서 돌리지 않는다(PR 에서 이미 통과한 커밋이고, 목적은 분석 기준선뿐).
-# 테스트는 커버리지(lcov)를 만들기 위해 다시 실행한다.
+# main 분석. ci.yml 은 PR 에서만 돌아 main 의 SonarCloud 기준선이 갱신되지 않는다.
+# 브라우저 게이트는 PR 에서 통과했으므로 생략하고, 커버리지(lcov) 때문에 테스트만 다시 돌린다.
 
 on:
   push:

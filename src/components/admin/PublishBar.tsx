@@ -1,6 +1,4 @@
-// 저장·게시 상태 바 — 에디터 하단에 붙어 있고(sticky) 항상 한 가지 질문에 답한다:
-// "이 글이 지금 공개 페이지에 올라가 있나?" 상태는 컨테이너(PostEditor)가 소유하고,
-// 이 컴포넌트는 문장·색·모션만 담당한다.
+// 저장·게시 상태 바(sticky): "이 글이 지금 공개 페이지에 올라가 있나?"에 답한다. 상태는 PostEditor 가 소유한다.
 import { useState } from 'react';
 import {
   publishHeadline,

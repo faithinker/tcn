@@ -1,6 +1,4 @@
-// 저장 전 스테이징(선택만 해둔 파일) 로직 — React 와 무관한 순수 함수.
-// 에디터는 저장된 미디어와 스테이징 파일을 한 배열로 다룬다: 순서 이동·캡션·대표 지정이
-// 업로드 시점과 무관하게 같은 코드로 동작하고, Save 가 스테이징을 실제 행으로 승격한다.
+// 저장 전 스테이징 파일 로직(순수 함수). 저장된 미디어와 한 배열로 다뤄 순서·캡션·대표 지정이 업로드 시점과 무관하게 같고, Save 가 스테이징을 행으로 승격한다.
 import type { EditorMedia, MediaItem, PendingMedia } from './types';
 
 export const PENDING_ID_PREFIX = 'pending-';

@@ -1,20 +1,12 @@
 #!/usr/bin/env node
-// 계정 수동 발급. 회원가입 UI 없음 — 운영자가 아이디/평문비번을 주면 해시해서 D1 에 INSERT.
+// 계정 수동 발급(회원가입 UI 없음). 비밀번호를 해시해 D1 에 INSERT 한다.
 //
-// 사용법:
-//   node scripts/create-user.mjs <username> [--remote] [--display "표시이름"]
+// node scripts/create-user.mjs <username> [--remote] [--display "표시이름"]
+//   --remote  운영 D1 (없으면 로컬 .wrangler D1)
 //
-//   비밀번호는 인자로 받지 않는다(셸 히스토리·프로세스 목록에 남는다). 아래 중 하나로 준다.
-//     1) 터미널에서 실행하면 숨김 입력으로 두 번 묻는다(권장).
-//     2) 환경변수 TCN_USER_PASSWORD (CI·스크립트용).
-//        `read -rs TCN_USER_PASSWORD; export TCN_USER_PASSWORD` 로 넣으면 히스토리에도 안 남는다.
-//     3) 터미널이 아니면 표준입력 첫 줄.
-//   정책(src/lib/auth/password-policy.ts): 12자 이상, 아이디 미포함, 흔한 비밀번호·단순 반복/순서 거부.
-//
-//   --remote  원격(운영) D1 에 생성. 없으면 로컬(.wrangler) D1.
-//   --display 표시 이름(선택).
-//
-// 해싱은 src/lib/auth/password.ts 와 동일 알고리즘·포맷(pbkdf2$iter$salt$hash)이라 로그인 검증과 호환된다.
+// 비밀번호는 인자로 받지 않는다(셸 히스토리·프로세스 목록에 남는다). 터미널이면 숨김 입력,
+// 아니면 환경변수 TCN_USER_PASSWORD, 그것도 없으면 표준입력 첫 줄. 정책은 src/lib/auth/password-policy.ts.
+// 해시 포맷은 src/lib/auth/password.ts 와 같다(pbkdf2$iter$salt$hash).
 import { webcrypto as crypto } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -32,10 +24,8 @@ const WRANGLER = path.join(
   'wrangler',
 );
 
-// src/lib/auth/password.ts 의 ITERATIONS 와 같은 값이어야 한다. 저장 포맷이 자기서술형이라
-// 값이 갈라져도 로그인 검증은 통과하고, 대신 이 스크립트로 발급한 계정만 로그인 때 다른 작업량을
-// 써서 Workers 무료 플랜 CPU 10ms 한도를 넘길 수 있다 — 배경은 password.ts 주석 참고.
-// 두 값이 같음은 src/lib/auth/password-script-parity.test.ts 가 잠근다.
+// password.ts 의 ITERATIONS 와 같아야 한다(password-script-parity.test.ts 가 잠근다).
+// 갈라지면 이 스크립트로 만든 계정만 로그인 CPU 가 달라진다.
 const ITERATIONS = 50_000;
 const textEncoder = new TextEncoder();
 const toBase64 = (bytes) => Buffer.from(bytes).toString('base64');

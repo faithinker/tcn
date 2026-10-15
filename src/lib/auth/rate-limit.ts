@@ -63,12 +63,11 @@ export async function getLoginLockSeconds(
 }
 
 /**
- * 실패 한 번을 모든 식별자에 센다. 한 번 호출 뒤 남은 잠금 시간(초)을 돌려준다(잠기지 않았으면 0).
+ * 실패 한 번을 모든 식별자에 센다. 남은 잠금 시간(초)을 돌려준다(잠기지 않았으면 0).
  *
- * - 이미 잠긴 식별자는 세지도, 잠금을 늘리지도 않는다. 요청이 겹쳐 들어와도 잠금이 풀리거나
- *   무한히 길어지지 않는다.
- * - 윈도가 지나도 잠금이 유효한 동안엔 윈도를 되돌리지 않는다(15분 윈도가 1시간 잠금을 풀면 안 된다).
- * - 잠금이 끝나면 새 윈도에서 다시 센다. `lock_count` 는 줄이지 않아서 다음 잠금이 더 길어진다.
+ * - 이미 잠긴 식별자는 세지도 잠금을 늘리지도 않는다.
+ * - 윈도가 지나도 잠금이 유효하면 윈도를 되돌리지 않는다.
+ * - 잠금이 끝나면 새 윈도에서 다시 센다. `lock_count` 는 줄이지 않아 다음 잠금이 더 길어진다.
  */
 export async function recordLoginFailure(
   db: D1Database,
@@ -119,9 +118,8 @@ export async function clearLoginFailures(db: D1Database, keys: readonly string[]
 }
 
 /**
- * 로그인에 성공한 뒤 계정 키를 정리한다: 실패 횟수만 0 으로 되돌리고 잠금 단계(`lock_count`)와
- * 이미 걸린 잠금은 그대로 둔다. 행을 지워 버리면 관리자가 로그인할 때마다 공격자가 쌓아 둔
- * 잠금 단계(15분 → 1시간 → …)가 처음으로 돌아가서, 단계 상승이 IP 를 돌리는 추측을 늦추지 못한다.
+ * 로그인 성공 뒤 계정 키의 실패 횟수만 0 으로 되돌린다. 행을 지우면 공격자가 쌓은 잠금 단계가 초기화되어
+ * 단계 상승이 IP 를 돌리는 추측을 늦추지 못하므로 `lock_count` 와 이미 걸린 잠금은 둔다.
  */
 export async function resetLoginAttempts(db: D1Database, keys: readonly string[]): Promise<void> {
   if (keys.length === 0) return;

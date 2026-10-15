@@ -37,10 +37,7 @@ const requireText = (value: unknown, field: string, id: string): string => {
   return value;
 };
 
-/**
- * 원시 JSON 배열을 검증한다. 실패는 빌드 타임에 즉시 던져서
- * alt·캡션 누락이 배포까지 흘러가지 않게 한다.
- */
+/** 원시 JSON 배열을 검증한다. 실패는 빌드 타임에 던져 alt·캡션 누락이 배포로 가지 않게 한다. */
 export function parseFoundingMedia(raw: unknown): FoundingMediaItem[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error('founding-media: 항목이 비어 있다');

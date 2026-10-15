@@ -1,10 +1,5 @@
-// 관리자 저작 플로우 브라우저 게이트.
-// 로그인 → 글 생성 → 본문 작성 → 이미지 업로드/캡션/정렬 → 저장 → 공개 반영 → 삭제까지
-// 실제 브라우저로 밟는다. PostEditor 구조 변경(분해 등) 전후로 이 게이트가 같은 초록이면
-// "행동 불변"이 증명된다. 전제: wrangler dev(:4321) + 로컬 D1 마이그레이션/시드.
-//
-// 멱등: 계정은 시작 시 삭제 후 재생성, 글은 마지막에 soft delete(가시 event_date 유니크
-// 인덱스는 visible 행만 대상이라 재실행 충돌 없음).
+// 관리자 저작 플로우 브라우저 게이트: 로그인 → 글 작성 → 이미지 업로드/캡션/정렬 → 저장 → 공개 반영 → 삭제.
+// 전제: wrangler dev(:4321) + 로컬 D1 마이그레이션/시드. 계정은 시작 시 재생성하고 글은 마지막에 soft delete 해 재실행해도 충돌하지 않는다.
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';

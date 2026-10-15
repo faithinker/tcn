@@ -13,10 +13,7 @@ import {
 
 const ASSET_DIR = path.resolve(import.meta.dirname, '../../assets/founding');
 
-/**
- * JPEG SOF 마커에서 해상도만 읽는다. 확대 보장을 검증하려면 마스터의 실제
- * 픽셀이 필요한데, 그 한 가지 때문에 이미지 라이브러리를 테스트에 끌어오지 않는다.
- */
+/** JPEG SOF 마커에서 해상도만 읽는다(테스트에 이미지 라이브러리를 끌어오지 않으려는 것). */
 function readJpegSize(file: string): { width: number; height: number } {
   const buf = readFileSync(file);
   let offset = 2; // SOI 건너뛰기

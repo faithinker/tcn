@@ -31,9 +31,7 @@ describe('password hashing', () => {
     expect(await verifyPassword('x', 'pbkdf2$50000$@@bad-base64@@$@@bad@@')).toBe(false);
   });
 
-  // Workers 무료 플랜은 요청당 CPU 10ms. 로그인은 PBKDF2 외에 D1 조회·세션 HMAC 으로
-  // ~3ms 를 더 쓰므로, 해시 파라미터가 이 예산을 넘지 않도록 고정한다.
-  // 이 값을 올리려면 Workers Paid 로 올리고 이 테스트를 함께 조정해야 한다.
+  // Workers 무료 플랜은 요청당 CPU 10ms. 로그인은 PBKDF2 외에 ~3ms 를 더 쓰므로 해시 파라미터가 예산을 넘지 않게 고정한다.
   it('keeps the work factor within the free-plan CPU budget', async () => {
     const hash = await hashPassword('budget check');
     const iterations = Number(hash.split('$')[1]);

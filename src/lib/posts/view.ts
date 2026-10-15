@@ -1,6 +1,4 @@
-// 공개 상세용 뷰 헬퍼: D1 post(마크다운 본문 + media 행) → 렌더 가능한 형태.
-// 본문은 admin 에디터(Tiptap→Markdown, html:false)가 만든 마크다운이므로
-// raw HTML은 이스케이프한다(에디터가 생성하지 않는 입력 = 신뢰하지 않음).
+// 공개 상세용 뷰 헬퍼: D1 post(마크다운 본문 + media 행) → 렌더 가능한 형태. 에디터(html:false)가 만든 마크다운이라도 raw HTML 은 이스케이프한다.
 import { Marked, type Token, type Tokens } from 'marked';
 
 import type { Media } from '../db/types';

@@ -2,12 +2,9 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { hashPassword, verifyPassword } from './password';
 
-// scripts/create-user.mjs 는 빌드 없이 bare node 로 실행되어야 해서 password.ts 를 import 할 수
-// 없고, PBKDF2 파라미터를 복제해 갖고 있다. 복제가 갈라져도 저장 포맷이 자기서술형이라
-// verifyPassword 는 통과한다 — 대신 발급된 계정만 로그인 때 다른 작업량을 쓰게 되고,
-// 값이 커지면 Workers 무료 플랜 CPU 10ms 예산을 넘겨 운영에서만 터진다.
-// 아래 단정이 그 조용한 갈라짐을 막는다. 예산 자체의 상한은 password.test.ts 가 잠근다
-// (이 파일: 스크립트 == password.ts / password.test.ts: password.ts <= 예산).
+// create-user.mjs 는 빌드 없이 실행돼 password.ts 를 import 못 하고 PBKDF2 파라미터를 복제한다.
+// 갈라져도 verifyPassword 는 통과하지만 발급된 계정만 로그인 CPU 가 달라져 운영에서만 터진다.
+// 예산 상한은 password.test.ts 가 잠그고, 이 파일은 스크립트 == password.ts 를 잠근다.
 const SCRIPT_PATH = new URL('../../../scripts/create-user.mjs', import.meta.url);
 const SCRIPT = readFileSync(SCRIPT_PATH, 'utf8');
 

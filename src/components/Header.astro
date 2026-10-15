@@ -280,9 +280,7 @@ const isExact = (href: string) => {
     else closeDropdowns();
   });
 
-  // 표준 UX: 헤더에 붙은 드롭다운 메뉴는 페이지 스크롤 시 닫는다.
-  // 오픈 지점 대비 4px 초과 이동 시에만 닫아, 모바일 URL바 접힘·바운스가
-  // 유발하는 미세 스크롤로 메뉴가 열리자마자 닫히는 것을 막는다.
+  // 헤더 드롭다운은 스크롤 시 닫되, 오픈 지점 대비 4px 초과 이동에만 닫아 모바일 URL바 접힘의 미세 스크롤로 닫히지 않게 한다.
   window.addEventListener(
     'scroll',
     () => {

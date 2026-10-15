@@ -1,8 +1,4 @@
-// 질문 등록 rate limiter 의 SQL 의미론을 실제 D1 에서 검증한다.
-//
-// security.test.ts 는 D1 을 목킹하고 쿼리 문자열에 'short_attempts < 3' 이 들어 있는지만
-// 확인한다. 단기/일일 두 윈도가 실제로 어떻게 리셋되고 어느 쪽 Retry-After 가 이기는지는
-// SQL 안에서 결정되므로 목으로는 닿지 않는다.
+// 질문 등록 rate limiter 의 SQL 의미론(단기/일일 윈도 리셋, Retry-After 선택)을 실제 SQLite 에서 검증한다.
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 // security.ts -> auth/guard.ts 가 워커 전역 env 를 끌어온다. rate limiter 는 쓰지 않는다.

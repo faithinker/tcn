@@ -98,9 +98,8 @@ export const POST: APIRoute = async ({ request, url }) => {
   const [accountKey, ipKey] = await getLoginRateLimitKeys(request, username);
   const secret = getSessionSecret();
 
-  // 이 계정에 로그인해 본 적 있는 브라우저(서명된 신뢰 기기 쿠키)는 계정 단위 잠금 대신 기기 단위 한도를
-  // 쓴다. 계정 키는 IP 와 무관해서 누구나 걸 수 있는데, 그걸로 실제 관리자까지 쫓겨나면 안 되기 때문이다.
-  // 쿠키는 비밀번호를 대신하지 않는다 — 비밀번호와 챌린지는 그대로 요구하고, 기기 한도와 IP 한도도 계속 적용된다.
+  // 이 계정에 로그인해 본 브라우저(서명된 신뢰 기기 쿠키)는 계정 잠금 대신 기기 단위 한도를 쓴다.
+  // 계정 키는 IP 와 무관해 누구나 걸 수 있어 실제 관리자가 쫓겨나면 안 된다. 비밀번호·챌린지·IP 한도는 그대로 적용된다.
   const trusted = await verifyDeviceToken(readDeviceToken(request), accountKey, secret);
   const deviceKey = trusted ? await deviceRateLimitKey(trusted.deviceId) : null;
   const limitKeys = deviceKey ? [deviceKey, ipKey] : [accountKey, ipKey];
@@ -131,9 +130,8 @@ export const POST: APIRoute = async ({ request, url }) => {
     return Response.json({ ok: false, error: 'invalid_credentials' }, { status: 401 });
   }
 
-  // 성공 정리. IP·기기 카운터는 지우지만 계정 키는 잠금 단계를 보존한다 — 관리자가 로그인할 때마다
-  // 공격자가 쌓은 단계가 초기화되면 단계 상승이 의미가 없다. 신뢰 기기로 들어왔다면 계정 행은 아예
-  // 건드리지 않는다(잠금을 우회한 것이지 푼 것이 아니다). 새 기기에서 성공하면 실패 횟수만 비운다.
+  // 성공 정리. IP·기기 카운터만 지우고 계정 키는 잠금 단계를 보존한다(초기화되면 단계 상승이 무의미하다).
+  // 신뢰 기기로 들어왔으면 계정 행은 건드리지 않는다(잠금을 우회한 것이지 푼 것이 아니다).
   if (deviceKey) {
     await clearLoginFailures(db, [ipKey, deviceKey]);
   } else {

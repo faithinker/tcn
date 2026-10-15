@@ -1,7 +1,5 @@
-// Cloudflare Turnstile 서버 검증. D1 에 의존하지 않는다 — 공개 Q&A 와 관리자 로그인이 함께 쓴다.
-//
-// 토큰은 Cloudflare 가 1회용으로 보증한다(같은 토큰을 두 번 검증하면 `timeout-or-duplicate`).
-// 그래서 로그인은 이 검사만으로 충분하고, Q&A 는 그 위에 자체 재사용 방지 테이블을 한 겹 더 둔다.
+// Cloudflare Turnstile 서버 검증(D1 비의존, Q&A 와 관리자 로그인 공용). 토큰은 1회용이라 로그인은 이 검사로 충분하고,
+// Q&A 는 그 위에 자체 재사용 방지 테이블을 둔다.
 
 const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const MAX_TOKEN_LENGTH = 2_048;

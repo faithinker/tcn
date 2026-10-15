@@ -1,11 +1,7 @@
-// 공개 페이지와 라우트 계약 검증.
-// 목적: 각 라우트를 375/768/1280에서 렌더 → (1)콘솔/페이지 에러 (2)가로 오버플로 (3)HTTP 상태 검사 + 스크린샷 저장.
-//       + 라우트 계약(301·404) 검사 — 리다이렉트를 따라가지 않고 상태코드 자체를 단언한다.
-// 전제: preview/dev 서버가 BASE_URL(기본 localhost:4321)에 떠 있어야 함.
-// 사용: BASE_URL=http://localhost:4321 ROUTES=/,/about,/people node scripts/verify.mjs
-// 종료코드: 실패 1건 이상이면 1, 모두 통과하면 0.
-// 산출물: verify/<route>-<width>.png.
-// 폰트/네트워크 로드 대기 후 촬영. 셀프호스팅 폰트라 외부 요청 없음.
+// 공개 페이지·라우트 계약 검증. 각 라우트를 375/768/1280 에서 렌더해 콘솔/페이지 에러, 가로 오버플로, HTTP 상태를 검사하고 스크린샷을 저장한다.
+// 301·404 라우트 계약은 리다이렉트를 따르지 않고 상태코드 자체를 단언한다.
+// 전제: BASE_URL(기본 localhost:4321)에 preview/dev 서버. 사용: BASE_URL=... ROUTES=/,/about node scripts/verify.mjs
+// 실패 1건 이상이면 종료코드 1. 산출물: verify/<route>-<width>.png.
 
 import { mkdirSync } from 'node:fs';
 
@@ -83,9 +79,7 @@ for (const route of ROUTES) {
       overflow = false,
       note = '';
     try {
-      // CI에서는 이미지·Worker asset 하나가 오래 유지되면 networkidle이 오지 않아
-      // 정상 렌더된 페이지도 timeout 처리된다. DOM 응답을 기준으로 진행하고,
-      // idle 대기는 안정화 기회로만 사용한다.
+      // networkidle 은 CI 에서 오지 않을 수 있어 DOM 응답 기준으로 진행하고, idle 대기는 안정화 용도로만 쓴다.
       const resp = await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       status = resp ? resp.status() : 0;
