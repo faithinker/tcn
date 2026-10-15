@@ -139,9 +139,31 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
+      # Dependabot PR 은 알림 시크릿이 없어, 시크릿이 있을 때만 알림을 보낸다.
+      - name: Detect notification secrets
+        id: notify
+        if: always()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -n "$TELEGRAM_TOKEN" ] && [ -n "$TELEGRAM_TO" ]; then
+            echo 'telegram=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'telegram=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Telegram 시크릿 미설정 — 알림을 건너뜁니다.'
+          fi
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            echo 'discord=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'discord=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Discord 웹훅 미설정 — 알림을 건너뜁니다.'
+          fi
+
       - name: Telegram
         uses: appleboy/telegram-action@221e6b684967abe813051ee4a37dd61770a83ad3 # v1.0.1
-        if: always()
+        if: always() && steps.notify.outputs.telegram == 'true'
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
@@ -155,7 +177,7 @@ jobs:
 
       - name: Discord
         uses: sarisia/actions-status-discord@eb045afee445dc055c18d3d90bd0f244fd062708 # v1.16.0
-        if: always()
+        if: always() && steps.notify.outputs.discord == 'true'
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
