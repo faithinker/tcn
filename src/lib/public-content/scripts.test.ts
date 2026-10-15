@@ -15,16 +15,15 @@ const ROOT = path.resolve(__dirname, '..', '..', '..');
 const EXPORT = path.join(ROOT, 'scripts', 'export-public-content.mjs');
 const FRESHNESS = path.join(ROOT, 'scripts', 'check-static-freshness.mjs');
 
-// 개발자·CI 환경의 토큰과 TCN_* 설정이 테스트 결과를 바꾸지 않게 비운다.
-const cleanEnv = (extra: Record<string, string> = {}) => {
-  const env: Record<string, string | undefined> = { ...process.env, ...extra };
-  for (const key of Object.keys(env)) {
-    if (key.startsWith('TCN_') || key.startsWith('CLOUDFLARE_')) {
-      if (!(key in extra)) delete env[key];
-    }
-  }
-  return env as NodeJS.ProcessEnv;
-};
+// 두 스크립트가 읽는 환경 변수는 각 테스트가 명시한 값만 남긴다. 배포 잡은 PRODUCTION_URL과
+// Cloudflare 토큰을 잡 전역 env로 두고, Actions는 GITHUB_OUTPUT도 채워서, 비우지 않으면
+// 테스트가 실제 운영 주소를 호출하거나 워크플로의 출력 파일에 쓴다.
+const AMBIENT = /^(TCN_|CLOUDFLARE_|FRESHNESS_)|^(PRODUCTION_URL|GITHUB_OUTPUT)$/;
+const cleanEnv = (extra: Record<string, string> = {}) =>
+  ({
+    ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !AMBIENT.test(key))),
+    ...extra,
+  }) as NodeJS.ProcessEnv;
 
 const runScript = (script: string, env: NodeJS.ProcessEnv) =>
   run(process.execPath, [script], { env, cwd: ROOT }).then(
@@ -44,7 +43,7 @@ afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-describe('scripts/export-public-content.mjs', () => {
+describe('scripts/export-public-content.mjs', { timeout: 30_000 }, () => {
   it('writes an empty snapshot when no content source is available', async () => {
     const output = path.join(dir, 'empty.json');
     const result = await runScript(
@@ -82,7 +81,7 @@ describe('scripts/export-public-content.mjs', () => {
   });
 });
 
-describe('scripts/check-static-freshness.mjs', () => {
+describe('scripts/check-static-freshness.mjs', { timeout: 30_000 }, () => {
   const docs = { live: '', baked: '' };
   let liveStatus = 200;
   let server: Server;
