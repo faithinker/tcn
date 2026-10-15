@@ -27,6 +27,7 @@ const {
 vi.mock('../auth', () => ({
   buildSessionCookie,
   createSessionToken,
+  DUMMY_PASSWORD_HASH: 'dummy-hash',
   getSessionSecret,
   verifyPassword,
 }));
@@ -82,6 +83,18 @@ describe('POST /api/auth/login', () => {
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ ok: false, error: 'invalid_credentials' });
     expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+  });
+
+  it('does the same password work for an unknown username so timing cannot reveal it', async () => {
+    getUserByUsername.mockResolvedValue(null);
+    verifyPassword.mockResolvedValue(false);
+
+    const response = await POST!(context());
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ ok: false, error: 'invalid_credentials' });
+    expect(verifyPassword).toHaveBeenCalledWith('secret', 'dummy-hash');
+    expect(recordLoginFailure).toHaveBeenCalled();
   });
 
   it('answers 429 with the new lock time on the failure that earns the lock', async () => {

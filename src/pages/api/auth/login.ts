@@ -3,6 +3,7 @@ import { getDB, getUserByUsername } from '../../../lib/db';
 import {
   buildSessionCookie,
   createSessionToken,
+  DUMMY_PASSWORD_HASH,
   getSessionSecret,
   verifyPassword,
 } from '../../../lib/auth';
@@ -51,7 +52,8 @@ export const POST: APIRoute = async ({ request, url }) => {
   if (lockedFor > 0) return lockedResponse(lockedFor);
 
   const user = await getUserByUsername(db, username);
-  const valid = user ? await verifyPassword(password, user.passwordHash) : false;
+  // 없는 아이디도 같은 비용의 해시 검증을 돌려, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다.
+  const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
     const lockedNow = await recordLoginFailure(db, rateLimitKeys);
     if (lockedNow > 0) return lockedResponse(lockedNow);
