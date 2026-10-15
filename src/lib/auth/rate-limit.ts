@@ -132,3 +132,14 @@ export async function resetLoginAttempts(db: D1Database, keys: readonly string[]
     .bind(...keys)
     .run();
 }
+
+// 일주일 동안 갱신이 없는 행은 더 이상 쓸모가 없다 — 잠금은 24시간이 상한이라 이미 풀렸고, 잠금 단계
+// 기억(lock_count)도 이 기간이 지나면 잊는다. 공격으로 쌓이는 행이 무한히 늘지 않게 한다.
+const PRUNE_AFTER_SECONDS = 7 * 24 * 60 * 60;
+
+export async function pruneLoginRateLimits(db: D1Database, at = nowSeconds()): Promise<void> {
+  await db
+    .prepare('delete from auth_rate_limits where updated_at < ?1')
+    .bind(at - PRUNE_AFTER_SECONDS)
+    .run();
+}

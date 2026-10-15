@@ -23,12 +23,17 @@ import {
   clearLoginFailures,
   getLoginLockSeconds,
   getLoginRateLimitKeys,
+  pruneLoginRateLimits,
   recordLoginFailure,
   resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
 import { TurnstileError } from '../../../lib/turnstile';
 
 export const prerender = false;
+
+// 실패가 이어지는 동안엔 성공 경로(관리자 로그인)가 거의 안 돌아 정리가 안 된다. 실패 50번에 한 번쯤
+// 오래된 행을 치워서 공격으로 쌓이는 행이 무한히 늘지 않게 한다.
+const PRUNE_ODDS_ON_FAILURE = 1 / 50;
 
 interface Credentials {
   username: string;
@@ -108,7 +113,20 @@ export const POST: APIRoute = async ({ request, url }) => {
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
     const lockedNow = await recordLoginFailure(db, limitKeys);
-    if (lockedNow > 0) return lockedResponse(lockedNow);
+    if (Math.random() < PRUNE_ODDS_ON_FAILURE) await pruneLoginRateLimits(db);
+    if (lockedNow > 0) {
+      // 새 잠금이 걸린 순간만 남긴다(Workers 관측성에서 검색 가능). 아이디와 IP 는 기록하지 않고,
+      // 같은 계정을 겨냥한 시도를 묶어 볼 수 있게 계정 해시의 앞부분만 쓴다.
+      console.warn(
+        JSON.stringify({
+          event: 'login_locked',
+          retryAfter: lockedNow,
+          trustedDevice: deviceKey !== null,
+          account: accountKey.slice(0, 20),
+        }),
+      );
+      return lockedResponse(lockedNow);
+    }
     // 동일 응답으로 사용자 존재 여부 누설 방지.
     return Response.json({ ok: false, error: 'invalid_credentials' }, { status: 401 });
   }
@@ -122,6 +140,7 @@ export const POST: APIRoute = async ({ request, url }) => {
     await clearLoginFailures(db, [ipKey]);
     await resetLoginAttempts(db, [accountKey]);
   }
+  await pruneLoginRateLimits(db);
   const secure = url.protocol === 'https:';
   const session = await createSessionToken(user.id, secret, {
     sessionVersion: user.sessionVersion,

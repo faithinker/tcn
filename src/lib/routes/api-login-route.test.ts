@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   buildDeviceCookie,
@@ -13,6 +13,7 @@ const {
   getLoginRateLimitKeys,
   getSessionSecret,
   getUserByUsername,
+  pruneLoginRateLimits,
   readDeviceToken,
   recordLoginFailure,
   requireLoginChallenge,
@@ -32,6 +33,7 @@ const {
   getLoginRateLimitKeys: vi.fn(() => Promise.resolve(['account:key', 'ip:key'])),
   getSessionSecret: vi.fn(() => 'secret'),
   getUserByUsername: vi.fn(),
+  pruneLoginRateLimits: vi.fn(),
   readDeviceToken: vi.fn(),
   recordLoginFailure: vi.fn(),
   requireLoginChallenge: vi.fn(),
@@ -60,6 +62,7 @@ vi.mock('../auth/rate-limit', () => ({
   clearLoginFailures,
   getLoginLockSeconds,
   getLoginRateLimitKeys,
+  pruneLoginRateLimits,
   recordLoginFailure,
   resetLoginAttempts,
 }));
@@ -95,6 +98,7 @@ describe('POST /api/auth/login', () => {
     recordLoginFailure.mockResolvedValue(0);
     clearLoginFailures.mockResolvedValue(undefined);
     resetLoginAttempts.mockResolvedValue(undefined);
+    pruneLoginRateLimits.mockResolvedValue(undefined);
     requireLoginChallenge.mockResolvedValue(undefined);
     readDeviceToken.mockReturnValue(null);
     verifyDeviceToken.mockResolvedValue(null);
@@ -357,6 +361,67 @@ describe('POST /api/auth/login', () => {
 
       expect(createDeviceToken).not.toHaveBeenCalled();
       expect(response.headers.getSetCookie()).toEqual([]);
+    });
+  });
+
+  describe('housekeeping and lock logging', () => {
+    const user = { id: 'user-1', passwordHash: 'hash', sessionVersion: 1 };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('prunes stale rate-limit rows after every successful sign-in', async () => {
+      getUserByUsername.mockResolvedValue({ ...user, username: 'editor', displayName: 'Editor' });
+      verifyPassword.mockResolvedValue(true);
+
+      await POST!(context());
+
+      expect(pruneLoginRateLimits).toHaveBeenCalledWith({});
+    });
+
+    it('prunes on roughly one failure in fifty so an attack cannot grow the table unbounded', async () => {
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.01);
+      await POST!(context());
+      expect(pruneLoginRateLimits).toHaveBeenCalledTimes(1);
+
+      pruneLoginRateLimits.mockClear();
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      await POST!(context());
+      expect(pruneLoginRateLimits).not.toHaveBeenCalled();
+    });
+
+    it('logs a structured event when a failure earns a lock, without the username or IP', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+      recordLoginFailure.mockResolvedValue(900);
+
+      await POST!(context());
+
+      expect(warn).toHaveBeenCalledOnce();
+      const [message] = warn.mock.calls[0] as [string];
+      expect(JSON.parse(message)).toEqual({
+        event: 'login_locked',
+        retryAfter: 900,
+        trustedDevice: false,
+        account: 'account:key',
+      });
+      expect(message).not.toContain('editor');
+      expect(message).not.toContain('203.0.113.10');
+    });
+
+    it('stays quiet for an ordinary wrong password', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      getUserByUsername.mockResolvedValue(user);
+      verifyPassword.mockResolvedValue(false);
+
+      await POST!(context());
+
+      expect(warn).not.toHaveBeenCalled();
     });
   });
 });

@@ -8,6 +8,7 @@ import { openTestD1, type TestD1 } from '../../test-support/d1';
 import {
   clearLoginFailures,
   getLoginLockSeconds,
+  pruneLoginRateLimits,
   recordLoginFailure,
   resetLoginAttempts,
 } from './rate-limit';
@@ -198,6 +199,31 @@ describe('login rate limiting against a real D1', () => {
       await expect(recordLoginFailure(db(), ['account:a'], T0 + 10)).resolves.toBe(0);
     }
     await expect(recordLoginFailure(db(), ['account:a'], T0 + 10)).resolves.toBe(LOCKS[0]);
+  });
+
+  it('prunes rows that have been quiet for a week and keeps the rest', async () => {
+    const DAY = 24 * 60 * 60;
+    await recordLoginFailure(db(), ['account:old'], T0);
+    await recordLoginFailure(db(), ['account:recent'], T0 + 8 * DAY);
+    await failUntilLocked(['account:locked'], T0 + 8 * DAY);
+
+    await pruneLoginRateLimits(db(), T0 + 8 * DAY);
+
+    expect(await rowFor('account:old')).toBeNull();
+    expect(await rowFor('account:recent')).not.toBeNull();
+    // 잠금은 24시간 상한이라 7일 지난 행이 아직 잠겨 있을 수 없다 — 잠긴 행은 최근 갱신이라 남는다.
+    expect(await rowFor('account:locked')).not.toBeNull();
+  });
+
+  it('keeps a row at exactly the cutoff and drops one second older', async () => {
+    const WEEK = 7 * 24 * 60 * 60;
+    await recordLoginFailure(db(), ['account:edge'], T0);
+    await recordLoginFailure(db(), ['account:older'], T0 - 1);
+
+    await pruneLoginRateLimits(db(), T0 + WEEK);
+
+    expect(await rowFor('account:edge')).not.toBeNull();
+    expect(await rowFor('account:older')).toBeNull();
   });
 
   it('is safe to call with no identifiers', async () => {
