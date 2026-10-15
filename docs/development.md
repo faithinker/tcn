@@ -119,10 +119,10 @@ npm run test:qna:d1    # Q&A 유니크·CHECK 제약이 실제로 거부하는�
 
 ## AI 에이전트 설정
 
-Codex CLI로 이 저장소를 작업할 때는 프로필을 지정해서 실행합니다.
+Codex CLI로 이 저장소를 작업할 때는 프로필을 지정해서 실행합니다. 작성자 머신의 `~/.zshrc`에는 작업 디렉터리에 따라 `codex`에 `--profile web`(이 저장소) 또는 `--profile ios`(iOS 프로젝트)를 자동으로 붙이는 함수가 있으므로 따로 붙이지 않습니다(중복 지정하면 오류). 함수가 없는 환경에서는 직접 붙입니다.
 
 ```bash
-codex --profile tcn
+codex --profile web
 ```
 
-저장소 로컬 설정은 `.codex/config.toml`입니다. 웹 전용 저장소라 iOS·Figma·Jira 계열 도구는 여기서 꺼 둡니다. 켜고 끄는 도구의 전체 목록과 Claude Code 쪽 설정은 [`AGENTS.md`](../AGENTS.md)의 "Tool scope (web vs iOS)" 섹션이 단일 원천이며, Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 정책을 따릅니다.
+MCP 설정은 저장소 로컬 `.codex/config.toml`에 있습니다. 웹 전용 저장소라 Cloudflare·Astro 문서 MCP는 여기서만 켜고, iOS·Figma·Jira·Postman 계열은 여기서 꺼 둡니다. 스킬과 Cloudflare 플러그인 설정은 프로젝트 설정에서 무시되므로 `~/.codex/web.config.toml` 프로필에 두며(iOS용은 `ios.config.toml`), 이 파일은 머신 로컬이라 저장소에 포함되지 않습니다. 반대로 iOS 프로젝트에서는 웹·인프라 도구가 전역 설정에서 꺼져 있어 로드되지 않습니다. 켜고 끄는 도구의 전체 목록과 Claude Code 쪽 설정은 [`AGENTS.md`](../AGENTS.md)의 "Tool scope (web vs iOS)" 섹션이 단일 원천이며, Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 정책을 따릅니다.

@@ -28,6 +28,14 @@ Use the lightest workflow that fits the task. Do not run overlapping methodologi
 - Prefer `$qa-only` for report-only browser QA and `$browse` for focused browser verification.
 - Use Impeccable for UI critique, design-system consistency, accessibility-aware visual polish, and deliberate frontend redesign work. Do not combine Impeccable and gstack design review in the same pass unless the user requests both.
 
+## Tool scope (web vs iOS)
+
+This repository is web-only (Astro + Cloudflare). iOS tooling stays installed globally for iOS projects but must stay off here. The reverse also holds: web/infra tools (Cloudflare, Astro docs, Playwright, TypeScript LSP and the Cloudflare/Workers skills) are opt-in and enabled only in this repository; they are off globally so iOS projects do not load them. Chrome DevTools and Context7 stay global. Never enable or call the out-of-scope tools below; if one shows up in a session, report it and fix the config instead of using it. A new web/infra tool must be registered opt-in here, not globally.
+
+- In scope: MCP `context7`, `astro-docs`, `chrome-devtools`, `playwright`, `cloudflare` (plugin) / `cloudflare-*` (Codex), `markitdown`; the web skills in `.claude/skills` and `.agents/skills` (Impeccable, accessibility, core-web-vitals, web-design-guidelines, Tiptap).
+- Out of scope: MCP `apple-docs`, `XcodeBuildMCP`, `mobile-mcp`, `figma-console`, `figma-remote-mcp`, `mcp-atlassian`, `postman`; the Figma plugin; Swift plugins; iOS and App Store Connect skills (`ios-*`, `asc-*`, `swiftui-skills`, `migrating-to-swift-concurrency`).
+- Enforcement is per tool and must stay in sync with this list. Claude Code: `~/.claude/settings.json` keeps the web/infra plugin and skills off globally, and `.claude/settings.local.json` (gitignored; `deniedMcpServers`, `enabledPlugins`, `skillOverrides`) turns them on here and blocks the out-of-scope tools, so a fresh clone relies on this section. Codex: MCP in `.codex/config.toml` (tracked; per-server `enabled`), skills and the Cloudflare plugin in the machine-local profile `~/.codex/web.config.toml` (iOS projects use its counterpart `~/.codex/ios.config.toml`) (`skills.config`, `plugins`; a project config ignores skill settings), with the web/infra defaults off in `~/.codex/config.toml`, so launch Codex as `codex --profile web`. On a fresh clone the profile is absent, so this section is the source of truth.
+
 ## Mutating and external workflows
 
 - Never invoke `$qa`, `$design-review`, `$ship`, `$land-and-deploy`, or `$canary` unless the user explicitly requests the corresponding code mutation, commits, push, pull request, merge, deployment, or production verification.
