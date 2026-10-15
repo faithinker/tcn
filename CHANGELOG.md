@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Chore
 - Reformatted `docs/superpowers/specs/2026-10-12-boards-and-roles-design.md` with Prettier, which had made `npm run format:check` fail. Only the widths of the table separator rows changed. (Branch: `perf/static-public-pages`) - Implemented by Claude
+- Pointed `refresh-static-content.yml` at `https://thetcn.org` instead of the `workers.dev` address, which the security hardening work is going to turn off. Checked on a GitHub runner by dispatching the workflow from this branch: with Bot Fight Mode on, `thetcn.org` answered the runner with 403 (run 38762335771) and the workflow failed closed without deploying; after Bot Fight Mode was switched off in the dashboard, the same workflow reported the pages up to date (run 38762779254). Bot Fight Mode therefore has to stay off while a workflow on a GitHub runner polls the custom domain, which also applies to the deploy smoke test once it moves off `workers.dev`; switching it off left JavaScript detections (`enable_js`), which were turned on together with it, on. The deploy smoke test still uses `workers.dev`, and moving it belongs with `workers_dev:false` on `security/hardening`. (Branch: `fix/refresh-workflow-zone-url`) - Implemented by Claude
 
 ## [2026-10-15]
 
