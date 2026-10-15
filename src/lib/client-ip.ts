@@ -17,7 +17,7 @@ function parseIpv6(text: string): number[] | null {
   if (!/^[0-9a-f:.]+$/i.test(address)) return null;
 
   // 끝이 IPv4(`::ffff:203.0.113.10`)면 16진 그룹 둘로 바꾼다.
-  const embedded = address.match(/(\d+\.\d+\.\d+\.\d+)$/);
+  const embedded = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(address);
   if (embedded) {
     const octets = parseIpv4(embedded[1]);
     if (!octets) return null;
@@ -35,10 +35,12 @@ function parseIpv6(text: string): number[] | null {
   if (halves.length === 2 && head.length + tail.length > 7) return null;
 
   const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
-  const groups = [...head, ...Array<string>(fill).fill('0'), ...tail];
+  const groups = [...head, ...new Array<string>(fill).fill('0'), ...tail];
   if (groups.length !== 8) return null;
 
-  const values = groups.map((group) => (/^[0-9a-f]{1,4}$/i.test(group) ? parseInt(group, 16) : -1));
+  const values = groups.map((group) =>
+    /^[0-9a-f]{1,4}$/i.test(group) ? Number.parseInt(group, 16) : -1,
+  );
   return values.includes(-1) ? null : values;
 }
 

@@ -56,10 +56,11 @@ function isRepetitive(value: string): boolean {
 // 123456789012 · 987654321098 · abcdefghijkl 처럼 코드값이 한 칸씩 오르거나 내리는 문자열.
 function isSequential(value: string): boolean {
   if (value.length < 2) return false;
-  const step = value.charCodeAt(1) - value.charCodeAt(0);
+  const code = (index: number) => value.codePointAt(index) ?? 0;
+  const step = code(1) - code(0);
   if (Math.abs(step) !== 1) return false;
   for (let index = 2; index < value.length; index += 1) {
-    if (value.charCodeAt(index) - value.charCodeAt(index - 1) !== step) return false;
+    if (code(index) - code(index - 1) !== step) return false;
   }
   return true;
 }

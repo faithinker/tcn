@@ -31,9 +31,20 @@ import { TurnstileError } from '../../../lib/turnstile';
 
 export const prerender = false;
 
-// 실패가 이어지는 동안엔 성공 경로(관리자 로그인)가 거의 안 돌아 정리가 안 된다. 실패 50번에 한 번쯤
-// 오래된 행을 치워서 공격으로 쌓이는 행이 무한히 늘지 않게 한다.
-const PRUNE_ODDS_ON_FAILURE = 1 / 50;
+// 실패가 이어지는 동안엔 성공 경로(관리자 로그인)가 거의 안 돌아 정리가 안 된다. 50초에 한 초씩 그 초에
+// 들어온 실패가 오래된 행을 치워서 공격으로 쌓이는 행이 무한히 늘지 않게 한다. 난수가 아니라 시각을
+// 쓰는 건 이 판단이 보안 목적이 아니기 때문이고, 같은 시각에는 같은 답이라 테스트도 결정적이다.
+const PRUNE_EVERY_SECONDS = 50;
+
+function pruneIsDue(): boolean {
+  return Math.floor(Date.now() / 1000) % PRUNE_EVERY_SECONDS === 0;
+}
+
+// 문자열이 아닌 값(객체·배열·숫자)을 String() 으로 바꾸면 "[object Object]" 같은 값이 아이디나 비밀번호로
+// 쓰이므로 누락으로 취급한다.
+function text(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
 
 interface Credentials {
   username: string;
@@ -50,17 +61,17 @@ async function readCredentials(request: Request): Promise<Credentials> {
       turnstileToken?: unknown;
     };
     return {
-      username: String(body.username ?? ''),
-      password: String(body.password ?? ''),
-      turnstileToken: String(body.turnstileToken ?? ''),
+      username: text(body.username),
+      password: text(body.password),
+      turnstileToken: text(body.turnstileToken),
     };
   }
   const form = await request.formData().catch(() => new FormData());
   return {
-    username: String(form.get('username') ?? ''),
-    password: String(form.get('password') ?? ''),
+    username: text(form.get('username')),
+    password: text(form.get('password')),
     // 위젯이 폼에 직접 넣는 표준 필드 이름.
-    turnstileToken: String(form.get('cf-turnstile-response') ?? ''),
+    turnstileToken: text(form.get('cf-turnstile-response')),
   };
 }
 
@@ -112,7 +123,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
     const lockedNow = await recordLoginFailure(db, limitKeys);
-    if (Math.random() < PRUNE_ODDS_ON_FAILURE) await pruneLoginRateLimits(db);
+    if (pruneIsDue()) await pruneLoginRateLimits(db);
     if (lockedNow > 0) {
       // 새 잠금이 걸린 순간만 남긴다(Workers 관측성에서 검색 가능). 아이디와 IP 는 기록하지 않고,
       // 같은 계정을 겨냥한 시도를 묶어 볼 수 있게 계정 해시의 앞부분만 쓴다.

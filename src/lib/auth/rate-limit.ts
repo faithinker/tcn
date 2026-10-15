@@ -6,7 +6,8 @@ const WINDOW_SECONDS = 15 * 60;
 
 // 잠금은 다시 얻을 때마다 길어진다. IP 를 바꿔 가며 한 계정을 찍는 추측을 하루 몇 번으로 줄인다.
 // 마지막 값이 상한이다.
-const LOCK_SECONDS = [15 * 60, 60 * 60, 4 * 60 * 60, 24 * 60 * 60] as const;
+const MAX_LOCK_SECONDS = 24 * 60 * 60;
+const LOCK_SECONDS = [15 * 60, 60 * 60, 4 * 60 * 60, MAX_LOCK_SECONDS] as const;
 
 const MAX_ATTEMPTS = 5;
 // 신뢰 기기(`device:` 식별자)는 오타가 잦은 실제 사용자라 한도를 넉넉히 준다.
@@ -14,7 +15,7 @@ const DEVICE_MAX_ATTEMPTS = 10;
 
 const LOCK_DURATION_SQL = `case lock_count + 1 ${LOCK_SECONDS.map(
   (seconds, index) => `when ${index + 1} then ${seconds}`,
-).join(' ')} else ${LOCK_SECONDS[LOCK_SECONDS.length - 1]} end`;
+).join(' ')} else ${MAX_LOCK_SECONDS} end`;
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);

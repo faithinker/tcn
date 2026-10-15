@@ -169,6 +169,40 @@ describe('POST /api/auth/login', () => {
       await expect(POST!(context())).rejects.toThrow('boom');
     });
 
+    it('treats non-string credentials as missing instead of turning them into text', async () => {
+      for (const body of [
+        { username: { a: 1 }, password: 'secret' },
+        { username: 'editor', password: ['secret'] },
+        { username: 12_345, password: 'secret' },
+      ]) {
+        const request = new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ...body, turnstileToken: 'turnstile-token' }),
+        });
+
+        const response = await POST!(context(request));
+
+        expect(response.status).toBe(400);
+        expect(await response.json()).toEqual({ ok: false, error: 'missing_credentials' });
+      }
+      expect(requireLoginChallenge).not.toHaveBeenCalled();
+      expect(getUserByUsername).not.toHaveBeenCalled();
+    });
+
+    it('does not turn a non-string challenge token into text either', async () => {
+      requireLoginChallenge.mockRejectedValue(new TurnstileError('turnstile_failed'));
+      const request = new Request('https://tcn.example/api/auth/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ username: 'editor', password: 'secret', turnstileToken: { x: 1 } }),
+      });
+
+      await POST!(context(request));
+
+      expect(requireLoginChallenge).toHaveBeenCalledWith(expect.objectContaining({ token: '' }));
+    });
+
     it('rejects missing credentials before spending a Siteverify call', async () => {
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
@@ -369,6 +403,7 @@ describe('POST /api/auth/login', () => {
 
     afterEach(() => {
       vi.restoreAllMocks();
+      vi.useRealTimers();
     });
 
     it('prunes stale rate-limit rows after every successful sign-in', async () => {
@@ -380,16 +415,17 @@ describe('POST /api/auth/login', () => {
       expect(pruneLoginRateLimits).toHaveBeenCalledWith({});
     });
 
-    it('prunes on roughly one failure in fifty so an attack cannot grow the table unbounded', async () => {
+    it('prunes during one second in fifty so an attack cannot grow the table unbounded', async () => {
       getUserByUsername.mockResolvedValue(user);
       verifyPassword.mockResolvedValue(false);
+      vi.useFakeTimers({ toFake: ['Date'] });
 
-      vi.spyOn(Math, 'random').mockReturnValue(0.01);
+      vi.setSystemTime(100_000); // 100 s, a multiple of 50
       await POST!(context());
       expect(pruneLoginRateLimits).toHaveBeenCalledTimes(1);
 
       pruneLoginRateLimits.mockClear();
-      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      vi.setSystemTime(101_000);
       await POST!(context());
       expect(pruneLoginRateLimits).not.toHaveBeenCalled();
     });

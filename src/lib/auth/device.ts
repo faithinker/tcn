@@ -82,7 +82,8 @@ export async function verifyDeviceToken(
 
 /** 기기 단위 레이트리밋 식별자. 원본 기기 id 는 저장하지 않는다. */
 export async function deviceRateLimitKey(deviceId: string): Promise<string> {
-  return `device:${bytesToHex(await sha256(`device:${deviceId}`))}`;
+  const digest = bytesToHex(await sha256(`device:${deviceId}`));
+  return `device:${digest}`;
 }
 
 // 로그인 엔드포인트에만 실려 가게 Path 를 좁히고, 사이트 내 이동에서만 보내도록 Strict 로 둔다.
