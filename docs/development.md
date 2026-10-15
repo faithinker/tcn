@@ -16,7 +16,7 @@
 
 - **Cloudflare Workers** - `@astrojs/cloudflare` 어댑터로 SSR을 Worker에서 실행. 공개 페이지·API·어드민이 전부 이 워커 하나.
 - 배포는 `wrangler 4` (`wrangler deploy`). `compatibility_flags: ["nodejs_compat"]`.
-- 빌드·테스트 런타임은 **Node.js 24 LTS**이고 버전의 기준은 `.nvmrc`입니다. CI 워크플로(`ci.yml`·`deploy-workers.yml`·`sonar-main.yml`)가 이 파일을 읽고, `package.json`의 `engines`도 `>=24 <25`로 맞춰져 있습니다. Astro 7의 최소 요구는 Node 22.12입니다.
+- 빌드·테스트 런타임은 **Node.js 26**이고 버전의 기준은 `.nvmrc`입니다. CI 워크플로(`ci.yml`·`deploy-workers.yml`·`sonar-main.yml`)가 이 파일을 읽고, `package.json`의 `engines`도 `>=26 <27`로 맞춰져 있습니다. Astro 7의 최소 요구는 Node 22.12입니다.
 - 바인딩(`wrangler.jsonc`): `DB`(D1), `MEDIA`(R2), `ASSETS`(정적 산출물). 코드에서는 `import { env } from 'cloudflare:workers'`로 접근.
 
 **③ 데이터·스토리지**

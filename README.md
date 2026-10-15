@@ -60,7 +60,7 @@ npm run check   # astro check (타입·스키마)
 npm run build   # dist/ 빌드
 ```
 
-- Node.js는 `.nvmrc`(24 LTS)를 따릅니다(`nvm use`). 로컬 시크릿은 `.dev.vars`(커밋 제외, 키 목록은 `.env.example`).
+- Node.js는 `.nvmrc`(26)를 따릅니다(`nvm use`). 로컬 시크릿은 `.dev.vars`(커밋 제외, 키 목록은 `.env.example`).
 - 전체 명령·브라우저 검증(`verify`·`a11y` 등)은 [`docs/development.md`](./docs/development.md#로컬-실행).
 - `main` 머지 시 자동 배포됩니다. 흐름과 시크릿은 [`docs/deployment.md`](./docs/deployment.md).
 - 새 세미나·글은 개발자 없이 작성자가 `/admin`에서 등록하면 즉시 공개됩니다. [`docs/content-operations.md`](./docs/content-operations.md).

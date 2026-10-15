@@ -5,7 +5,7 @@
   "private": true,
   "description": "Transcultural Network (TCN)",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=26 <27"
   },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
