@@ -8,8 +8,7 @@ import { t } from '../i18n/ui';
 import { content } from '../i18n/content';
 import { getPublicSeminars } from '../lib/public-content/snapshot';
 
-// 정적 에셋으로 나간다(Worker 호출·D1 조회 0). 세미나 목록은 빌드 직전에 D1에서 내보낸
-// 스냅샷이고, 콘텐츠가 바뀌면 refresh-static-content 워크플로가 재배포해 갱신한다.
+// 정적 에셋으로 나간다. 목록은 빌드 직전 D1 스냅샷이고 refresh-static-content 워크플로가 갱신한다.
 export const prerender = true;
 
 const copy = content.home;

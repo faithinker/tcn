@@ -1,9 +1,8 @@
 name: Deploy Cloudflare Workers
 
-# 8단계: Astro on Workers 단일 배포. 상세 페이지·API는 D1 실시간 조회(SSR)지만, 홈·세미나
-# 목록·소개 페이지는 빌드 때 운영 D1 내용으로 구워진 정적 에셋이다(Worker 호출 0).
-# 그래서 세미나가 바뀌면 재배포가 필요하다 — refresh-static-content 워크플로가 10분마다
-# 지문을 비교해 이 워크플로를 workflow_dispatch로 다시 돌린다.
+# 8단계: Astro on Workers 단일 배포. 상세 페이지·API는 D1 실시간 조회(SSR)지만 홈·세미나 목록·소개는
+# 빌드 때 운영 D1로 구워진 정적 에셋이라, 세미나가 바뀌면 refresh-static-content 워크플로가
+# 10분마다 지문을 비교해 이 워크플로를 workflow_dispatch로 다시 돌린다.
 on:
   push:
     branches:
@@ -58,8 +57,7 @@ jobs:
       - name: Test
         run: npm test
 
-      # TCN_REQUIRE_CONTENT=1: 빌드 직전 운영 D1에서 세미나 목록을 내보내지 못하면 빌드를
-      # 실패시킨다. 빈 목록이나 로컬 DB 내용으로 정적 페이지가 나가는 사고를 막는다.
+      # TCN_REQUIRE_CONTENT=1: 운영 D1에서 세미나 목록을 못 읽으면 빌드를 실패시킨다(빈 목록·로컬 데이터 배포 방지).
       - name: Build
         env:
           TCN_REQUIRE_CONTENT: '1'

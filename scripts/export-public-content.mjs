@@ -1,14 +1,7 @@
 #!/usr/bin/env node
-// 빌드 직전에 D1의 공개 세미나 목록을 src/generated/public-seminars.json 으로 내보낸다.
-// 홈·세미나 목록·소개 페이지는 이 파일로 프리렌더되어 정적 에셋(무료·무제한)으로 나간다.
-//
-// 데이터 출처 (src/lib/public-content/core.ts 의 resolveContentSource):
-//   TCN_REQUIRE_CONTENT=1  운영 배포. 운영 D1(remote)만 허용, 읽지 못하면 빌드 실패.
-//   TCN_CONTENT_SOURCE=remote|local|empty  명시 선택
-//   (기본) CLOUDFLARE_API_TOKEN 이 있으면 remote, 없고 로컬 D1 상태가 있으면 local,
-//          둘 다 없으면 빈 스냅샷(CI의 PR 빌드처럼 콘텐츠가 필요 없는 빌드).
-//
-// npm run build / dev / start 앞에서 자동 실행된다(package.json의 pre 훅).
+// 빌드 직전에 D1의 공개 세미나 목록을 src/generated/public-seminars.json 으로 내보낸다(npm run build/dev/start 앞에서 자동 실행).
+// 출처는 core.ts 의 resolveContentSource 가 고른다: TCN_REQUIRE_CONTENT=1 이면 운영 D1만(실패하면 빌드 실패),
+// TCN_CONTENT_SOURCE=remote|local|empty 로 직접 선택, 기본은 토큰이 있으면 remote → 로컬 D1 → 빈 스냅샷.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

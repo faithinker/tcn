@@ -7,17 +7,15 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-// 빌드 전 스크립트와 10분 비교 스크립트를 실제 Node 프로세스로 돌린다. 두 스크립트는
-// src/lib/public-content/core.ts 를 Node의 타입 제거로 직접 읽으므로, 그 파일에 런타임 전용
-// import가 들어오면 여기서 먼저 깨진다.
+// 두 스크립트는 core.ts를 Node의 타입 제거로 직접 읽는다.
+// 그 파일에 런타임 전용 import가 들어오면 여기서 먼저 깨진다.
 const run = promisify(execFile);
 const ROOT = path.resolve(__dirname, '..', '..', '..');
 const EXPORT = path.join(ROOT, 'scripts', 'export-public-content.mjs');
 const FRESHNESS = path.join(ROOT, 'scripts', 'check-static-freshness.mjs');
 
-// 두 스크립트가 읽는 환경 변수는 각 테스트가 명시한 값만 남긴다. 배포 잡은 PRODUCTION_URL과
-// Cloudflare 토큰을 잡 전역 env로 두고, Actions는 GITHUB_OUTPUT도 채워서, 비우지 않으면
-// 테스트가 실제 운영 주소를 호출하거나 워크플로의 출력 파일에 쓴다.
+// 각 테스트가 명시한 환경 변수만 남긴다. 배포 잡은 PRODUCTION_URL·Cloudflare 토큰을 잡 전역 env로 두고
+// Actions는 GITHUB_OUTPUT도 채워서, 비우지 않으면 실제 운영 주소 호출이나 출력 파일 쓰기가 일어난다.
 const AMBIENT = /^(TCN_|CLOUDFLARE_|FRESHNESS_)|^(PRODUCTION_URL|GITHUB_OUTPUT)$/;
 const cleanEnv = (extra: Record<string, string> = {}) =>
   ({

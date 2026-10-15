@@ -1,10 +1,7 @@
 #!/usr/bin/env node
-// 배포된 정적 홈·목록·소개 페이지가 라이브 D1과 어긋났는지 판정한다.
-//   라이브:  PRODUCTION_URL/api/content-fingerprint   (Worker, D1 조회)
-//   배포본:  PRODUCTION_URL/content-fingerprint.json  (정적 에셋, 빌드 때 구워짐)
-// 지문(세미나 목록 + KST 날짜)이 다르면 GITHUB_OUTPUT에 rebuild=true 를 쓴다.
-// 가져오기나 파싱이 실패하면 재배포하지 않고 실패로 끝낸다 — 판정 불능을 "달라졌다"로
-// 해석하면 장애 중에 배포가 반복된다.
+// 배포된 정적 페이지(/content-fingerprint.json)가 라이브 D1(/api/content-fingerprint)과 어긋났는지 판정해
+// 다르면 GITHUB_OUTPUT에 rebuild=true 를 쓴다. 가져오기·파싱 실패는 재배포 없이 실패로 끝낸다 —
+// 판정 불능을 "달라졌다"로 보면 장애 중에 배포가 반복된다.
 import { appendFileSync } from 'node:fs';
 import { decideRefresh, parseFingerprintDoc } from '../src/lib/public-content/core.ts';
 
