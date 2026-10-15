@@ -6,26 +6,18 @@ import Button from '../components/Button.astro';
 import { formatDate } from '../i18n/utils';
 import { t } from '../i18n/ui';
 import { content } from '../i18n/content';
-import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminars/service';
-import type { SeminarView } from '../lib/seminars';
+import { getPublicSeminars } from '../lib/public-content/snapshot';
 
-// Runtime D1 data requires SSR because prerender builds have no D1 binding.
-export const prerender = false;
+// 정적 에셋으로 나간다(Worker 호출·D1 조회 0). 세미나 목록은 빌드 직전에 D1에서 내보낸
+// 스냅샷이고, 콘텐츠가 바뀌면 refresh-static-content 워크플로가 재배포해 갱신한다.
+export const prerender = true;
 
 const copy = content.home;
 const seminarCopy = content.seminars;
 
-let next: SeminarView | null = null;
-let featured: SeminarView | null = null;
-try {
-  const seminars = await getSeminarCollection(getDB());
-  next = seminars.next;
-  featured = seminars.latestPast;
-} catch {
-  next = null;
-  featured = null;
-}
+const { collection } = await getPublicSeminars();
+const next = collection.next;
+const featured = collection.latestPast;
 ---
 
 <BaseLayout title={copy.title}>

@@ -3,27 +3,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionTile from '../components/SectionTile.astro';
 import { content } from '../i18n/content';
 import { formatDate } from '../i18n/utils';
-import { getDB } from '../lib/db';
-import { getSeminarCollection } from '../lib/seminars/service';
-import type { SeminarView } from '../lib/seminars';
+import { getPublicSeminars } from '../lib/public-content/snapshot';
 
-// SSR so the D1 community-post list stays live (no static prerender).
-export const prerender = false;
+// 정적 에셋으로 나간다(Worker 호출·D1 조회 0). 목록은 빌드 직전 D1 스냅샷이며, 세미나가
+// 추가·수정·삭제되면 refresh-static-content 워크플로가 재배포해 갱신한다. 상세 페이지
+// (/seminars/<date>)는 삭제·발행이 즉시 반영돼야 해서 계속 SSR이다.
+export const prerender = true;
 
 const copy = content.seminars;
 
-let next: SeminarView | null = null;
-let rest: SeminarView[] = [];
-let past: SeminarView[] = [];
-let loadFailed = false;
-try {
-  const seminars = await getSeminarCollection(getDB());
-  next = seminars.next;
-  rest = seminars.upcoming.slice(1);
-  past = seminars.past;
-} catch {
-  loadFailed = true;
-}
+const { snapshot, collection } = await getPublicSeminars();
+const next = collection.next;
+const rest = collection.upcoming.slice(1);
+const past = collection.past;
+// 'empty'는 콘텐츠를 읽지 못한 빌드(운영 배포는 이 상태로 빌드되지 않는다).
+const loadFailed = snapshot.source === 'empty';
 ---
 
 <BaseLayout title={copy.title} description={copy.description}>
