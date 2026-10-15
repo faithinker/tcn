@@ -2,7 +2,7 @@
 
 Updated: 2026-10-15 (커스텀 도메인 `thetcn.org` canonical·TypeScript 6·Node 버전 `.nvmrc` 기준·CI 검증 게이트 목록 실측 동기화. 라우트·D1 10테이블·Q&A 보안 설정은 2026-07-30 이후 변경 없음을 재확인)
 
-Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정적 프리렌더 + 동적 SSR. TypeScript 6(`astro check`가 TS 7을 아직 지원하지 않아 6 계열 유지), 빌드·CI의 Node 버전은 `.nvmrc`가 기준(현재 24 LTS). 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`). 버전의 단일 원천은 `package.json`.
+Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정적 프리렌더 + 동적 SSR. TypeScript 6(`astro check`가 TS 7을 아직 지원하지 않아 6 계열 유지), 빌드·CI의 Node 버전은 `.nvmrc`가 기준. 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`). 버전의 단일 원천은 `package.json`.
 
 ## 1. 원칙
 
