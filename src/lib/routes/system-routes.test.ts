@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { env, getDB, getSeminarCollection } = vi.hoisted(() => ({
@@ -108,6 +109,17 @@ describe('GET /sitemap.xml', () => {
     expect(xml).toContain('<loc>https://tcn.example/about</loc>');
     expect(xml).toContain('<loc>https://tcn.example/seminars/2025-12-26</loc>');
     expect(xml).not.toContain('<loc>https://tcn.example/about/</loc>');
+    expect(xml).not.toContain('/admin');
+    expect(xml).not.toContain('/api');
+  });
+
+  it('disallows crawler access to /admin and /api in public/robots.txt', () => {
+    const robots = readFileSync(new URL('../../../public/robots.txt', import.meta.url), 'utf8');
+
+    expect(robots).toContain('User-agent: *');
+    expect(robots).toContain('Disallow: /admin');
+    expect(robots).toContain('Disallow: /api/');
+    expect(robots).toContain('Sitemap: https://thetcn.org/sitemap.xml');
   });
 
   it('logs D1 failures before returning the static fallback', async () => {

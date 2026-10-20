@@ -5,6 +5,8 @@ import { requireOfficerPage } from '../../lib/auth';
 import { getDB, listPosts } from '../../lib/db';
 
 const guard = await requireOfficerPage(Astro);
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
 if (!guard.ok) return guard.response;
 const { user } = guard;
 

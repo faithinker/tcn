@@ -15,6 +15,7 @@ import { listAdminQuestions } from '../../../lib/qna/repository';
 import { formatWaitingAge } from '../../../scripts/admin-qna-utils';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
 
 const currentPath = `${Astro.url.pathname}${Astro.url.search}`;
 const loginUrl = `/admin/login?returnTo=${encodeURIComponent(currentPath)}`;

@@ -11,6 +11,8 @@ import {
 import { safeAdminReturnTo } from '../../lib/admin-api';
 import { memberFeaturesEnabled } from '../../lib/member-features';
 const returnTo = safeAdminReturnTo(Astro.url.searchParams.get('returnTo'));
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
 if (memberFeaturesEnabled())
   return Astro.redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`);
 if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);

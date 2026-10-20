@@ -7,7 +7,11 @@ export const onRequest = defineMiddleware(async ({ request, isPrerendered }, nex
   const memberResponse = [
     '/forum',
     '/api/forum',
+    '/admin',
     '/admin/users',
+    '/api/posts',
+    '/api/media',
+    '/api/maintenance',
     '/api/users',
     '/account',
     '/login',

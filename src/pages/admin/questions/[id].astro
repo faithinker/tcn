@@ -12,6 +12,7 @@ import { getDB } from '../../../lib/db';
 import { getAdminQuestion } from '../../../lib/qna/repository';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
 
 const id = Astro.params.id ?? '';
 const returnPath = `/admin/questions/${encodeURIComponent(id)}`;
