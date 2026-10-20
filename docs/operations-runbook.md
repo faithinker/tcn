@@ -47,6 +47,7 @@ Application deletes first enter `media_cleanup_queue`. R2 failures remain queued
 
 ```bash
 curl --fail --request POST \
+  --header 'Origin: https://tcn.faithinker12.workers.dev' \
   --cookie 'tcn_session=<operator-session>' \
   https://tcn.faithinker12.workers.dev/api/maintenance/media-cleanup
 ```

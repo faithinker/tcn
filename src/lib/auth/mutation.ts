@@ -3,7 +3,7 @@ import { readSessionToken } from './cookie';
 import { getSessionSecret, getSessionUser } from './guard';
 import { meetsRequirement, type Requirement, type SessionUser } from './permissions';
 
-export type CsrfScope = 'qna' | 'forum' | 'users' | 'account';
+export type CsrfScope = 'qna' | 'forum' | 'users' | 'account' | 'posts';
 
 // Q&A 에서 쓰던 오류 클래스를 공용 이름으로 옮겼다. 오류 코드와 상태 코드 문자열은 그대로다.
 export class SecurityError extends Error {

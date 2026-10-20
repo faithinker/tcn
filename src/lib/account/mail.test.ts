@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { openTestD1, type TestD1 } from '../../test-support/d1';
-import { sendAccountMail } from './mail';
+import { securityNotice, sendAccountMail } from './mail';
 let h: TestD1;
 const request = new Request('https://tcn.example/signup');
 const bindings = {
@@ -50,6 +50,62 @@ it('stops before network sends when the conservative free-tier daily budget is c
     sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test'),
   ).rejects.toMatchObject({ status: 503 });
   expect(fetch).toHaveBeenCalledTimes(90);
+});
+it('reserves daily send budget for password recovery and security notices when signup quota is exhausted', async () => {
+  for (let i = 0; i < 50; i++) {
+    await sendAccountMail(
+      h.db,
+      request,
+      bindings,
+      'person@example.org',
+      'Verify',
+      'test',
+      undefined,
+      'signup',
+    );
+  }
+  await expect(
+    sendAccountMail(
+      h.db,
+      request,
+      bindings,
+      'person@example.org',
+      'Verify',
+      'test',
+      undefined,
+      'signup',
+    ),
+  ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
+  expect(fetch).toHaveBeenCalledTimes(50);
+
+  for (let i = 0; i < 30; i++) {
+    await sendAccountMail(
+      h.db,
+      request,
+      bindings,
+      'person@example.org',
+      'Reset',
+      'test',
+      undefined,
+      'reset',
+    );
+  }
+  await expect(
+    sendAccountMail(
+      h.db,
+      request,
+      bindings,
+      'person@example.org',
+      'Reset',
+      'test',
+      undefined,
+      'reset',
+    ),
+  ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
+  expect(fetch).toHaveBeenCalledTimes(80);
+
+  await securityNotice(h.db, request, bindings, 'person@example.org', 'password');
+  expect(fetch).toHaveBeenCalledTimes(81);
 });
 it('returns a generic provider failure without leaking response bodies', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(new Response('private provider details', { status: 429 }));

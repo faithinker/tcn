@@ -2,7 +2,12 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import PostEditor from '../../../components/admin/PostEditor';
-import { requireOfficerPage } from '../../../lib/auth';
+import {
+  createCsrfToken,
+  getSessionSecret,
+  readSessionToken,
+  requireOfficerPage,
+} from '../../../lib/auth';
 import { getDB } from '../../../lib/db';
 import { getSeminarCollection } from '../../../lib/seminars/service';
 
@@ -11,6 +16,10 @@ Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('X-Robots-Tag', 'noindex');
 if (!guard.ok) return guard.response;
 const { user } = guard;
+
+const sessionToken = readSessionToken(Astro.request);
+if (!sessionToken) return Astro.redirect('/admin/login');
+const csrfToken = await createCsrfToken('posts', sessionToken, getSessionSecret());
 
 const seminars = await getSeminarCollection(getDB());
 const seminarSequence = seminars.chronological.length + 1;
@@ -23,5 +32,10 @@ const seminarSequence = seminars.chronological.length + 1;
       ← Posts
     </a>
   </div>
-  <PostEditor client:load seminarSequence={seminarSequence} siteOrigin={Astro.url.origin} />
+  <PostEditor
+    client:load
+    seminarSequence={seminarSequence}
+    siteOrigin={Astro.url.origin}
+    csrfToken={csrfToken}
+  />
 </AdminLayout>

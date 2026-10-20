@@ -10,6 +10,7 @@ export {
   requireExecutive,
   requireExecutivePage,
   requireOfficer,
+  requireOfficerMutation,
   requireOfficerPage,
 } from './require';
 export type { GuardResult } from './require';

@@ -1,4 +1,5 @@
 import { getSessionUser } from './guard';
+import { requireMutation, requireSameOrigin, SecurityError, type CsrfScope } from './mutation';
 import { meetsRequirement, type Requirement, type SessionUser } from './permissions';
 
 export type GuardResult = { ok: true; user: SessionUser } | { ok: false; response: Response };
@@ -12,17 +13,42 @@ interface PageOptions {
   loginUrl?: string;
 }
 
-function jsonError(error: 'unauthorized' | 'forbidden', status: 401 | 403): Response {
+function jsonError(error: string, status: number): Response {
   return Response.json({ ok: false, error }, { status });
 }
 
 async function guardApi(request: Request, requirement: Requirement): Promise<GuardResult> {
   const user = await getSessionUser(request);
   if (!user) return { ok: false, response: jsonError('unauthorized', 401) };
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    try {
+      requireSameOrigin(request);
+    } catch (error) {
+      if (error instanceof SecurityError) {
+        return { ok: false, response: jsonError(error.code, error.status) };
+      }
+      throw error;
+    }
+  }
   if (!meetsRequirement(user, requirement)) {
     return { ok: false, response: jsonError('forbidden', 403) };
   }
   return { ok: true, user };
+}
+
+export async function requireOfficerMutation(
+  request: Request,
+  scope: CsrfScope = 'posts',
+): Promise<GuardResult> {
+  try {
+    const { user } = await requireMutation(request, { scope, require: 'officer' });
+    return { ok: true, user };
+  } catch (error) {
+    if (error instanceof SecurityError) {
+      return { ok: false, response: jsonError(error.code, error.status) };
+    }
+    throw error;
+  }
 }
 
 // 안내 화면은 3단계의 /account 와 함께 생긴다. 그때까지는 일반 텍스트로 답한다.

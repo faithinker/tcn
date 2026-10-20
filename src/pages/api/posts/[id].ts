@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireOfficer } from '../../../lib/auth';
+import { requireOfficerMutation } from '../../../lib/auth';
 import {
   getDB,
   getMediaById,
@@ -32,7 +32,7 @@ function seminarDateErrorResponse(error: string): Response {
 
 // 글 수정(전체 저장). 승인된 임원만.
 export const PUT: APIRoute = async ({ request, params }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const id = params.id;
@@ -92,7 +92,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
 };
 
 export const DELETE: APIRoute = async ({ request, params }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const id = params.id;

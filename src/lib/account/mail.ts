@@ -5,6 +5,12 @@ export interface MailBindings {
   AUTH_PUBLIC_ORIGIN?: string;
   RESEND_API_KEY?: string;
 }
+export type MailCategory = 'signup' | 'reset' | 'security';
+const SEND_BUDGET_LIMITS: Record<MailCategory, readonly [daily: number, monthly: number]> = {
+  signup: [50, 1800],
+  reset: [80, 2600],
+  security: [90, 2900],
+};
 export function localMail(request: Request, bindings: MailBindings) {
   return (
     bindings.AUTH_MAIL_MODE === 'local' &&
@@ -40,6 +46,7 @@ export async function sendAccountMail(
   subject: string,
   text: string,
   deliveryKey = crypto.randomUUID(),
+  category: MailCategory = 'security',
 ) {
   requireMailReady(request, bindings);
   if (localMail(request, bindings)) {
@@ -56,9 +63,10 @@ export async function sendAccountMail(
     return;
   }
   const date = new Date().toISOString();
+  const [dailyLimit, monthlyLimit] = SEND_BUDGET_LIMITS[category];
   for (const [period, limit] of [
-    [date.slice(0, 10), 90],
-    [date.slice(0, 7), 2900],
+    [date.slice(0, 10), dailyLimit],
+    [date.slice(0, 7), monthlyLimit],
   ] as const) {
     const result = await db
       .prepare(

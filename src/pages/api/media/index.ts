@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireOfficer } from '../../../lib/auth';
+import { requireOfficerMutation } from '../../../lib/auth';
 import { addMedia, getBucket, getDB, getPost, newId } from '../../../lib/db';
 import {
   classifyUpload,
@@ -21,7 +21,7 @@ function uploadError(error: unknown): Response {
 // Raw-body upload. Images are capped at 10 MiB and inspected in memory; larger documents/videos
 // stream directly to R2 so the Worker never duplicates an entire large file in its 128 MiB isolate.
 export const POST: APIRoute = async ({ request }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const contentLengthValue = request.headers.get('content-length');

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireOfficer } from '../../../lib/auth';
+import { requireOfficerMutation } from '../../../lib/auth';
 import {
   completeMediaCleanup,
   deleteMediaAndQueueCleanup,
@@ -14,7 +14,7 @@ import { normalizeMediaMetadata, type MediaMetadataPayload } from '../../../lib/
 export const prerender = false;
 
 export const PATCH: APIRoute = async ({ request, params }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const id = params.id;
@@ -38,7 +38,7 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
 // D1에서 공개 레코드와 cleanup 작업을 원자적으로 기록한 뒤 R2 삭제를 시도한다.
 export const DELETE: APIRoute = async ({ request, params }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const id = params.id;

@@ -54,14 +54,20 @@ describe('POST /api/maintenance/media-cleanup', () => {
     recordMediaCleanupFailure.mockResolvedValue(undefined);
   });
 
-  it('answers 401 without a session and 403 to a non-officer before listing cleanup keys', async () => {
-    const request = () =>
+  it('answers 401 without a session and 403 to missing origin or a non-officer before listing cleanup keys', async () => {
+    const request = (headers: HeadersInit = { origin: 'http://localhost' }) =>
       ({
-        request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
+        request: new Request('http://localhost/api/maintenance/media-cleanup', {
+          method: 'POST',
+          headers,
+        }),
       }) as never;
 
     getSessionUser.mockResolvedValue(null);
     expect((await POST!(request())).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect((await POST!(request({}))).status).toBe(403);
 
     getSessionUser.mockResolvedValue(MEMBER);
     expect((await POST!(request())).status).toBe(403);
@@ -70,7 +76,10 @@ describe('POST /api/maintenance/media-cleanup', () => {
 
   it('reconciles queued R2 objects and clears successful jobs', async () => {
     const response = await POST!({
-      request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
+      request: new Request('http://localhost/api/maintenance/media-cleanup', {
+        method: 'POST',
+        headers: { origin: 'http://localhost' },
+      }),
     } as never);
 
     expect(response.status).toBe(200);
@@ -88,7 +97,10 @@ describe('POST /api/maintenance/media-cleanup', () => {
     bucket.delete.mockRejectedValueOnce(new Error('R2 unavailable'));
 
     const response = await POST!({
-      request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
+      request: new Request('http://localhost/api/maintenance/media-cleanup', {
+        method: 'POST',
+        headers: { origin: 'http://localhost' },
+      }),
     } as never);
 
     await expect(response.json()).resolves.toEqual({

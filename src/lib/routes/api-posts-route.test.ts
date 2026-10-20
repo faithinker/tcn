@@ -5,6 +5,7 @@ const {
   getDB,
   getMediaById,
   getPost,
+  getSessionSecret,
   getSessionUser,
   listSeminarPosts,
   notifyPostChange,
@@ -16,6 +17,7 @@ const {
   getDB: vi.fn(() => ({})),
   getMediaById: vi.fn(),
   getPost: vi.fn(),
+  getSessionSecret: vi.fn(() => 'test-secret'),
   getSessionUser: vi.fn(),
   listSeminarPosts: vi.fn(),
   notifyPostChange: vi.fn(),
@@ -30,7 +32,7 @@ const {
 
 vi.mock('../auth/guard', () => ({
   getSessionUid: vi.fn(),
-  getSessionSecret: vi.fn(),
+  getSessionSecret,
   getSessionUser,
 }));
 vi.mock('../db', () => ({
@@ -45,6 +47,7 @@ vi.mock('../db', () => ({
 }));
 vi.mock('../notify', () => ({ notifyPostChange }));
 
+import { createCsrfToken } from '../auth/mutation';
 import { DELETE, PUT } from '../../pages/api/posts/[id]';
 import { POST } from '../../pages/api/posts/index';
 
@@ -57,6 +60,7 @@ const OFFICER = {
   isExecutive: false,
 } as const;
 const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
+let csrfToken = '';
 
 const validPayload = {
   title: '  Third seminar  ',
@@ -67,11 +71,17 @@ const validPayload = {
   heroMediaId: null,
 };
 
-function createContext(body: unknown = validPayload) {
+function createContext(body: unknown = validPayload, headers: HeadersInit = {}) {
   return {
     request: new Request('https://tcn.example/api/posts', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        origin: 'https://tcn.example',
+        cookie: 'tcn_session=test-session',
+        'x-csrf-token': csrfToken,
+        'content-type': 'application/json',
+        ...headers,
+      },
       body: JSON.stringify(body),
     }),
   } as unknown as Parameters<NonNullable<typeof POST>>[0];
@@ -81,11 +91,18 @@ function itemContext(
   method: 'PUT' | 'DELETE',
   body: unknown = { ...validPayload, revision: 2 },
   id = 'post-1',
+  headers: HeadersInit = {},
 ) {
   return {
     request: new Request(`https://tcn.example/api/posts/${id}`, {
       method,
-      headers: method === 'PUT' ? { 'content-type': 'application/json' } : undefined,
+      headers: {
+        origin: 'https://tcn.example',
+        cookie: 'tcn_session=test-session',
+        'x-csrf-token': csrfToken,
+        ...(method === 'PUT' ? { 'content-type': 'application/json' } : {}),
+        ...headers,
+      },
       body: method === 'PUT' ? JSON.stringify(body) : undefined,
     }),
     params: { id },
@@ -93,11 +110,26 @@ function itemContext(
 }
 
 describe('POST /api/posts', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
     getSessionUser.mockResolvedValue(OFFICER);
     listSeminarPosts.mockResolvedValue([]);
     createPost.mockResolvedValue({ id: 'post-1', title: 'Third seminar' });
+  });
+
+  it('rejects foreign origin, cross-site Fetch Metadata and invalid CSRF before parsing or opening D1', async () => {
+    for (const [headers, error] of [
+      [{ origin: 'https://evil.example' }, 'invalid_origin'],
+      [{ 'sec-fetch-site': 'cross-site' }, 'cross_site_request'],
+      [{ 'x-csrf-token': 'forged' }, 'invalid_csrf'],
+    ] as const) {
+      const response = await POST!(createContext(validPayload, headers));
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toEqual({ ok: false, error });
+    }
+    expect(getDB).not.toHaveBeenCalled();
+    expect(createPost).not.toHaveBeenCalled();
   });
 
   it('rejects a signed-in account that is not an officer before parsing or opening D1', async () => {
@@ -179,17 +211,27 @@ describe('POST /api/posts', () => {
 });
 
 describe('PUT /api/posts/[id]', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
     getSessionUser.mockResolvedValue(OFFICER);
     getPost.mockResolvedValue({ id: 'post-1', eventDate: '2027-01-15' });
     listSeminarPosts.mockResolvedValue([{ id: 'post-1', eventDate: '2027-01-15' }]);
     updatePost.mockResolvedValue({ id: 'post-1', title: 'Third seminar', revision: 3 });
   });
 
-  it('answers 401 without a session and 403 to a non-officer before any read', async () => {
+  it('answers 401 without a session and 403 to a non-officer or missing CSRF before any read', async () => {
     getSessionUser.mockResolvedValue(null);
     expect((await PUT!(itemContext('PUT'))).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect(
+      (
+        await PUT!(
+          itemContext('PUT', { ...validPayload, revision: 2 }, 'post-1', { 'x-csrf-token': '' }),
+        )
+      ).status,
+    ).toBe(403);
 
     getSessionUser.mockResolvedValue(MEMBER);
     const response = await PUT!(itemContext('PUT'));
@@ -262,15 +304,21 @@ describe('PUT /api/posts/[id]', () => {
 });
 
 describe('DELETE /api/posts/[id]', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
     getSessionUser.mockResolvedValue(OFFICER);
     softDeletePost.mockResolvedValue(true);
   });
 
-  it('answers 401 without a session and 403 to a non-officer before any write', async () => {
+  it('answers 401 without a session and 403 to a non-officer or missing CSRF before any write', async () => {
     getSessionUser.mockResolvedValue(null);
     expect((await DELETE!(itemContext('DELETE'))).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect(
+      (await DELETE!(itemContext('DELETE', undefined, 'post-1', { 'x-csrf-token': '' }))).status,
+    ).toBe(403);
 
     getSessionUser.mockResolvedValue(MEMBER);
     const response = await DELETE!(itemContext('DELETE'));

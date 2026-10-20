@@ -11,7 +11,7 @@ const GUARDED_DIRS = ['admin', 'api', 'forum'];
 
 // handleAdminQuestionMutation 은 requireMutation 을 대신 부르는 래퍼다(아래 마지막 테스트가 확인한다).
 const GUARD_CALL =
-  /\b(?:requireOfficer|requireOfficerPage|requireExecutive|requireExecutivePage|requireActiveAccount|requireActiveAccountPage|requireMutation|handleAdminQuestionMutation|handleUserMutation|handleAccountMutation|handlePublicAccount)\s*\(/;
+  /\b(?:requireOfficer|requireOfficerMutation|requireOfficerPage|requireExecutive|requireExecutivePage|requireActiveAccount|requireActiveAccountPage|requireMutation|handleAdminQuestionMutation|handleUserMutation|handleAccountMutation|handlePublicAccount)\s*\(/;
 
 // 가드가 없어도 되는 경로. 현재 존재하는 경로만 올린다(없는 항목은 테스트가 실패한다).
 const PUBLIC_ROUTES: Record<string, string> = {
@@ -76,5 +76,24 @@ describe('route guard coverage', () => {
       /requireMutation\(\s*request,\s*\{\s*scope:\s*'users',\s*require:\s*'executive'/,
     );
     expect(source).toMatch(/memberFeaturesEnabled\s*\(/);
+  });
+
+  it('keeps posts and media mutation routes behind the CSRF-protected officer mutation guard', () => {
+    for (const file of [
+      'api/posts/index.ts',
+      'api/posts/[id].ts',
+      'api/media/index.ts',
+      'api/media/[id].ts',
+    ]) {
+      const source = stripComments(readFileSync(join(PAGES_DIR, file), 'utf8'));
+      expect(source, `${file} must call requireOfficerMutation`).toMatch(
+        /\brequireOfficerMutation\s*\(/,
+      );
+    }
+  });
+
+  it('keeps the login route behind same-origin validation', () => {
+    const source = stripComments(readFileSync(join(PAGES_DIR, 'api/auth/login.ts'), 'utf8'));
+    expect(source).toMatch(/\brequireSameOrigin\s*\(/);
   });
 });

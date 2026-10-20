@@ -6,6 +6,7 @@ const {
   deleteMediaAndQueueCleanup,
   getBucket,
   getMediaById,
+  getSessionSecret,
   getSessionUser,
   getDB,
   recordMediaCleanupFailure,
@@ -16,6 +17,7 @@ const {
   deleteMediaAndQueueCleanup: vi.fn(),
   getBucket: vi.fn(),
   getMediaById: vi.fn(),
+  getSessionSecret: vi.fn(() => 'test-secret'),
   getSessionUser: vi.fn(),
   getDB: vi.fn(() => ({})),
   recordMediaCleanupFailure: vi.fn(),
@@ -24,7 +26,7 @@ const {
 
 vi.mock('../auth/guard', () => ({
   getSessionUid: vi.fn(),
-  getSessionSecret: vi.fn(),
+  getSessionSecret,
   getSessionUser,
 }));
 vi.mock('../db', () => ({
@@ -37,6 +39,7 @@ vi.mock('../db', () => ({
   updateMediaMetadata,
 }));
 
+import { createCsrfToken } from '../auth/mutation';
 import * as mediaRoute from '../../pages/api/media/[id]';
 
 const OFFICER = {
@@ -48,34 +51,55 @@ const OFFICER = {
   isExecutive: false,
 } as const;
 const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
+let csrfToken = '';
 
-function context(body: unknown, id = 'm1') {
+function context(body: unknown, id = 'm1', headers: HeadersInit = {}) {
   return {
     request: new Request(`http://localhost/api/media/${id}`, {
       method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        origin: 'http://localhost',
+        cookie: 'tcn_session=test-session',
+        'x-csrf-token': csrfToken,
+        'content-type': 'application/json',
+        ...headers,
+      },
       body: JSON.stringify(body),
     }),
     params: { id },
   } as unknown as Parameters<NonNullable<typeof mediaRoute.PATCH>>[0];
 }
 
-function deleteContext(id = 'm1') {
+function deleteContext(id = 'm1', headers: HeadersInit = {}) {
   return {
-    request: new Request(`http://localhost/api/media/${id}`, { method: 'DELETE' }),
+    request: new Request(`http://localhost/api/media/${id}`, {
+      method: 'DELETE',
+      headers: {
+        origin: 'http://localhost',
+        cookie: 'tcn_session=test-session',
+        'x-csrf-token': csrfToken,
+        ...headers,
+      },
+    }),
     params: { id },
   } as unknown as Parameters<NonNullable<typeof mediaRoute.DELETE>>[0];
 }
 
 describe('PATCH /api/media/[id]', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
     getSessionUser.mockResolvedValue(OFFICER);
   });
 
-  it('answers 401 without a session and 403 to a non-officer before touching D1 or R2', async () => {
+  it('answers 401 without a session and 403 to a non-officer or missing CSRF before touching D1 or R2', async () => {
     getSessionUser.mockResolvedValue(null);
     expect((await mediaRoute.PATCH!(context({ caption: 'x' }))).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect(
+      (await mediaRoute.PATCH!(context({ caption: 'x' }, 'm1', { 'x-csrf-token': '' }))).status,
+    ).toBe(403);
 
     getSessionUser.mockResolvedValue(MEMBER);
     const response = await mediaRoute.PATCH!(context({ caption: 'x' }));
@@ -117,8 +141,9 @@ describe('PATCH /api/media/[id]', () => {
 });
 
 describe('DELETE /api/media/[id]', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
     getSessionUser.mockResolvedValue(OFFICER);
     getBucket.mockReturnValue(bucket);
     getMediaById.mockResolvedValue({ id: 'm1', r2Key: 'post-1/file.webp' });
@@ -128,9 +153,14 @@ describe('DELETE /api/media/[id]', () => {
     bucket.delete.mockResolvedValue(undefined);
   });
 
-  it('answers 401 without a session and 403 to a non-officer before touching D1 or R2', async () => {
+  it('answers 401 without a session and 403 to a non-officer or missing CSRF before touching D1 or R2', async () => {
     getSessionUser.mockResolvedValue(null);
     expect((await mediaRoute.DELETE!(deleteContext())).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect((await mediaRoute.DELETE!(deleteContext('m1', { 'x-csrf-token': '' }))).status).toBe(
+      403,
+    );
 
     getSessionUser.mockResolvedValue(MEMBER);
     const response = await mediaRoute.DELETE!(deleteContext());

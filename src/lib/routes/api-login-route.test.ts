@@ -78,6 +78,7 @@ function context(request?: Request) {
       new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
         headers: {
+          origin: 'https://tcn.example',
           'content-type': 'application/json',
           'cf-connecting-ip': '203.0.113.10',
         },
@@ -106,6 +107,35 @@ describe('POST /api/auth/login', () => {
     createDeviceToken.mockResolvedValue({ token: 'device-token', deviceId: 'new-device' });
   });
 
+  it('rejects missing origin, foreign origin and cross-site Fetch Metadata before Turnstile or D1', async () => {
+    for (const [headers, error] of [
+      [{ 'content-type': 'application/json' }, 'invalid_origin'],
+      [{ origin: 'https://evil.example', 'content-type': 'application/json' }, 'invalid_origin'],
+      [
+        {
+          origin: 'https://tcn.example',
+          'sec-fetch-site': 'cross-site',
+          'content-type': 'application/json',
+        },
+        'cross_site_request',
+      ],
+    ] as const) {
+      const response = await POST!(
+        context(
+          new Request('https://tcn.example/api/auth/login', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ username: 'editor', password: 'secret' }),
+          }),
+        ),
+      );
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toEqual({ ok: false, error });
+    }
+    expect(requireLoginChallenge).not.toHaveBeenCalled();
+    expect(getUserByUsername).not.toHaveBeenCalled();
+  });
+
   it('returns a safe member destination without exposing internal privilege flags', async () => {
     getUserByUsername.mockResolvedValue({
       id: 'member',
@@ -120,7 +150,7 @@ describe('POST /api/auth/login', () => {
       context(
         new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ username: 'reader', password: 'secret', returnTo: '//evil.org' }),
         }),
       ),
@@ -136,7 +166,7 @@ describe('POST /api/auth/login', () => {
       context(
         new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ username: ' Reader@Example.ORG ', password: 'secret' }),
         }),
       ),
@@ -162,7 +192,7 @@ describe('POST /api/auth/login', () => {
       context(
         new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ username: legacy.username, password: 'secret' }),
         }),
       ),
@@ -186,7 +216,7 @@ describe('POST /api/auth/login', () => {
       context(
         new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ username: exact.username, password: 'secret' }),
         }),
       ),
@@ -213,7 +243,10 @@ describe('POST /api/auth/login', () => {
       getUserByUsername.mockResolvedValue(null);
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: {
+          origin: 'https://tcn.example',
+          'content-type': 'application/x-www-form-urlencoded',
+        },
         body: new URLSearchParams({
           username: 'editor',
           password: 'secret',
@@ -266,7 +299,7 @@ describe('POST /api/auth/login', () => {
       ]) {
         const request = new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ ...body, turnstileToken: 'turnstile-token' }),
         });
 
@@ -283,7 +316,7 @@ describe('POST /api/auth/login', () => {
       requireLoginChallenge.mockRejectedValue(new TurnstileError('turnstile_failed'));
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
         body: JSON.stringify({ username: 'editor', password: 'secret', turnstileToken: { x: 1 } }),
       });
 
@@ -295,7 +328,7 @@ describe('POST /api/auth/login', () => {
     it('rejects missing credentials before spending a Siteverify call', async () => {
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
         body: JSON.stringify({ turnstileToken: 'turnstile-token' }),
       });
 

@@ -27,6 +27,7 @@ import {
   recordLoginFailure,
   resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
+import { requireSameOrigin, SecurityError } from '../../../lib/auth/mutation';
 import { TurnstileError } from '../../../lib/turnstile';
 import { memberDestination } from '../../../lib/membership/redirects';
 
@@ -89,6 +90,15 @@ function lockedResponse(retryAfterSeconds: number): Response {
 }
 
 export const POST: APIRoute = async ({ request, url }) => {
+  try {
+    requireSameOrigin(request);
+  } catch (error) {
+    if (error instanceof SecurityError) {
+      return Response.json({ ok: false, error: error.code }, { status: error.status });
+    }
+    throw error;
+  }
+
   const credentials = await readCredentials(request);
   const { password, turnstileToken, returnTo } = credentials;
   const username = credentials.username.includes('@')

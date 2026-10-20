@@ -152,3 +152,46 @@ it('acknowledges reset without waiting for a provider or revealing account looku
     vi.unstubAllGlobals();
   }
 });
+it('keeps password reset working when the daily signup verification budget is exhausted', async () => {
+  const proof = await verified();
+  await finishSignup(h.db, proof, input);
+  const date = new Date().toISOString().slice(0, 10);
+  await h.db
+    .prepare('INSERT INTO auth_mail_limits(key,attempts,started_at,last_sent_at) VALUES (?,50,0,1)')
+    .bind('send-budget:' + date)
+    .run();
+  const network = vi.fn(async () => Response.json({ id: 'mail' }));
+  vi.stubGlobal('fetch', network);
+  const prodBindings = {
+    AUTH_PUBLIC_ORIGIN: 'https://tcn.example',
+    AUTH_MAIL_FROM: 'accounts@tcn.example',
+    RESEND_API_KEY: 'test',
+  };
+  try {
+    await expect(
+      beginSignup(
+        h.db,
+        'another@example.org',
+        new Request('https://tcn.example/signup', {
+          headers: { 'cf-connecting-ip': '192.0.2.99' },
+        }),
+        prodBindings,
+        secret,
+      ),
+    ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
+    expect(network).not.toHaveBeenCalled();
+
+    await requestPasswordReset(
+      h.db,
+      input.email,
+      new Request('https://tcn.example/forgot-password', {
+        headers: { 'cf-connecting-ip': '192.0.2.100' },
+      }),
+      prodBindings,
+      secret,
+    );
+    expect(network).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});

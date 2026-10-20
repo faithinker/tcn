@@ -78,6 +78,7 @@ try {
     });
     contexts.set(name, context);
     const response = await context.request.post(new URL('/api/auth/login', base).href, {
+      headers: { origin: base.origin },
       data: { username: `${prefix}-${name}`, password },
     });
     assert.equal(response.status(), 200, `${name}: login; local LOGIN_CHALLENGE=off required`);

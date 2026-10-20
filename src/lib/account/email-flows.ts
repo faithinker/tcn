@@ -36,7 +36,7 @@ async function limitMail(
   // Atomic conditional UPSERTs, so concurrent requests cannot pass a read-then-write check.
   for (const [label, value, max, cooldown] of [
     ['email', email, 5, 60],
-    ['ip', clientIpKey(request), 20, 0],
+    ['ip', clientIpKey(request), 10, 0],
   ] as const) {
     const key = purpose + ':' + label + ':' + bytesToHex(await hmacSha256(value, secret));
     const result = await db
@@ -113,6 +113,8 @@ export async function beginSignup(
       email,
       'Your TCN email verification code',
       `Your TCN verification code is ${code}. It expires in 10 minutes.\n\nIf you already have an account, sign in instead. If you did not request this code, ignore this email.`,
+      undefined,
+      'signup',
     );
   } catch {
     await db.prepare('DELETE FROM auth_email_challenges WHERE id=?').bind(id).run();
@@ -219,6 +221,8 @@ export async function requestPasswordReset(
         email,
         'Reset your TCN password',
         `Set a new password using this link:\n${link}\n\nThis link expires in 30 minutes and can be used once. If you did not request it, ignore this email.`,
+        undefined,
+        'reset',
       );
     } catch {
       await db.prepare('DELETE FROM auth_email_challenges WHERE id=?').bind(id).run();

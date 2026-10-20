@@ -24,5 +24,7 @@ export function requestErrorMessage(error: unknown, fallback: string): string {
     return `The server returned an unreadable response (${error.status}). Try again.`;
   if (error.code === 'unauthorized')
     return 'Your session has expired. Sign in again before retrying.';
+  if (error.code === 'invalid_csrf')
+    return 'Your editor session was refreshed in another tab. Reload this page before saving again.';
   return saveErrors[error.code] ?? `${fallback} (${error.code})`;
 }

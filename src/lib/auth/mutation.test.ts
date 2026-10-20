@@ -135,6 +135,10 @@ describe('scoped CSRF tokens', () => {
     const token = await createCsrfToken('qna', 'session-a', 'secret');
     await expect(verifyCsrfToken(token, 'forum', 'session-a', 'secret')).resolves.toBe(false);
     await expect(verifyCsrfToken(token, 'users', 'session-a', 'secret')).resolves.toBe(false);
+    await expect(verifyCsrfToken(token, 'posts', 'session-a', 'secret')).resolves.toBe(false);
+    const postsToken = await createCsrfToken('posts', 'session-a', 'secret');
+    await expect(verifyCsrfToken(postsToken, 'posts', 'session-a', 'secret')).resolves.toBe(true);
+    await expect(verifyCsrfToken(postsToken, 'qna', 'session-a', 'secret')).resolves.toBe(false);
   });
 
   it('keeps the legacy Q&A token format so open admin screens survive the deploy', async () => {

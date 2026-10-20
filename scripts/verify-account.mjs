@@ -97,6 +97,7 @@ try {
   await page.setViewportSize({ width: 1280, height: 900 });
   const stale = await browser.newContext();
   await stale.request.post(new URL('/api/auth/login', base).href, {
+    headers: { origin: base.origin },
     data: { username: email, password },
   });
   await page.locator('#password-details summary').click();

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireOfficer } from '../../../lib/auth';
+import { requireOfficerMutation } from '../../../lib/auth';
 import { createPost, getDB, listSeminarPosts } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
 import { parsePostPayload } from '../../../lib/posts';
@@ -7,9 +7,9 @@ import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/se
 
 export const prerender = false;
 
-// 글 생성: 승인된 임원만. 세션만 확인하고 CSRF 는 요구하지 않는다(기존 동작 유지).
+// 글 생성: 승인된 임원만(동일 출처 + Fetch Metadata + posts 범위 CSRF 검증).
 export const POST: APIRoute = async ({ request }) => {
-  const guard = await requireOfficer(request);
+  const guard = await requireOfficerMutation(request);
   if (!guard.ok) return guard.response;
 
   const parsed = parsePostPayload(await request.json().catch(() => null));
