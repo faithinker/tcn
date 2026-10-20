@@ -5,6 +5,7 @@ export {
   listSeminarPosts,
   getPost,
   getPostByEventDate,
+  getSeminarSequence,
   createPost,
   updatePost,
   PostRevisionConflictError,

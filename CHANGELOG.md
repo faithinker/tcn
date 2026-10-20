@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-21]
+
+### Fix
+
+- Enforced `requireMutation` (`admin-posts` and `admin-media` CSRF scopes plus same-origin validation) across `/api/posts`, `/api/posts/[id]`, `/api/media/upload`, `/api/media/[id]`, and `/api/media/cleanup`, enforced `requireSameOrigin` on `POST /api/auth/login`, and separated daily email delivery budgets by purpose (`mail-send:signup_verification:<day>` vs `mail-send:password_reset:<day>`, 45/day each) so unauthenticated signup floods cannot starve password resets. (Branch: `feat/roles-phase1-foundation`) - Implemented by Antigravity
+- Set `Path=/api/auth` on the trusted-device cookie (`tcn_device`) so `GET /api/auth/me` preserves the `trustedDevice` flag during in-session password changes and account closure, and unified `src/lib/auth/password-policy.ts` with `validateNewPasswordPolicy` (15–64 NFC characters) so `scripts/create-user.mjs` and web account lifecycle routes enforce one baseline length rule. (Branch: `feat/roles-phase1-foundation`) - Implemented by Antigravity
+- Optimized `getSeminarByEventDate` to fetch the target post and its 1-based chronological sequence via index-only count instead of loading all seminar bodies, cleared `posts.hero_media_id` atomically when deleting media, added `X-Content-Type-Options: nosniff` and `Content-Disposition: attachment` for document downloads on `/media/[...key]`, promoted the full CSP policy from Report-Only to enforced `Content-Security-Policy` in `src/lib/security-headers.ts` and `public/_headers`, and pruned expired `qna_rate_limits` rows on allowed question submissions. (Branch: `feat/roles-phase1-foundation`) - Implemented by Antigravity
+
 ## [2026-10-20]
 
 ### Chore

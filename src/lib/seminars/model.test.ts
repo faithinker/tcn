@@ -128,18 +128,29 @@ describe('getSeminarCollection', () => {
     expect(result.chronological.map((seminar) => seminar.id)).toEqual(['first']);
   });
 
-  it('finds one detail view by event date from the same derived collection', async () => {
-    const all = async () => ({
+  it('finds one detail view by event date without scanning all seminar bodies', async () => {
+    const all = vi.fn(async () => ({
       results: [post('first', '2025-12-26'), post('second', '2026-10-30')],
-    });
-    const db = { prepare: () => ({ all }) } as unknown as D1Database;
+    }));
+    const prepare = vi.fn((sql: string) => ({
+      all,
+      bind: (eventDate: string) => ({
+        first: async () => {
+          if (sql.includes('count(*)')) {
+            return { sequence: eventDate === '2026-10-30' ? 2 : 0 };
+          }
+          return eventDate === '2026-10-30' ? post('second', '2026-10-30') : null;
+        },
+      }),
+    }));
+    const db = { prepare } as unknown as D1Database;
     const getSeminarByEventDate = (
       seminarService as {
         getSeminarByEventDate?: (
           db: D1Database,
           eventDate: string,
           today: string,
-        ) => Promise<{ id: string; sequence: number } | null>;
+        ) => Promise<{ id: string; sequence: number; ordinalLabel: string } | null>;
       }
     ).getSeminarByEventDate;
 
@@ -149,8 +160,10 @@ describe('getSeminarCollection', () => {
     await expect(getSeminarByEventDate(db, '2026-10-30', '2026-01-01')).resolves.toMatchObject({
       id: 'second',
       sequence: 2,
+      ordinalLabel: 'Second International Seminar',
     });
     await expect(getSeminarByEventDate(db, '2027-01-01', '2026-01-01')).resolves.toBeNull();
+    expect(all).not.toHaveBeenCalled();
   });
 });
 

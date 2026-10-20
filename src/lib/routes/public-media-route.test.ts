@@ -164,4 +164,42 @@ describe('/media/[...key]', () => {
     expect(response.status).toBe(404);
     expect(get).not.toHaveBeenCalled();
   });
+
+  it('sets X-Content-Type-Options: nosniff on all media and Content-Disposition: attachment on documents', async () => {
+    getPublicMediaByKey.mockResolvedValue({
+      id: 'doc-1',
+      r2Key: 'post-1/program.pdf',
+      kind: 'document',
+      filename: '세미나 자료집 (2026).pdf',
+    });
+    get.mockResolvedValue(
+      object({
+        writeHttpMetadata: (headers: Headers) => headers.set('content-type', 'application/pdf'),
+      }),
+    );
+
+    const docResponse = await mediaRoute.GET!(context('GET', undefined, 'post-1/program.pdf'));
+    expect(docResponse.status).toBe(200);
+    expect(docResponse.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(docResponse.headers.get('content-disposition')).toBe(
+      `attachment; filename="(2026).pdf"; filename*=UTF-8''${encodeURIComponent('세미나 자료집 (2026).pdf')}`,
+    );
+
+    getPublicMediaByKey.mockResolvedValue({
+      id: 'img-1',
+      r2Key: 'post-1/photo.webp',
+      kind: 'image',
+      filename: 'photo.webp',
+    });
+    get.mockResolvedValue(
+      object({
+        writeHttpMetadata: (headers: Headers) => headers.set('content-type', 'image/webp'),
+      }),
+    );
+
+    const imgResponse = await mediaRoute.GET!(context('GET', undefined, 'post-1/photo.webp'));
+    expect(imgResponse.status).toBe(200);
+    expect(imgResponse.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(imgResponse.headers.get('content-disposition')).toBeNull();
+  });
 });

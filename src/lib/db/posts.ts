@@ -44,6 +44,17 @@ export async function getPostByEventDate(db: D1Database, eventDate: string): Pro
   );
 }
 
+export async function getSeminarSequence(db: D1Database, eventDate: string): Promise<number> {
+  const row = await db
+    .prepare(
+      `select count(*) as sequence from posts
+       where event_date is not null and deleted_at is null and event_date <= ?1`,
+    )
+    .bind(eventDate)
+    .first<{ sequence: number }>();
+  return Number(row?.sequence ?? 0);
+}
+
 export async function createPost(db: D1Database, input: PostInput): Promise<Post> {
   const id = newId();
   await db

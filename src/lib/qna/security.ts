@@ -65,7 +65,17 @@ export async function consumeQuestionRateLimit(
     )
     .bind(identifier, at);
   const consumed = await statement.first<RateRow>();
-  if (consumed) return { allowed: true, retryAfter: 0 };
+  if (consumed) {
+    await db
+      .prepare(
+        `delete from qna_rate_limits
+         where day_window_started_at <= ?1 - ${DAY_WINDOW_SECONDS}
+           and short_window_started_at <= ?1 - ${SHORT_WINDOW_SECONDS}`,
+      )
+      .bind(at)
+      .run();
+    return { allowed: true, retryAfter: 0 };
+  }
 
   const current = await db
     .prepare(
