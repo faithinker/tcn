@@ -13,6 +13,7 @@ verify/
 
 # os / editor
 .DS_Store
+.obsidian/
 *.log
 npm-debug.log*
 
@@ -22,6 +23,10 @@ npm-debug.log*
 !.env.example
 .dev.vars
 .dev.vars.*
+*.pem
+*.key
+credentials.json
+secrets.json
 translation-input.json
 translation-output.json
 

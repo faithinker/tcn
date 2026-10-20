@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-10-20]
 
+### Chore
+
+- Localized the Codex design-hook status message, excluded private key and credential files and local Obsidian settings from Git, and cleaned obsolete service references from historical documentation. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+
 ### Feature
 
 - Added General Assembly and Board of Directors forums, gated signup, account pages and executive user management. Special forum access for approved Auditors and Advisors does not grant content-management authority; users cannot change themselves or existing executives. Migrations `0009` and `0010` add forum storage, special access and atomic revision-checked user audit events. Member features and public signup remain separately gated off by default. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
@@ -200,7 +204,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Chore
 - Tracked the Vercel `web-design-guidelines` skill in the two stores the repository already versions — `.agents/skills` for agent runtimes and `.claude/skills` so Claude Code can load it — matching the `skills-lock.json` entry that had already been recorded without its files. The skill is a 39-line pointer that fetches the upstream rules at review time, so it carries no project data. Two byte-identical copies the installer had fanned out to an untracked `.hermes/` and a root `data/` directory were removed: neither runtime is used here, and a root `data/` collides with `src/data`. `.impeccable/critique/` is now ignored — those generated audits enumerate admin weaknesses (no session-revocation UI, CLI-only account operations, unreachable soft-deleted rows) and this repository is public, so they stay local and actionable findings move to issues or this file. (Branch: `main`) - Implemented by Claude
 - Normalized CHANGELOG formatting (merged the duplicated 2026-07-26 Fix sections, unified `Added` headings under `Feature`, uniform section spacing, one missing attribution) and made the CRITICAL `pr-changelog` rule loadable by Claude Code via a `.claude/skills/pr-changelog` pointer at the canonical `.agents` skill, following the existing `academic-translation` pointer pattern. (Branch: `docs/remote-docs-cleanup`) - Implemented by Claude
-- Dropped the six dead `SUPABASE_*` names and `GITHUB_ACTIONS_TOKEN` from the generated `worker-configuration.d.ts` — they came from a since-deleted local `.env` file at generation time, not from the Worker, whose secret list holds only the five session/Turnstile/Q&A secrets — and removed the stale `supabase/functions` entry from the tsconfig exclude list. (Branch: `fix/a11y-tokens`) - Implemented by Claude
+- Removed stale environment declarations from the generated `worker-configuration.d.ts` and obsolete tsconfig exclusions. The Worker secret list holds only the five session/Turnstile/Q&A secrets. (Branch: `fix/a11y-tokens`) - Implemented by Claude
 
 ### Test
 - Added critical runtime coverage for authentication cookies and session routes, post APIs, canonical middleware behavior, and Q&A D1 constraints, with Vitest thresholds split by coverage category and the D1 constraint gate wired into CI. (Branch: `test/critical-coverage-gaps`) - Implemented by Codex
@@ -336,7 +340,7 @@ All notable changes to this project will be documented in this file. AI agents (
 - Removed the remaining English-only locale shim and dead bilingual branches, unified the People board with public post data, and limited Noto webfonts to the Latin subsets used by the site. (Branch: `feat/people-unified-board`) - Implemented by Codex
 
 ### Removed
-- Legacy content stack (`src/lib/content`, `seminars.json`, `history.json`, Pages `functions/`, `_routes.json`) and Supabase dependencies/env. - Implemented by Claude
+- Legacy content stack (`src/lib/content`, `seminars.json`, `history.json`, Pages `functions/`, `_routes.json`) during the content stack migration. - Implemented by Claude
 
 ### Fix
 - Unblock production deploys by raising `esbuild` to `^0.28.1`; the pinned `0.27.7` devDependency was hoisted into the production tree via `@astrojs/cloudflare`'s vite and failed the `npm audit --omit=dev --audit-level=low` gate (GHSA-g7r4-m6w7-qqqr), so every deploy since PR #25 aborted before `wrangler deploy` and production still served a pre-cleanup build. (Branch: `fix/esbuild-audit-unblock-deploy`) - Implemented by Claude
