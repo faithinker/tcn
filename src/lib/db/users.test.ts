@@ -34,6 +34,7 @@ describe('user rows', () => {
     expect(statements[0]).toContain('role');
     expect(statements[0]).toContain('status');
     expect(statements[0]).toContain('is_executive as isExecutive');
+    expect(statements[0]).toContain('can_access_directors_forum as canAccessDirectorsForum');
   });
 
   it('maps the stored 0/1 executive flag to a boolean', async () => {
@@ -46,5 +47,15 @@ describe('user rows', () => {
   it('returns null when no row matches', async () => {
     expect(await getUserById(fakeDb(null).db, 'missing')).toBeNull();
     expect(await getUserByUsername(fakeDb(null).db, 'missing')).toBeNull();
+  });
+
+  it('maps special access from SQLite without implicitly granting an officer role', async () => {
+    const user = await getUserById(
+      fakeDb({ ...ROW, role: 'member', isExecutive: 0, canAccessDirectorsForum: 1 }).db,
+      'u1',
+    );
+    expect(user?.role).toBe('member');
+    expect(user?.canAccessDirectorsForum).toBe(true);
+    expect(user?.isExecutive).toBe(false);
   });
 });

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-20]
+
+### Feature
+
+- Added General Assembly and Board of Directors forums, gated signup, account pages and executive user management. Special forum access for approved Auditors and Advisors does not grant content-management authority; users cannot change themselves or existing executives. Migrations `0009` and `0010` add forum storage, special access and atomic revision-checked user audit events. Member features and public signup remain separately gated off by default. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+- Reorganized the public header around About, People, Seminars and permission-aware Forums. Contact is last under About and remains in the footer; signed-out visitors see Sign in, while signed-in users see a profile icon and Log out. Forum menus support hover, click-to-pin, outside-click, scroll and keyboard dismissal. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+
+### Fix
+
+- Preserved exact legacy username lookup before normalized email fallback and prevented login, signup and private post forms from putting sensitive fields in URLs when JavaScript is unavailable. Ordinary operator role changes are audited; protected executive recovery requires an explicit bootstrap reason outside the site UI. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+
+### Test
+
+- Added isolated workerd D1 gates for forum constraints, atomic user/audit rollback, concurrent revisions, idempotent retries and executive protection, plus local browser gates for seven permission groups, header interactions, signup, approval, forum ownership and actual session logout. Updated CI and implementation, verification, development and operations documentation; production data changes and deployment remain pending separate approval. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+
 ## [2026-10-16]
 
 ### Feature

@@ -62,6 +62,7 @@ describe('getSessionUser', () => {
       role: 'officer',
       status: 'approved',
       isExecutive: true,
+      canAccessDirectorsForum: false,
     });
 
     await expect(getSessionUser(requestWith(token))).resolves.toEqual({
@@ -71,6 +72,7 @@ describe('getSessionUser', () => {
       role: 'officer',
       status: 'approved',
       isExecutive: true,
+      canAccessDirectorsForum: false,
     });
   });
 

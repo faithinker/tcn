@@ -16,15 +16,8 @@ function migrationStatements(): string[] {
     .filter((name) => name.endsWith('.sql'))
     .sort((a, b) => a.localeCompare(b, 'en'));
 
-  return files.flatMap((name) =>
-    readFileSync(join(MIGRATIONS_DIR, name), 'utf8')
-      .split('\n')
-      .map((line) => line.replace(/--.*$/, ''))
-      .join('\n')
-      .split(';')
-      .map((statement) => statement.trim())
-      .filter(Boolean),
-  );
+  // Execute whole migration files: splitting on semicolons breaks SQL trigger bodies.
+  return files.map((name) => readFileSync(join(MIGRATIONS_DIR, name), 'utf8'));
 }
 
 type Params = readonly unknown[];
@@ -88,11 +81,19 @@ class SqliteD1 {
     return new SqliteStatement(sql, this.database);
   }
 
-  /** D1 의 batch 는 순차 실행 + 결과 배열. 여기서는 트랜잭션 경계를 흉내내지 않는다. */
+  /** D1 batches are atomic, including failures in constraints and triggers. */
   async batch<T = Record<string, unknown>>(
     statements: SqliteStatement[],
   ): Promise<{ results: T[]; success: true; meta: { changes: number } }[]> {
-    return statements.map((statement) => statement.execute<T>());
+    this.database.exec('BEGIN');
+    try {
+      const results = statements.map((statement) => statement.execute<T>());
+      this.database.exec('COMMIT');
+      return results;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
   }
 }
 

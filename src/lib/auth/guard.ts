@@ -39,6 +39,7 @@ export async function getSessionUser(request: Request): Promise<SessionUser | nu
     role: user.role,
     status: user.status,
     isExecutive: user.isExecutive,
+    canAccessDirectorsForum: user.canAccessDirectorsForum,
   };
 }
 

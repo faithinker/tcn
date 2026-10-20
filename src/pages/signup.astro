@@ -1,0 +1,132 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSessionUser } from '../lib/auth';
+import {
+  memberFeaturesEnabled,
+  memberFeatureUnavailable,
+  signupEnabled,
+} from '../lib/member-features';
+if (!signupEnabled()) return new Response(null, { status: 404 });
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+if (await getSessionUser(Astro.request)) return Astro.redirect('/account');
+const inputClass =
+  'mt-1 block min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-3 py-2 text-ink focus-visible:border-accent';
+---
+
+<BaseLayout title="Create an account" noindex>
+  <section class="mx-auto max-w-lg px-5 py-12 sm:py-16">
+    <h1 class="font-serif text-display-md font-semibold text-ink">Create an account</h1>
+    <p class="mt-5 text-body-sans">
+      Your application will be reviewed by TCN. You can access the General Assembly forum while your
+      application is pending.
+    </p>
+    <form
+      id="signup-form"
+      method="post"
+      action="/api/auth/signup"
+      class="mt-8 space-y-5 text-body-sans"
+    >
+      <label class="block">
+        Email
+        <input
+          class={inputClass}
+          type="email"
+          name="email"
+          autocomplete="email"
+          required
+          maxlength="254"
+        />
+      </label>
+      <label class="block">
+        Name
+        <input class={inputClass} name="displayName" autocomplete="name" required maxlength="100" />
+      </label>
+      <label class="block">
+        Affiliation <span class="text-body-muted">(optional)</span>
+        <input class={inputClass} name="affiliation" autocomplete="organization" maxlength="200" />
+      </label>
+      <label class="block">
+        Password
+        <input
+          class={inputClass}
+          type="password"
+          name="password"
+          autocomplete="new-password"
+          required
+          minlength="12"
+          maxlength="128"
+          aria-describedby="password-help"
+        />
+      </label>
+      <p id="password-help" class="text-body-sm text-body-muted">
+        Use 12–128 characters. Choose an uncommon phrase; avoid your email, repeated characters, and
+        common passwords.
+      </p>
+      <p id="signup-error" role="alert" class="text-body-sm text-danger" hidden></p>
+      <button
+        type="submit"
+        class="min-h-12 w-full rounded-sm bg-ink px-6 py-3 font-bold text-on-primary disabled:opacity-50"
+      >
+        Create account
+      </button>
+    </form>
+    <p class="mt-6 text-body-sm">
+      Already have an account?{' '}
+      <a href="/login" class="text-link underline">
+        Sign in
+      </a>
+    </p>
+  </section>
+  <script>
+    const form = document.getElementById('signup-form') as HTMLFormElement | null;
+    const error = document.getElementById('signup-error');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (error) error.hidden = true;
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Creating account…';
+      }
+      try {
+        const data = new FormData(form);
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(data)),
+        });
+        const payload = (await response.json()) as { reason?: string; error: string };
+        if (!response.ok)
+          throw new Error(
+            payload.reason ??
+              (
+                {
+                  email_unavailable:
+                    'An account already uses this email. Sign in or use another email.',
+                  invalid_email: 'Enter a valid email address.',
+                  invalid_profile: 'Check your name and affiliation.',
+                  invalid_password: 'Choose a stronger password.',
+                  invalid_fields: 'Check the form and try again.',
+                } as Record<string, string>
+              )[payload.error] ??
+              'Account creation is unavailable. Please try again later.',
+          );
+        window.location.href = '/account';
+      } catch (failure) {
+        if (error) {
+          error.hidden = false;
+          error.textContent =
+            failure instanceof Error
+              ? failure.message
+              : 'Unable to create your account. Please try again.';
+        }
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = 'Create account';
+        }
+      }
+    });
+  </script>
+</BaseLayout>

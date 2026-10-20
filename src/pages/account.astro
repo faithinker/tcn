@@ -1,0 +1,104 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { canAccess, getSessionUser } from '../lib/auth';
+import { getDB, getUserById } from '../lib/db';
+import { memberFeaturesEnabled, memberFeatureUnavailable } from '../lib/member-features';
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const sessionUser = await getSessionUser(Astro.request);
+if (!sessionUser) return Astro.redirect('/login?returnTo=%2Faccount');
+const user = await getUserById(getDB(), sessionUser.id);
+if (!user) return Astro.redirect('/login?returnTo=%2Faccount');
+const status = {
+  pending:
+    'Your account is pending review. You can participate in the General Assembly forum while your application is reviewed.',
+  approved: 'Your membership has been approved.',
+  rejected:
+    'Your membership application was not approved. Please contact the Secretariat if you have questions.',
+}[user.status];
+const fields = [
+  ['Name', user.displayName ?? 'Not provided'],
+  [user.username.includes('@') ? 'Email' : 'Username', user.username],
+  ['Affiliation', user.affiliation ?? 'Not provided'],
+  [
+    'Membership status',
+    user.status === 'pending'
+      ? 'Associate member · Pending review'
+      : user.status === 'approved'
+        ? 'Approved'
+        : 'Not approved',
+  ],
+];
+const links = [
+  {
+    label: 'General Assembly forum',
+    href: '/forum/assembly',
+    allowed: canAccess(sessionUser, { kind: 'forum.read', board: 'assembly' }),
+  },
+  {
+    label: 'Board of Directors forum',
+    href: '/forum/directors',
+    allowed: canAccess(sessionUser, { kind: 'forum.read', board: 'directors' }),
+  },
+  {
+    label: 'Manage content',
+    href: '/admin',
+    allowed: canAccess(sessionUser, { kind: 'seminar.write' }),
+  },
+  {
+    label: 'Manage users',
+    href: '/admin/users',
+    allowed: canAccess(sessionUser, { kind: 'users.list' }),
+  },
+];
+---
+
+<BaseLayout title="Your account" noindex>
+  <section class="mx-auto max-w-2xl px-5 py-12 sm:py-16">
+    <h1 class="font-serif text-display-md font-semibold text-ink">Your account</h1>
+    <p class="mt-5 text-body-sans">{status}</p>
+    <dl class="mt-8 divide-y divide-hairline border-y border-hairline text-body-sans">
+      {fields.map(([label, value]) => (
+        <div class="py-4">
+          <dt class="text-body-sm text-body-muted">{label}</dt>
+          <dd class="mt-1 break-words">{value}</dd>
+        </div>
+      ))}
+    </dl>
+    <nav aria-label="Account links" class="mt-8 flex flex-wrap gap-x-6 gap-y-4 text-body-sans">
+      {links
+        .filter((link) => link.allowed)
+        .map((link) => (
+          <a href={link.href} class="inline-flex min-h-11 items-center text-link underline">
+            {link.label}
+          </a>
+        ))}
+    </nav>
+    <button
+      type="button"
+      id="account-logout"
+      class="mt-8 min-h-12 rounded-sm bg-ink px-6 py-3 font-bold text-on-primary"
+    >
+      Log out
+    </button>
+    <p id="account-error" role="alert" class="mt-4 text-body-sm text-danger" hidden></p>
+  </section>
+  <script>
+    document.getElementById('account-logout')?.addEventListener('click', async (event) => {
+      const button = event.currentTarget as HTMLButtonElement;
+      const error = document.getElementById('account-error');
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/auth/logout', { method: 'POST' });
+        if (!response.ok) throw new Error('logout');
+        window.location.href = '/login';
+      } catch {
+        if (error) {
+          error.hidden = false;
+          error.textContent = 'Unable to log out. Please try again.';
+        }
+        button.disabled = false;
+      }
+    });
+  </script>
+</BaseLayout>

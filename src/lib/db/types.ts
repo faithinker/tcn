@@ -77,6 +77,8 @@ export interface User {
   status: AccountStatus;
   // 결정권(회장·부회장). status 가 approved 이고 role 이 officer 일 때만 의미를 가진다.
   isExecutive: boolean;
+  canAccessDirectorsForum: boolean;
+  affiliation: string | null;
 }
 
 export type QnaVisibility = 'visible' | 'hidden';

@@ -1,6 +1,6 @@
 # TCN Content Architecture
 
-Updated: 2026-10-15 (커스텀 도메인 `thetcn.org` canonical·TypeScript 6·Node 버전 `.nvmrc` 기준·CI 검증 게이트 목록 실측 동기화. 라우트·D1 10테이블·Q&A 보안 설정은 2026-07-30 이후 변경 없음을 재확인)
+Updated: 2026-10-20 (통합 회원 기능의 브랜치 구현 반영. 운영 활성화는 별도 승인)
 
 Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정적 프리렌더 + 동적 SSR. TypeScript 6(`astro check`가 TS 7을 아직 지원하지 않아 6 계열 유지), 빌드·CI의 Node 버전은 `.nvmrc`가 기준. 배포는 `wrangler deploy` (`.github/workflows/deploy-workers.yml`). 버전의 단일 원천은 `package.json`.
 
@@ -40,25 +40,31 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 
 ## 3. 데이터
 
-- **D1 10테이블** (`migrations/*.sql` 6개, `0001_init.sql` 이후는 additive만):
+추가 회원 경로는 `/login`, `/signup`, `/account`, `/forum/{assembly,directors}`, `/forum/[board]/{new,[id]}`, `/admin/users`다. 변경 API는 `/api/auth/signup`, `/api/forum/[board]`, `/api/forum/[board]/[id]`, `/api/users/[id]/{status,permissions}`이며 목록·상세는 SSR에서 조회한다. 보호 경로는 no-store/noindex이고 sitemap에 넣지 않는다.
+
+- **D1 12테이블** (`migrations/*.sql` 10개, `0001_init.sql` 이후는 additive만):
   - 콘텐츠: `users`(수동 발급, PBKDF2, `session_version`으로 일괄 세션 무효화) · `posts`(title/summary/event_date/address/body-markdown/hero, soft delete, `revision` 낙관적 락) · `media`(R2 키+메타, image/video/document)
   - 운영: `media_cleanup_queue`(고아 R2 키 큐) · `auth_rate_limits`(로그인 시도 제한)
   - 공개 Q&A: `qna_questions` · `qna_answers` · `qna_audit_events`(답변·공개여부 변경 감사) · `qna_rate_limits` · `qna_turnstile_tokens`(토큰 재사용 차단)
+  - 회원: `forum_posts`(board·작성자·revision·숨김), `user_audit_events`(상태·권한 전후 값과 수행자·requestId). `users`에는 role/status/is_executive/can_access_directors_forum/affiliation과 변경 revision을 둔다.
 - **R2** (`tcn-media`): 원본 파일. 이미지는 업로드 시 브라우저에서 WebP(≤2400px)+EXIF 제거, 서버 재검증.
 - **정적 데이터**: `src/data/organization-milestones.ts`(연혁 확정 기록), `members.json`, `invitations.json`, `founding-media.json` (Astro 컬렉션은 members·invitations만)
 - **카피**: `src/i18n/content.ts`(페이지 본문 카피) + `ui.ts`(UI 문자열 사전 + `t()`). `i18n/utils.ts`는 `formatDate`만 - 영어 단일이라 언어 분기 없음.
 
 ## 4. 권한·알림
 
-- 인증: 서명 세션 쿠키(HMAC, 1일). 계정은 `scripts/create-user.mjs`로 수동 발급 - 회원가입 UI 없음.
-- 권한 flat: 인증된 회원 누구나 글 등록·수정에 더해 Q&A 답변 작성·공개 여부 전환까지 할 수 있다. 별도 admin 역할 컬럼은 없다. 삭제는 soft delete만.
-- Q&A 변경 가드(`lib/qna/security.ts` `requireAdminMutation`): 세션 + 동일 출처 `Origin` + `sec-fetch-site` + CSRF 토큰을 전부 요구하고, `expectedRevision` 불일치는 409. 모든 변경은 `qna_audit_events`에 `answer_created`/`answer_updated`/`question_hidden`/`question_restored`로 남는다.
+- 인증: 서명 세션 쿠키(HMAC, 1일). 수동 발급과 플래그로 닫힌 사이트 내 가입을 지원한다. 신규 가입 기본값은 member/pending이며 승인 후에도 운영 권한은 자동 부여하지 않는다.
+- 승인된 officer만 세미나·미디어·공식 답변을 관리한다. 감사·고문은 approved member + 임원 게시판 특별 접근만 가진다. 결정권자는 사용자 관리·타인 Forum 글 숨김이 가능하나 자기 자신·기존 결정권자의 상태/권한은 변경하지 못한다.
+- Q&A 변경은 공용 `requireMutation`을 officer/qna 범위로 호출한다. Forum은 activeAccount/forum 후 게시판·작성자 검사, 사용자 관리는 executive/users 후 대상 보호 검사로 처리한다. 상태·권한 변경과 감사 기록은 하나의 D1 배치이며 revision 충돌은 409다. Forum 변경은 알림을 보내지 않는다.
+- `MEMBER_FEATURES_ENABLED`는 초기 명단 검증까지 Forum·사용자 관리를 닫고, `SIGNUP_ENABLED`는 공개 가입을 별도 통제한다. 정확히 true일 때만 열린다.
 - 알림: 글 등록/수정 → `waitUntil`로 Discord webhook + Telegram sendMessage (`lib/notify`). 베스트에포트 - 실패해도 글 무영향. 시크릿: `DISCORD_WEBHOOK`, `TELEGRAM_TOKEN`, `TELEGRAM_TO`.
 - **Q&A 질문 제출은 알림을 보내지 않는다** - 의도된 설계다. `lib/notify`는 `api/posts`에서만 호출된다. 운영자는 어드민 내비의 대기 질문 건수 배지로만 새 질문을 인지한다.
 - 설정 인벤토리(`.env.example`): 위 알림 시크릿 + `SESSION_SECRET` + Q&A 4종 `TURNSTILE_SITE_KEY`·`TURNSTILE_SECRET_KEY`·`QNA_TURNSTILE_HOSTNAMES`·`QNA_RATE_LIMIT_SECRET` + `PUBLIC_MEMBERSHIP_FORM_URL`(시크릿 아님 - 비어 있으면 `/contact` 가입 CTA 미노출).
 - Q&A 4종은 fail closed다. 하나라도 없으면 질문 생성이 거부되고 `/api/ready`가 503을 낸다 - 2026-07-29 롤백의 원인. 실제 읽는 지점은 `api/ready.ts`·`api/questions/index.ts`·`questions/new.astro`이고, `lib/qna/security.ts`는 값을 인자로 받아 검증만 한다.
 
 ## 5. 운영
+
+회원 검증은 `test:forum:d1`, `test:users:d1`, `verify:forum-users`로 추가한다. 실제 workerd D1과 역할별 로컬 브라우저 하네스를 사용하며, 운영 계정 반영과 배포는 통합 구현·검증 후 승인된 절차에서 수행한다. 운영 스크립트의 actor·bootstrap·감사 기록은 [운영 런북](./docs/operations-runbook.md#account-roles-and-executive-authority)을 따른다.
 
 - 로컬: `npm run dev` (wrangler platformProxy로 로컬 D1/R2). 시드: `node scripts/seed-seminar-posts.mjs`. 계정: `node scripts/create-user.mjs <id> --role officer|member [--remote]`(비밀번호는 숨김 프롬프트 또는 `TCN_USER_PASSWORD`).
 - 시크릿: 로컬 `.dev.vars`, 원격은 단건 `wrangler secret put` 또는 gitignore된 `.dev.vars.production`을 `wrangler secret bulk`로 일괄 투입(운영 경로).

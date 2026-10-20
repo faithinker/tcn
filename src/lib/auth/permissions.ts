@@ -8,6 +8,7 @@ export interface SessionUser {
   role: UserRole;
   status: AccountStatus;
   isExecutive: boolean;
+  canAccessDirectorsForum: boolean;
 }
 
 // 등급 순서: (비로그인) < associate(준회원) < member(회원) < director(이사진) < executive(회장·부회장).
@@ -37,6 +38,16 @@ export function tierOf(user: SessionUser | null): Tier | null {
 export function hasTier(user: SessionUser | null, minimum: Tier): boolean {
   const tier = tierOf(user);
   return tier !== null && TIER_RANK[tier] >= TIER_RANK[minimum];
+}
+
+function canUseForum(user: SessionUser | null, board: ForumBoard): boolean {
+  if (hasTier(user, FORUM_MIN_TIER[board])) return true;
+  return (
+    board === 'directors' &&
+    user?.status === 'approved' &&
+    user.role === 'member' &&
+    user.canAccessDirectorsForum === true
+  );
 }
 
 export function meetsRequirement(user: SessionUser, requirement: Requirement): boolean {
@@ -76,13 +87,13 @@ export function canAccess(user: SessionUser | null, action: Action): boolean {
       return hasTier(user, 'director');
     case 'forum.read':
     case 'forum.write':
-      return hasTier(user, FORUM_MIN_TIER[action.board]);
+      return canUseForum(user, action.board);
     case 'forum.edit':
       // 수정은 작성자 본인만. 등급이 내려가 게시판 접근을 잃었으면 본인 글도 수정하지 못한다.
-      return hasTier(user, FORUM_MIN_TIER[action.board]) && user?.id === action.authorId;
+      return canUseForum(user, action.board) && user?.id === action.authorId;
     case 'forum.delete':
       return (
-        hasTier(user, FORUM_MIN_TIER[action.board]) &&
+        canUseForum(user, action.board) &&
         (user?.id === action.authorId || hasTier(user, 'executive'))
       );
     case 'users.list':

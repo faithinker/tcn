@@ -18,6 +18,8 @@ vi.mock('../db', () => ({ getDB, revokeUserSessions }));
 import { POST as logout } from '../../pages/api/auth/logout';
 import { GET as me } from '../../pages/api/auth/me';
 
+vi.mock('../member-features', () => ({ memberFeaturesEnabled: () => true }));
+
 function context(path: string, protocol = 'https:') {
   const url = new URL(`${protocol}//tcn.example${path}`);
   return {
@@ -72,6 +74,13 @@ describe('GET /api/auth/me', () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       authenticated: true,
+      memberFeaturesEnabled: true,
+      capabilities: {
+        directorsForum: true,
+        assemblyForum: true,
+        manageUsers: true,
+        manageContent: true,
+      },
       user: {
         id: 'user-1',
         username: 'editor',
@@ -106,6 +115,7 @@ describe('GET /api/auth/me', () => {
     await expect((await me!(context('/api/auth/me'))).json()).resolves.toEqual({
       ok: true,
       authenticated: false,
+      memberFeaturesEnabled: true,
     });
   });
 });

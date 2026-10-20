@@ -59,7 +59,7 @@ try {
   await page.goto(`${BASE}/admin/posts/new`, { waitUntil: 'domcontentloaded' });
   check(
     '미인증 /admin/posts/new 는 로그인으로 리다이렉트된다',
-    page.url().includes('/admin/login'),
+    ['/admin/login', '/login'].includes(new URL(page.url()).pathname),
   );
 
   // A2 — 실제 로그인 폼 제출로 세션을 얻는다.

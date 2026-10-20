@@ -11,12 +11,13 @@ const GUARDED_DIRS = ['admin', 'api', 'forum'];
 
 // handleAdminQuestionMutation 은 requireMutation 을 대신 부르는 래퍼다(아래 마지막 테스트가 확인한다).
 const GUARD_CALL =
-  /\b(?:requireOfficer|requireOfficerPage|requireExecutive|requireExecutivePage|requireActiveAccount|requireActiveAccountPage|requireMutation|handleAdminQuestionMutation)\s*\(/;
+  /\b(?:requireOfficer|requireOfficerPage|requireExecutive|requireExecutivePage|requireActiveAccount|requireActiveAccountPage|requireMutation|handleAdminQuestionMutation|handleUserMutation)\s*\(/;
 
 // 가드가 없어도 되는 경로. 현재 존재하는 경로만 올린다(없는 항목은 테스트가 실패한다).
 const PUBLIC_ROUTES: Record<string, string> = {
   'admin/login.astro': '로그인 화면은 세션 없이 열려야 한다.',
   'api/auth/login.ts': '자격 증명을 확인하는 경로이며 속도 제한이 걸려 있다.',
+  'api/auth/signup.ts': '가입 플래그와 출처·입력을 검사해 최소 권한 계정만 만든다.',
   'api/auth/logout.ts': '호출자 본인의 세션만 폐기한다.',
   'api/auth/me.ts': '호출자 본인의 상태만 알려 주고 비로그인에는 authenticated: false 를 준다.',
   'api/health.ts': '생존 확인용이고 외부 자원을 검사하지 않는다.',
@@ -66,5 +67,13 @@ describe('route guard coverage', () => {
     expect(source).toMatch(
       /requireMutation\(\s*options\.request,\s*\{\s*scope:\s*'qna',\s*require:\s*'officer'/,
     );
+  });
+
+  it('keeps the user mutation wrapper behind the executive guard and release gate', () => {
+    const source = stripComments(readFileSync(join(SRC_DIR, 'lib/users/route.ts'), 'utf8'));
+    expect(source).toMatch(
+      /requireMutation\(\s*request,\s*\{\s*scope:\s*'users',\s*require:\s*'executive'/,
+    );
+    expect(source).toMatch(/memberFeaturesEnabled\s*\(/);
   });
 });

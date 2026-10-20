@@ -28,6 +28,7 @@ import {
   resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
 import { TurnstileError } from '../../../lib/turnstile';
+import { defaultMemberDestination, safeMemberReturnTo } from '../../../lib/membership/redirects';
 
 export const prerender = false;
 
@@ -50,6 +51,7 @@ interface Credentials {
   username: string;
   password: string;
   turnstileToken: string;
+  returnTo: string;
 }
 
 async function readCredentials(request: Request): Promise<Credentials> {
@@ -59,11 +61,13 @@ async function readCredentials(request: Request): Promise<Credentials> {
       username?: unknown;
       password?: unknown;
       turnstileToken?: unknown;
+      returnTo?: unknown;
     };
     return {
       username: text(body.username),
       password: text(body.password),
       turnstileToken: text(body.turnstileToken),
+      returnTo: text(body.returnTo),
     };
   }
   const form = await request.formData().catch(() => new FormData());
@@ -72,6 +76,7 @@ async function readCredentials(request: Request): Promise<Credentials> {
     password: text(form.get('password')),
     // 위젯이 폼에 직접 넣는 표준 필드 이름.
     turnstileToken: text(form.get('cf-turnstile-response')),
+    returnTo: text(form.get('returnTo')),
   };
 }
 
@@ -84,7 +89,11 @@ function lockedResponse(retryAfterSeconds: number): Response {
 }
 
 export const POST: APIRoute = async ({ request, url }) => {
-  const { username, password, turnstileToken } = await readCredentials(request);
+  const credentials = await readCredentials(request);
+  const { password, turnstileToken, returnTo } = credentials;
+  const username = credentials.username.includes('@')
+    ? credentials.username.trim().toLowerCase()
+    : credentials.username;
   if (!username || !password) {
     return Response.json({ ok: false, error: 'missing_credentials' }, { status: 400 });
   }
@@ -118,7 +127,11 @@ export const POST: APIRoute = async ({ request, url }) => {
   const lockedFor = await getLoginLockSeconds(db, limitKeys);
   if (lockedFor > 0) return lockedResponse(lockedFor);
 
-  const user = await getUserByUsername(db, username);
+  // Preserve exact legacy identifiers; only fall back to normalized new-signup email
+  // when the submitted identifier has no match. Never switch accounts after a bad password.
+  const exactUser = await getUserByUsername(db, credentials.username);
+  const user =
+    exactUser ?? (credentials.username !== username ? await getUserByUsername(db, username) : null);
   // 없는 아이디도 같은 비용의 해시 검증을 돌려, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
@@ -163,7 +176,14 @@ export const POST: APIRoute = async ({ request, url }) => {
   return new Response(
     JSON.stringify({
       ok: true,
-      user: { id: user.id, username: user.username, displayName: user.displayName },
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        status: user.status,
+      },
+      redirectTo: safeMemberReturnTo(returnTo) ?? defaultMemberDestination(user),
     }),
     { status: 200, headers },
   );

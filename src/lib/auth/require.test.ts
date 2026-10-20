@@ -22,6 +22,7 @@ function account(overrides: Partial<SessionUser> = {}): SessionUser {
     role: 'member',
     status: 'approved',
     isExecutive: false,
+    canAccessDirectorsForum: false,
     ...overrides,
   };
 }

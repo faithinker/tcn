@@ -1,0 +1,96 @@
+---
+import type { ForumBoard } from '../../lib/auth/permissions';
+import type { ForumPost } from '../../lib/forum/repository';
+import { forumCopy as copy } from '../../lib/forum/copy';
+interface Props {
+  board: ForumBoard;
+  csrf: string;
+  post?: ForumPost;
+}
+const { board, csrf, post } = Astro.props;
+const cancel = post ? `/forum/${board}/${encodeURIComponent(post.id)}` : `/forum/${board}`;
+---
+
+<form
+  method="post"
+  action={`/api/forum/${board}`}
+  data-forum-form
+  data-board={board}
+  data-csrf={csrf}
+  data-post-id={post?.id}
+  data-revision={post?.revision}
+  class="space-y-6"
+>
+  <div>
+    <label for="forum-title" class="mb-2 block font-sans text-body-sans font-bold text-ink">
+      {copy.titleLabel}
+    </label>
+    <input
+      id="forum-title"
+      name="title"
+      type="text"
+      required
+      maxlength="120"
+      value={post?.title}
+      aria-describedby="forum-title-help"
+      class="min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans text-ink"
+    />
+    <p id="forum-title-help" class="mt-2 font-sans text-caption text-body-muted">
+      {copy.titleHelp}
+    </p>
+  </div>
+  <div>
+    <label for="forum-body" class="mb-2 block font-sans text-body-sans font-bold text-ink">
+      {copy.bodyLabel}
+    </label>
+    <textarea
+      id="forum-body"
+      name="body"
+      required
+      maxlength="10000"
+      rows="14"
+      aria-describedby="forum-body-help"
+      class="w-full resize-y rounded-sm border border-hairline-strong bg-canvas px-4 py-3 font-sans text-body-sans text-ink"
+      set:text={post?.body ?? ''}
+    />
+    <p id="forum-body-help" class="mt-2 font-sans text-caption text-body-muted">
+      {copy.bodyHelp} {copy.textHelp}
+    </p>
+  </div>
+  <div
+    data-forum-notice
+    role="alert"
+    tabindex="-1"
+    class="hidden rounded-sm bg-danger-soft p-4 font-sans text-body-sans text-danger"
+  ></div>
+  <a
+    data-forum-latest
+    href={cancel}
+    target="_blank"
+    rel="noopener"
+    class="hidden min-h-12 items-center font-sans text-body-sans underline"
+  >
+    {copy.latest} (opens in a new tab)
+  </a>
+  <div class="flex flex-wrap items-center gap-4">
+    <button
+      type="submit"
+      class="min-h-12 rounded-sm bg-ink px-6 font-sans text-button font-bold text-on-primary disabled:opacity-60"
+    >
+      {post ? copy.save : copy.create}
+    </button>
+    <a
+      href={cancel}
+      class="inline-flex min-h-12 items-center px-3 font-sans text-button text-ink underline"
+    >
+      {copy.cancel}
+    </a>
+  </div>
+  <noscript>
+    <p class="font-sans text-body-sans text-danger">Enable JavaScript to publish or edit a post.</p>
+  </noscript>
+</form>
+
+<script>
+  import '../../scripts/forum';
+</script>

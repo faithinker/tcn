@@ -80,6 +80,16 @@ tcn/
 
 ## 로컬 실행
 
+회원 기능 검증 시 로컬 D1 마이그레이션을 먼저 적용하고 `.dev.vars`에 `SESSION_SECRET`, `MEMBER_FEATURES_ENABLED=true`, `SIGNUP_ENABLED=true`, `LOGIN_CHALLENGE=off`를 설정합니다. 마지막 값은 localhost의 헤드리스 로그인에만 사용합니다. 운영은 두 회원 기능 플래그를 기본 false로 유지합니다.
+
+- `npm run test:forum:d1`: 격리된 workerd D1의 Forum 제약·롤백
+- `npm run test:users:d1`: 실제 사용자 변경 저장 계층의 감사·충돌·결정권자 보호
+- `npm run verify:forum-users`: localhost 역할별 브라우저·승인·특별 접근·게시/숨김·가입 검증, 임시 계정 정리
+- `npm run verify:header`: 등급별 게시판 메뉴 표시, 호버·클릭 고정·바깥 클릭·스크롤·키보드·모바일 검증
+- `MEMBER_A11Y=1 npm run verify:forum-users`: 같은 흐름에 인증 화면 Lighthouse 접근성 확인 추가
+
+브라우저 산출물은 gitignored `verify/members/`에 저장합니다. `/login`, `/account`, `/forum/assembly`, `/forum/directors`, `/admin/users`에서 확인합니다. 기존 관리자 저작 화면도 계속 `verify:admin`으로 검증합니다.
+
 ```bash
 npm ci                 # lockfile 기준 의존성 설치
 npm run dev            # 개발 서버 (wrangler platformProxy로 로컬 D1/R2 바인딩)

@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostForm from '../../../components/forum/PostForm.astro';
+import {
+  requireActiveAccountPage,
+  canAccess,
+  readSessionToken,
+  createCsrfToken,
+  getSessionSecret,
+} from '../../../lib/auth';
+import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../lib/member-features';
+import { forumCopy as copy } from '../../../lib/forum/copy';
+
+export const prerender = false;
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const guard = await requireActiveAccountPage(Astro, {
+  loginUrl: `/login?returnTo=${encodeURIComponent(Astro.url.pathname)}`,
+});
+if (!guard.ok) return guard.response;
+const board = Astro.params.board;
+if (board !== 'assembly' && board !== 'directors')
+  return new Response('Not found', { status: 404 });
+if (!canAccess(guard.user, { kind: 'forum.write', board }))
+  return new Response('You do not have access to this forum.', { status: 403 });
+const token = readSessionToken(Astro.request);
+if (!token) return Astro.redirect('/login');
+const csrf = await createCsrfToken('forum', token, getSessionSecret());
+---
+
+<BaseLayout title={`${copy.newPost} · ${copy.title(board)}`} noindex>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[48rem]">
+      <a
+        href={`/forum/${board}`}
+        class="inline-flex min-h-12 items-center font-sans text-body-sans text-ink underline"
+      >
+        {copy.back}
+      </a>
+      <header class="mb-8 mt-6">
+        <h1 class="font-serif text-display-lg font-semibold text-ink">{copy.newPost}</h1>
+        <p class="mt-4 font-sans text-body-sans text-ink-soft">{copy.title(board)}</p>
+      </header>
+      <PostForm board={board} csrf={csrf} />
+    </div>
+  </section>
+</BaseLayout>

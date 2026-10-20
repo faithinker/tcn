@@ -1,0 +1,150 @@
+---
+import type { ManagedUser } from '../../lib/users/repository';
+interface Props {
+  users: ManagedUser[];
+  actorId: string;
+}
+const { users, actorId } = Astro.props;
+const date = (value: number | null) =>
+  value === null
+    ? '—'
+    : new Date(value * 1000).toLocaleDateString('en-GB', {
+        timeZone: 'UTC',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+---
+
+<div
+  class="overflow-x-auto border border-hairline"
+  tabindex="0"
+  role="region"
+  aria-label="Member accounts and actions"
+>
+  <table class="w-full min-w-[60rem] border-collapse text-left font-sans text-body-sm">
+    <caption class="sr-only">Member status, permissions, and available decisions</caption>
+    <thead class="border-b border-hairline bg-canvas-band text-ink">
+      <tr>
+        <th scope="col" class="p-4">
+          Member
+        </th>
+        <th scope="col" class="p-4">
+          Status and permissions
+        </th>
+        <th scope="col" class="p-4">
+          Dates and decision
+        </th>
+        <th scope="col" class="p-4">
+          Actions
+        </th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-hairline">
+      {users.map((user) => {
+        const protectedUser = user.id === actorId || user.isExecutive;
+        return (
+          <tr data-user-row data-user-id={user.id} data-revision={user.revision}>
+            <th scope="row" class="max-w-64 break-words p-4 align-top font-normal">
+              <span class="block font-bold text-ink">{user.displayName || user.username}</span>
+              <span class="mt-1 block text-body-muted">
+                {user.affiliation || 'No affiliation provided'}
+              </span>
+              <span class="mt-1 block text-body-muted">
+                {user.username.includes('@') ? 'Email: ' : 'Username: '}
+                {user.username}
+              </span>
+            </th>
+            <td class="p-4 align-top">
+              <span class="capitalize font-bold">{user.status}</span>
+              <span class="mt-1 block">{user.role === 'officer' ? 'Officer' : 'Member'}</span>
+              <span class="mt-1 block">
+                Special Directors access: {user.canAccessDirectorsForum ? 'Yes' : 'No'}
+              </span>
+              <span class="mt-1 block">Executive: {user.isExecutive ? 'Yes' : 'No'}</span>
+            </td>
+            <td class="p-4 align-top">
+              <span class="block">Joined: {date(user.createdAt)}</span>
+              <span class="mt-1 block">Decision: {date(user.decidedAt)}</span>
+              <span class="mt-1 block">By: {user.decidedByName || '—'}</span>
+            </td>
+            <td class="p-4 align-top">
+              {protectedUser ? (
+                <p class="max-w-56 text-body-muted">
+                  Read only —{' '}
+                  {user.id === actorId ? 'your own account' : 'protected executive account'}.
+                </p>
+              ) : user.status === 'approved' ? (
+                <form data-user-permissions class="flex max-w-72 flex-col gap-3">
+                  <label class="flex flex-col gap-1">
+                    Role
+                    <select
+                      name="role"
+                      class="min-h-11 border border-hairline-strong bg-canvas px-2"
+                    >
+                      <option value="member" selected={user.role === 'member'}>
+                        Member
+                      </option>
+                      <option value="officer" selected={user.role === 'officer'}>
+                        Officer
+                      </option>
+                    </select>
+                  </label>
+                  <label class="flex items-start gap-2">
+                    <input
+                      name="isExecutive"
+                      type="checkbox"
+                      checked={user.isExecutive}
+                      disabled={user.role !== 'officer'}
+                      class="mt-1 size-4"
+                    />
+                    Executive authority
+                  </label>
+                  <label class="flex items-start gap-2">
+                    <input
+                      name="canAccessDirectorsForum"
+                      type="checkbox"
+                      checked={user.canAccessDirectorsForum}
+                      disabled={user.role !== 'member'}
+                      class="mt-1 size-4"
+                    />
+                    Special Directors forum access
+                  </label>
+                  <p class="text-caption text-body-muted">
+                    Granting executive authority protects this account from all further changes
+                    here.
+                  </p>
+                  <button
+                    class="min-h-11 border border-hairline-strong px-3 font-bold text-ink"
+                    type="submit"
+                  >
+                    Save permissions
+                  </button>
+                </form>
+              ) : (
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-user-status="approved"
+                    class="min-h-11 border border-hairline-strong px-3 font-bold text-ink"
+                  >
+                    {user.status === 'rejected' ? 'Restore and approve' : 'Approve'}
+                  </button>
+                  {user.status === 'pending' && (
+                    <button
+                      type="button"
+                      data-user-status="rejected"
+                      class="min-h-11 border border-hairline-strong px-3 font-bold text-ink"
+                    >
+                      Reject
+                    </button>
+                  )}
+                </div>
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>

@@ -65,58 +65,74 @@ describe('create-user.mjs', () => {
   });
 });
 
-describe('set-user-role.mjs', () => {
-  it('refuses to run without --role', () => {
-    const result = run('set-user-role.mjs', ['someone', '--dry-run']);
+describe('audited user operations CLI', () => {
+  it('requires an explicit actor or bootstrap', () => {
+    const result = run('set-user-role.mjs', ['someone', '--role', 'officer', '--dry-run']);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('--role');
-    expect(result.stdout).not.toContain('update users');
+    expect(result.stderr).toContain('--actor');
   });
 
-  it('refuses --executive for a member', () => {
+  it('prints an atomic audit plan without touching D1', () => {
     const result = run('set-user-role.mjs', [
-      'someone',
-      '--role',
-      'member',
-      '--executive',
-      '--dry-run',
-    ]);
-    expect(result.status).toBe(1);
-    expect(result.stderr).toContain('--executive');
-    expect(result.stdout).not.toContain('update users');
-  });
-
-  it('turns the executive flag off unless --executive is given, and only touches approved officers', () => {
-    const officer = run('set-user-role.mjs', ['someone', '--role', 'officer', '--dry-run']);
-    expect(officer.status).toBe(0);
-    expect(officer.stdout).toContain(
-      "update users set role = 'officer', is_executive = 0 where username = 'someone' and status = 'approved';",
-    );
-
-    const executive = run('set-user-role.mjs', [
-      'someone',
+      "O'Neil",
       '--role',
       'officer',
-      '--executive',
+      '--actor',
+      'president',
+      '--request-id',
+      'review-123',
       '--dry-run',
     ]);
-    expect(executive.stdout).toContain(
-      "is_executive = 1 where username = 'someone' and status = 'approved'",
-    );
-  });
-
-  it('demotes to member and clears the executive flag without an approval condition', () => {
-    const result = run('set-user-role.mjs', ['someone', '--role', 'member', '--dry-run']);
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain(
-      "update users set role = 'member', is_executive = 0 where username = 'someone';",
-    );
+    expect(result.stdout).toContain("'O''Neil'");
+    expect(result.stdout).toContain('revision = revision + 1');
+    expect(result.stdout).toContain('can_access_directors_forum = 0');
+    expect(result.stdout).toContain('insert into user_audit_events');
+    expect(result.stdout).toContain('review-123');
+    expect(result.stdout).toContain('is_executive = 0');
   });
 
-  it('re-reads the account after the update so a missed row is never reported as success', () => {
-    const result = run('set-user-role.mjs', ['someone', '--role', 'officer', '--dry-run']);
-    expect(result.stdout).toContain(
-      "select role, status, is_executive from users where username = 'someone';",
-    );
+  it('requires a reason for exceptional bootstrap and labels the audit exception', () => {
+    const args = ['someone', '--role', 'officer', '--executive', '--bootstrap', '--dry-run'];
+    expect(run('set-user-role.mjs', args).status).toBe(1);
+    const result = run('set-user-role.mjs', [...args, '--reason', 'Initial president']);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('BOOTSTRAP/BREAKGLASS');
+    expect(result.stdout).toContain('Initial president');
+    expect(result.stdout).toContain('is_executive = 1');
+    expect(result.stdout).not.toContain('insert into user_audit_events');
   });
+
+  it.each([
+    ['--role', 'member', '--executive', '--actor', 'president'],
+    ['--role', 'officer', '--actor', 'president', '--bootstrap', '--reason', 'x'],
+    ['--role', 'officer', '--actor', 'president', '--unknown'],
+    ['--role', 'officer', '--actor', 'president', '--persist-to', '/tmp/x', '--remote'],
+    ['--role', 'member', '--role', 'officer', '--actor', 'president'],
+    ['--role', 'officer', '--actor', 'president', '--request-id', 'bad'],
+  ])('rejects unsafe or ambiguous role flags %j', (...flags) => {
+    expect(run('set-user-role.mjs', ['someone', ...flags, '--dry-run']).status).toBe(1);
+  });
+
+  it.each(['--allow', '--revoke'])('prints audited forum %s SQL', (flag) => {
+    const result = run('set-user-forum-access.mjs', [
+      'someone',
+      flag,
+      '--actor',
+      'president',
+      '--dry-run',
+    ]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("role = 'member'");
+    expect(result.stdout).toContain("status = 'approved'");
+    expect(result.stdout).toContain('insert into user_audit_events');
+    expect(result.stdout).toContain(`can_access_directors_forum = ${flag === '--allow' ? 1 : 0}`);
+  });
+
+  it.each([[[]], [['--allow', '--revoke']], [['--allow', '--bootstrap', '--reason', 'x']]])(
+    'rejects ambiguous forum access %j',
+    (flags) => {
+      expect(run('set-user-forum-access.mjs', ['someone', ...flags, '--dry-run']).status).toBe(1);
+    },
+  );
 });

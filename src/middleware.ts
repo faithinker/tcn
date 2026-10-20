@@ -3,13 +3,32 @@ import { canonicalRedirectTarget } from './lib/canonical-url';
 import { applySecurityHeaders } from './lib/security-headers';
 
 export const onRequest = defineMiddleware(async ({ request, isPrerendered }, next) => {
+  const pathname = new URL(request.url).pathname;
+  const memberResponse = [
+    '/forum',
+    '/api/forum',
+    '/admin/users',
+    '/api/users',
+    '/account',
+    '/login',
+    '/signup',
+    '/api/auth/me',
+    '/api/auth/signup',
+  ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  function secure(response: Response): Response {
+    const result = applySecurityHeaders(response);
+    if (memberResponse) {
+      result.headers.set('Cache-Control', 'no-store');
+      result.headers.set('X-Robots-Tag', 'noindex');
+    }
+    return result;
+  }
   const canonical = canonicalRedirectTarget(request, isPrerendered);
   if (canonical) {
-    return applySecurityHeaders(Response.redirect(canonical, 301));
+    return secure(Response.redirect(canonical, 301));
   }
 
-  const response = applySecurityHeaders(await next());
-  const pathname = new URL(request.url).pathname;
+  const response = secure(await next());
   if (
     pathname === '/questions' ||
     pathname.startsWith('/questions/') ||

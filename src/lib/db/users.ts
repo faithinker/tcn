@@ -3,13 +3,21 @@ import type { User } from './types';
 
 const COLUMNS = `id, username, password_hash as passwordHash, display_name as displayName,
   session_version as sessionVersion, created_at as createdAt,
-  role, status, is_executive as isExecutive`;
+  role, status, is_executive as isExecutive,
+  can_access_directors_forum as canAccessDirectorsForum, affiliation`;
 
-type UserRow = Omit<User, 'isExecutive'> & { isExecutive: number };
+type UserRow = Omit<User, 'isExecutive' | 'canAccessDirectorsForum'> & {
+  isExecutive: number;
+  canAccessDirectorsForum: number;
+};
 
 // SQLite 에는 boolean 이 없어 0/1 로 저장된다.
 function toUser(row: UserRow): User {
-  return { ...row, isExecutive: row.isExecutive === 1 };
+  return {
+    ...row,
+    isExecutive: row.isExecutive === 1,
+    canAccessDirectorsForum: row.canAccessDirectorsForum === 1,
+  };
 }
 
 // 비밀번호 비교는 auth 레이어에서 수행한다.

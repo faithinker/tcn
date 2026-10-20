@@ -19,6 +19,12 @@
 
 ## 자동 배포
 
+### 회원 기능 통합 릴리스
+
+Forum·계정·사용자 관리는 전체 로컬 검증 후 하나의 릴리스로 배포합니다. `MEMBER_FEATURES_ENABLED`를 기본 false로 유지해 초기 권한 설정 중 신규 Forum·사용자 관리 화면/API를 503으로 닫습니다. 실제 username 명단 대조, 회장·수석부회장 결정권 설정, 감사·고문 특별 접근 설정과 역할별 확인 뒤 true로 엽니다. `SIGNUP_ENABLED`는 별도 false로 유지하고 개인정보·남용 방어 준비 후 승인받아 공개합니다. 로컬 `.dev.vars`의 true 설정을 운영으로 복사하지 마세요.
+
+운영 권한 스크립트의 `--actor`, 초기 bootstrap과 변경 기록 절차는 [운영 런북](./operations-runbook.md#account-roles-and-executive-authority)을 따릅니다. 이번 개발 검증은 로컬에서만 수행하며 운영 배포·계정 변경은 별도 승인 작업입니다.
+
 `main`에 머지되면 `deploy-workers.yml`이 전체 의존성 감사, check·test·build, D1 Time Travel bookmark와 migration 적용 후 Worker를 배포합니다. 배포 뒤 순서가 핵심입니다.
 
 1. **버전 전파 대기** - `wrangler deploy`가 보고한 version id가 실제로 트래픽 100%를 받을 때까지 `wrangler deployments status`를 5초 간격 12회 폴링합니다. 그 안에 도달하지 못하거나 deploy 출력에 version id가 없으면 워크플로를 실패시킵니다.

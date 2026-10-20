@@ -96,4 +96,21 @@ describe('site middleware', () => {
     expect(response.status).toBe(301);
     expectBaseline(response);
   });
+
+  it.each([
+    '/forum/directors',
+    '/forum/directors/',
+    '/api/forum/assembly/x',
+    '/admin/users',
+    '/api/users/x/status',
+    '/account',
+    '/login',
+    '/signup',
+    '/api/auth/me',
+  ])('prevents caching and indexing of member response %s', async (path) => {
+    const next = vi.fn().mockResolvedValue(new Response('unavailable', { status: 503 }));
+    const response = expectResponse(await onRequest(context(path), next));
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-robots-tag')).toBe('noindex');
+  });
 });

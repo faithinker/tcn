@@ -1,43 +1,31 @@
 # TCN Membership Flow
 
-Updated: 2026-07-30
+Updated: 2026-10-20. Describes the integrated branch implementation; production activation is separate.
 
-Public route: `/contact` (`src/pages/contact.astro`). The former `/ko/contact` and `/en/contact` paths were removed in the English-only pivot and are 301'd to `/contact` by the prefix-stripping rules in `public/_redirects:49-50`.
+## Account flow
 
-## Implemented today
+- `/login` accepts existing usernames and new email identifiers. Existing login challenge, lock and trusted-device protections remain.
+- `/signup` and `POST /api/auth/signup` open only when `SIGNUP_ENABLED=true` and member features are enabled.
+- Signup collects email, password, display name and optional affiliation. Email is normalized; passwords use the existing shared policy.
+- A new account is always member/pending with no executive or special forum access. Signup signs the applicant in and sends them to `/account`.
+- Pending applicants may read and write the Assembly Forum. Executive approval changes their status to approved; it does not grant officer or Directors Forum permissions.
+- Rejected applicants can sign in and see their status on `/account`, but cannot access either private forum. Executives may restore and approve them.
+- Public Q&A questions remain available without an account. They are not membership applications.
 
-The contact page is public guidance plus one environment-gated call to action. No membership form exists in this repository.
+## Groups and authority
 
-- `src/pages/contact.astro:6` reads `PUBLIC_MEMBERSHIP_FORM_URL`; `.env.example:2` documents it.
-- When the variable is non-empty, `contact.astro:64-82` renders a real external link, "Open application form" (`src/i18n/content.ts:511`).
-- When it is empty or unset, the same block renders an `aria-disabled` placeholder, "Application form coming soon" (`content.ts:512`). This is the current production state.
-- Secretariat details already ship on the page: telephone `031-709-8111` (`content.ts:529`) and email `mingoo@aks.ac.kr` (`content.ts:531`).
-- "Information to Prepare" (`content.ts:517-523`) tells applicants what will be asked. It is guidance copy, not a form.
+Approved officers operate seminar content, media and official Q&A answers. Auditors and advisers remain members with special Directors Forum access and no content-operation authority. The president and senior vice president are executives.
 
-Activation is a configuration change, not a build: point the variable at an approved external form or member system and the CTA goes live.
+Executives use `/admin/users` to approve/reject applicants and change approved non-executive accounts’ roles, executive authority and special access. Their own and other executive accounts are read only, including status changes. Newly promoted executives are protected too. Every ordinary user change is audited atomically; protected executive replacement uses an explicit operator recovery procedure.
 
-## The Q&A board is not this channel
+## Public contact guidance
 
-The public Q&A board (`/questions/new`) is the site's only working public intake form. It is Turnstile-gated and collects a title and a question body only, with no contact fields. It is deliberately **not** the membership application channel; do not route applicants there.
+`/contact` remains public. Its optional external application link uses `PUBLIC_MEMBERSHIP_FORM_URL`; an unset value keeps that external CTA disabled. The existing Secretariat contact details remain the source of truth. The contact page does not automatically enable the new signup route.
 
-## Before activation
+## Activation
 
-1. membership categories and approval authority;
-2. dues and payment handling, if any;
-3. privacy policy, retention period, and data controller — no privacy policy page exists yet, and `content.ts:510` tells visitors that applications open only once this is settled;
-4. application receipt and decision-message templates.
+Keep `MEMBER_FEATURES_ENABLED=false` until the actual operating roster, initial executives and auditor/adviser access have been verified. Keep `SIGNUP_ENABLED=false` independently until the privacy policy, collection/retention/controller decisions and signup abuse protection are ready and activation is approved.
 
-Settled: an official TCN reply email and telephone number are published (`content.ts:529-531`), so neither blocks activation.
+Email ownership verification and password reset remain follow-up work. The user-management screen must explain that email is unverified; operators use names and affiliations to review applications. A documented operator password-reissue/session-revocation procedure is needed before public signup.
 
-## Proposals, not built
-
-There is no `/join`, `/apply`, or `/membership` route. The list below is a proposal for whoever builds or configures the external form. Only the shipped "Information to Prepare" copy is authoritative.
-
-- Full name and preferred English name
-- Affiliation, position, and country or region of activity
-- Research or professional field
-- Motivation and preferred TCN activities
-- Reply email
-- Privacy-policy consent — blocked until there is a privacy policy to consent to
-
-Do not request a phone number, birth date, home address, resident number, or identity document in the initial application. Do not invent membership categories, fees, or contact values that are not already in `content.ts`.
+Do not request phone numbers, birth dates, home addresses, identity documents or unsupported membership fees/categories.

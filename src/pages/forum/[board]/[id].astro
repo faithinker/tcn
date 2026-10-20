@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostForm from '../../../components/forum/PostForm.astro';
+import {
+  requireActiveAccountPage,
+  canAccess,
+  readSessionToken,
+  createCsrfToken,
+  getSessionSecret,
+} from '../../../lib/auth';
+import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../lib/member-features';
+import { getDB } from '../../../lib/db';
+import { getForumPost, type ForumPost } from '../../../lib/forum/repository';
+import { forumCopy as copy } from '../../../lib/forum/copy';
+import { formatDate } from '../../../i18n/utils';
+
+export const prerender = false;
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const guard = await requireActiveAccountPage(Astro, {
+  loginUrl: `/login?returnTo=${encodeURIComponent(Astro.url.pathname)}`,
+});
+if (!guard.ok) return guard.response;
+const board = Astro.params.board;
+if (board !== 'assembly' && board !== 'directors')
+  return new Response('Not found', { status: 404 });
+if (!canAccess(guard.user, { kind: 'forum.read', board }))
+  return new Response('You do not have access to this forum.', { status: 403 });
+let post: ForumPost | null = null;
+try {
+  post = await getForumPost(getDB(), board, Astro.params.id ?? '');
+} catch {
+  return new Response(copy.loadError, { status: 503 });
+}
+if (!post) return new Response('This post is not available.', { status: 404 });
+const canEdit = canAccess(guard.user, { kind: 'forum.edit', board, authorId: post.authorId });
+const canHide = canAccess(guard.user, { kind: 'forum.delete', board, authorId: post.authorId });
+const token = readSessionToken(Astro.request);
+const csrf =
+  token && (canEdit || canHide) ? await createCsrfToken('forum', token, getSessionSecret()) : '';
+---
+
+<BaseLayout title={post.title} noindex>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[48rem]">
+      <a
+        href={`/forum/${board}`}
+        class="inline-flex min-h-12 items-center font-sans text-body-sans text-ink underline"
+      >
+        {copy.back}
+      </a>
+      <article class="mt-6">
+        <header class="border-b border-hairline pb-6">
+          <h1 class="break-words font-serif text-display-lg font-semibold text-ink">
+            {post.title}
+          </h1>
+          <p class="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-sans text-caption text-body-muted">
+            <span>{post.authorName ?? copy.member}</span>
+            <time datetime={post.createdAt}>{formatDate(post.createdAt)}</time>
+            {post.revision > 1 && <span>Edited · revision {post.revision}</span>}
+          </p>
+        </header>
+        <div
+          data-forum-body
+          class="mt-8 max-w-[70ch] whitespace-pre-wrap break-words font-sans text-body-sans text-ink-soft"
+        >
+          {post.body}
+        </div>
+      </article>
+      {canEdit && (
+        <details class="mt-12 border-t border-hairline pt-6">
+          <summary class="min-h-12 cursor-pointer font-sans text-body-sans font-bold text-ink">
+            {copy.edit}
+          </summary>
+          <div class="mt-6">
+            <PostForm board={board} csrf={csrf} post={post} />
+          </div>
+        </details>
+      )}
+      {canHide && (
+        <div
+          data-forum-hide
+          data-board={board}
+          data-post-id={post.id}
+          data-revision={post.revision}
+          data-csrf={csrf}
+          class="mt-8 border-t border-hairline pt-6"
+        >
+          <button
+            type="button"
+            class="min-h-12 rounded-sm border border-danger px-5 font-sans text-button font-bold text-danger disabled:opacity-60"
+          >
+            {copy.hide}
+          </button>
+          <p class="mt-2 font-sans text-caption text-body-muted">
+            Hiding removes this post from the forum. This action cannot be undone here.
+          </p>
+          <div
+            data-forum-notice
+            role="alert"
+            tabindex="-1"
+            class="mt-4 hidden rounded-sm bg-danger-soft p-4 font-sans text-body-sans text-danger"
+          ></div>
+          <a
+            data-forum-latest
+            href={Astro.url.pathname}
+            class="hidden min-h-12 items-center font-sans text-body-sans underline"
+          >
+            {copy.latest}
+          </a>
+          <noscript>
+            <p class="font-sans text-body-sans text-danger">Enable JavaScript to hide a post.</p>
+          </noscript>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+<script>
+  import '../../../scripts/forum';
+</script>

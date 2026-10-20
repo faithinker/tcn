@@ -1,14 +1,100 @@
 # 게시판·역할 체계 1단계 구현 계획: 역할·상태 기반과 권한 가드 교체
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> 이 문서는 Phase 1 구현 당시의 계획과 코드 예시를 보존한다. 이후 요구사항·작업 순서·검증과 배포 방침은 [통합 Phase 2 계획](2026-10-20-forum-and-user-management.md)을 따른다. 과거 체크박스를 근거로 이미 구현된 코드를 다시 작성하지 않는다.
 
 **Goal:** 계정에 역할(`role`), 상태(`status`), 결정권(`is_executive`)을 도입하고, 임원 전용 기능의 권한 검사를 "세션이 있으면 통과"에서 "승인된 임원만 통과"로 교체한다. 배포 후 기존 운영 동작은 바뀌지 않는다.
 
 **Architecture:** 순수 판정 모듈(`permissions.ts`)이 명세서 4.2 매트릭스를 구현하고, 가드 모듈(`require.ts`, `mutation.ts`)이 이를 API, 페이지, 변경 요청에 적용한다. 역할은 세션 토큰에 넣지 않고 요청마다 D1에서 읽는다. 마이그레이션 `0008`은 컬럼만 추가하며 기존 계정을 `officer`, `approved`, 결정권 없음으로 이전한다.
 
-**Tech Stack:** Astro 7, Cloudflare Workers, D1(SQLite), TypeScript 6, Vitest 5, wrangler 4. 로컬 Node 25.9.0(EBADENGINE 경고는 정상), CI는 Node 22.
+**Tech Stack:** Astro 7, Cloudflare Workers, D1(SQLite), TypeScript 6, Vitest 5, wrangler 4. 현재 Node 기준은 `.nvmrc`와 `package.json`의 26이다. 아래 코드 예시는 작성 당시 기준이므로 현재 공용 모듈과 정책을 우선한다.
 
 **Spec:** `docs/superpowers/specs/2026-10-12-boards-and-roles-design.md` (2026-10-14 개정본, 커밋 `14751c9`). 이 계획은 명세서 13장의 1단계 행을 구현한다.
+
+## 현재 진행 상태 (2026-10-20)
+
+Phase 1 구현은 완료되었다. `origin/main` 이후의 구현 커밋에서 Task 1~9와 Task 10의 문서·CHANGELOG 반영까지 완료되었으며, 다음 검증도 통과했다.
+
+- `npm test`: 67개 파일, 720개 테스트 통과
+- `npm run check`: 오류·경고·힌트 0개
+- `npm run test:roles:d1`: backfill, 기본값, 제약조건 검증 통과
+
+단계별 체크박스는 실제 완료 상태가 갱신되지 않은 과거 작업 지침이다. 현재 진행 상태는 아래 표를 기준으로 본다. 2026-10-20 기준선 확인에서는 단위 테스트·타입 검사·역할 D1 검증을 재실행했다. 전체 기능의 최종 빌드·감사·브라우저 검증은 통합 구현 완료 후 수행하며, 과거 다른 세션의 실행 여부를 이 문서만으로 단정하지 않는다.
+
+| 작업              | 현재 상태 | 근거                                                                      |
+| ----------------- | --------- | ------------------------------------------------------------------------- |
+| Task 1~3          | 완료      | `0008` 마이그레이션, 사용자 모델, 권한 판정 모듈 및 테스트 반영           |
+| Task 4~5          | 완료      | 세션 사용자 조회, API·페이지 가드, 공용 변경 요청 가드 및 Q&A 호환성 반영 |
+| Task 6~8          | 완료      | API·관리자 페이지 교체, `/api/auth/me`, 경로 가드 커버리지 테스트 반영    |
+| Task 9            | 완료      | `create-user`, `set-user-role`, `--dry-run`, CI 호출 수정 반영            |
+| Task 10 문서화    | 완료      | 운영 런북, README, `CONTENT_ARCHITECTURE.md`, `CHANGELOG.md` 반영         |
+| Task 10 최종 검증 | 로컬 완료 | Phase 2 통합 빌드·감사·브라우저 검증까지 수행. 운영 배포는 미실행         |
+
+통합 Phase 2의 로컬 구현·검증도 완료했다. 최신 결과는 [검증 기록](../../phase2-verification.md)과 [Phase 2 계획](2026-10-20-forum-and-user-management.md)을 따른다. 다음 작업은 사용자 로컬 확인과 실제 운영 계정 대조이며, 운영 변경·통합 배포는 별도 승인이 필요하다. 신규 비공개 기능은 초기 운영 계정 검증 전까지 닫아 둔다.
+
+### 후속 명세 반영 사항
+
+이 계획 작성 이후 Obsidian 기능 요약에서 다음 요구사항이 추가로 확정되었다. Phase 2 계획에 반드시 반영한다.
+
+- 감사와 고문은 사이트 등급을 `member`로 유지한다.
+- 감사·고문은 총회 게시판과 Q&A 질문 작성이 가능하고, 임원 게시판도 열람·작성할 수 있다.
+- 감사·고문에게는 이사진의 세미나 글 작성·수정, 미디어 관리, Q&A 공식 답변 권한을 주지 않는다.
+- 감사·고문은 `member` 등급에 `can_access_directors_forum` 플래그를 추가한다. 이름·가입 시점으로 접근을 허용하지 않고 현재 승인 상태와 부여된 권한으로 판정한다. 신규 가입도 이후 임명·권한 변경이 있으면 같은 기준을 따른다.
+- 현재 명단의 감사·고문을 포함한 7명은 총회 게시판과 Q&A 질문 작성이 가능하다. 신규 가입자는 준회원으로 시작하며 같은 두 기능을 사용할 수 있지만 임원 게시판과 운영 기능은 사용할 수 없다.
+- 회장·부회장(결정권자)은 일반 회원·준회원·이사진·감사·고문 계정의 역할과 결정권을 관리할 수 있다.
+- 회장·부회장은 자기 자신과 변경 전 결정권자의 상태·역할·결정권·특별 접근을 변경할 수 없다. 새로 결정권을 받은 계정도 보호한다. 교체·해제는 별도 운영 절차로 처리하며, 상태 변경으로 보호를 우회하지 못하게 서버에서 강제한다.
+
+## 계정 명단 및 권한 등급 확인 (2026-10-20)
+
+### 공개 명단 기준
+
+`src/data/members.json`의 현재 명단은 7명이다. 명세서의 D2 기준(회장·부회장·이사만 officer)에 따라 직함을 사이트 역할로 매핑하면 다음과 같다.
+
+| 공개 명단                | 직함                  | 사이트 역할                      | 결정권             | 비고                                        |
+| ------------------------ | --------------------- | -------------------------------- | ------------------ | ------------------------------------------- |
+| Dr. Wonjoon Kim          | President             | `officer`                        | `is_executive = 1` | 최고 결정권자                               |
+| Dr. SeongHo Jun          | Senior Vice President | `officer`                        | `is_executive = 1` | 수석부회장도 부회장으로 포함, 최고 결정권자 |
+| Dr. Vilayphone Somsamone | Director              | `officer`                        | `is_executive = 0` | 이사                                        |
+| Dr. Zhang Wen            | Director              | `officer`                        | `is_executive = 0` | 이사                                        |
+| Dr. Gozal Shamuratova    | Director              | `officer`                        | `is_executive = 0` | 이사                                        |
+| Dr. Le Lan Huong         | Auditor               | `member` + 임원 게시판 특별 접근 | `is_executive = 0` | 감사는 officer가 아님                       |
+| John O. Lee              | Senior Advisor        | `member` + 임원 게시판 특별 접근 | `is_executive = 0` | 고문은 officer가 아님                       |
+
+여기서 `is_executive = 1`은 시스템상 가능한 최고 권한인 결정권자 등급을 뜻한다. 별도의 super-admin 권한은 만들지 않으며, 실제 데이터 변경은 승인된 `officer` 계정에만 적용된다. 회장과 수석부회장은 가입 승인·반려와 다른 사람의 forum 글 숨김 권한을 갖고, 이사 계정은 일반 officer 권한만 갖는다.
+
+### 현재 계정 확인 결과
+
+운영 계정 명단은 Cloudflare 원격 D1에서 확인해야 하며, 현재 세션에서는 원격 D1 인증이 확인되지 않았다. 로컬 D1에는 다음 테스트 계정만 존재한다.
+
+| 로컬 계정    | 표시 이름      | 현재 상태                              |
+| ------------ | -------------- | -------------------------------------- |
+| `qna-admin`  | Q&A Test Admin | `0008` 적용 전이라 역할 컬럼 확인 불가 |
+| `rlawnguq12` | 김주협         | `0008` 적용 전이라 역할 컬럼 확인 불가 |
+| `testadmin`  | Test Admin     | `0008` 적용 전이라 역할 컬럼 확인 불가 |
+
+따라서 위 테스트 계정은 공개 명단의 7명과 자동 매칭하지 않는다. `0008`을 적용한 뒤에도 로컬 테스트 계정은 기능 확인용으로만 유지하고, 운영 계정 조정은 원격 D1에서 실제 username을 확인한 후 수행한다.
+
+### 역할 조정 절차
+
+운영 계정과 공개 명단의 매칭 및 조정은 네 단계로 나눈다.
+
+1. **조회·매칭:** 원격 D1에서 `username`, `display_name`, `role`, `status`, `is_executive`를 조회하고 `members.json`의 이름·직함과 대조한다.
+2. **비officer 조정:** Auditor·Senior Advisor는 approved member + can_access_directors_forum = 1로 조정한다. Phase 2에서 `set-user-forum-access.mjs`를 구현했다. 역할 변경과 특별 접근 지정은 별개 명령이며 수행자·감사 기록을 포함한다. 운영 반영은 승인된 릴리스 절차에서 수행한다.
+3. **officer 조정:** President·Senior Vice President·Director 계정은 승인 상태를 확인한 뒤 `--role officer`로 변경한다. `status != approved`인 계정에는 스크립트가 officer 역할을 부여하지 않는다.
+4. **결정권 지정·검증:** President와 Senior Vice President에만 `--role officer --executive`를 적용하고, 조회 SQL로 최종 결과를 재확인한다. 이사·감사·고문 계정은 `is_executive = 0`이어야 한다. 회장·부회장 계정은 서로의 역할·결정권을 변경할 수 없도록 사용자 관리 규칙을 확인한다.
+
+운영 변경은 항상 `--dry-run`으로 SQL을 먼저 확인한 뒤 실제 명령을 실행한다. 예시는 다음과 같다.
+
+```bash
+npx wrangler d1 execute tcn-content --remote \\
+  --command "select username, display_name, role, status, is_executive from users order by username"
+
+node scripts/set-user-role.mjs <username> --role member --remote --dry-run
+node scripts/set-user-role.mjs <username> --role member --remote
+
+node scripts/set-user-role.mjs <president-username> --role officer --executive --remote --dry-run
+node scripts/set-user-role.mjs <president-username> --role officer --executive --remote
+node scripts/set-user-role.mjs <senior-vice-president-username> --role officer --executive --remote
+```
 
 ## Global Constraints
 

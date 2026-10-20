@@ -106,6 +106,95 @@ describe('POST /api/auth/login', () => {
     createDeviceToken.mockResolvedValue({ token: 'device-token', deviceId: 'new-device' });
   });
 
+  it('returns a safe member destination without exposing internal privilege flags', async () => {
+    getUserByUsername.mockResolvedValue({
+      id: 'member',
+      username: 'reader',
+      displayName: 'Reader',
+      sessionVersion: 0,
+      role: 'member',
+      status: 'pending',
+    });
+    verifyPassword.mockResolvedValue(true);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username: 'reader', password: 'secret', returnTo: '//evil.org' }),
+        }),
+      ),
+    );
+    expect(await response.json()).toMatchObject({
+      redirectTo: '/forum/assembly',
+      user: { role: 'member', status: 'pending' },
+    });
+  });
+  it('normalizes email credentials while retaining legacy username lookup', async () => {
+    getUserByUsername.mockResolvedValue(null);
+    await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username: ' Reader@Example.ORG ', password: 'secret' }),
+        }),
+      ),
+    );
+    expect(getUserByUsername).toHaveBeenCalledWith(expect.anything(), 'reader@example.org');
+  });
+
+  it('preserves an exact legacy mixed-case email-shaped username', async () => {
+    const legacy = {
+      id: 'legacy',
+      username: 'Editor@Example.org',
+      displayName: 'Legacy editor',
+      sessionVersion: 1,
+      role: 'officer',
+      status: 'approved',
+      passwordHash: 'legacy-hash',
+    };
+    getUserByUsername.mockImplementation(async (_db, value) =>
+      value === legacy.username ? legacy : null,
+    );
+    verifyPassword.mockResolvedValue(true);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username: legacy.username, password: 'secret' }),
+        }),
+      ),
+    );
+    expect(response.status).toBe(200);
+    expect(getUserByUsername).toHaveBeenCalledExactlyOnceWith(expect.anything(), legacy.username);
+  });
+
+  it('does not switch to a case-distinct account after an exact username password fails', async () => {
+    const exact = {
+      id: 'upper',
+      username: 'Reader@Example.org',
+      passwordHash: 'upper-hash',
+      sessionVersion: 1,
+    };
+    getUserByUsername.mockImplementation(async (_db, value) =>
+      value === exact.username ? exact : { ...exact, id: 'lower', username: 'reader@example.org' },
+    );
+    verifyPassword.mockResolvedValue(false);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ username: exact.username, password: 'secret' }),
+        }),
+      ),
+    );
+    expect(response.status).toBe(401);
+    expect(getUserByUsername).toHaveBeenCalledExactlyOnceWith(expect.anything(), exact.username);
+  });
+
   describe('Turnstile challenge', () => {
     it('verifies the token from a JSON body against the request URL and client IP', async () => {
       getUserByUsername.mockResolvedValue(null);

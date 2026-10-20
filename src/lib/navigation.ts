@@ -7,7 +7,6 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { key: 'nav.home', href: '/' },
   {
     key: 'nav.about',
     href: '/about',
@@ -16,10 +15,18 @@ export const navItems: NavItem[] = [
       { key: 'nav.founding', href: '/about/founding' },
       { key: 'nav.declaration', href: '/about/declaration' },
       { key: 'nav.bylaws', href: '/about/bylaws' },
+      { key: 'nav.contact', href: '/contact' },
     ],
   },
   { key: 'nav.people', href: '/people' },
   { key: 'nav.seminars', href: '/seminars' },
-  { key: 'nav.questions', href: '/questions' },
-  { key: 'nav.contact', href: '/contact' },
+  {
+    key: 'nav.boards',
+    href: '/forum',
+    children: [
+      { key: 'nav.directorsBoard', href: '/forum/directors' },
+      { key: 'nav.assemblyBoard', href: '/forum/assembly' },
+      { key: 'nav.qnaBoard', href: '/questions' },
+    ],
+  },
 ];

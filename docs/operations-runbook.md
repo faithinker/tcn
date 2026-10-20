@@ -81,27 +81,40 @@ npx wrangler d1 execute tcn-content --remote \
 
 ## Account roles and executive authority
 
-An account has a role (`officer` or `member`), a status (`pending`, `approved`, `rejected`) and an executive flag (`is_executive`, for the president and vice presidents). The admin screens and the seminar, media and Q&A answer APIs require an approved officer. Deciding sign-ups and hiding other people's forum posts (later phases) require an approved officer with the executive flag. The site reads all three values from D1 on every request, so a change takes effect immediately and no session has to be revoked.
+Roles are officer/member; statuses are pending/approved/rejected. Approved officers manage seminars, media and official Q&A answers. Approved members with can_access_directors_forum=1 (auditors/advisers) can also use the Directors Forum without these operational permissions. Read all permissions from D1 per request.
 
-Nothing in the product grants the officer role or the executive flag. Use the scripts, and run production changes with `--dry-run` first to read the SQL before it touches data:
+Approved executives (officer + is_executive=1) use /admin/users for approvals and final permission changes to other approved non-executive accounts. Their own account and any existing executive account are protected, including from status changes; newly promoted executives become protected immediately. User changes and before/after audit records are one atomic D1 operation with revision checks and request-ID retries.
+
+Routine operator changes require an actor and support --dry-run:
 
 ```bash
 node scripts/create-user.mjs <username> --role officer --display "Name" --remote
-node scripts/set-user-role.mjs <username> --role officer --executive --remote --dry-run
-node scripts/set-user-role.mjs <username> --role officer --executive --remote
+node scripts/set-user-role.mjs <username> --role officer --actor <executive-username> --remote --dry-run
+node scripts/set-user-forum-access.mjs <username> --allow --actor <executive-username> --remote --dry-run
 ```
 
-`create-user.mjs` asks for the password with hidden input (or reads `TCN_USER_PASSWORD`); it never takes it as an argument. `--role` is required and the result is fully determined by the flags: without `--executive` the flag is turned off. The officer role can only be given to an `approved` account, and the script re-reads the account afterwards and exits with an error if the values are not what it asked for. An unknown username and a not-yet-approved account both fail loudly instead of reporting success.
+Role changes specify the full result: omitted --executive clears executive authority, and role commands clear special forum access. Use the separate forum-access command to grant/revoke access for approved members. Ordinary operations increment revision, recheck the actor/target, and atomically insert user_audit_events. Preserve the printed requestId to retry interrupted requests with --request-id. A dry run does not query D1; it prints the preflight and snapshot-based SQL template, not a claim that the target has been checked.
 
-Migration `0008` backfilled every account that existed before the roles feature as `officer`, `approved`, without the executive flag, so the first release changed nobody's permissions. The deploy workflow applies remote migrations before it deploys the Worker, after recording a Time Travel bookmark, and the migration only adds columns, so rolling the Worker back needs no data restore.
+Initial executive setup or protected-executive recovery requires the explicit exceptional path:
 
-Before the release that opens the forums, audit the roster:
+```bash
+node scripts/set-user-role.mjs <username> --role officer --executive --bootstrap --reason "<change-ticket>" --remote --dry-run
+```
 
-1. Read the accounts: `npx wrangler d1 execute tcn-content --remote --command 'select username, display_name from users'`. This is read-only but it reads production data, so run it yourself or get explicit approval first.
-2. Compare them with the titles in `src/data/members.json`.
-3. Demote accounts that are not officers (auditor, senior adviser) with `set-user-role.mjs --role member`. They lose their seminar and Q&A write access, so tell them.
-4. Fill in the display name of every officer account that has none.
-5. Grant the executive flag to the president and vice presidents. Confirm whether the senior vice president counts as a vice president. Without an executive account nobody can hide a post or approve a sign-up.
+Remove --dry-run only after reviewing the actual account and approved change. Bootstrap/recovery cannot use the ordinary audit table (which forbids protected/self changes); it prints an explicit BOOTSTRAP/BREAKGLASS record containing reason, requestId and before/after snapshots. Retain that output in the operator change record. Granting officer authority requires an approved account. create-user reads a hidden password prompt or TCN_USER_PASSWORD, never a password argument.
+
+### Integrated release roster
+
+Keep MEMBER_FEATURES_ENABLED=false while migrations/code and initial permissions are being applied. Gate-off member routes return 503 and their menu links stay hidden. Before opening the gate:
+
+1. Read the operating accounts and match actual usernames to src/data/members.json; never infer a match from a similar name.
+2. Assign the president and senior vice president executive authority. The senior vice president is included.
+3. Assign the three directors officer/approved without executive authority.
+4. Assign the auditor and senior adviser member/approved plus special Directors Forum access. They lose seminar/media/official-answer operations but retain both forums and public Q&A questions.
+5. Resolve unrecognized accounts and missing display names before opening private content. Re-query permissions and smoke-test each group.
+6. Open MEMBER_FEATURES_ENABLED only after verification; keep SIGNUP_ENABLED=false until public-signup prerequisites and activation approval are satisfied.
+
+Migrations 0008–0010 are additive; the deploy workflow applies them before code after recording a Time Travel bookmark. Validate the complete implementation locally before one integrated release. Remote changes and deployment require user authorization.
 
 ## Readiness triage
 
