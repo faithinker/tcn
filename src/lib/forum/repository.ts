@@ -8,6 +8,7 @@ export interface ForumPost {
   body: string;
   authorId: string;
   authorName: string | null;
+  authorWithdrawn: number;
   revision: number;
   createdAt: string;
   updatedAt: string;
@@ -29,7 +30,7 @@ export class ForumForbiddenError extends Error {
 }
 
 const SELECT = `select p.id,p.board,p.title,p.body,p.author_id as authorId,
-  u.display_name as authorName,p.revision,p.created_at as createdAt,p.updated_at as updatedAt
+  u.display_name as authorName,(u.deleted_at IS NOT NULL) as authorWithdrawn,p.revision,p.created_at as createdAt,p.updated_at as updatedAt
   from forum_posts p join users u on u.id=p.author_id`;
 
 export async function listForumPosts(db: D1Database, input: { board: ForumBoard; page: number }) {
@@ -66,6 +67,13 @@ export async function getForumPost(
     .first<ForumPost>();
 }
 
+// Rechecked inside each write so a withdrawal cannot race an earlier route guard.
+const ACTIVE_FORUM_ACTOR = `exists(select 1 from users actor where actor.id=? and actor.deleted_at is null and actor.status<>'rejected' and (?='assembly' or (actor.status='approved' and (actor.role='officer' or actor.can_access_directors_forum=1))))`;
+async function requireCurrentActor(db: D1Database, board: ForumBoard, id: string) {
+  if (!(await db.prepare(`select 1 where ${ACTIVE_FORUM_ACTOR}`).bind(id, board).first()))
+    throw new ForumForbiddenError();
+}
+
 export async function createForumPost(
   db: D1Database,
   input: { board: ForumBoard; title: string; body: string; authorId: string },
@@ -73,10 +81,13 @@ export async function createForumPost(
   const board = parseBoard(input.board);
   const { title, body } = parsePostPayload({ title: input.title, body: input.body });
   const id = crypto.randomUUID();
-  await db
-    .prepare('insert into forum_posts(id,board,title,body,author_id) values (?,?,?,?,?)')
-    .bind(id, board, title, body, input.authorId)
+  const result = await db
+    .prepare(
+      `insert into forum_posts(id,board,title,body,author_id) select ?,?,?,?,? where ${ACTIVE_FORUM_ACTOR}`,
+    )
+    .bind(id, board, title, body, input.authorId, input.authorId, board)
     .run();
+  if (!result.meta.changes) throw new ForumForbiddenError();
   return (await getForumPost(db, board, id))!;
 }
 
@@ -106,11 +117,14 @@ export async function updateForumPost(
   if (current.authorId !== input.authorId) throw new ForumForbiddenError();
   const result = await db
     .prepare(
-      `update forum_posts set title=?,body=?,revision=revision+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') where id=? and board=? and author_id=? and revision=? and deleted_at is null`,
+      `update forum_posts set title=?,body=?,revision=revision+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') where id=? and board=? and author_id=? and revision=? and deleted_at is null and ${ACTIVE_FORUM_ACTOR}`,
     )
-    .bind(title, body, input.id, board, input.authorId, expectedRevision)
+    .bind(title, body, input.id, board, input.authorId, expectedRevision, input.authorId, board)
     .run();
-  if (!result.meta.changes) return explainConflict(db, board, input.id);
+  if (!result.meta.changes) {
+    await requireCurrentActor(db, board, input.authorId);
+    return explainConflict(db, board, input.id);
+  }
   return (await getForumPost(db, board, input.id))!;
 }
 
@@ -123,9 +137,21 @@ export async function hideForumPost(
   const { expectedRevision } = parseRevisionPayload({ expectedRevision: input.expectedRevision });
   const result = await db
     .prepare(
-      `update forum_posts set deleted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),deleted_by=?,revision=revision+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') where id=? and board=? and revision=? and deleted_at is null`,
+      `update forum_posts set deleted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),deleted_by=?,revision=revision+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') where id=? and board=? and revision=? and deleted_at is null and ${ACTIVE_FORUM_ACTOR} and (author_id=? or exists(select 1 from users executive where executive.id=? and executive.deleted_at is null and executive.status='approved' and executive.role='officer' and executive.is_executive=1))`,
     )
-    .bind(input.actorId, input.id, board, expectedRevision)
+    .bind(
+      input.actorId,
+      input.id,
+      board,
+      expectedRevision,
+      input.actorId,
+      board,
+      input.actorId,
+      input.actorId,
+    )
     .run();
-  if (!result.meta.changes) await explainConflict(db, board, input.id);
+  if (!result.meta.changes) {
+    await requireCurrentActor(db, board, input.actorId);
+    await explainConflict(db, board, input.id);
+  }
 }

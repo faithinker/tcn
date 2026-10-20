@@ -1,4 +1,7 @@
 ---
+import PasswordField from './PasswordField.astro';
+import '../../styles/account.css';
+import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
 interface Props {
   returnTo?: string | null;
   challengeBypassed: boolean;
@@ -6,38 +9,39 @@ interface Props {
   challengeUnavailable: boolean;
 }
 const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.props;
-import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
 ---
 
-<div class="mx-auto max-w-sm" data-return-to={returnTo}>
-  <h1 class="mb-6 font-serif text-display-sm font-semibold text-ink">Sign in</h1>
+<div data-return-to={returnTo}>
+  <h2 class="text-xl font-bold text-ink">Welcome back</h2>
+  <p class="account-lead">Sign in to your TCN account.</p>
+  <p id="login-notice" class="account-notice mt-5" role="status" hidden></p>
   <form
     id="login-form"
     method="post"
     action="/api/auth/login"
-    class="space-y-4"
+    class="account-form"
     data-challenge={challengeBypassed ? 'off' : 'on'}
   >
-    <label class="block">
-      <span class="mb-1 block text-caption text-body-muted">Email or username</span>
+    <div class="account-field">
+      <label for="login-username" class="account-label">
+        Email or username
+      </label>
       <input
+        id="login-username"
         name="username"
         required
         spellcheck="false"
         autocomplete="username"
-        class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
+        autocapitalize="none"
+        class="account-input"
       />
-    </label>
-    <label class="block">
-      <span class="mb-1 block text-caption text-body-muted">Password</span>
-      <input
-        name="password"
-        type="password"
-        required
-        autocomplete="current-password"
-        class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
-      />
-    </label>
+    </div>
+    <PasswordField
+      id="login-password"
+      name="password"
+      label="Password"
+      autocomplete="current-password"
+    />
     {!challengeBypassed && siteKey && (
       <div
         class="cf-turnstile"
@@ -52,20 +56,19 @@ import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
       id="login-error"
       role="alert"
       aria-live="polite"
-      class:list={['text-caption text-accent', !challengeUnavailable && 'hidden']}
+      class:list={['account-error', !challengeUnavailable && 'hidden']}
     >
       {challengeUnavailable
-        ? 'Sign-in is temporarily unavailable. The security check is not configured.'
-        : 'Invalid username or password.'}
+        ? 'Sign-in is temporarily unavailable. Please try again later.'
+        : 'Invalid email or password.'}
     </p>
-    <button
-      type="submit"
-      disabled={challengeUnavailable}
-      class="w-full bg-ink px-4 py-2 font-sans text-body-sm font-bold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-    >
+    <button type="submit" disabled={challengeUnavailable} class="account-button">
       Sign in
     </button>
   </form>
+  <a href="/forgot-password" class="account-text-button mt-4">
+    Forgot your password?
+  </a>
 </div>
 <script>
   import { CHALLENGE_PENDING_MESSAGE, failureMessage } from '../../scripts/login-messages';
@@ -79,6 +82,17 @@ import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
     }
   }
 
+  const notice = document.getElementById('login-notice');
+  const currentUrl = new URL(window.location.href);
+  const noticeKind = currentUrl.searchParams.get('notice');
+  if (notice && ['password-changed', 'password-reset'].includes(noticeKind ?? '')) {
+    notice.textContent = 'Your password has been updated. Sign in with your new password.';
+    notice.hidden = false;
+  }
+  if (noticeKind) {
+    currentUrl.searchParams.delete('notice');
+    history.replaceState(null, '', currentUrl.pathname + currentUrl.search + currentUrl.hash);
+  }
   const form = document.getElementById('login-form') as HTMLFormElement | null;
   const errorEl = document.getElementById('login-error');
   const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
@@ -130,9 +144,8 @@ import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
         }),
       });
       if (response.ok) {
-        const container = document.querySelector<HTMLElement>('[data-return-to]');
         const payload = (await response.json()) as { redirectTo?: string };
-        window.location.href = container?.dataset.returnTo || payload.redirectTo || '/account';
+        window.location.href = payload.redirectTo || '/account';
         return;
       }
       showError(failureMessage(response.status, response.headers.get('retry-after')));
@@ -146,6 +159,7 @@ import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
       }
     }
   });
+  if (form) form.dataset.ready = 'true';
 </script>
 {!challengeBypassed && siteKey && (
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />

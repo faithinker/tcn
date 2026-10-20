@@ -28,7 +28,7 @@ import {
   resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
 import { TurnstileError } from '../../../lib/turnstile';
-import { defaultMemberDestination, safeMemberReturnTo } from '../../../lib/membership/redirects';
+import { memberDestination } from '../../../lib/membership/redirects';
 
 export const prerender = false;
 
@@ -183,7 +183,7 @@ export const POST: APIRoute = async ({ request, url }) => {
         role: user.role,
         status: user.status,
       },
-      redirectTo: safeMemberReturnTo(returnTo) ?? defaultMemberDestination(user),
+      redirectTo: memberDestination(user, returnTo),
     }),
     { status: 200, headers },
   );

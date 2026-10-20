@@ -17,7 +17,10 @@ export const onRequest = defineMiddleware(async ({ request, isPrerendered }, nex
     '/login',
     '/signup',
     '/api/auth/me',
-    '/api/auth/signup',
+    '/api/auth',
+    '/api/account',
+    '/forgot-password',
+    '/reset-password',
   ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   function secure(response: Response): Response {
     const result = applySecurityHeaders(response);

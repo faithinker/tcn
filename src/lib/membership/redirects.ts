@@ -31,3 +31,22 @@ export function defaultMemberDestination(user: { role: string; status: string })
   if (user.role === 'officer' && user.status === 'approved') return '/admin';
   return '/forum/assembly';
 }
+
+import { canAccess, type SessionUser } from '../auth/permissions';
+export function memberDestination(user: SessionUser, requested: string | null | undefined): string {
+  const target = safeMemberReturnTo(requested);
+  if (!target) return defaultMemberDestination(user);
+  const path = new URL(target, 'https://tcn.invalid').pathname;
+  if (path.startsWith('/account')) return target;
+  if (path.startsWith('/admin/users'))
+    return canAccess(user, { kind: 'users.list' }) ? target : defaultMemberDestination(user);
+  if (path === '/admin' || path.startsWith('/admin/'))
+    return canAccess(user, { kind: 'seminar.write' }) ? target : defaultMemberDestination(user);
+  const board = path.split('/')[2];
+  if (
+    (board === 'assembly' || board === 'directors') &&
+    canAccess(user, { kind: 'forum.read', board })
+  )
+    return target;
+  return defaultMemberDestination(user);
+}

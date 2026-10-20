@@ -36,7 +36,9 @@
     "motion": "node scripts/motion.mjs",
     "a11y": "node scripts/a11y.mjs",
     "test": "vitest run --coverage",
-    "generate-types": "wrangler types"
+    "generate-types": "wrangler types",
+    "test:account:d1": "node scripts/verify-account-d1.mjs",
+    "verify:account": "node scripts/verify-account.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",

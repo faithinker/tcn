@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import { env } from 'cloudflare:workers';
-import BaseLayout from '../layouts/BaseLayout.astro';
+import AccountShell from '../components/membership/AccountShell.astro';
 import LoginForm from '../components/membership/LoginForm.astro';
 import { getSessionUser } from '../lib/auth';
 import { isLoginChallengeBypassed, type LoginChallengeBindings } from '../lib/auth/login-challenge';
@@ -10,26 +10,24 @@ import {
   memberFeatureUnavailable,
   signupEnabled,
 } from '../lib/member-features';
-import { safeMemberReturnTo, defaultMemberDestination } from '../lib/membership/redirects';
+import { safeMemberReturnTo, memberDestination } from '../lib/membership/redirects';
 if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
 const returnTo = safeMemberReturnTo(Astro.url.searchParams.get('returnTo'));
 const user = await getSessionUser(Astro.request);
-if (user) return Astro.redirect(returnTo ?? defaultMemberDestination(user));
+if (user) return Astro.redirect(memberDestination(user, returnTo));
 const bindings = env as unknown as LoginChallengeBindings & { TURNSTILE_SITE_KEY?: string };
 const challengeBypassed = isLoginChallengeBypassed(bindings, Astro.url);
 const siteKey = bindings.TURNSTILE_SITE_KEY ?? '';
 const challengeUnavailable = !challengeBypassed && !siteKey;
 ---
 
-<BaseLayout title="Sign in" noindex>
-  <section class="mx-auto max-w-lg px-5 py-12 sm:py-16">
-    <LoginForm {returnTo} {challengeBypassed} {siteKey} {challengeUnavailable} />
-    {signupEnabled() && (
-      <p class="mt-6 text-center text-body-sm">
-        <a href="/signup" class="text-link underline">
-          Create an account
-        </a>
-      </p>
-    )}
-  </section>
-</BaseLayout>
+<AccountShell
+  title="Sign in"
+  description="Your connection to TCN's member forums and scholarly exchange."
+>
+  <nav slot="navigation" aria-label="Account navigation">
+    {signupEnabled() && <a href="/signup">New to TCN? Create an account</a>}
+    <a href="/contact">Need help? Contact the Secretariat</a>
+  </nav>
+  <LoginForm {returnTo} {challengeBypassed} {siteKey} {challengeUnavailable} />
+</AccountShell>

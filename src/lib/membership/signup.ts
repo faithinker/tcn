@@ -1,5 +1,10 @@
-import { checkPasswordPolicy } from '../auth/password-policy';
-
+import {
+  AccountError,
+  normalizeEmail,
+  normalizeNewPassword,
+  objectInput,
+  parseProfile,
+} from '../account/policy';
 export interface SignupInput {
   username: string;
   password: string;
@@ -8,37 +13,25 @@ export interface SignupInput {
 }
 type SignupResult =
   { ok: false; error: string; reason?: string } | { ok: true; value: SignupInput };
-
 export function validateSignup(input: unknown): SignupResult {
-  if (!input || typeof input !== 'object' || Array.isArray(input))
-    return { ok: false, error: 'invalid_fields' };
-  const body = input as Record<string, unknown>;
-  if (
-    Object.keys(body).some(
-      (key) => !['email', 'password', 'displayName', 'affiliation'].includes(key),
+  try {
+    const body = objectInput(input);
+    if (
+      Object.keys(body).some(
+        (k) =>
+          !['email', 'password', 'passwordConfirmation', 'displayName', 'affiliation'].includes(k),
+      )
     )
-  )
-    return { ok: false, error: 'invalid_fields' };
-  if (
-    typeof body.email !== 'string' ||
-    typeof body.password !== 'string' ||
-    typeof body.displayName !== 'string' ||
-    (body.affiliation !== undefined && typeof body.affiliation !== 'string')
-  )
-    return { ok: false, error: 'invalid_fields' };
-  const username = body.email.trim().toLowerCase();
-  const displayName = body.displayName.trim();
-  const affiliation = (body.affiliation as string | undefined)?.trim() || null;
-  if (username.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username))
-    return { ok: false, error: 'invalid_email' };
-  if (
-    !displayName ||
-    displayName.length > 100 ||
-    (affiliation?.length ?? 0) > 200 ||
-    /[\u0000-\u001f\u007f]/.test(displayName + (affiliation ?? ''))
-  )
-    return { ok: false, error: 'invalid_profile' };
-  const policy = checkPasswordPolicy(body.password, username);
-  if (!policy.ok) return { ok: false, error: 'invalid_password', reason: policy.reason };
-  return { ok: true, value: { username, password: body.password, displayName, affiliation } };
+      throw new AccountError('invalid_fields');
+    const username = normalizeEmail(body.email);
+    const password = normalizeNewPassword(body.password, body.passwordConfirmation);
+    const profile = parseProfile({
+      displayName: body.displayName,
+      ...(body.affiliation !== undefined ? { affiliation: body.affiliation } : {}),
+    });
+    return { ok: true, value: { username, password, ...profile } };
+  } catch (error) {
+    if (error instanceof AccountError) return { ok: false, error: error.code };
+    throw error;
+  }
 }

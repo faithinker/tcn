@@ -4,6 +4,7 @@ import { validateSignup } from './signup';
 const valid = {
   email: '  Researcher@Example.ORG ',
   password: 'A river carries many stories',
+  passwordConfirmation: 'A river carries many stories',
   displayName: ' Researcher ',
   affiliation: ' University ',
 };
@@ -51,5 +52,41 @@ describe('signup input', () => {
     const { affiliation, ...input } = valid;
     expect(validateSignup(input)).toMatchObject({ ok: true, value: { affiliation: null } });
     expect(validateSignup({ ...input, affiliation: {} }).ok).toBe(false);
+  });
+  it.each(['Admin', '관리자', 'Withdrawn member', 'ＴＣＮ', 'Secretariat'])(
+    'blocks reserved display name %s',
+    (displayName) => {
+      expect(validateSignup({ ...valid, displayName })).toMatchObject({
+        ok: false,
+        error: 'reserved_name',
+      });
+    },
+  );
+  it('requires matching password confirmation', () => {
+    expect(validateSignup({ ...valid, passwordConfirmation: 'different value' }).ok).toBe(false);
+    const { passwordConfirmation, ...missing } = valid;
+    expect(validateSignup(missing).ok).toBe(false);
+  });
+  it('accepts 15–64 code points without imposing a symbol requirement', () => {
+    for (const password of ['several quiet rivers', 'a'.repeat(64), '🌊'.repeat(15)]) {
+      expect(validateSignup({ ...valid, password, passwordConfirmation: password }).ok).toBe(true);
+    }
+    for (const password of [
+      'a'.repeat(14),
+      'a'.repeat(65),
+      'a'.repeat(15) + '\u200b',
+      'a'.repeat(15) + '\n',
+    ]) {
+      expect(validateSignup({ ...valid, password, passwordConfirmation: password }).ok).toBe(false);
+    }
+  });
+  it('normalizes new Unicode passwords consistently before confirmation and hashing', () => {
+    const password = 'A long cafe\u0301 beside the river';
+    expect(
+      validateSignup({ ...valid, password, passwordConfirmation: password.normalize('NFC') }),
+    ).toMatchObject({
+      ok: true,
+      value: { password: password.normalize('NFC') },
+    });
   });
 });

@@ -1,34 +1,29 @@
 ---
 export const prerender = false;
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { canAccess, getSessionUser } from '../lib/auth';
-import { getDB, getUserById } from '../lib/db';
+import AccountShell from '../components/membership/AccountShell.astro';
+import PasswordField from '../components/membership/PasswordField.astro';
+import { canAccess, createCsrfToken, readSessionToken, getSessionSecret } from '../lib/auth';
+import { getSessionAccount, getSessionUser } from '../lib/auth/guard';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../lib/member-features';
 if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const user = await getSessionAccount(Astro.request);
 const sessionUser = await getSessionUser(Astro.request);
-if (!sessionUser) return Astro.redirect('/login?returnTo=%2Faccount');
-const user = await getUserById(getDB(), sessionUser.id);
-if (!user) return Astro.redirect('/login?returnTo=%2Faccount');
+if (!user || !sessionUser) return Astro.redirect('/login?returnTo=%2Faccount');
+const csrf = await createCsrfToken('account', readSessionToken(Astro.request)!, getSessionSecret());
+const isEmail = user.username.includes('@');
 const status = {
-  pending:
-    'Your account is pending review. You can participate in the General Assembly forum while your application is reviewed.',
-  approved: 'Your membership has been approved.',
-  rejected:
-    'Your membership application was not approved. Please contact the Secretariat if you have questions.',
+  pending: 'Associate member · Pending review',
+  approved: 'Approved member',
+  rejected: 'Application not approved',
 }[user.status];
-const fields = [
-  ['Name', user.displayName ?? 'Not provided'],
-  [user.username.includes('@') ? 'Email' : 'Username', user.username],
-  ['Affiliation', user.affiliation ?? 'Not provided'],
-  [
-    'Membership status',
-    user.status === 'pending'
-      ? 'Associate member · Pending review'
-      : user.status === 'approved'
-        ? 'Approved'
-        : 'Not approved',
-  ],
-];
+const explanation = {
+  pending:
+    'You can use the General Assembly forum while the president or a vice president reviews your application.',
+  approved:
+    'Your membership is approved. Your current role determines the forums and tools you can access.',
+  rejected:
+    'You can update your details below and contact the Secretariat to request another review.',
+}[user.status];
 const links = [
   {
     label: 'General Assembly forum',
@@ -50,55 +45,282 @@ const links = [
     href: '/admin/users',
     allowed: canAccess(sessionUser, { kind: 'users.list' }),
   },
-];
+].filter((link) => link.allowed);
 ---
 
-<BaseLayout title="Your account" noindex>
-  <section class="mx-auto max-w-2xl px-5 py-12 sm:py-16">
-    <h1 class="font-serif text-display-md font-semibold text-ink">Your account</h1>
-    <p class="mt-5 text-body-sans">{status}</p>
-    <dl class="mt-8 divide-y divide-hairline border-y border-hairline text-body-sans">
-      {fields.map(([label, value]) => (
-        <div class="py-4">
-          <dt class="text-body-sm text-body-muted">{label}</dt>
-          <dd class="mt-1 break-words">{value}</dd>
-        </div>
-      ))}
-    </dl>
-    <nav aria-label="Account links" class="mt-8 flex flex-wrap gap-x-6 gap-y-4 text-body-sans">
-      {links
-        .filter((link) => link.allowed)
-        .map((link) => (
-          <a href={link.href} class="inline-flex min-h-11 items-center text-link underline">
-            {link.label}
-          </a>
-        ))}
-    </nav>
-    <button
-      type="button"
-      id="account-logout"
-      class="mt-8 min-h-12 rounded-sm bg-ink px-6 py-3 font-bold text-on-primary"
+<AccountShell
+  title="Your profile"
+  description="Manage the details you share with TCN, your password and your account."
+>
+  <nav slot="navigation" aria-label="Profile sections">
+    <a href="#profile-details">Profile details</a>
+    <a href="#account-security">Security & account</a>
+    <a href="/contact">Contact the Secretariat</a>
+  </nav>
+  <div id="account-root" data-csrf={csrf}>
+    <section class="account-section" aria-labelledby="membership-title">
+      <h2 id="membership-title">Membership</h2>
+      <p class="account-status mt-4">{status}</p>
+      <p class="account-lead">{explanation}</p>
+      {user.status === 'rejected' && (
+        <a class="account-text-button mt-2" href="/contact">
+          Contact the Secretariat for another review
+        </a>
+      )}
+      {links.length > 0 && (
+        <nav class="account-link-list" aria-label="Your forums and tools">
+          {links.map((link) => (
+            <a href={link.href}>
+              {link.label}
+              <span aria-hidden="true" class="ml-2">
+                →
+              </span>
+            </a>
+          ))}
+        </nav>
+      )}
+    </section>
+    <section
+      id="profile-details"
+      class="account-section scroll-mt-24"
+      aria-labelledby="profile-title"
     >
-      Log out
-    </button>
-    <p id="account-error" role="alert" class="mt-4 text-body-sm text-danger" hidden></p>
-  </section>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="profile-title">Profile details</h2>
+        <button
+          type="button"
+          class="account-text-button"
+          id="profile-edit"
+          aria-expanded="false"
+          aria-controls="profile-form"
+        >
+          Edit profile
+        </button>
+      </div>
+      <dl class="account-summary" id="profile-summary">
+        <div>
+          <dt>Display name</dt>
+          <dd data-profile-name>{user.displayName ?? 'Not provided'}</dd>
+        </div>
+        <div>
+          <dt>Affiliation</dt>
+          <dd data-profile-affiliation>{user.affiliation ?? 'Not provided'}</dd>
+        </div>
+        <div>
+          <dt>{isEmail ? 'Email' : 'Username'}</dt>
+          <dd>{user.username}</dd>
+        </div>
+        <div>
+          <dt>Joined</dt>
+          <dd>
+            {new Date(user.createdAt * 1000).toLocaleDateString('en-GB', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'UTC',
+            })}
+          </dd>
+        </div>
+      </dl>
+      <p class="account-help">
+        {isEmail
+          ? user.emailVerifiedAt
+            ? 'Your email is verified. Your login email cannot be changed.'
+            : 'This email has not been verified. Contact the Secretariat for account assistance. Your login email cannot be changed.'
+          : 'This is a manually issued username. Contact the Secretariat if you need help recovering access.'}
+      </p>
+      <form
+        id="profile-form"
+        data-profile-form
+        class="account-form"
+        method="post"
+        action="/api/account/profile"
+        hidden
+      >
+        <div class="account-field">
+          <label for="profile-name" class="account-label">
+            Display name
+          </label>
+          <input
+            class="account-input"
+            id="profile-name"
+            name="displayName"
+            value={user.displayName ?? ''}
+            maxlength="100"
+            required
+            autocomplete="name"
+            aria-describedby="profile-name-help"
+          />
+          <p id="profile-name-help" class="account-help">
+            Shown as the author of your forum posts, including earlier posts.
+          </p>
+        </div>
+        <div class="account-field">
+          <label for="profile-affiliation" class="account-label">
+            Affiliation <span class="font-normal text-body-muted">(optional)</span>
+          </label>
+          <input
+            class="account-input"
+            id="profile-affiliation"
+            name="affiliation"
+            value={user.affiliation ?? ''}
+            maxlength="200"
+            autocomplete="organization"
+          />
+          <p class="account-help">
+            Your university, institution or organisation. Leave blank to remove it.
+          </p>
+        </div>
+        <div class="account-field">
+          <label for="profile-email" class="account-label">
+            {isEmail ? 'Email' : 'Username'}{' '}
+            <span class="font-normal text-body-muted">(cannot be changed)</span>
+          </label>
+          <input
+            id="profile-email"
+            class="account-input"
+            value={user.username}
+            readonly
+            aria-readonly="true"
+          />
+        </div>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <div class="account-actions">
+          <button class="account-button" type="submit">
+            Save changes
+          </button>
+          <button type="button" class="account-button account-button-secondary" id="profile-cancel">
+            Cancel
+          </button>
+        </div>
+      </form>
+      <p id="profile-saved" role="status" class="account-help mt-4" hidden>
+        Your profile has been saved.
+      </p>
+    </section>
+    <section
+      id="account-security"
+      class="account-section scroll-mt-24"
+      aria-labelledby="security-title"
+    >
+      <h2 id="security-title">Security & account</h2>
+      <p class="account-lead">Keep your sign-in details secure.</p>
+      <details id="password-details" class="mt-4">
+        <summary class="account-text-button">Change password</summary>
+        <form
+          class="account-form"
+          data-account-password
+          method="post"
+          action="/api/account/password"
+        >
+          <PasswordField
+            id="current-password"
+            name="currentPassword"
+            label="Current password"
+            autocomplete="current-password"
+          />
+          <PasswordField
+            id="new-password"
+            name="newPassword"
+            label="New password"
+            isNew
+            help="Use 15–64 characters. A long phrase is welcome; a symbol is not required."
+          />
+          <PasswordField
+            id="password-confirmation"
+            name="passwordConfirmation"
+            label="Confirm new password"
+          />
+          <p class="account-help">Changing your password signs you out on every device.</p>
+          <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+          <div class="account-actions">
+            <button type="submit" class="account-button">
+              Update password
+            </button>
+            <button
+              type="button"
+              class="account-button account-button-secondary"
+              data-cancel-password
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </details>
+      <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1">
+        <button type="button" id="account-logout" class="account-text-button">
+          Log out
+        </button>
+        <p class="account-help">Signs you out on all devices.</p>
+      </div>
+      <p id="account-error" class="account-error mt-3" role="alert" tabindex="-1" hidden></p>
+    </section>
+    <section class="account-section account-danger" aria-labelledby="withdraw-title">
+      <h2 id="withdraw-title">Close your account</h2>
+      <p class="account-lead">
+        This removes your sign-in and profile details. Your forum posts remain with the author shown
+        as “Withdrawn member”.
+      </p>
+      <p class="account-help mt-3">
+        Before leaving, review any posts you want to edit or hide.
+        {links.some((link) => link.href.startsWith('/forum')) &&
+          ' Use the forum links above to find your posts.'}{' '}
+        Closing your site account is separate from any formal TCN membership procedure.
+      </p>
+      <button
+        type="button"
+        id="open-withdrawal"
+        class="account-text-button mt-3"
+        aria-haspopup="dialog"
+        aria-controls="withdrawal-dialog"
+      >
+        Close account
+      </button>
+    </section>
+  </div>
+  <dialog
+    id="withdrawal-dialog"
+    class="account-dialog"
+    role="alertdialog"
+    aria-labelledby="withdrawal-heading"
+    aria-describedby="withdrawal-warning"
+  >
+    <h2 id="withdrawal-heading">Close your TCN account?</h2>
+    <p id="withdrawal-warning" class="account-lead">
+      You will be signed out on all devices. Your sign-in details and membership permissions cannot
+      be restored. Your posts will remain as “Withdrawn member”.
+    </p>
+    <p class="account-help mt-3">
+      If you need to edit or hide posts first, cancel and return to your forums.
+    </p>
+    <form id="withdrawal-form" class="account-form" method="post" action="/api/account/withdraw">
+      <PasswordField
+        id="withdraw-password"
+        name="currentPassword"
+        label="Current password"
+        autocomplete="current-password"
+      />
+      <label class="account-check account-help">
+        <input name="confirmation" type="checkbox" required />
+        <span>I understand that closing this account cannot be undone.</span>
+      </label>
+      <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+      <div class="account-actions">
+        <button
+          type="button"
+          id="cancel-withdrawal"
+          autofocus
+          class="account-button account-button-secondary"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="account-button account-button-danger">
+          Confirm account closure
+        </button>
+      </div>
+    </form>
+  </dialog>
   <script>
-    document.getElementById('account-logout')?.addEventListener('click', async (event) => {
-      const button = event.currentTarget as HTMLButtonElement;
-      const error = document.getElementById('account-error');
-      button.disabled = true;
-      try {
-        const response = await fetch('/api/auth/logout', { method: 'POST' });
-        if (!response.ok) throw new Error('logout');
-        window.location.href = '/login';
-      } catch {
-        if (error) {
-          error.hidden = false;
-          error.textContent = 'Unable to log out. Please try again.';
-        }
-        button.disabled = false;
-      }
-    });
+    import '../scripts/account';
   </script>
-</BaseLayout>
+</AccountShell>

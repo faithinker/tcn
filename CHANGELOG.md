@@ -10,16 +10,18 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Feature
 
+- Added email-verified signup, profile editing, password change/reset and account closure with migration `0011_account_lifecycle.sql`, Resend Free delivery budget guards, a loopback-only local mail sink, 15–64 character NFC Unicode password policy with Pwned Passwords range checks, reserved display-name filtering, separate reauthentication failure counters and non-destructive withdrawal anonymization. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex & Antigravity
 - Added General Assembly and Board of Directors forums, gated signup, account pages and executive user management. Special forum access for approved Auditors and Advisors does not grant content-management authority; users cannot change themselves or existing executives. Migrations `0009` and `0010` add forum storage, special access and atomic revision-checked user audit events. Member features and public signup remain separately gated off by default. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
 - Reorganized the public header around About, People, Seminars and permission-aware Forums. Contact is last under About and remains in the footer; signed-out visitors see Sign in, while signed-in users see a profile icon and Log out. Forum menus support hover, click-to-pin, outside-click, scroll and keyboard dismissal. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
 
 ### Fix
 
+- Enforced `requireSameOrigin` and `account`-scoped CSRF tokens on `POST /api/auth/logout`, decoupled profile saves from `users.revision` optimistic locks, revalidated `returnTo` destinations against current account permissions, and excluded withdrawn accounts from active lookups, forum writes and user administration. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex & Antigravity
 - Preserved exact legacy username lookup before normalized email fallback and prevented login, signup and private post forms from putting sensitive fields in URLs when JavaScript is unavailable. Ordinary operator role changes are audited; protected executive recovery requires an explicit bootstrap reason outside the site UI. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
 
 ### Test
 
-- Added isolated workerd D1 gates for forum constraints, atomic user/audit rollback, concurrent revisions, idempotent retries and executive protection, plus local browser gates for seven permission groups, header interactions, signup, approval, forum ownership and actual session logout. Updated CI and implementation, verification, development and operations documentation; production data changes and deployment remain pending separate approval. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex
+- Added workerd D1 and Playwright browser gates (`test:account:d1`, `verify:account`) covering email-verified signup/resumption, immutable email, profile editing, password change/reset, withdrawal modal confirmation/cancellation, path-specific cookie expiration and cross-tab draft preservation, and wired them into CI. (Branch: `feat/roles-phase1-foundation`) - Implemented by Codex & Antigravity
 
 ## [2026-10-16]
 

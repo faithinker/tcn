@@ -24,7 +24,16 @@ function sql(command) {
   return JSON.parse(
     execFileSync(
       `${root}node_modules/.bin/wrangler`,
-      ['d1', 'execute', 'tcn-content', '--local', '--command', command, '--json'],
+      [
+        'd1',
+        'execute',
+        'tcn-content',
+        '--local',
+        ...(process.env.TCN_D1_PERSIST_TO ? ['--persist-to', process.env.TCN_D1_PERSIST_TO] : []),
+        '--command',
+        command,
+        '--json',
+      ],
       { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
     ),
   );
@@ -231,25 +240,45 @@ try {
   assert.equal(login.status(), 200);
   assert.equal(new URL(page.url()).pathname, '/login');
   // Signup is optional at runtime; exercise it when enabled in this local test configuration.
-  const signup = await anonymous.request.post(new URL('/api/auth/signup', base).href, {
+  const startSignup = await anonymous.request.post(new URL('/api/auth/signup/start', base).href, {
     headers: { origin: base.origin },
-    data: {
-      email: signupName,
-      password,
-      displayName: 'Harness applicant',
-      affiliation: 'Local verification',
-    },
+    data: { email: signupName },
   });
-  if (signup.status() !== 404) {
-    assert(
-      [200, 201].includes(signup.status()),
-      `Signup failed: ${signup.status()} ${await signup.text()}`,
+  if (startSignup.status() !== 404) {
+    assert.equal(
+      startSignup.status(),
+      200,
+      `Signup start failed (use AUTH_MAIL_MODE=local): ${await startSignup.text()}`,
     );
+    const mail = sql(
+      `SELECT body FROM auth_local_mail WHERE recipient=${literal(signupName)} ORDER BY rowid DESC LIMIT 1`,
+    )[0].results[0];
+    assert(
+      mail,
+      'This local-only gate requires AUTH_MAIL_MODE=local; it must never send a real email',
+    );
+    const code = mail.body.match(/\b\d{6}\b/)[0];
+    const verified = await anonymous.request.post(new URL('/api/auth/signup/verify', base).href, {
+      headers: { origin: base.origin },
+      data: { code },
+    });
+    assert.equal(verified.status(), 200, await verified.text());
+    const signup = await anonymous.request.post(new URL('/api/auth/signup', base).href, {
+      headers: { origin: base.origin },
+      data: {
+        email: signupName,
+        password,
+        passwordConfirmation: password,
+        displayName: 'Harness applicant',
+        affiliation: 'Local verification',
+      },
+    });
+    assert.equal(signup.status(), 201, await signup.text());
     const me = await (await anonymous.request.get(new URL('/api/auth/me', base).href)).json();
     assert.equal(me.user.status, 'pending');
     assert.equal(me.capabilities.directorsForum, false);
     assert.equal(me.capabilities.assemblyForum, true);
-    console.log('PASS browser signup default pending and minimal access');
+    console.log('PASS verified-email signup default pending and minimal access');
   } else console.log('SKIP signup: local SIGNUP_ENABLED is off');
   await anonymous.close();
   await verifyMemberFormFallbacks(browser, base, await author.storageState());
@@ -314,6 +343,6 @@ try {
   if (browser) await browser.close();
   // Exact generated usernames scope cleanup to fixtures from this invocation.
   sql(
-    `delete from user_audit_events where target_id in (select id from users where username in (${ownedUsers})) or actor_id in (select id from users where username in (${ownedUsers})); delete from forum_posts where author_id in (select id from users where username in (${ownedUsers})); delete from users where username in (${ownedUsers});`,
+    `delete from auth_local_mail where recipient in (${ownedUsers}); delete from auth_email_challenges where email in (${ownedUsers}); delete from account_reauth_failures where user_id in (select id from users where username in (${ownedUsers})); delete from account_events where user_id in (select id from users where username in (${ownedUsers})); delete from user_audit_events where target_id in (select id from users where username in (${ownedUsers})) or actor_id in (select id from users where username in (${ownedUsers})); delete from forum_posts where author_id in (select id from users where username in (${ownedUsers})); delete from users where username in (${ownedUsers});`,
   );
 }

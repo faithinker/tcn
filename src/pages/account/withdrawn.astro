@@ -1,0 +1,26 @@
+---
+export const prerender = false;
+import AccountShell from '../../components/membership/AccountShell.astro';
+---
+
+<AccountShell title="Account closed" description="Your TCN sign-in has ended.">
+  <section class="account-section">
+    <h2>You have left the site</h2>
+    <p class="account-lead">
+      Your account closure has been processed. Your sign-in and profile details have been removed,
+      and your previous sessions can no longer access member pages.
+    </p>
+    <p class="account-lead">
+      Your forum posts remain under “Withdrawn member”. For questions about a post or your formal
+      membership, contact the Secretariat.
+    </p>
+    <div class="account-actions mt-6">
+      <a href="/" class="account-button">
+        Return to TCN
+      </a>
+      <a href="/contact" class="account-button account-button-secondary">
+        Contact the Secretariat
+      </a>
+    </div>
+  </section>
+</AccountShell>

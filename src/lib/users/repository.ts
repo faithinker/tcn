@@ -31,14 +31,19 @@ const mapped = (row: Row): ManagedUser => ({
   canAccessDirectorsForum: row.canAccessDirectorsForum === 1,
 });
 export async function getManagedUser(db: D1Database, id: string): Promise<ManagedUser | null> {
-  const row = await db.prepare(`SELECT ${COLUMNS} FROM users u WHERE u.id=?`).bind(id).first<Row>();
+  const row = await db
+    .prepare(`SELECT ${COLUMNS} FROM users u WHERE u.id=? AND u.deleted_at IS NULL`)
+    .bind(id)
+    .first<Row>();
   return row ? mapped(row) : null;
 }
 export async function countPendingUsers(db: D1Database): Promise<number> {
   return (
     (
       await db
-        .prepare("SELECT COUNT(*) AS count FROM users WHERE status='pending'")
+        .prepare(
+          "SELECT COUNT(*) AS count FROM users WHERE deleted_at IS NULL AND status='pending'",
+        )
         .first<{ count: number }>()
     )?.count ?? 0
   );
@@ -53,7 +58,7 @@ export async function listManagedUsers(db: D1Database, options: { status: string
   const total =
     (
       await db
-        .prepare('SELECT COUNT(*) AS count FROM users WHERE status=?')
+        .prepare('SELECT COUNT(*) AS count FROM users WHERE deleted_at IS NULL AND status=?')
         .bind(options.status)
         .first<{ count: number }>()
     )?.count ?? 0;
@@ -62,7 +67,9 @@ export async function listManagedUsers(db: D1Database, options: { status: string
   const order =
     options.status === 'pending' ? 'u.created_at ASC, u.id ASC' : 'u.decided_at DESC, u.id DESC';
   const result = await db
-    .prepare(`SELECT ${COLUMNS} FROM users u WHERE u.status=? ORDER BY ${order} LIMIT 20 OFFSET ?`)
+    .prepare(
+      `SELECT ${COLUMNS} FROM users u WHERE u.deleted_at IS NULL AND u.status=? ORDER BY ${order} LIMIT 20 OFFSET ?`,
+    )
     .bind(options.status, (page - 1) * 20)
     .all<Row>();
   return { items: result.results.map(mapped), page, pageSize: 20 as const, total, totalPages };
@@ -164,9 +171,9 @@ export async function mutateUser(db: D1Database, input: UserMutationInput) {
       `UPDATE users SET status=?1,role=?2,is_executive=?3,can_access_directors_forum=?4,revision=revision+1,
     decided_by=CASE WHEN ?5='status' THEN ?6 ELSE decided_by END,
     decided_at=CASE WHEN ?5='status' THEN ?7 ELSE decided_at END
-    WHERE id=?8 AND id<>?6 AND revision=?9 AND is_executive=0
+    WHERE deleted_at IS NULL AND id=?8 AND id<>?6 AND revision=?9 AND is_executive=0
       AND status=?10 AND role=?11 AND can_access_directors_forum=?12
-      AND EXISTS(SELECT 1 FROM users actor WHERE actor.id=?6 AND actor.status='approved' AND actor.role='officer' AND actor.is_executive=1)`,
+      AND EXISTS(SELECT 1 FROM users actor WHERE actor.id=?6 AND actor.deleted_at IS NULL AND actor.status='approved' AND actor.role='officer' AND actor.is_executive=1)`,
     )
     .bind(
       after.status,

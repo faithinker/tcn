@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           # 더미 시크릿: 게이트가 인증 경로를 밟아도 죽지 않게 한다.
           # LOGIN_CHALLENGE=off 는 localhost 요청에만 로그인 챌린지를 끈다(헤드리스 브라우저는 Turnstile 을 못 통과한다).
-          printf 'SESSION_SECRET=%s\nLOGIN_CHALLENGE=off\nMEMBER_FEATURES_ENABLED=true\nSIGNUP_ENABLED=true\n' "$(openssl rand -hex 32)" > .dev.vars
+          printf 'SESSION_SECRET=%s\nLOGIN_CHALLENGE=off\nMEMBER_FEATURES_ENABLED=true\nSIGNUP_ENABLED=true\nAUTH_MAIL_MODE=local\n' "$(openssl rand -hex 32)" > .dev.vars
           npm run build
           ./node_modules/.bin/wrangler dev --port 4321 --local > /tmp/tcn-dev.log 2>&1 &
           dev_pid=$!
@@ -58,6 +58,7 @@ jobs:
           npm run verify:seminar-carousel
           npm run verify:admin
           npm run verify:forum-users
+          BASE_URL=http://localhost:4321 TCN_D1_PERSIST_TO=.wrangler/state npm run verify:account
           npm run verify:header
 
       - name: Upload verify screenshots
@@ -103,7 +104,7 @@ jobs:
         run: npm run test:roles:d1
 
       - name: Verify Forum and user management on workerd D1
-        run: npm run test:forum:d1 && npm run test:users:d1
+        run: npm run test:forum:d1 && npm run test:users:d1 && npm run test:account:d1
 
       - name: Test
         run: npm run test

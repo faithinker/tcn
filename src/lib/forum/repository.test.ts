@@ -20,6 +20,9 @@ describe('forum repository on SQLite', () => {
         "insert into users(id,username,password_hash,display_name) values ('author','private@example.org','secret','Author'), ('other','other@example.org','secret',null)",
       )
       .run();
+    await harness.db
+      .prepare("UPDATE users SET role='officer',status='approved' WHERE id='author'")
+      .run();
   });
   afterEach(async () => {
     await harness?.dispose();

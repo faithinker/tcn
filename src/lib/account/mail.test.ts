@@ -1,0 +1,59 @@
+import { beforeEach, afterEach, it, expect, vi } from 'vitest';
+import { openTestD1, type TestD1 } from '../../test-support/d1';
+import { sendAccountMail } from './mail';
+let h: TestD1;
+const request = new Request('https://tcn.example/signup');
+const bindings = {
+  RESEND_API_KEY: 'test-key',
+  AUTH_MAIL_FROM: 'accounts@tcn.example',
+  AUTH_PUBLIC_ORIGIN: 'https://tcn.example',
+};
+beforeEach(async () => {
+  h = await openTestD1();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => Response.json({ id: 'test-mail' })),
+  );
+});
+afterEach(async () => {
+  vi.unstubAllGlobals();
+  await h.dispose();
+});
+it('sends Resend JSON only to the configured API with a server-held key', async () => {
+  await sendAccountMail(
+    h.db,
+    request,
+    bindings,
+    'person@example.org',
+    'Verify',
+    'Your code is 123456',
+  );
+  expect(fetch).toHaveBeenCalledWith(
+    'https://api.resend.com/emails',
+    expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({ authorization: 'Bearer test-key' }),
+    }),
+  );
+  const init = vi.mocked(fetch).mock.calls[0][1]!;
+  expect(JSON.parse(init.body as string)).toMatchObject({
+    from: 'Transcultural Network <accounts@tcn.example>',
+    to: ['person@example.org'],
+    subject: 'Verify',
+    text: 'Your code is 123456',
+  });
+});
+it('stops before network sends when the conservative free-tier daily budget is consumed', async () => {
+  for (let i = 0; i < 90; i++)
+    await sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test');
+  await expect(
+    sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test'),
+  ).rejects.toMatchObject({ status: 503 });
+  expect(fetch).toHaveBeenCalledTimes(90);
+});
+it('returns a generic provider failure without leaking response bodies', async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(new Response('private provider details', { status: 429 }));
+  await expect(
+    sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test'),
+  ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
+});

@@ -44,3 +44,23 @@ describe('member login destinations', () => {
     },
   );
 });
+
+// The server must reject destinations the user can no longer access.
+import { memberDestination } from './redirects';
+it('falls back when approval or board access changed before login', () => {
+  const base = {
+    id: 'member',
+    username: 'member',
+    displayName: 'Member',
+    role: 'member' as const,
+    status: 'rejected' as const,
+    isExecutive: false,
+    canAccessDirectorsForum: false,
+  };
+  expect(memberDestination(base, '/forum/assembly')).toBe('/account');
+  expect(memberDestination({ ...base, status: 'pending' }, '/admin')).toBe('/forum/assembly');
+  expect(memberDestination({ ...base, status: 'approved' }, '/forum/directors')).toBe(
+    '/forum/assembly',
+  );
+  expect(memberDestination({ ...base, status: 'approved' }, '/account')).toBe('/account');
+});

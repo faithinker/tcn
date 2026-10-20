@@ -7,15 +7,7 @@ export async function verifyMemberFormFallbacks(browser, base, storageState) {
       '#login-form',
       { username: 'nonexistent-harness-user', password: 'Harness-secret-2026!' },
     ],
-    [
-      '/signup',
-      '#signup-form',
-      {
-        email: 'fallback@example.org',
-        displayName: 'Fallback test',
-        password: 'Harness-secret-2026!',
-      },
-    ],
+    ['/signup', '#signup-email-form', { email: 'fallback@example.org' }],
     ...(storageState
       ? [
           [

@@ -67,6 +67,7 @@ export type UserRole = 'officer' | 'member';
 export type AccountStatus = 'pending' | 'approved' | 'rejected';
 
 export interface User {
+  emailVerifiedAt?: number | null;
   id: string;
   username: string;
   passwordHash: string;

@@ -1,3 +1,5 @@
+import { logoutAccount, watchAccountSession } from './account-client';
+watchAccountSession();
 import { memberNavigation, type MemberSession } from '../lib/membership/navigation';
 import { t } from '../i18n/ui';
 
@@ -9,11 +11,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>('[data-header-
     button.setAttribute('aria-busy', 'true');
     if (error) error.hidden = true;
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'same-origin',
-      });
-      if (!response.ok) throw new Error('Logout failed');
+      await logoutAccount();
       window.location.assign('/');
     } catch {
       if (error) {

@@ -56,7 +56,9 @@ const csrf =
             {post.title}
           </h1>
           <p class="mt-4 flex flex-wrap gap-x-4 gap-y-1 font-sans text-caption text-body-muted">
-            <span>{post.authorName ?? copy.member}</span>
+            <span>
+              {post.authorWithdrawn ? 'Withdrawn member' : (post.authorName ?? copy.member)}
+            </span>
             <time datetime={post.createdAt}>{formatDate(post.createdAt)}</time>
             {post.revision > 1 && <span>Edited · revision {post.revision}</span>}
           </p>

@@ -249,9 +249,18 @@ const liveSiteUrl = (Astro.site ?? new URL('https://thetcn.org')).href;
       </header>
     )}
     <script>
+      import { logoutAccount, watchAccountSession } from '../scripts/account-client';
+      watchAccountSession();
       document.getElementById('admin-logout')?.addEventListener('click', async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/admin/login';
+        const button = document.getElementById('admin-logout') as HTMLButtonElement;
+        button.disabled = true;
+        try {
+          await logoutAccount();
+          window.location.href = '/admin/login';
+        } catch {
+          button.disabled = false;
+          button.textContent = 'Log out failed. Try again';
+        }
       });
     </script>
     <main

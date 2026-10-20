@@ -38,6 +38,7 @@ describe('forum routes with SQLite and real mutation security', () => {
         "insert into users(id,username,password_hash) values ('author','private@example.org','hash'),('other','other@example.org','hash')",
       )
       .run();
+    await harness.db.prepare("UPDATE users SET status='approved'").run();
     csrf = await createCsrfToken('forum', 'session', 'test-secret');
   });
   afterEach(async () => {
@@ -110,6 +111,9 @@ describe('forum routes with SQLite and real mutation security', () => {
     expect((await PUT!(ctx('PUT', { ...input, expectedRevision: 1 }, 'directors'))).status).toBe(
       403,
     );
+    await harness.db
+      .prepare("UPDATE users SET can_access_directors_forum=1 WHERE id='author'")
+      .run();
     state.user = { ...member, canAccessDirectorsForum: true };
     expect((await POST!(ctx('POST', input, 'directors'))).status).toBe(201);
     state.user = { ...member, status: 'pending', canAccessDirectorsForum: true };
@@ -126,6 +130,9 @@ describe('forum routes with SQLite and real mutation security', () => {
     expect(
       (await PUT!(ctx('PUT', { ...input, expectedRevision: 1 }, 'directors', post.id))).status,
     ).toBe(404);
+    await harness.db
+      .prepare("UPDATE users SET role='officer',is_executive=1 WHERE id='other'")
+      .run();
     state.user = { ...member, id: 'other', role: 'officer', isExecutive: true };
     expect(
       (await PUT!(ctx('PUT', { ...input, expectedRevision: 1 }, 'assembly', post.id))).status,
@@ -156,6 +163,9 @@ describe('forum routes with SQLite and real mutation security', () => {
     expect(
       (await DELETE!(ctx('DELETE', { expectedRevision: 1 }, 'assembly', post.id))).status,
     ).toBe(403);
+    await harness.db
+      .prepare("UPDATE users SET role='officer',is_executive=1 WHERE id='other'")
+      .run();
     state.user = { ...member, id: 'other', role: 'officer', isExecutive: true };
     expect(
       (await DELETE!(ctx('DELETE', { expectedRevision: 2 }, 'assembly', post.id))).status,

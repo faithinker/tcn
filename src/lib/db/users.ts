@@ -4,7 +4,7 @@ import type { User } from './types';
 const COLUMNS = `id, username, password_hash as passwordHash, display_name as displayName,
   session_version as sessionVersion, created_at as createdAt,
   role, status, is_executive as isExecutive,
-  can_access_directors_forum as canAccessDirectorsForum, affiliation`;
+  can_access_directors_forum as canAccessDirectorsForum, affiliation, email_verified_at as emailVerifiedAt`;
 
 type UserRow = Omit<User, 'isExecutive' | 'canAccessDirectorsForum'> & {
   isExecutive: number;
@@ -23,7 +23,7 @@ function toUser(row: UserRow): User {
 // 비밀번호 비교는 auth 레이어에서 수행한다.
 export async function getUserByUsername(db: D1Database, username: string): Promise<User | null> {
   const row = await db
-    .prepare(`select ${COLUMNS} from users where username = ?1`)
+    .prepare(`select ${COLUMNS} from users where username = ?1 AND deleted_at IS NULL`)
     .bind(username)
     .first<UserRow>();
   return row ? toUser(row) : null;
@@ -31,7 +31,7 @@ export async function getUserByUsername(db: D1Database, username: string): Promi
 
 export async function getUserById(db: D1Database, id: string): Promise<User | null> {
   const row = await db
-    .prepare(`select ${COLUMNS} from users where id = ?1`)
+    .prepare(`select ${COLUMNS} from users where id = ?1 AND deleted_at IS NULL`)
     .bind(id)
     .first<UserRow>();
   return row ? toUser(row) : null;

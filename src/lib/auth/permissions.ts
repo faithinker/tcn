@@ -25,7 +25,7 @@ export const FORUM_MIN_TIER: Record<ForumBoard, Tier> = {
   assembly: 'associate',
 };
 
-export type Requirement = 'officer' | 'executive' | 'activeAccount';
+export type Requirement = 'officer' | 'executive' | 'activeAccount' | 'signedIn';
 
 // 상태를 먼저 본다. pending 은 role 과 is_executive 를 무시하고, 결정권은 승인된 임원에게만 유효하다.
 export function tierOf(user: SessionUser | null): Tier | null {
@@ -56,6 +56,8 @@ export function meetsRequirement(user: SessionUser, requirement: Requirement): b
       return hasTier(user, 'director');
     case 'executive':
       return hasTier(user, 'executive');
+    case 'signedIn':
+      return true;
     case 'activeAccount':
       return user.status !== 'rejected';
   }

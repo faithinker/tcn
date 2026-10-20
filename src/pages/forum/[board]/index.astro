@@ -103,7 +103,9 @@ if (result && page > result.totalPages)
                     </a>
                   </h2>
                   <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-sans text-caption text-body-muted">
-                    <span>{post.authorName ?? copy.member}</span>
+                    <span>
+                      {post.authorWithdrawn ? 'Withdrawn member' : (post.authorName ?? copy.member)}
+                    </span>
                     <time datetime={post.createdAt}>{formatDate(post.createdAt)}</time>
                   </p>
                 </li>

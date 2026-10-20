@@ -1,132 +1,213 @@
 ---
 export const prerender = false;
-import BaseLayout from '../layouts/BaseLayout.astro';
+import AccountShell from '../components/membership/AccountShell.astro';
+import PasswordField from '../components/membership/PasswordField.astro';
 import { getSessionUser } from '../lib/auth';
 import {
+  signupEnabled,
   memberFeaturesEnabled,
   memberFeatureUnavailable,
-  signupEnabled,
 } from '../lib/member-features';
+import { signupState } from '../lib/account/email-flows';
+import { signupProof } from '../lib/account/public-route';
+import { getDB } from '../lib/db/client';
 if (!signupEnabled()) return new Response(null, { status: 404 });
 if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
 if (await getSessionUser(Astro.request)) return Astro.redirect('/account');
-const inputClass =
-  'mt-1 block min-h-12 w-full rounded-sm border border-hairline-strong bg-canvas px-3 py-2 text-ink focus-visible:border-accent';
+const state = await signupState(getDB(), signupProof(Astro.request));
+const verified = state?.verified === true;
 ---
 
-<BaseLayout title="Create an account" noindex>
-  <section class="mx-auto max-w-lg px-5 py-12 sm:py-16">
-    <h1 class="font-serif text-display-md font-semibold text-ink">Create an account</h1>
-    <p class="mt-5 text-body-sans">
-      Your application will be reviewed by TCN. You can access the General Assembly forum while your
-      application is pending.
-    </p>
-    <form
-      id="signup-form"
-      method="post"
-      action="/api/auth/signup"
-      class="mt-8 space-y-5 text-body-sans"
-    >
-      <label class="block">
-        Email
-        <input
-          class={inputClass}
-          type="email"
-          name="email"
-          autocomplete="email"
-          required
-          maxlength="254"
-        />
-      </label>
-      <label class="block">
-        Name
-        <input class={inputClass} name="displayName" autocomplete="name" required maxlength="100" />
-      </label>
-      <label class="block">
-        Affiliation <span class="text-body-muted">(optional)</span>
-        <input class={inputClass} name="affiliation" autocomplete="organization" maxlength="200" />
-      </label>
-      <label class="block">
-        Password
-        <input
-          class={inputClass}
-          type="password"
-          name="password"
-          autocomplete="new-password"
-          required
-          minlength="12"
-          maxlength="128"
-          aria-describedby="password-help"
-        />
-      </label>
-      <p id="password-help" class="text-body-sm text-body-muted">
-        Use 12–128 characters. Choose an uncommon phrase; avoid your email, repeated characters, and
-        common passwords.
+<AccountShell
+  title="Join TCN"
+  description="Create an account to participate in the General Assembly forum and connect with the network."
+>
+  <nav slot="navigation" aria-label="Membership navigation">
+    <a href="/login">Already a member? Sign in</a>
+    <a href="/about">About the network</a>
+  </nav>
+  <div
+    id="signup-root"
+    data-email={state?.email ?? ''}
+    data-verified={String(verified)}
+    data-code-sent={String(!!state)}
+    data-expires-at={state?.expiresAt}
+  >
+    <ol class="account-steps" aria-label="Account creation progress">
+      <li id="signup-step-email" aria-current={!verified ? 'step' : undefined}>
+        <span class="account-step-number" aria-hidden="true">
+          1
+        </span>
+        Verify email
+      </li>
+      <li id="signup-step-details" aria-current={verified ? 'step' : undefined}>
+        <span class="account-step-number" aria-hidden="true">
+          2
+        </span>
+        Account details
+      </li>
+    </ol>
+    <section class="account-section" id="signup-email-section" hidden={verified}>
+      <h2>Start with your email</h2>
+      <p class="account-lead">
+        We will send a verification code to confirm that this email belongs to you.
       </p>
-      <p id="signup-error" role="alert" class="text-body-sm text-danger" hidden></p>
-      <button
-        type="submit"
-        class="min-h-12 w-full rounded-sm bg-ink px-6 py-3 font-bold text-on-primary disabled:opacity-50"
+      <form
+        id="signup-email-form"
+        class="account-form"
+        method="post"
+        action="/api/auth/signup/start"
       >
-        Create account
-      </button>
-    </form>
-    <p class="mt-6 text-body-sm">
-      Already have an account?{' '}
-      <a href="/login" class="text-link underline">
-        Sign in
-      </a>
-    </p>
-  </section>
+        <div class="account-field">
+          <label for="signup-email" class="account-label">
+            Email address
+          </label>
+          <input
+            class="account-input"
+            id="signup-email"
+            name="email"
+            type="email"
+            value={state?.email ?? ''}
+            required
+            maxlength="254"
+            autocomplete="email"
+            disabled={!!state}
+          />
+          <p class="account-help">
+            This will be your login email. It cannot be changed after registration.
+          </p>
+        </div>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button type="submit" class="account-button" id="send-signup-code" hidden={!!state}>
+          Send verification code
+        </button>
+      </form>
+      <form
+        id="signup-code-form"
+        class="account-form"
+        method="post"
+        action="/api/auth/signup/verify"
+        hidden={!state}
+      >
+        <p id="code-delivery-status" class="account-help" role="status">
+          A code has been sent. Check your inbox and spam folder.
+        </p>
+        <div class="account-field">
+          <label for="signup-code" class="account-label">
+            Six-digit verification code
+          </label>
+          <input
+            id="signup-code"
+            name="code"
+            class="account-input account-code"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]{6}"
+            minlength="6"
+            maxlength="6"
+            required
+            aria-describedby="signup-code-help"
+          />
+          <p id="signup-code-help" class="account-help">
+            Use the latest code. <span id="signup-code-expiry">Codes expire after 10 minutes.</span>
+          </p>
+        </div>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button type="submit" class="account-button">
+          Verify email
+        </button>
+        <div class="account-actions">
+          <button type="button" id="resend-signup-code" class="account-text-button">
+            Resend code
+          </button>
+          <button type="button" class="account-text-button" data-change-signup-email>
+            Use a different email
+          </button>
+        </div>
+      </form>
+    </section>
+    <section class="account-section" id="signup-details-section" hidden={!verified}>
+      <h2>Your account details</h2>
+      <p class="account-lead">
+        You will join as an associate member while your application is reviewed.
+      </p>
+      <div class="mt-5">
+        <label for="verified-signup-email" class="account-label">
+          Verified email
+        </label>
+        <input
+          id="verified-signup-email"
+          class="account-input mt-2"
+          value={state?.email ?? ''}
+          disabled
+        />
+        <button type="button" class="account-text-button" data-change-signup-email>
+          Use a different email
+        </button>
+      </div>
+      <form id="signup-form" class="account-form" method="post" action="/api/auth/signup">
+        <div class="account-field">
+          <label class="account-label" for="signup-name">
+            Display name
+          </label>
+          <input
+            id="signup-name"
+            class="account-input"
+            name="displayName"
+            autocomplete="name"
+            required
+            maxlength="100"
+            aria-describedby="signup-name-help"
+          />
+          <p id="signup-name-help" class="account-help">
+            Use a name other members can recognise. It will appear beside your forum posts.
+          </p>
+        </div>
+        <div class="account-field">
+          <label class="account-label" for="signup-affiliation">
+            Affiliation <span class="font-normal text-body-muted">(optional)</span>
+          </label>
+          <input
+            id="signup-affiliation"
+            class="account-input"
+            name="affiliation"
+            autocomplete="organization"
+            maxlength="200"
+          />
+          <p class="account-help">
+            Your university, institution or organisation. You can leave this blank.
+          </p>
+        </div>
+        <PasswordField
+          id="signup-password"
+          name="password"
+          label="Password"
+          isNew
+          help="Use 15–64 characters. A long phrase is welcome; a symbol is not required."
+        />
+        <PasswordField
+          id="signup-password-confirmation"
+          name="passwordConfirmation"
+          label="Confirm password"
+        />
+        <p class="account-help">
+          TCN uses your email, name and optional affiliation to manage your account and review your
+          application. Your email is not displayed in the forums.
+        </p>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button type="submit" class="account-button">
+          Create account
+        </button>
+      </form>
+    </section>
+    <noscript>
+      <p class="account-notice mt-5">
+        JavaScript is required for secure email verification. Enable it and reload, or contact the
+        Secretariat for assistance.
+      </p>
+    </noscript>
+  </div>
   <script>
-    const form = document.getElementById('signup-form') as HTMLFormElement | null;
-    const error = document.getElementById('signup-error');
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-      if (error) error.hidden = true;
-      if (button) {
-        button.disabled = true;
-        button.textContent = 'Creating account…';
-      }
-      try {
-        const data = new FormData(form);
-        const response = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(data)),
-        });
-        const payload = (await response.json()) as { reason?: string; error: string };
-        if (!response.ok)
-          throw new Error(
-            payload.reason ??
-              (
-                {
-                  email_unavailable:
-                    'An account already uses this email. Sign in or use another email.',
-                  invalid_email: 'Enter a valid email address.',
-                  invalid_profile: 'Check your name and affiliation.',
-                  invalid_password: 'Choose a stronger password.',
-                  invalid_fields: 'Check the form and try again.',
-                } as Record<string, string>
-              )[payload.error] ??
-              'Account creation is unavailable. Please try again later.',
-          );
-        window.location.href = '/account';
-      } catch (failure) {
-        if (error) {
-          error.hidden = false;
-          error.textContent =
-            failure instanceof Error
-              ? failure.message
-              : 'Unable to create your account. Please try again.';
-        }
-      } finally {
-        if (button) {
-          button.disabled = false;
-          button.textContent = 'Create account';
-        }
-      }
-    });
+    import '../scripts/signup';
   </script>
-</BaseLayout>
+</AccountShell>
