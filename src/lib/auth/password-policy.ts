@@ -45,8 +45,16 @@ const COMMON = [
 const DECORATION = /^\d{0,8}$/;
 
 function isRepetitive(value: string): boolean {
+  const chars = [...value];
   for (let unit = 1; unit <= 4; unit += 1) {
-    if (value.length % unit === 0 && value === value.slice(0, unit).repeat(value.length / unit)) {
+    if (
+      chars.length % unit === 0 &&
+      value ===
+        chars
+          .slice(0, unit)
+          .join('')
+          .repeat(chars.length / unit)
+    ) {
       return true;
     }
   }
@@ -55,11 +63,12 @@ function isRepetitive(value: string): boolean {
 
 // 123456789012 · 987654321098 · abcdefghijkl 처럼 코드값이 한 칸씩 오르거나 내리는 문자열.
 function isSequential(value: string): boolean {
-  if (value.length < 2) return false;
-  const code = (index: number) => value.codePointAt(index) ?? 0;
+  const chars = [...value];
+  if (chars.length < 2) return false;
+  const code = (index: number) => chars[index].codePointAt(0) ?? 0;
   const step = code(1) - code(0);
   if (Math.abs(step) !== 1) return false;
-  for (let index = 2; index < value.length; index += 1) {
+  for (let index = 2; index < chars.length; index += 1) {
     if (code(index) - code(index - 1) !== step) return false;
   }
   return true;
@@ -77,6 +86,34 @@ function isDigitCycle(value: string): boolean {
   return ascending || descending;
 }
 
+function containsUsername(password: string, username: string): boolean {
+  const name = username.trim().toLowerCase();
+  const lower = password.toLowerCase();
+  if (name.length >= 3 && lower.includes(name)) return true;
+  if (name.includes('@')) {
+    const localPart = name.split('@')[0] ?? '';
+    if (localPart.length >= 4 && lower.includes(localPart)) return true;
+  }
+  return false;
+}
+
+function isDecoratedCommon(password: string): boolean {
+  const normalized = password.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return COMMON.some(
+    (word) => normalized.startsWith(word) && DECORATION.test(normalized.slice(word.length)),
+  );
+}
+
+export function isWeakPasswordShape(password: string, username = ''): boolean {
+  return (
+    containsUsername(password, username) ||
+    isRepetitive(password) ||
+    isSequential(password) ||
+    isDigitCycle(password) ||
+    isDecoratedCommon(password)
+  );
+}
+
 export function checkPasswordPolicy(password: string, username: string): PolicyResult {
   if (password.length < MIN_PASSWORD_LENGTH) {
     return { ok: false, reason: `Use at least ${MIN_PASSWORD_LENGTH} characters.` };
@@ -85,8 +122,7 @@ export function checkPasswordPolicy(password: string, username: string): PolicyR
     return { ok: false, reason: `Use at most ${MAX_PASSWORD_LENGTH} characters.` };
   }
 
-  const name = username.trim().toLowerCase();
-  if (name.length >= 3 && password.toLowerCase().includes(name)) {
+  if (containsUsername(password, username)) {
     return { ok: false, reason: 'The password must not contain the username.' };
   }
 
@@ -94,11 +130,7 @@ export function checkPasswordPolicy(password: string, username: string): PolicyR
     return { ok: false, reason: 'The password is too repetitive or a simple sequence.' };
   }
 
-  const normalized = password.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const isDecoratedCommon = COMMON.some(
-    (word) => normalized.startsWith(word) && DECORATION.test(normalized.slice(word.length)),
-  );
-  if (isDecoratedCommon) {
+  if (isDecoratedCommon(password)) {
     return {
       ok: false,
       reason: 'The password is a common word with only digits or symbols added.',

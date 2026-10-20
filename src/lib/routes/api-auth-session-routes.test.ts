@@ -75,13 +75,20 @@ describe('account session endpoints', () => {
     const anonymous = await (await me(context('/api/auth/me', { cookie: '' }))).json();
     expect(anonymous).not.toHaveProperty('csrfToken');
   });
+  it('rejects cross-site Fetch Metadata on /api/auth/me without minting a CSRF token or leaking user state', async () => {
+    const response = await me(context('/api/auth/me', { 'sec-fetch-site': 'cross-site' }));
+    expect(response.status).toBe(403);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    await expect(response.json()).resolves.toEqual({ ok: false, error: 'cross_site_request' });
+  });
 });
 
-it('expires invalidated cookies when another device checks its session', async () => {
+it('expires invalidated session cookies without wiping the trusted-device cookie when another device checks its session', async () => {
   await env.DB.prepare("UPDATE users SET session_version=session_version+1 WHERE id='user'").run();
   const result = await me(context('/api/auth/me'));
+  expect(result.headers.get('cache-control')).toBe('no-store');
   expect(await result.json()).toMatchObject({ authenticated: false });
-  expect(result.headers.getSetCookie().find((value) => value.startsWith('tcn_session='))).toContain(
-    'Max-Age=0',
-  );
+  const cookies = result.headers.getSetCookie();
+  expect(cookies.find((value) => value.startsWith('tcn_session='))).toContain('Max-Age=0');
+  expect(cookies.some((value) => value.startsWith('tcn_device='))).toBe(false);
 });

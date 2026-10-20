@@ -55,7 +55,7 @@ export async function replacePassword(
   confirmation: unknown,
   safety?: (value: string) => Promise<void>,
 ) {
-  const normalized = normalizeNewPassword(password, confirmation);
+  const normalized = normalizeNewPassword(password, confirmation, user.username);
   if (await verifyPassword(normalized, user.passwordHash))
     throw new AccountError('password_unchanged');
   if (safety) await safety(normalized);

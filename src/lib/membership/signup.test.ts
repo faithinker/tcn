@@ -68,7 +68,11 @@ describe('signup input', () => {
     expect(validateSignup(missing).ok).toBe(false);
   });
   it('accepts 15–64 code points without imposing a symbol requirement', () => {
-    for (const password of ['several quiet rivers', 'a'.repeat(64), '🌊'.repeat(15)]) {
+    for (const password of [
+      'several quiet rivers',
+      'Several quiet rivers flow past the old stone bridge every autumn',
+      '🌊🏔️🌿🔥🌙⭐☀️🌧️❄️🌸🍂🌲🐚🪨🌾',
+    ]) {
       expect(validateSignup({ ...valid, password, passwordConfirmation: password }).ok).toBe(true);
     }
     for (const password of [
@@ -79,6 +83,21 @@ describe('signup input', () => {
     ]) {
       expect(validateSignup({ ...valid, password, passwordConfirmation: password }).ok).toBe(false);
     }
+  });
+  it.each([
+    'aaaaaaaaaaaaaaa',
+    '🌊'.repeat(15),
+    'abababababababab',
+    'abcdefghijklmnop',
+    '123456789012345',
+    'Administrator-2026!',
+    'Transcultural-2026!',
+    'My-researcher-phrase-2026',
+  ])('rejects weak or username-derived password %s', (password) => {
+    expect(validateSignup({ ...valid, password, passwordConfirmation: password })).toMatchObject({
+      ok: false,
+      error: 'weak_password',
+    });
   });
   it('normalizes new Unicode passwords consistently before confirmation and hashing', () => {
     const password = 'A long cafe\u0301 beside the river';

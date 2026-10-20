@@ -1,3 +1,5 @@
+import { isWeakPasswordShape } from '../auth/password-policy';
+
 export class AccountError extends Error {
   constructor(
     readonly code: string,
@@ -45,17 +47,18 @@ export function parseProfile(input: Record<string, unknown>) {
     throw new AccountError('reserved_name');
   return { displayName, affiliation };
 }
-export function normalizeNewPassword(password: unknown, confirmation: unknown): string {
+export function normalizeNewPassword(
+  password: unknown,
+  confirmation: unknown,
+  username = '',
+): string {
   if (typeof password !== 'string' || typeof confirmation !== 'string')
     throw new AccountError('invalid_password');
   const normalized = password.normalize('NFC');
   if (controls.test(normalized) || [...normalized].length < 15 || [...normalized].length > 64)
     throw new AccountError('invalid_password');
   if (normalized !== confirmation.normalize('NFC')) throw new AccountError('password_mismatch');
-  if (
-    /^(?:password|qwerty|letmein|transculturalnetwork)[\d\W_]*$/iu.test(normalized) ||
-    !normalized.trim()
-  )
+  if (!normalized.trim() || isWeakPasswordShape(normalized, username))
     throw new AccountError('weak_password');
   return normalized;
 }

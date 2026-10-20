@@ -50,6 +50,12 @@ describe('account mutations on real SQLite', () => {
     });
   });
   it('replaces a password and invalidates old session snapshots', async () => {
+    await expect(
+      replacePassword(db, user, 'member-quiet-river-phrase', 'member-quiet-river-phrase'),
+    ).rejects.toMatchObject({ code: 'weak_password' });
+    await expect(
+      replacePassword(db, user, '123456789012345', '123456789012345'),
+    ).rejects.toMatchObject({ code: 'weak_password' });
     await replacePassword(db, user, 'Fifteen or more characters', 'Fifteen or more characters');
     const updated = (await getUserById(db, 'member'))!;
     expect(updated.sessionVersion).toBe(user.sessionVersion + 1);

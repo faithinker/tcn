@@ -24,7 +24,7 @@ export function validateSignup(input: unknown): SignupResult {
     )
       throw new AccountError('invalid_fields');
     const username = normalizeEmail(body.email);
-    const password = normalizeNewPassword(body.password, body.passwordConfirmation);
+    const password = normalizeNewPassword(body.password, body.passwordConfirmation, username);
     const profile = parseProfile({
       displayName: body.displayName,
       ...(body.affiliation !== undefined ? { affiliation: body.affiliation } : {}),

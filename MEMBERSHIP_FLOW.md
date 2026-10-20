@@ -6,7 +6,7 @@ Updated: 2026-10-20. Describes the integrated branch implementation; production 
 
 - `/login` accepts existing usernames and new email identifiers. Existing login challenge, lock and trusted-device protections remain.
 - `/signup` and `POST /api/auth/signup` open only when `SIGNUP_ENABLED=true` and member features are enabled.
-- Signup collects email, password, display name and optional affiliation. Email is normalized; passwords use the existing shared policy.
+- Signup verifies email ownership with a browser-bound six-digit code before collecting password, display name and optional affiliation. Email is normalized; new passwords enforce 15–64 NFC code points, the shared static password policy (blocking repetition, sequences, decorated common words, and username/email containment), and Pwned Passwords k-anonymity screening.
 - A new account is always member/pending with no executive or special forum access. Signup signs the applicant in and sends them to `/account`.
 - Pending applicants may read and write the Assembly Forum. Executive approval changes their status to approved; it does not grant officer or Directors Forum permissions.
 - Rejected applicants can sign in and see their status on `/account`, but cannot access either private forum. Executives may restore and approve them.
@@ -24,8 +24,8 @@ Executives use `/admin/users` to approve/reject applicants and change approved n
 
 ## Activation
 
-Keep `MEMBER_FEATURES_ENABLED=false` until the actual operating roster, initial executives and auditor/adviser access have been verified. Keep `SIGNUP_ENABLED=false` independently until the privacy policy, collection/retention/controller decisions and signup abuse protection are ready and activation is approved.
+Keep `MEMBER_FEATURES_ENABLED=false` until the actual operating roster, initial executives and auditor/adviser access have been verified. Keep `SIGNUP_ENABLED=false` independently until the privacy policy, collection/retention/controller decisions, verified email sender configuration and signup abuse protection are ready and activation is approved.
 
-Email ownership verification and password reset remain follow-up work. The user-management screen must explain that email is unverified; operators use names and affiliations to review applications. A documented operator password-reissue/session-revocation procedure is needed before public signup.
+Email ownership verification and one-time password reset links are implemented for verified email accounts (`docs/account-lifecycle.md`); legacy manual accounts without a verified email address continue to use the operator recovery procedure.
 
 Do not request phone numbers, birth dates, home addresses, identity documents or unsupported membership fees/categories.
