@@ -140,7 +140,7 @@ codex --profile web
 
 MCP 설정은 저장소 로컬 `.codex/config.toml`에 있습니다. 웹 전용 저장소라 Cloudflare·Astro 문서 MCP는 여기서만 켜고, iOS·Figma·Jira·Postman 계열은 여기서 꺼 둡니다. 스킬과 Cloudflare 플러그인 설정은 프로젝트 설정에서 무시되므로 `~/.codex/web.config.toml` 프로필에 두며(iOS용은 `ios.config.toml`), 이 파일은 머신 로컬이라 저장소에 포함되지 않습니다. 반대로 iOS 프로젝트에서는 웹·인프라 도구가 전역 설정에서 꺼져 있어 로드되지 않습니다. 켜고 끄는 도구의 전체 목록과 Claude Code 쪽 설정은 [`AGENTS.md`](../AGENTS.md)의 "Tool scope (web vs iOS)" 섹션이 단일 원천이며, Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 정책을 따릅니다.
 
-Claude Code의 MCP 차단·스킬 켜기·권한·훅은 추적되는 `.claude/settings.json`에 있어서, 새로 클론해도 폴더를 신뢰하면 그대로 적용됩니다. gitignore된 `.claude/settings.local.json`에는 이 머신의 MCP 승인(`enabledMcpjsonServers`)과 개인용 일회성 `allow` 항목만 둡니다. 각 훅의 동작과 `permissions.ask` 목록은 [`AGENTS.md`](../AGENTS.md)의 "Claude Code project hooks" 섹션을 보세요.
+Claude Code의 MCP 차단·스킬 켜기·권한·훅은 추적되는 `.claude/settings.json`에 있어서, 새로 클론해도 폴더를 신뢰하면 그대로 적용됩니다. 이 머신 전용 항목(MCP 승인, 개인용 일회성 `allow` 규칙)은 gitignore된 `.claude/settings.local.json`에 두며, 필요할 때 Claude Code가 만듭니다. 각 훅의 동작과 `permissions.ask` 목록은 [`AGENTS.md`](../AGENTS.md)의 "Claude Code project hooks" 섹션을 보세요.
 
 ## Account lifecycle preview
 

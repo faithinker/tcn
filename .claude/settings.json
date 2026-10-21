@@ -17,7 +17,14 @@
       "Bash(npx prettier *)",
       "Bash(npx astro *)",
       "Bash(npx vitest *)",
-      "Bash(npx wrangler *)"
+      "Bash(npx wrangler *)",
+      "Bash(BASE_URL=http://localhost:* npm run verify)",
+      "Bash(BASE_URL=http://localhost:* npm run verify:admin)",
+      "Bash(BASE_URL=http://localhost:* npm run verify:founding-media)",
+      "Bash(BASE_URL=http://localhost:* npm run a11y)",
+      "Bash(BASE_URL=http://localhost:* npm run test:qna:d1)",
+      "Bash(nohup ./node_modules/.bin/wrangler dev --port * --local)",
+      "Bash(pkill -f \"wrangler dev --port *\")"
     ],
     "ask": [
       "Bash(gh pr create*)",
