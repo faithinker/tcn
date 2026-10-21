@@ -37,7 +37,7 @@
 ## 3. 동시 편집 파일의 조율
 
 - **전역 공통 파일 제어:**
-  - [src/i18n/ui.ts](file:///Users/jhkim/Desktop/work/tcn/src/i18n/ui.ts) 또는 `package.json` 같이 여러 기능 개발 과정에서 공통으로 수정이 잦은 파일들은 작업 간 병목과 충돌의 주원인입니다.
+  - [src/i18n/ui.ts](../src/i18n/ui.ts) 또는 `package.json` 같이 여러 기능 개발 과정에서 공통으로 수정이 잦은 파일들은 작업 간 병목과 충돌의 주원인입니다.
 - **해결책:**
   - 의존성 패키지 추가(`npm i`) 등의 작업은 가능하면 메인 드라이버 역할을 하는 에이전트가 단독으로 수행하여 `package-lock.json` 충돌을 원천 차단합니다.
   - 공통 다국어 키 추가 작업 시, PR 머지 직전에 병합 충돌 여부를 로컬에서 항상 먼저 확인하고 해결한 뒤 원격지에 올립니다.
@@ -49,7 +49,7 @@
 - **직접 머지 금지:**
   - 원격지의 `main` 브랜치로 코드를 집어넣을 때는 로컬에서 직접 머지하여 push하지 않고, 반드시 **GitHub Pull Request (PR)**를 생성합니다.
 - **CI 검증 게이트 통과:**
-  - PR이 생성되면 다음 자동 검증 파이프라인([.github/workflows/ci.yml](file:///Users/jhkim/Desktop/work/tcn/.github/workflows/ci.yml))이 정상적으로 성공(Green)하는지 확인해야 합니다.
+  - PR이 생성되면 다음 자동 검증 파이프라인([.github/workflows/ci.yml](../.github/workflows/ci.yml))이 정상적으로 성공(Green)하는지 확인해야 합니다.
     - `npm run test` (유닛 테스트 및 커버리지 검증)
     - `npm run check` (Astro/TS 문법 및 타입 체크)
 - **알림 수신 확인:**
