@@ -44,6 +44,14 @@ enabled = false
 [mcp_servers.mcp-atlassian]
 enabled = false
 
+# Apple docs mirror (same purpose as apple-docs), and the code graph server whose
+# Codex instance is pinned to the Obsidian vault.
+[mcp_servers.sosumi]
+enabled = false
+
+[mcp_servers.code-review-graph]
+enabled = false
+
 # Pinned MCP servers. Exact versions, so every machine runs the same code instead
 # of whatever `@latest` resolves to that day. Each pin was at least 7 days old when
 # chosen. Bump them with the dependency upgrade routine and keep .mcp.json (the
