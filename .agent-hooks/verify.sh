@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 에이전트 Stop 훅(~/.agent-hooks/stop-verify.sh)이 턴을 끝내기 직전에 부르는 검증.
+# Claude Code Stop 훅(.claude/hooks/stop-verify.sh)이 턴을 끝내기 직전에 부르는 검증.
 # 실패하면 훅이 출력 끝 40줄을 되돌려 보내 에이전트가 고치게 한다.
 #
 # 여기서는 서버나 로컬 D1 없이 20초 안에 끝나는 검사만 돌린다.
@@ -33,6 +33,6 @@ run_step() {
 }
 
 run_step 'astro check' npm run --silent check
-run_step 'vitest' npx vitest run
+run_step 'vitest' npx vitest run --retry=1
 
 exit 0

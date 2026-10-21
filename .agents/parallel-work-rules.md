@@ -29,6 +29,8 @@
     git merge origin/main         # 3. 내 브랜치에 main 병합
     git stash pop                 # 4. 대피시켰던 작업 파일들을 다시 복원 및 병합
     ```
+- **장기 브랜치 예외:**
+  - 기능이 끝날 때까지 `main`에 머지하지 않는 장기 브랜치(예: roles)는 위 `git merge` 대신 `git rebase origin/main`으로 따라잡습니다. 이력이 바뀌므로 푸시는 `--force-with-lease=<브랜치>:<직전 원격 SHA>`로 하고, 푸시 전에 사용자 승인을 받습니다. 일반 `--force`는 쓰지 않습니다.
 
 ---
 
