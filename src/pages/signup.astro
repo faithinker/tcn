@@ -85,6 +85,14 @@ const challengeUnavailable = !challengeBypassed && !siteKey;
           <p class="account-help">
             This will be your login email. It cannot be changed after registration.
           </p>
+          <p class="account-help">
+            You must be at least 14 years old to create an account. See how TCN handles your
+            personal information in the{' '}
+            <a href="/privacy">
+              <span lang="ko">개인정보 처리방침</span> (Privacy Policy)
+            </a>
+            .
+          </p>
         </div>
         {!challengeBypassed && siteKey && (
           <div
@@ -224,7 +232,12 @@ const challengeUnavailable = !challengeBypassed && !siteKey;
         />
         <p class="account-help">
           TCN uses your email, name and optional affiliation to manage your account and review your
-          application. Your email is not displayed in the forums.
+          application. Leaving affiliation blank does not affect your application. Your email is not
+          displayed in the forums. Details are in the{' '}
+          <a href="/privacy">
+            <span lang="ko">개인정보 처리방침</span> (Privacy Policy)
+          </a>
+          .
         </p>
         <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
         <button type="submit" class="account-button">

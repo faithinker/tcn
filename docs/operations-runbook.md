@@ -71,7 +71,7 @@ The mitigation is a short `max-age` (around 300s) in `src/pages/media/[...key].t
 
 `qna_turnstile_tokens` prunes itself. Every accepted siteverify deletes the rows whose `expires_at` has passed in the same `db.batch` that inserts the new digest (`src/lib/qna/security.ts`), so the table stays close to the tokens issued in the last five minutes. Pruning is opportunistic — it only runs when a question is submitted — so expired rows sit there through quiet periods.
 
-`qna_rate_limits` is never pruned. One row is one HMAC-derived client key, and both windows reset in place inside a single UPSERT, so the row outlives its lapsed counters and nothing deletes it. There is no cron trigger and no maintenance route for this table. It grows with the number of distinct submitting clients and never shrinks; watching its size is the operator's job.
+`qna_rate_limits` prunes itself the same way. After each allowed submission the handler deletes the rows whose daily and short windows have both lapsed (`src/lib/qna/security.ts`), so a row lives about 24 hours past its last submission. A quiet period leaves lapsed rows in place until the next submission. There is no cron trigger and no maintenance route for this table. The privacy policy states this 24-hour period, so change both together. Check the size if growth looks unusual:
 
 ```bash
 npx wrangler d1 execute tcn-content --remote \
@@ -79,6 +79,39 @@ npx wrangler d1 execute tcn-content --remote \
 ```
 
 `qna_audit_events` grows without bound too, one row per administrator answer or visibility change. That table is the audit record — do not prune it.
+
+## Personal-information erasure requests
+
+The privacy policy (`src/data/privacy-policy.ko.md`, chapters 5 and 12) promises that an erasure request for a post or question is handled by the operator within 10 days. Account holders erase their own account at `/account`; this section covers text that a person wrote in a forum post or a Q&A question.
+
+1. Confirm the request with the privacy officer and record the date, the post or question URL and the action. Do not copy the erased text into the record.
+2. Verify the requester. A forum post belongs to its author's account. A guest Q&A question has no owner, so erase it only when the requester shows that the text concerns them.
+3. Blank the content; do not delete the row. `qna_audit_events` and the forum author link reference these rows, so a hard delete fails or loses the audit trail. The statements below keep every foreign key and constraint valid. Run them with `--local` first, then with `--remote` only on the owner's go-ahead.
+
+```sql
+-- Q&A question (clears the asker link and hides it). Add the answer statement only
+-- when the official answer repeats the personal information.
+UPDATE qna_questions
+   SET title='[Removed at the author''s request]', body='[Removed at the author''s request]',
+       asker_user_id=NULL, visibility='hidden', revision=revision+1,
+       updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+ WHERE id='<question id>';
+UPDATE qna_answers
+   SET body='[Removed at the author''s request]', revision=revision+1,
+       updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+ WHERE question_id='<question id>';
+
+-- Forum post (also hides it when it is still visible).
+UPDATE forum_posts
+   SET title='[Removed at the author''s request]', body='[Removed at the author''s request]',
+       revision=revision+1, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+       deleted_at=COALESCE(deleted_at, strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+       deleted_by=COALESCE(deleted_by, author_id)
+ WHERE id='<post id>';
+```
+
+4. Select the row again and confirm that the title and body show the placeholder.
+5. D1 Time Travel keeps the earlier state for 30 days. After any restore to a point before an erasure, run the logged erasures again.
 
 ## Account roles and executive authority
 
@@ -114,6 +147,7 @@ Keep MEMBER_FEATURES_ENABLED=false while migrations/code and initial permissions
 4. Assign the auditor and senior adviser member/approved plus special Directors Forum access. They lose seminar/media/official-answer operations but retain both forums and public Q&A questions.
 5. Resolve unrecognized accounts and missing display names before opening private content. Re-query permissions and smoke-test each group.
 6. Open MEMBER_FEATURES_ENABLED only after verification; keep SIGNUP_ENABLED=false until public-signup prerequisites and activation approval are satisfied.
+7. Before SIGNUP_ENABLED, confirm every item in section A of `docs/privacy-policy.ko.md`. The `/privacy` page ships with the code and states those facts as true.
 
 Migrations 0008–0010 are additive; the deploy workflow applies them before code after recording a Time Travel bookmark. Validate the complete implementation locally before one integrated release. Remote changes and deployment require user authorization.
 

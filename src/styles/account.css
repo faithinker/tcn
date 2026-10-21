@@ -99,6 +99,11 @@
   color: var(--color-body-muted);
   line-height: 1.6;
 }
+.account-help a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .account-password {
   display: flex;
   border: 1px solid var(--color-hairline-strong);

@@ -14,6 +14,7 @@ const STATIC_PATHS = [
   '/seminars',
   '/questions',
   '/contact',
+  '/privacy',
 ];
 
 export const GET: APIRoute = async ({ site }) => {

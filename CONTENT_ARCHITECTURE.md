@@ -23,6 +23,7 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 | `/seminars`                                                | 정적(스냅샷)   | D1 `posts` 스냅샷 (예정/지난 = `event_date` 파생)                                                      |
 | `/seminars/[date]`                                         | SSR            | D1 `posts`+`media` (마크다운→HTML, `lib/posts`). 구 `/seminars/p/[id]`는 여기로 301                    |
 | `/contact`                                                 | 정적           | `content.ts` (+`PUBLIC_MEMBERSHIP_FORM_URL` 설정 시 가입 CTA)                                          |
+| `/privacy`                                                 | 정적           | `data/privacy-policy.ko.md` (개인정보 처리방침. 푸터와 계정 화면에서 링크, 사이트맵 포함)              |
 | `/questions`                                               | SSR            | D1 `qna_questions`+`qna_answers` 공개 목록 (`Cache-Control: no-store`)                                 |
 | `/questions/new`                                           | SSR (noindex)  | 질문 작성 폼 (`TURNSTILE_SITE_KEY` 위젯)                                                               |
 | `/questions/[id]`                                          | SSR            | D1 질문 상세 + 공식 답변. noindex는 not-found·조회실패일 때만                                          |
@@ -31,7 +32,7 @@ Runtime: Astro 7 hybrid on **Cloudflare Workers** (`@astrojs/cloudflare`) - 정�
 | `/account`, `/account/withdrawn`                           | SSR (noindex)  | 내 상태·프로필·비밀번호 변경·전체 기기 로그아웃·탈퇴, 탈퇴 완료 안내                                   |
 | `/forum/{assembly,directors}`, `/forum/[board]/{new,[id]}` | SSR (noindex)  | D1 `forum_posts` 목록·작성·상세. 게시판별 최소 등급은 `FORUM_MIN_TIER`                                 |
 | `/404`                                                     | 정적 (noindex) | 하드코딩 카피                                                                                          |
-| `/sitemap.xml`                                             | SSR            | 정적 경로(`/questions` 포함) + D1 글                                                                   |
+| `/sitemap.xml`                                             | SSR            | 정적 경로(`/questions`·`/privacy` 포함) + D1 글                                                        |
 | `/admin`, `/admin/**`                                      | SSR (noindex)  | 작성 앱 (React island + Tiptap→마크다운)                                                               |
 | `/admin/questions`, `/admin/questions/[id]`                | SSR (noindex)  | Q&A 콘솔 - 대기/답변/숨김 탭, 답변 작성·공개 여부 전환                                                 |
 | `/admin/users`                                             | SSR (noindex)  | 결정권자 전용 사용자 관리 - 승인·반려·복구, 권한 변경                                                  |
