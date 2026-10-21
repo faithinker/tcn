@@ -1,0 +1,142 @@
+{
+  "extraKnownMarketplaces": {
+    "cloudflare": {
+      "source": {
+        "source": "github",
+        "repo": "cloudflare/skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "cloudflare@cloudflare": true,
+    "swift-lsp@claude-plugins-official": false
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx prettier *)",
+      "Bash(npx astro *)",
+      "Bash(npx vitest *)",
+      "Bash(npx wrangler *)"
+    ],
+    "ask": [
+      "Bash(gh pr create*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh release*)",
+      "Bash(gh secret*)",
+      "Bash(gh workflow run*)",
+      "Bash(git push*)",
+      "Bash(npx wrangler d1 * --remote*)",
+      "Bash(npx wrangler delete*)",
+      "Bash(npx wrangler deploy*)",
+      "Bash(npx wrangler r2 * delete*)",
+      "Bash(npx wrangler rollback*)",
+      "Bash(npx wrangler secret*)",
+      "Bash(npx wrangler versions deploy*)"
+    ],
+    "deny": ["Bash(rm -Rf *)", "Bash(rm -fR *)", "Bash(rm -fr *)"]
+  },
+  "deniedMcpServers": [
+    {
+      "serverName": "XcodeBuildMCP"
+    },
+    {
+      "serverName": "apple-docs"
+    },
+    {
+      "serverName": "figma"
+    },
+    {
+      "serverName": "figma-console"
+    },
+    {
+      "serverName": "figma-remote-mcp"
+    },
+    {
+      "serverName": "mcp-atlassian"
+    },
+    {
+      "serverName": "mobile-mcp"
+    },
+    {
+      "serverName": "postman"
+    },
+    {
+      "serverName": "rea"
+    }
+  ],
+  "skillOverrides": {
+    "agents-sdk": "on",
+    "cloudflare": "on",
+    "cloudflare-email-service": "on",
+    "cloudflare-one": "on",
+    "cloudflare-one-migrations": "on",
+    "durable-objects": "on",
+    "sandbox-sdk": "on",
+    "turnstile-spin": "on",
+    "web-perf": "on",
+    "workers-best-practices": "on",
+    "wrangler": "on",
+    "ios-clean": "off",
+    "ios-design-review": "off",
+    "ios-fix": "off",
+    "ios-qa": "off",
+    "ios-simulator-skill": "off",
+    "ios-sync": "off",
+    "swiftui-skills": "off",
+    "review": "on",
+    "investigate": "on",
+    "qa-only": "on",
+    "browse": "on",
+    "plan-ceo-review": "on",
+    "plan-eng-review": "on",
+    "plan-design-review": "on",
+    "plan-devex-review": "on",
+    "reverse-engineer-anything": "off"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/format-edited.sh\"",
+            "timeout": 30,
+            "statusMessage": "Formatting with prettier"
+          },
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/skills/impeccable/scripts/hook.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/stop-verify.sh\"",
+            "timeout": 120,
+            "statusMessage": "Verifying (astro check + vitest)"
+          }
+        ]
+      }
+    ]
+  }
+}
