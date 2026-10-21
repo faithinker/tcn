@@ -1,6 +1,12 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
+All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before every commit, in the same commit, and copy the entries into the Pull Request description.
+
+## [2026-10-22]
+
+### Docs
+
+- Changed the `AGENTS.md` workflow rule, this file's header, the `README.md` feature rules and the `pr-changelog` skill (`.agents/skills/` and its `.claude/skills/` wrapper) so agents record each change in `CHANGELOG.md` and stage it in the same commit before every commit, instead of only before opening a Pull Request; PR descriptions still copy the entries. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ## [2026-10-21]
 

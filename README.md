@@ -47,7 +47,7 @@
 4. **권한 규칙을 바꿀 때**는 `permissions.ts`와 `permissions.test.ts`의 매트릭스를 함께 고칩니다.
 5. **스키마 변경**은 `migrations/`에 새 번호 파일로 추가합니다. 배포 파이프라인이 Worker 배포 전에 마이그레이션을 자동으로 적용하므로, 기존 동작을 깨는 변경은 단계를 나눕니다.
 6. **회원 기능 플래그**는 운영에서 임의로 켜지 않습니다. 로컬 `.dev.vars`의 `true`를 운영으로 복사하지 말고, 켜는 절차는 [`docs/deployment.md`](./docs/deployment.md#회원-기능-통합-릴리스)를 따릅니다.
-7. **PR을 만들기 전에** `pr-changelog` 스킬로 `CHANGELOG.md`에 날짜별로 기록하고, PR 설명에 요약을 넣습니다.
+7. **커밋하기 전마다** `pr-changelog` 스킬로 `CHANGELOG.md`에 날짜별로 기록하고 같은 커밋에 포함합니다. PR을 만들 때는 그 항목을 PR 설명에 넣습니다.
 
 ## 빠른 시작
 

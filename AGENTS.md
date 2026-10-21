@@ -61,7 +61,7 @@ Scripts live in `.claude/hooks/` and are registered in the tracked `.claude/sett
 
 - Never invoke `$qa`, `$design-review`, `$ship`, `$land-and-deploy`, or `$canary` unless the user explicitly requests the corresponding code mutation, commits, push, pull request, merge, deployment, or production verification.
 - Prefer report-only review first when the requested action is ambiguous.
-- **CRITICAL**: Before pushing a branch and creating a pull request, you MUST automatically apply the `pr-changelog` skill. Systematically record your changes in `CHANGELOG.md` by date, commit the changelog, and include the summary in the PR description.
+- **CRITICAL**: Before every commit, you MUST automatically apply the `pr-changelog` skill. Record the change in `CHANGELOG.md` by date and stage it in the same commit; only a commit that edits nothing but `CHANGELOG.md` skips this. When you create the pull request, copy those entries into the PR description.
 
 ## Build and manual production deploy
 

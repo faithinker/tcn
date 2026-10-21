@@ -1,6 +1,6 @@
 ---
 name: pr-changelog
-description: Instructs AI agents to systematically record their changes in CHANGELOG.md by date before creating a Pull Request.
+description: Instructs AI agents to systematically record their changes in CHANGELOG.md by date, in the same commit, before every commit.
 ---
 
 # PR Changelog Management

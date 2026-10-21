@@ -1,11 +1,11 @@
 ---
 name: pr-changelog
-description: Instructs AI agents to systematically record their changes in CHANGELOG.md by date before creating a Pull Request.
+description: Instructs AI agents to systematically record their changes in CHANGELOG.md by date, in the same commit, before every commit.
 ---
 
 # PR Changelog Management
 
-When you (an AI agent like Claude, Codex, etc.) complete a development task and are about to commit your changes to create a Pull Request, you **MUST** update the `CHANGELOG.md` file located at the root of the project.
+When you (an AI agent like Claude, Codex, etc.) complete a development task and are about to commit your changes, you **MUST** update the `CHANGELOG.md` file located at the root of the project first. This applies to every commit, not only the one that leads to a Pull Request.
 
 ## 📝 Instructions
 
@@ -27,7 +27,8 @@ When you (an AI agent like Claude, Codex, etc.) complete a development task and 
    ```
 
 3. **Include in Commit**
-   - Ensure the modified `CHANGELOG.md` is staged and included in your final commit before you push the branch.
+   - Ensure the modified `CHANGELOG.md` is staged and included in the same commit as the change it describes, before you create that commit.
+   - A commit that edits nothing but `CHANGELOG.md` needs no further entry.
 
 4. **Sync with PR Body**
-   - When you generate the Pull Request, copy the exact bullet points you just added to `CHANGELOG.md` and include them in the PR description.
+   - When you generate the Pull Request, copy the exact bullet points that the PR's commits added to `CHANGELOG.md` and include them in the PR description.
