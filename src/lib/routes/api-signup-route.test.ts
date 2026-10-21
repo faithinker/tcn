@@ -6,6 +6,9 @@ const { env } = vi.hoisted(() => ({
     MEMBER_FEATURES_ENABLED: 'true',
     SIGNUP_ENABLED: 'true',
     AUTH_MAIL_MODE: 'local',
+    LOGIN_CHALLENGE: 'off' as string | undefined,
+    TURNSTILE_SECRET_KEY: undefined as string | undefined,
+    QNA_TURNSTILE_HOSTNAMES: undefined as string | undefined,
   },
 }));
 vi.mock('cloudflare:workers', () => ({ env }));
@@ -53,9 +56,15 @@ beforeEach(async () => {
   env.DB = h.db;
   env.SIGNUP_ENABLED = 'true';
   env.MEMBER_FEATURES_ENABLED = 'true';
+  env.LOGIN_CHALLENGE = 'off';
+  env.TURNSTILE_SECRET_KEY = undefined;
+  env.QNA_TURNSTILE_HOSTNAMES = undefined;
   cookie = '';
 });
-afterEach(() => h.dispose());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  return h.dispose();
+});
 describe('verified signup routes', () => {
   it('gates all steps and status behind signup/member flags', async () => {
     env.SIGNUP_ENABLED = 'false';
@@ -129,5 +138,111 @@ describe('verified signup routes', () => {
     expect(await (await state(ctx('/api/auth/signup/state'))).json()).toMatchObject({
       state: null,
     });
+  });
+});
+
+describe('signup start bot challenge', () => {
+  const challengeOn = () => {
+    env.LOGIN_CHALLENGE = undefined;
+    env.TURNSTILE_SECRET_KEY = 'turnstile-secret';
+    env.QNA_TURNSTILE_HOSTNAMES = 'localhost';
+  };
+  const siteverify = (overrides: Record<string, unknown> = {}) => {
+    const spy = vi.fn().mockImplementation(async () =>
+      Response.json({
+        success: true,
+        hostname: 'localhost',
+        action: 'signup_start',
+        challenge_ts: new Date().toISOString(),
+        ...overrides,
+      }),
+    );
+    vi.stubGlobal('fetch', spy);
+    return spy;
+  };
+  const count = async (table: string) =>
+    (await h.db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).first<{ n: number }>())!.n;
+  const untouched = async () => {
+    expect(await count('auth_email_challenges')).toBe(0);
+    expect(await count('auth_local_mail')).toBe(0);
+    expect(await count('auth_mail_limits')).toBe(0);
+  };
+
+  it('sends the code and sets the proof cookie once Siteverify accepts the token', async () => {
+    challengeOn();
+    const spy = siteverify();
+    const response = await start(
+      ctx('/api/auth/signup/start', { email: input.email, turnstileToken: 'widget-token' }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.getSetCookie()[0]).toMatch(/^tcn_signup=/);
+    expect(spy).toHaveBeenCalledOnce();
+    expect(await count('auth_local_mail')).toBe(1);
+  });
+
+  it.each([
+    ['no token', { email: input.email }],
+    ['an empty token', { email: input.email, turnstileToken: '' }],
+    ['a non-string token', { email: input.email, turnstileToken: { x: 1 } }],
+  ])('refuses %s before touching mail, challenges or rate limits', async (_label, body) => {
+    challengeOn();
+    const spy = siteverify();
+    const response = await start(ctx('/api/auth/signup/start', body));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ ok: false, error: 'turnstile_failed' });
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.getSetCookie()).toEqual([]);
+    expect(spy).not.toHaveBeenCalled();
+    await untouched();
+  });
+
+  it('refuses a token that Siteverify rejects or that was issued for another action', async () => {
+    challengeOn();
+    for (const overrides of [{ success: false }, { action: 'admin_login' }]) {
+      siteverify(overrides);
+      const response = await start(
+        ctx('/api/auth/signup/start', { email: input.email, turnstileToken: 'widget-token' }),
+      );
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ ok: false, error: 'turnstile_failed' });
+    }
+    await untouched();
+  });
+
+  it('fails closed with 503 when Turnstile is not configured outside the local switch', async () => {
+    env.LOGIN_CHALLENGE = undefined;
+    const response = await start(
+      ctx('/api/auth/signup/start', { email: input.email, turnstileToken: 'widget-token' }),
+    );
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ ok: false, error: 'security_not_configured' });
+    await untouched();
+  });
+
+  it('still rejects unknown fields and does not require a token behind the local off switch', async () => {
+    challengeOn();
+    const spy = siteverify();
+    const unknown = await start(
+      ctx('/api/auth/signup/start', { email: input.email, turnstileToken: 'x', role: 'officer' }),
+    );
+    expect(unknown.status).toBe(400);
+    expect(spy).not.toHaveBeenCalled();
+    env.LOGIN_CHALLENGE = 'off';
+    expect((await start(ctx('/api/auth/signup/start', { email: input.email }))).status).toBe(200);
+  });
+
+  it('leaves the verify, finish and cancel steps to the browser-bound proof, not a new token', async () => {
+    challengeOn();
+    siteverify();
+    const started = await start(
+      ctx('/api/auth/signup/start', { email: input.email, turnstileToken: 'widget-token' }),
+    );
+    cookie = started.headers.getSetCookie()[0].split(';')[0];
+    const mail = await h.db
+      .prepare('SELECT body FROM auth_local_mail ORDER BY rowid DESC LIMIT 1')
+      .first<{ body: string }>();
+    const code = mail!.body.match(/\b\d{6}\b/)![0];
+    expect((await verify(ctx('/api/auth/signup/verify', { code }))).status).toBe(200);
+    expect((await cancel(ctx('/api/auth/signup/cancel'))).status).toBe(200);
   });
 });

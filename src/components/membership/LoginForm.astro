@@ -2,6 +2,7 @@
 import PasswordField from './PasswordField.astro';
 import '../../styles/account.css';
 import { LOGIN_CHALLENGE_ACTION } from '../../lib/auth/login-challenge';
+import { CHALLENGE_CALLBACKS } from '../../scripts/challenge-gate';
 interface Props {
   returnTo?: string | null;
   challengeBypassed: boolean;
@@ -20,7 +21,7 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
     method="post"
     action="/api/auth/login"
     class="account-form"
-    data-challenge={challengeBypassed ? 'off' : 'on'}
+    data-challenge={!challengeBypassed && siteKey ? 'on' : 'off'}
   >
     <div class="account-field">
       <label for="login-username" class="account-label">
@@ -47,9 +48,10 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
         class="cf-turnstile"
         data-sitekey={siteKey}
         data-action={LOGIN_CHALLENGE_ACTION}
-        data-callback="onLoginTurnstileSuccess"
-        data-expired-callback="onLoginTurnstileExpired"
-        data-error-callback="onLoginTurnstileError"
+        data-appearance="interaction-only"
+        data-callback={CHALLENGE_CALLBACKS.success}
+        data-expired-callback={CHALLENGE_CALLBACKS.expired}
+        data-error-callback={CHALLENGE_CALLBACKS.error}
       />
     )}
     <p
@@ -62,7 +64,12 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
         ? 'Sign-in is temporarily unavailable. Please try again later.'
         : 'Invalid email or password.'}
     </p>
-    <button type="submit" disabled={challengeUnavailable} class="account-button">
+    <button
+      type="submit"
+      disabled={challengeUnavailable}
+      data-locked={challengeUnavailable ? 'true' : undefined}
+      class="account-button"
+    >
       Sign in
     </button>
   </form>
@@ -71,16 +78,12 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
   </a>
 </div>
 <script>
-  import { CHALLENGE_PENDING_MESSAGE, failureMessage } from '../../scripts/login-messages';
-
-  declare global {
-    interface Window {
-      onLoginTurnstileSuccess?: (token: string) => void;
-      onLoginTurnstileExpired?: () => void;
-      onLoginTurnstileError?: () => void;
-      turnstile?: { reset: (widget?: string | HTMLElement) => void };
-    }
-  }
+  import {
+    CHALLENGE_FAILED_MESSAGE,
+    createChallengeGate,
+    setCheckingLabel,
+  } from '../../scripts/challenge-gate';
+  import { failureMessage } from '../../scripts/login-messages';
 
   const notice = document.getElementById('login-notice');
   const currentUrl = new URL(window.location.href);
@@ -96,41 +99,47 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
   const form = document.getElementById('login-form') as HTMLFormElement | null;
   const errorEl = document.getElementById('login-error');
   const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-  const challengeOn = form?.dataset.challenge === 'on';
+  let submitting = false;
 
-  // 위젯 토큰은 1회용이다. 제출을 시도할 때마다 비우고 위젯을 다시 돌려 새 토큰을 받는다.
-  let turnstileToken = '';
-  window.onLoginTurnstileSuccess = (token) => {
-    turnstileToken = token;
-  };
-  window.onLoginTurnstileExpired = () => {
-    turnstileToken = '';
-  };
-  window.onLoginTurnstileError = () => {
-    turnstileToken = '';
-  };
-  function resetChallenge(): void {
-    turnstileToken = '';
-    const widget = document.querySelector<HTMLElement>('.cf-turnstile');
-    if (widget) window.turnstile?.reset(widget);
-  }
+  // 위젯 토큰은 1회용이다. 제출을 시도할 때마다 게이트를 되돌려 새 토큰을 받는다.
+  const gate = createChallengeGate({
+    enabled: form?.dataset.challenge === 'on',
+    widgetRoot: form ?? document,
+    onChange: syncChallenge,
+  });
   function showError(message: string): void {
     if (!errorEl) return;
     errorEl.textContent = message;
     errorEl.classList.remove('hidden');
   }
+  let failureShown = false;
+  function syncChallenge(): void {
+    if (!submit) return;
+    const pending = gate.pending();
+    submit.disabled = submitting || submit.dataset.locked === 'true' || pending;
+    setCheckingLabel(submit, pending);
+    if (!gate.failed()) {
+      failureShown = false;
+      if (errorEl?.textContent === CHALLENGE_FAILED_MESSAGE) errorEl.classList.add('hidden');
+    } else if (!failureShown) {
+      // 입력 중인 칸의 포커스를 빼앗지 않도록 안내만 띄운다.
+      failureShown = true;
+      showError(CHALLENGE_FAILED_MESSAGE);
+    }
+  }
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     errorEl?.classList.add('hidden');
-    if (challengeOn && !turnstileToken) {
-      showError(CHALLENGE_PENDING_MESSAGE);
+    if (gate.pending()) return;
+    if (gate.failed() && !gate.token()) {
+      gate.reset();
+      showError(CHALLENGE_FAILED_MESSAGE);
       return;
     }
-    if (submit) {
-      submit.disabled = true;
-      submit.textContent = 'Signing in…';
-    }
+    submitting = true;
+    syncChallenge();
+    if (submit) submit.textContent = 'Signing in…';
     try {
       const data = new FormData(form);
       const response = await fetch('/api/auth/login', {
@@ -139,7 +148,7 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
         body: JSON.stringify({
           username: data.get('username'),
           password: data.get('password'),
-          turnstileToken,
+          turnstileToken: gate.token(),
           returnTo: document.querySelector<HTMLElement>('[data-return-to]')?.dataset.returnTo,
         }),
       });
@@ -152,13 +161,12 @@ const { returnTo, challengeBypassed, siteKey, challengeUnavailable } = Astro.pro
     } catch {
       showError('Network unavailable. Check your connection and try again.');
     } finally {
-      if (challengeOn) resetChallenge();
-      if (submit) {
-        submit.disabled = false;
-        submit.textContent = 'Sign in';
-      }
+      submitting = false;
+      gate.reset();
+      syncChallenge();
     }
   });
+  syncChallenge();
   if (form) form.dataset.ready = 'true';
 </script>
 {!challengeBypassed && siteKey && (

@@ -1,8 +1,12 @@
 ---
 export const prerender = false;
+import { env } from 'cloudflare:workers';
 import AccountShell from '../components/membership/AccountShell.astro';
 import PasswordField from '../components/membership/PasswordField.astro';
 import { getSessionUser } from '../lib/auth';
+import { isLoginChallengeBypassed, type LoginChallengeBindings } from '../lib/auth/login-challenge';
+import { SIGNUP_CHALLENGE_ACTION } from '../lib/account/account-challenge';
+import { CHALLENGE_CALLBACKS } from '../scripts/challenge-gate';
 import {
   signupEnabled,
   memberFeaturesEnabled,
@@ -16,6 +20,10 @@ if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
 if (await getSessionUser(Astro.request)) return Astro.redirect('/account');
 const state = await signupState(getDB(), signupProof(Astro.request));
 const verified = state?.verified === true;
+const bindings = env as unknown as LoginChallengeBindings & { TURNSTILE_SITE_KEY?: string };
+const challengeBypassed = isLoginChallengeBypassed(bindings, Astro.url);
+const siteKey = bindings.TURNSTILE_SITE_KEY ?? '';
+const challengeUnavailable = !challengeBypassed && !siteKey;
 ---
 
 <AccountShell
@@ -32,6 +40,7 @@ const verified = state?.verified === true;
     data-verified={String(verified)}
     data-code-sent={String(!!state)}
     data-expires-at={state?.expiresAt}
+    data-challenge={!challengeBypassed && siteKey ? 'on' : 'off'}
   >
     <ol class="account-steps" aria-label="Account creation progress">
       <li id="signup-step-email" aria-current={!verified ? 'step' : undefined}>
@@ -77,8 +86,31 @@ const verified = state?.verified === true;
             This will be your login email. It cannot be changed after registration.
           </p>
         </div>
+        {!challengeBypassed && siteKey && (
+          <div
+            class="cf-turnstile"
+            data-sitekey={siteKey}
+            data-action={SIGNUP_CHALLENGE_ACTION}
+            data-appearance="interaction-only"
+            data-callback={CHALLENGE_CALLBACKS.success}
+            data-expired-callback={CHALLENGE_CALLBACKS.expired}
+            data-error-callback={CHALLENGE_CALLBACKS.error}
+          />
+        )}
+        {challengeUnavailable && (
+          <p class="account-error" role="alert">
+            Account creation is temporarily unavailable. Please try again later.
+          </p>
+        )}
         <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
-        <button type="submit" class="account-button" id="send-signup-code" hidden={!!state}>
+        <button
+          type="submit"
+          class="account-button"
+          id="send-signup-code"
+          hidden={!!state}
+          disabled={challengeUnavailable}
+          data-locked={challengeUnavailable ? 'true' : undefined}
+        >
           Send verification code
         </button>
       </form>
@@ -210,4 +242,7 @@ const verified = state?.verified === true;
   <script>
     import '../scripts/signup';
   </script>
+  {!challengeBypassed && siteKey && (
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+  )}
 </AccountShell>

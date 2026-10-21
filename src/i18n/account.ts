@@ -22,6 +22,8 @@ export const accountMessages: Record<string, string> = {
     'You are already signed in. Open your profile or log out to use another account.',
   email_unavailable: 'Email delivery is temporarily unavailable. Please try again later.',
   rate_limited: 'Too many requests. Wait before trying again.',
+  turnstile_failed: 'The security check did not pass. Wait for it to finish, then try again.',
+  security_not_configured: 'Account creation is temporarily unavailable. Please try again later.',
   session_ended: 'Your session has ended after repeated incorrect passwords. Sign in again.',
   unauthorized: 'Your session has ended. Sign in again before continuing.',
   invalid_csrf: 'Your security token has expired. Reload this page before trying again.',

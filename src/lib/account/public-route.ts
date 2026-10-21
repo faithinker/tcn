@@ -4,6 +4,7 @@ import { getSessionSecret, getSessionUser } from '../auth/guard';
 import { readCookie } from '../auth/cookie';
 import { getDB } from '../db/client';
 import { memberFeaturesEnabled, memberFeatureUnavailable, signupEnabled } from '../member-features';
+import { TurnstileError } from '../turnstile';
 import { AccountError } from './policy';
 import { readAccountBody } from './route';
 import type { MailBindings } from './mail';
@@ -29,7 +30,11 @@ export async function handlePublicAccount(
     const secret = getSessionSecret();
     return await run({ db: getDB(), body, secret, bindings: mailBindings() });
   } catch (error) {
-    if (error instanceof AccountError || error instanceof SecurityError)
+    if (
+      error instanceof AccountError ||
+      error instanceof SecurityError ||
+      error instanceof TurnstileError
+    )
       return Response.json(
         { ok: false, error: error.code },
         {
