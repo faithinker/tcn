@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before opening a Pull Request.
 
+## [2026-10-22]
+
+### Chore
+
+- Moved `markitdown` and `tuist` out of the web scope: removed `markitdown` from `.mcp.json`, disabled it in `.codex/config.toml`, blocked both in the tracked `.claude/settings.json` (`deniedMcpServers`), added the Trail of Bits security plugins to the in-scope list, folded the workflow sections of `AGENTS.md` into one routing list, stated in `CLAUDE.md` that the workflow outranks Superpowers, and ignored the machine-local `.codegraph/` index. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Added a `zizmor` workflow security job (pinned to 1.31.1, annotations mode, `contents: read`) to `ci.yml`, set `persist-credentials: false` on every checkout, disabled the npm cache in the production deploy job to avoid cache poisoning, pinned the `claude-review` actions to exact release tags, and documented the local `zizmor` command in `docs/development.md`. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
 ## [2026-10-21]
 
 ### Feature
