@@ -89,6 +89,9 @@
       "serverName": "figma-remote-mcp"
     },
     {
+      "serverName": "markitdown"
+    },
+    {
       "serverName": "mcp-atlassian"
     },
     {
@@ -99,6 +102,9 @@
     },
     {
       "serverName": "rea"
+    },
+    {
+      "serverName": "tuist"
     }
   ],
   "skillOverrides": {
