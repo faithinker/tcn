@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-10-22]
 
+### Feature
+
+- Added the administrator access log required by article 8 of 「개인정보의 안전성 확보조치 기준」. Each rendered `/admin/users` page writes one `admin_access_events` row (executive account, time, `cf-connecting-ip` as received, status and page, and the ids of the accounts shown), and the page answers `503 access_log_unavailable` instead of rendering when that write fails. Invalid arguments, redirects and guard failures write nothing. Status and permission changes now store the executive's IP in the new `user_audit_events.ip` column. Migration `0012_admin_access_log.sql` adds triggers that reject any `UPDATE` of an event and any `DELETE` younger than 395 days; each recorded view also deletes events older than 395 days (13 months) and clears older audit IPs in the same D1 batch. Tests cover the module, the triggers, the routes and the policy's retention figure; `test:users:d1` and `verify:forum-users` cover the real D1 and the page. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
 ### Chore
 
 - Moved `markitdown` and `tuist` out of the web scope: removed `markitdown` from `.mcp.json`, disabled it in `.codex/config.toml`, blocked both in the tracked `.claude/settings.json` (`deniedMcpServers`), added the Trail of Bits security plugins to the in-scope list, folded the workflow sections of `AGENTS.md` into one routing list, stated in `CLAUDE.md` that the workflow outranks Superpowers, and ignored the machine-local `.codegraph/` index. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
@@ -12,6 +16,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Docs
 
+- Updated the privacy policy (chapters 1, 2, 4, 5 and 9) and `docs/privacy-policy.ko.md` (A8, new A10, B3) for the access log: the added items, the 13-month retention, separate storage with the update and early-delete guards, the monthly self-set review, and the removal of "no legally retained personal information". Added the "Monthly access-log review" section with review SQL to `docs/operations-runbook.md` and the new tables to `CONTENT_ARCHITECTURE.md`. Without an internal management plan (omitted under article 4(1) for an association below 10,000 data subjects), the runbook is where the review cycle, method and follow-up are fixed. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 - Changed the `AGENTS.md` workflow rule, this file's header, the `README.md` feature rules and the `pr-changelog` skill (`.agents/skills/` and its `.claude/skills/` wrapper) so agents record each change in `CHANGELOG.md` and stage it in the same commit before every commit, instead of only before opening a Pull Request; PR descriptions still copy the entries. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ## [2026-10-21]

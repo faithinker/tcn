@@ -81,6 +81,7 @@ export interface UserMutationInput {
   value: unknown;
   expectedRevision: number;
   requestId: string;
+  ip?: string | null;
 }
 interface AuditRow {
   actor_id: string;
@@ -191,8 +192,8 @@ export async function mutateUser(db: D1Database, input: UserMutationInput) {
     );
   const audit = db
     .prepare(
-      `INSERT INTO user_audit_events(id,target_id,actor_id,action,before_status,after_status,before_role,after_role,before_is_executive,after_is_executive,before_can_access_directors_forum,after_can_access_directors_forum,before_revision,after_revision,request_id,request_fingerprint,created_at)
-    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `INSERT INTO user_audit_events(id,target_id,actor_id,action,before_status,after_status,before_role,after_role,before_is_executive,after_is_executive,before_can_access_directors_forum,after_can_access_directors_forum,before_revision,after_revision,request_id,request_fingerprint,created_at,ip)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     )
     .bind(
       crypto.randomUUID(),
@@ -212,6 +213,7 @@ export async function mutateUser(db: D1Database, input: UserMutationInput) {
       input.requestId,
       hash,
       now,
+      input.ip ?? null,
     );
   try {
     const results = await db.batch([update, audit]);

@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { pbkdf2Sync, randomBytes, randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
@@ -235,6 +236,38 @@ try {
   await managerPage.screenshot({ path: `${root}verify/members/users-mobile.png`, fullPage: true });
   console.log('PASS browser approval, special access change, executive mutual/self protection');
 
+  // Access log: a rendered view leaves a row, rejected arguments and forbidden viewers leave none,
+  // and a failed write closes the page instead of showing the list.
+  const accessRows = (id) =>
+    sql(
+      `select scope, subject_count from admin_access_events where actor_id=${literal(id)} order by created_at`,
+    )[0].results;
+  const presidentId = `${prefix}-president`;
+  assert.ok(
+    accessRows(presidentId).some((row) => row.scope === 'status=pending;page=1'),
+    'a rendered /admin/users view is logged',
+  );
+  const loggedBefore = accessRows(presidentId).length;
+  const invalid = await president.request.get(new URL('/admin/users?status=bogus', base).href, {
+    maxRedirects: 0,
+  });
+  assert.equal(invalid.status(), 302);
+  assert.equal(accessRows(presidentId).length, loggedBefore, 'invalid arguments are not logged');
+  assert.equal(accessRows(`${prefix}-director`).length, 0, 'a forbidden viewer is not logged');
+  sql(
+    "CREATE TRIGGER gate_access_log_failure BEFORE INSERT ON admin_access_events BEGIN SELECT RAISE(ABORT,'forced'); END",
+  );
+  try {
+    const closed = await president.request.get(new URL('/admin/users?status=approved', base).href);
+    assert.equal(closed.status(), 503, 'a failed log write must close the page');
+    assert.equal((await closed.json()).error, 'access_log_unavailable');
+  } finally {
+    sql('DROP TRIGGER gate_access_log_failure');
+  }
+  console.log(
+    'PASS browser access log: view recorded, invalid and forbidden not recorded, fail-closed 503',
+  );
+
   const anonymous = await browser.newContext();
   const page = await anonymous.newPage();
   const login = await page.goto(new URL('/forum/assembly', base).href);
@@ -342,6 +375,14 @@ try {
   console.log('PASS: member browser harness; screenshots in verify/members/');
 } finally {
   if (browser) await browser.close();
+  // The fixture executives opened /admin/users, and the access log refuses deletes inside its retention
+  // window. This gate runs against a local database only, so lift that one trigger for the fixtures' rows and restore it.
+  const earlyDelete = readFileSync(`${root}migrations/0012_admin_access_log.sql`, 'utf8').match(
+    /CREATE TRIGGER admin_access_events_no_early_delete[\s\S]*?END;/,
+  )[0];
+  sql(
+    `DROP TRIGGER IF EXISTS gate_access_log_failure; DROP TRIGGER admin_access_events_no_early_delete; delete from admin_access_events where actor_id in (select id from users where username in (${ownedUsers})); ${earlyDelete}`,
+  );
   // Exact generated usernames scope cleanup to fixtures from this invocation.
   sql(
     `delete from auth_local_mail where recipient in (${ownedUsers}); delete from auth_email_challenges where email in (${ownedUsers}); delete from account_reauth_failures where user_id in (select id from users where username in (${ownedUsers})); delete from account_events where user_id in (select id from users where username in (${ownedUsers})); delete from user_audit_events where target_id in (select id from users where username in (${ownedUsers})) or actor_id in (select id from users where username in (${ownedUsers})); delete from forum_posts where author_id in (select id from users where username in (${ownedUsers})); delete from users where username in (${ownedUsers});`,

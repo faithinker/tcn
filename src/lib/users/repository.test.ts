@@ -36,6 +36,18 @@ describe('atomic audited user changes on real SQLite', () => {
       after_revision: 2,
     });
   });
+  it('stores the actor IP with the audit event, and NULL when none is known', async () => {
+    await mutateUser(db, { ...input(), ip: '203.0.113.7' });
+    await execute("insert into users(id,username,password_hash) values ('second','second','hash')");
+    await mutateUser(db, { ...input('request-0002'), targetId: 'second' });
+    expect(
+      (await db.prepare('select target_id,ip from user_audit_events order by target_id').all())
+        .results,
+    ).toEqual([
+      { target_id: 'second', ip: null },
+      { target_id: 'target', ip: '203.0.113.7' },
+    ]);
+  });
   it('replays only identical requests and checks current actor authority', async () => {
     const result = await mutateUser(db, input());
     expect(await mutateUser(db, input())).toEqual(result);

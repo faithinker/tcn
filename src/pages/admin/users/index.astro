@@ -11,6 +11,11 @@ import {
 } from '../../../lib/auth';
 import { getDB } from '../../../lib/db';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../lib/member-features';
+import {
+  accessLogIp,
+  accessLogUnavailable,
+  recordUsersListView,
+} from '../../../lib/users/access-log';
 import { listManagedUsers } from '../../../lib/users/repository';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
@@ -42,6 +47,20 @@ const users =
 const hrefFor = (nextStatus: string, page = 1) =>
   `/admin/users?${new URLSearchParams({ status: nextStatus, page: String(page) })}`;
 if (users.page !== Number(rawPage)) return Astro.redirect(hrefFor(status, users.page));
+// The list is rendered only after the view is on record; a failed write closes the page.
+try {
+  await recordUsersListView(db, {
+    actorId: guard.user.id,
+    ip: accessLogIp(Astro.request),
+    status,
+    page: users.page,
+    subjectIds: users.items.flatMap((user) =>
+      user.decidedBy ? [user.id, user.decidedBy] : [user.id],
+    ),
+  });
+} catch {
+  return accessLogUnavailable();
+}
 const csrf = await createCsrfToken('users', token, getSessionSecret());
 ---
 

@@ -158,6 +158,81 @@ try {
     ).action,
     'reapproved',
   );
+  await execute("INSERT INTO users(id,username,password_hash) VALUES ('ipcheck','ipcheck','hash')");
+  assert.equal((await change(input('ipcheck', 'ipcheck-0001', { ip: '203.0.113.9' }))).status, 200);
+  assert.equal(
+    (await db.prepare("SELECT ip FROM user_audit_events WHERE request_id='ipcheck-0001'").first())
+      .ip,
+    '203.0.113.9',
+  );
+  assert.equal((await row('ipcheck')).revision, 2);
+
+  const view = async (value) => {
+    const response = await harness.fetch('http://users.test/view', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(value),
+    });
+    return response.status;
+  };
+  const accessEvents = async () =>
+    (await db.prepare('SELECT * FROM admin_access_events ORDER BY created_at').all()).results;
+  const backdate = (id, days) =>
+    db
+      .prepare(
+        "INSERT INTO admin_access_events(id,actor_id,action,scope,subject_ids,subject_count,ip,created_at) VALUES (?,'actor','users_list_viewed','status=pending;page=1','[]',0,'198.51.100.1',CAST(strftime('%s','now') AS INTEGER)-?*86400)",
+      )
+      .bind(id, days)
+      .run();
+  assert.equal(
+    await view({
+      actorId: 'actor',
+      ip: '203.0.113.5',
+      status: 'pending',
+      page: 1,
+      subjectIds: ['target', 'permissions'],
+    }),
+    200,
+  );
+  const [viewed] = await accessEvents();
+  assert.equal(viewed.actor_id, 'actor');
+  assert.equal(viewed.scope, 'status=pending;page=1');
+  assert.deepEqual(JSON.parse(viewed.subject_ids), ['target', 'permissions']);
+  assert.equal(viewed.subject_count, 2);
+  assert.equal(viewed.ip, '203.0.113.5');
+  await assert.rejects(
+    execute("UPDATE admin_access_events SET ip='198.51.100.9'"),
+    /access_log_immutable/,
+  );
+  await backdate('inside', 394);
+  await backdate('outside', 396);
+  await assert.rejects(
+    execute("DELETE FROM admin_access_events WHERE id='inside'"),
+    /access_log_retained/,
+  );
+  await execute("DELETE FROM admin_access_events WHERE id='outside'");
+  await backdate('expired', 396);
+  assert.notEqual(
+    await view({ actorId: 'ghost', ip: null, status: 'pending', page: 1, subjectIds: [] }),
+    200,
+    'a view that cannot be written must fail',
+  );
+  assert.equal(
+    (await accessEvents()).some((event) => event.id === 'expired'),
+    true,
+    'a failed view rolls back its purge',
+  );
+  assert.equal(
+    await view({ actorId: 'actor', ip: null, status: 'approved', page: 1, subjectIds: [] }),
+    200,
+  );
+  const left = (await accessEvents()).map((event) => event.id);
+  assert.equal(left.includes('expired'), false, 'a recorded view purges expired events');
+  assert.equal(left.includes('inside'), true);
+  console.log(
+    'PASS: actual workerd access log, audit IP, immutable events, 395-day delete guard, atomic purge and fail-closed write',
+  );
+
   const audits = await db.prepare('SELECT request_fingerprint FROM user_audit_events').all();
   assert.ok(audits.results.every((a) => /^[0-9a-f]{64}$/.test(a.request_fingerprint)));
   console.log(

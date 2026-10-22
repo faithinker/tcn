@@ -2,6 +2,7 @@ import { requireMutation } from '../auth/mutation';
 import { getDB } from '../db';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../member-features';
 import { readJsonWithLimit } from '../qna/payload';
+import { accessLogIp } from './access-log';
 import { UserChangeError } from './permissions';
 import { mutateUser } from './repository';
 
@@ -52,6 +53,7 @@ export async function handleUserMutation(
       value,
       expectedRevision: expectedRevision as number,
       requestId: requestId as string,
+      ip: accessLogIp(request),
     });
     return json({ ok: true, user: result });
   } catch (error) {

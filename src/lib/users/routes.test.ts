@@ -64,6 +64,20 @@ it('uses the users CSRF scope and executive requirement and returns audited succ
     user: { status: 'approved', revision: 2 },
   });
 });
+it('records the connecting IP of the executive on the audit event', async () => {
+  const response = await status({
+    request: new Request('https://tcn.test/api/users/target/status', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.20' },
+      body: JSON.stringify(payload),
+    }),
+    params: { id: 'target' },
+  } as never);
+  expect(response.status).toBe(200);
+  expect(
+    await harness.db.prepare('select ip from user_audit_events').first<{ ip: string | null }>(),
+  ).toEqual({ ip: '203.0.113.20' });
+});
 it('preserves authentication/Origin/CSRF failures', async () => {
   for (const error of [
     { code: 'unauthorized', status: 401 },

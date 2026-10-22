@@ -151,6 +151,57 @@ Keep MEMBER_FEATURES_ENABLED=false while migrations/code and initial permissions
 
 Migrations 0008–0010 are additive; the deploy workflow applies them before code after recording a Time Travel bookmark. Validate the complete implementation locally before one integrated release. Remote changes and deployment require user authorization.
 
+## Monthly access-log review
+
+The privacy policy (`src/data/privacy-policy.ko.md`, chapters 2, 4, 5 and 9) states that executives' views of `/admin/users` are logged, kept for 13 months and reviewed monthly. The legal basis is article 8 of 「개인정보의 안전성 확보조치 기준」. TCN has no internal management plan (article 4(1) proviso: an association below 10,000 data subjects may omit it), so this section is where the review cycle, method and follow-up are fixed. The monthly cycle is TCN's own choice, not a statutory interval.
+
+What is recorded:
+
+- `admin_access_events`: one row per rendered `/admin/users` page (actor, time, IP as `cf-connecting-ip`, `scope` such as `status=pending;page=1`, `subject_ids` as the JSON list of accounts shown, `subject_count`). Invalid arguments, guard failures and redirects write nothing. A failed write answers `503 access_log_unavailable` and the page is not shown.
+- `user_audit_events.ip`: the IP of the executive who approved, rejected or changed permissions. Rows from before migration 0012 have `NULL`.
+- Triggers reject any `UPDATE` of an access event and any `DELETE` younger than 395 days. Each recorded view also deletes events older than 395 days and clears `user_audit_events.ip` older than 395 days, so nothing is purged while nobody opens the page.
+
+Not recorded: sign-in, sign-out and failed sign-ins (planned follow-up), and anything done with `wrangler d1 execute` or the Cloudflare dashboard. A Time Travel restore rolls the log back with the rest of the database; note the gap in the review record.
+
+Reviewer: the privacy officer (수석부회장). The privacy officer's own rows are reviewed by another executive. Run the review with `npx wrangler d1 execute tcn-content --remote` only on the owner's go-ahead. Times below are shifted to KST.
+
+```sql
+-- 1. Views per executive per day over the last 31 days.
+SELECT u.username, date(e.created_at,'unixepoch','+9 hours') AS day, count(*) AS views, max(e.subject_count) AS most_shown
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+ GROUP BY u.username, day ORDER BY day DESC, views DESC;
+
+-- 2. Views outside 07:00–23:00 KST.
+SELECT u.username, datetime(e.created_at,'unixepoch','+9 hours') AS kst, e.ip, e.scope
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+   AND CAST(strftime('%H',e.created_at,'unixepoch','+9 hours') AS INTEGER) NOT BETWEEN 7 AND 22
+ ORDER BY e.created_at DESC;
+
+-- 3. IPs seen this month that the same executive did not use earlier in the retention window.
+SELECT u.username, e.ip, count(*) AS views, min(datetime(e.created_at,'unixepoch','+9 hours')) AS first_seen
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+   AND NOT EXISTS (SELECT 1 FROM admin_access_events o WHERE o.actor_id=e.actor_id AND o.ip IS e.ip
+                    AND o.created_at <= strftime('%s','now') - 31*86400)
+ GROUP BY u.username, e.ip;
+
+-- 4. Changes made this month, with the actor's IP, to match against the views above.
+SELECT a.action, datetime(a.created_at,'unixepoch','+9 hours') AS kst, x.username AS actor, t.id AS target_id, a.ip
+  FROM user_audit_events a JOIN users x ON x.id=a.actor_id JOIN users t ON t.id=a.target_id
+ WHERE a.created_at > strftime('%s','now') - 31*86400 ORDER BY a.created_at DESC;
+
+-- 5. Controls: three triggers present, oldest row, rows without an IP (expected only for local development).
+SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name='admin_access_events';
+SELECT datetime(min(created_at),'unixepoch','+9 hours') AS oldest, count(*) AS total,
+       sum(ip IS NULL) AS without_ip FROM admin_access_events;
+```
+
+Read the results for: a view or change nobody can explain, a time of day or IP the executive does not normally use, a burst of views, an approval whose actor does not appear in the views, a missing trigger, or an oldest row far past 13 months (nobody opened the page, so nothing was purged; one view fixes it).
+
+Follow-up for an unexplained entry: ask the executive in writing, keep the rows, and if the explanation does not hold remove that executive's authority with `set-user-role.mjs` and rotate `SESSION_SECRET` (signs everyone out). Record each review (date, reviewer, period covered, findings, follow-up) in the operator change record, outside D1 and without copying IP lists into chat or tickets.
+
 ## Readiness triage
 
 `/api/ready` is fail closed. It answers `503` unless the `DB` and `MEDIA` bindings and all five of `SESSION_SECRET`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `QNA_TURNSTILE_HOSTNAMES`, and `QNA_RATE_LIMIT_SECRET` are present, and only reaches D1 and R2 after that check passes. A missing secret and broken code return the same `{"ok":false}`, and `/api/health` stays `200` through both — it is liveness only and checks nothing external.

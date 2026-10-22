@@ -1,7 +1,16 @@
 // Bundled only by the isolated verification harness; never registered as an application route.
+import { recordUsersListView, type UsersListView } from '../lib/users/access-log';
 import { mutateUser, type UserMutationInput } from '../lib/users/repository';
 export default {
   async fetch(request: Request, env: { DB: D1Database }) {
+    if (new URL(request.url).pathname === '/view') {
+      try {
+        await recordUsersListView(env.DB, (await request.json()) as UsersListView);
+        return Response.json({ ok: true });
+      } catch (error) {
+        return Response.json({ ok: false, error: String(error) }, { status: 500 });
+      }
+    }
     const input = (await request.json()) as UserMutationInput & {
       boundary?: 'demote' | 'promote' | 'revision';
     };
