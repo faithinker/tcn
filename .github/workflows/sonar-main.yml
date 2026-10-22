@@ -24,6 +24,7 @@ jobs:
         with:
           # 신규 코드 판정·blame 은 전체 히스토리를 요구한다.
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

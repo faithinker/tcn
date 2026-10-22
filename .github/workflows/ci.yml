@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -81,6 +83,7 @@ jobs:
         with:
           # Sonar의 신규 코드 판정·blame은 전체 히스토리를 요구한다(shallow clone이면 경고 후 부정확).
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -187,3 +190,24 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           title: 'TCN CI Workflow Status'
+
+  # 워크플로 보안 정적 분석: 권한 과다, 템플릿 인젝션, 고정되지 않은 의존성, 캐시 오염을 PR 에서 잡는다.
+  # annotations 모드는 SARIF 업로드(security-events: write)를 쓰지 않으므로 권한이 contents: read 로 유지된다.
+  # zizmor 버전은 로컬(`brew install zizmor`)과 같게 고정한다. 올릴 때 두 곳을 함께 바꾼다.
+  zizmor:
+    name: Workflow Security (zizmor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
+        with:
+          version: 1.31.1
+          advanced-security: false
+          annotations: true
