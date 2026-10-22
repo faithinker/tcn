@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Chore
 
+- Moved `markitdown` and `tuist` out of the web scope: removed `markitdown` from `.mcp.json`, disabled it in `.codex/config.toml`, blocked both in the tracked `.claude/settings.json` (`deniedMcpServers`), added the Trail of Bits security plugins to the in-scope list, folded the workflow sections of `AGENTS.md` into one routing list, stated in `CLAUDE.md` that the workflow outranks Superpowers, and ignored the machine-local `.codegraph/` index. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Added a `zizmor` workflow security job (pinned to 1.31.1, annotations mode, `contents: read`) to `ci.yml`, set `persist-credentials: false` on every checkout, disabled the npm cache in the production deploy job to avoid cache poisoning, pinned the `claude-review` actions to exact release tags, and documented the local `zizmor` command in `docs/development.md`. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 - Turned off the `sosumi` (Apple docs) and `code-review-graph` (Codex instance pinned to the Obsidian vault) MCP servers in `.codex/config.toml` and listed both as out of scope in the `AGENTS.md` tool-scope section, which also records that `rea` with its `reverse-engineer-anything` skill is no longer global for Codex and that the iOS-only `swiftui-skills` for `agy` loads through the iOS repositories' local `.agents/skills.json`. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ### Docs

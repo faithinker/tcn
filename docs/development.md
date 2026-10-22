@@ -42,7 +42,7 @@
 
 - 알림: **Discord 웹훅 · Telegram 봇 API** - 글 등록/수정 시 `waitUntil` 백그라운드 발송(`src/lib/notify/`).
 - 검증: `astro check`(타입·스키마) · **Vitest**(유닛) · **Playwright**(스크린샷) · **Lighthouse**(접근성).
-- 품질 게이트(CI): Codecov(커버리지 업로드) · SonarCloud(PR은 `ci.yml`, main 기준선은 `sonar-main.yml`).
+- 품질 게이트(CI): Codecov(커버리지 업로드) · SonarCloud(PR은 `ci.yml`, main 기준선은 `sonar-main.yml`) · zizmor(GitHub Actions 워크플로 보안 분석, `ci.yml`의 `zizmor` 잡).
 
 **데이터 흐름**: 공개 페이지(Astro SSR)가 D1을 읽어 렌더 → 작성자는 `/admin`(React+Tiptap)에서 글 작성 → `/api/posts`가 D1에 저장·이미지를 R2에 업로드 → 저장 즉시 공개 + 알림. 전 과정이 하나의 Cloudflare Worker에서 동작합니다.
 
@@ -102,6 +102,7 @@ npm run format         # Prettier 일괄 정리 (검사만: format:check)
 npm run audit          # 개발 도구를 포함한 전체 의존성 High 이상 감사
 npm run audit:prod     # 운영 의존성 보안 감사
 npm run generate-types # wrangler types (D1/R2 바인딩 타입 생성)
+GH_TOKEN=$(gh auth token) zizmor .  # 워크플로 보안 정적 분석 (brew install zizmor, CI와 같은 1.31.1)
 ```
 
 로컬은 `.dev.vars`로 시크릿을 주입하며 커밋에서 제외합니다. 필요한 키는 `.env.example`과 [`deployment.md`](./deployment.md)의 시크릿 표를 보세요.
