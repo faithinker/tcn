@@ -7,10 +7,9 @@ export async function assertPasswordNotBreached(
   bindings: MailBindings,
 ) {
   if (localMail(request, bindings)) return;
-  // SHA-1 is used only for the public k-anonymity lookup, never for password storage.
-  const hash = bytesToHex(
-    new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(password))),
-  ).toUpperCase();
+  // The Pwned Passwords range API is keyed by SHA-1, so this is a lookup key and never how a password is stored.
+  const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(password)); // NOSONAR typescript:S4790
+  const hash = bytesToHex(new Uint8Array(digest)).toUpperCase();
   let body: string;
   try {
     const response = await fetch('https://api.pwnedpasswords.com/range/' + hash.slice(0, 5), {
