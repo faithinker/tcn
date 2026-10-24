@@ -90,6 +90,29 @@ describe('verified signup routes', () => {
       413,
     );
   });
+  it('stops reading a chunked body without Content-Length once it passes 8 KiB', async () => {
+    let pulled = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (pulled >= 1000) return controller.close();
+        pulled += 1;
+        controller.enqueue(new Uint8Array(1024).fill(97));
+      },
+    });
+    const url = new URL('http://localhost/api/auth/signup');
+    const response = await POST({
+      url,
+      request: new Request(url, {
+        method: 'POST',
+        headers: { origin: url.origin, 'content-type': 'application/json', cookie },
+        body: stream,
+        duplex: 'half',
+      } as RequestInit),
+    } as unknown as Parameters<typeof POST>[0]);
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ ok: false, error: 'body_too_large' });
+    expect(pulled).toBeLessThan(50);
+  });
   it('rejects unverified signup and privilege injection', async () => {
     expect((await POST(ctx('/api/auth/signup', input))).status).toBe(400);
     expect((await POST(ctx('/api/auth/signup', { ...input, role: 'officer' }))).status).toBe(400);

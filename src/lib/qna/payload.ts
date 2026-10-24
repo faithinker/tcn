@@ -122,12 +122,17 @@ export function parseVisibilityPayload(
   };
 }
 
-export async function readJsonWithLimit(request: Request, maxBytes: number): Promise<unknown> {
+// Reads the request body as it streams and stops at the limit, so neither a forged Content-Length nor a chunked
+// body without one can make the Worker buffer more than `maxBytes`.
+export async function readBytesWithLimit(
+  request: Request,
+  maxBytes: number,
+): Promise<Uint8Array<ArrayBuffer>> {
   const declared = Number(request.headers.get('content-length'));
   if (Number.isFinite(declared) && declared > maxBytes) {
     throw new QnaPayloadError('payload_too_large');
   }
-  if (!request.body) throw new QnaPayloadError('invalid_json');
+  if (!request.body) return new Uint8Array(0);
 
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -148,6 +153,11 @@ export async function readJsonWithLimit(request: Request, maxBytes: number): Pro
     bytes.set(chunk, offset);
     offset += chunk.byteLength;
   }
+  return bytes;
+}
+
+export async function readJsonWithLimit(request: Request, maxBytes: number): Promise<unknown> {
+  const bytes = await readBytesWithLimit(request, maxBytes);
   try {
     return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
   } catch {

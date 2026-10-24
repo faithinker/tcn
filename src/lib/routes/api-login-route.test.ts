@@ -114,6 +114,39 @@ describe('POST /api/auth/login', () => {
     createDeviceToken.mockResolvedValue({ token: 'device-token', deviceId: 'new-device' });
   });
 
+  it.each(['application/json', 'application/x-www-form-urlencoded'])(
+    'refuses a %s body past 8 KiB without reading it all, before Turnstile or D1',
+    async (contentType) => {
+      let pulled = 0;
+      const stream = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (pulled >= 1000) return controller.close();
+          pulled += 1;
+          controller.enqueue(new Uint8Array(1024).fill(97));
+        },
+      });
+      const response = await POST!(
+        context(
+          new Request('https://tcn.example/api/auth/login', {
+            method: 'POST',
+            headers: {
+              origin: 'https://tcn.example',
+              'content-type': contentType,
+              'cf-connecting-ip': '203.0.113.10',
+            },
+            body: stream,
+            duplex: 'half',
+          } as RequestInit),
+        ),
+      );
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({ ok: false, error: 'payload_too_large' });
+      expect(pulled).toBeLessThan(50);
+      expect(requireLoginChallenge).not.toHaveBeenCalled();
+      expect(getDB).not.toHaveBeenCalled();
+    },
+  );
+
   it('rejects missing origin, foreign origin and cross-site Fetch Metadata before Turnstile or D1', async () => {
     for (const [headers, error] of [
       [{ 'content-type': 'application/json' }, 'invalid_origin'],

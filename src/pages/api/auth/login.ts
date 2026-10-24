@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import type { APIRoute } from 'astro';
 import { getDB, getUserByUsername } from '../../../lib/db';
+import { QnaPayloadError, readBytesWithLimit, readJsonWithLimit } from '../../../lib/qna/payload';
 import {
   buildSessionCookie,
   createSessionToken,
@@ -56,10 +57,16 @@ interface Credentials {
   returnTo: string;
 }
 
+// A sign-in body is a username, a password and a challenge token, so a few KiB is generous.
+const MAX_BODY_BYTES = 8192;
+
 async function readCredentials(request: Request): Promise<Credentials> {
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
-    const body = (await request.json().catch(() => ({}))) as {
+    const body = (await readJsonWithLimit(request, MAX_BODY_BYTES).catch((error: unknown) => {
+      if (error instanceof QnaPayloadError && error.message === 'payload_too_large') throw error;
+      return {};
+    })) as {
       username?: unknown;
       password?: unknown;
       turnstileToken?: unknown;
@@ -72,7 +79,10 @@ async function readCredentials(request: Request): Promise<Credentials> {
       returnTo: text(body.returnTo),
     };
   }
-  const form = await request.formData().catch(() => new FormData());
+  const bytes = await readBytesWithLimit(request, MAX_BODY_BYTES);
+  const form = await new Response(bytes, { headers: { 'content-type': contentType } })
+    .formData()
+    .catch(() => new FormData());
   return {
     username: text(form.get('username')),
     password: text(form.get('password')),
@@ -100,7 +110,14 @@ export const POST: APIRoute = async ({ request, url }) => {
     throw error;
   }
 
-  const credentials = await readCredentials(request);
+  let credentials: Credentials;
+  try {
+    credentials = await readCredentials(request);
+  } catch (error) {
+    if (error instanceof QnaPayloadError)
+      return Response.json({ ok: false, error: 'payload_too_large' }, { status: 413 });
+    throw error;
+  }
   const { password, turnstileToken, returnTo } = credentials;
   const username = credentials.username.includes('@')
     ? credentials.username.trim().toLowerCase()

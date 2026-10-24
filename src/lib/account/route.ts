@@ -2,22 +2,23 @@ import { getSessionAccount, getSessionUser } from '../auth/guard';
 import { requireMutation, SecurityError } from '../auth/mutation';
 import { getDB } from '../db/client';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../member-features';
+import { QnaPayloadError, readJsonWithLimit } from '../qna/payload';
 import { AccountError, objectInput } from './policy';
 import { clearAccountCookies } from './cookies';
 import type { User } from '../db/types';
 export async function readAccountBody(request: Request) {
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json'))
     throw new AccountError('unsupported_media_type', 415);
-  if (Number(request.headers.get('content-length')) > 8192)
-    throw new AccountError('body_too_large', 413);
-  const raw = await request.text();
-  if (new TextEncoder().encode(raw).length > 8192) throw new AccountError('body_too_large', 413);
+  let parsed: unknown;
   try {
-    return objectInput(JSON.parse(raw));
+    parsed = await readJsonWithLimit(request, 8192);
   } catch (error) {
-    if (error instanceof AccountError) throw error;
-    throw new AccountError('invalid_json');
+    if (!(error instanceof QnaPayloadError)) throw error;
+    throw error.message === 'payload_too_large'
+      ? new AccountError('body_too_large', 413)
+      : new AccountError('invalid_json');
   }
+  return objectInput(parsed);
 }
 export async function handleAccountMutation(
   request: Request,
