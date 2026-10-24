@@ -17,6 +17,10 @@
 - `QNA_TURNSTILE_HOSTNAMES` 시크릿 - 공개 Q&A는 Turnstile 검증 응답의 hostname이 이 **정확 일치 허용 목록**에 있어야 통과하고, 없으면 질문 생성과 `/api/ready`가 fail closed(503)됩니다. 방문자가 접속하는 모든 호스트(`thetcn.org` 등)를 쉼표로 넣어야 하며, Turnstile 위젯 자체에도 같은 호스트가 허용돼 있어야 합니다.
 - 배포 smoke 대상(`deploy-workers.yml`의 `PRODUCTION_URL`·`environment.url`) - 현재 `workers.dev`입니다. 커스텀 도메인으로 옮길지는 별도 결정입니다.
 
+## 예약 실행
+
+`wrangler.jsonc`의 `triggers.crons`가 Worker의 Cron Trigger를 등록하고, `wrangler deploy`가 배포할 때 함께 반영합니다. 지금은 하나(`17 18 * * *`, 매일 03:17 KST)로, 보관 기간이 지난 접속기록·로그인 기록을 지웁니다(`src/worker.ts`, 점검 방법은 `operations-runbook.md`). Workers Free는 계정 전체에서 Cron Trigger를 5개까지 허용하므로, 같은 계정의 다른 Worker가 쓰는 개수를 확인한 뒤 늘립니다. 로컬 시험은 `wrangler dev --test-scheduled`를 띄우고 `curl 'http://localhost:8787/cdn-cgi/handler/scheduled?cron=17+18+*+*+*'`를 호출합니다.
+
 ## 자동 배포
 
 ### 회원 기능 통합 릴리스

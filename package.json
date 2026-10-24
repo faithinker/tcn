@@ -38,7 +38,8 @@
     "test": "vitest run --coverage",
     "generate-types": "wrangler types",
     "test:account:d1": "node scripts/verify-account-d1.mjs",
-    "verify:account": "node scripts/verify-account.mjs"
+    "verify:account": "node scripts/verify-account.mjs",
+    "local:mail": "node scripts/local-mail.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",

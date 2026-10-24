@@ -10,6 +10,9 @@ const NOW = "CAST(strftime('%s', 'now') AS INTEGER)";
 const EXPIRED = `(staff = 1 AND created_at <= ${NOW} - ${AUTH_LOG_STAFF_RETENTION_DAYS} * 86400)
   OR (staff = 0 AND created_at <= ${NOW} - ${AUTH_LOG_MEMBER_RETENTION_DAYS} * 86400)`;
 
+// 로그인 기록 만료분 삭제. 기록 때와 예약 정리(maintenance/log-retention)가 같이 쓴다.
+export const PURGE_AUTH_EVENTS_SQL = `DELETE FROM auth_events WHERE ${EXPIRED}`;
+
 export type AuthEvent = 'login_success' | 'login_failure' | 'login_locked' | 'logout';
 
 // 아래 SQL의 staff 판정과 같은 조건이다. 로그인 실패 한도를 정할 때도 이 함수를 쓴다.
@@ -40,7 +43,7 @@ export async function recordAuthEvent(
              WHERE true ON CONFLICT(id) DO NOTHING`,
           )
           .bind(id, event.userId, event.event, ip, createdAt),
-        db.prepare(`DELETE FROM auth_events WHERE ${EXPIRED}`),
+        db.prepare(PURGE_AUTH_EVENTS_SQL),
       ]);
       if (attempt > 1)
         console.warn(JSON.stringify({ event: 'auth_log_retried', kind: event.event }));

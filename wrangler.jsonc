@@ -1,7 +1,8 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "tcn",
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  // 요청은 어댑터 핸들러, 예약 실행(만료 기록 정리)은 src/worker.ts 가 처리한다.
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-07-25",
   "compatibility_flags": ["nodejs_compat"],
   // 어댑터가 directory를 생성된 서버 출력 기준 상대 경로로 보정한다.
@@ -15,6 +16,8 @@
   "observability": {
     "enabled": true,
   },
+  // 매일 03:17 KST(UTC 18:17)에 보관 기간이 지난 접속기록·로그인 기록을 지운다.
+  "triggers": { "crons": ["17 18 * * *"] },
   "d1_databases": [
     {
       "binding": "DB",

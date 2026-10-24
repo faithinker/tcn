@@ -301,6 +301,25 @@ try {
     'PASS: actual workerd sign-in log, staff flag from the database, immutable events, 395/90-day delete guards, atomic purge and a failed write that answers false',
   );
 
+  await backdate('purge-access-expired', 396);
+  await authBackdate('purge-staff-expired', 1, 396);
+  await authBackdate('purge-member-expired', 0, 91);
+  const purge = await (await harness.fetch('http://users.test/purge', { method: 'POST' })).json();
+  assert.equal(purge.ok, true, 'the scheduled purge must not trip a retention trigger');
+  assert.equal(purge.purged.accessEvents >= 1, true);
+  assert.equal(purge.purged.authEvents >= 2, true);
+  const afterPurge = new Set([
+    ...(await accessEvents()).map((event) => event.id),
+    ...(await authEvents()).map((event) => event.id),
+  ]);
+  for (const gone of ['purge-access-expired', 'purge-staff-expired', 'purge-member-expired'])
+    assert.equal(afterPurge.has(gone), false, `${gone} is deleted by the purge`);
+  for (const kept of ['inside', 'staff-inside', 'member-inside'])
+    assert.equal(afterPurge.has(kept), true, `${kept} is still inside its window`);
+  console.log(
+    'PASS: actual workerd scheduled purge deletes only expired access and sign-in events without tripping the delete guards',
+  );
+
   const audits = await db.prepare('SELECT request_fingerprint FROM user_audit_events').all();
   assert.ok(audits.results.every((a) => /^[0-9a-f]{64}$/.test(a.request_fingerprint)));
   console.log(

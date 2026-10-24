@@ -5,6 +5,10 @@ export const ACCESS_LOG_RETENTION_DAYS = 395;
 // 만료 판정은 트리거와 같은 D1 시계로 한다. Worker 시계와 어긋나면 삭제가 트리거에 막혀 열람이 503이 된다.
 const EXPIRED = `CAST(strftime('%s', 'now') AS INTEGER) - ${ACCESS_LOG_RETENTION_DAYS} * 86400`;
 
+// 열람 기록 만료분 삭제와 만료된 변경 이력의 처리자 IP 지우기. 기록 때와 예약 정리(maintenance/log-retention)가 같이 쓴다.
+export const PURGE_ACCESS_EVENTS_SQL = `DELETE FROM admin_access_events WHERE created_at <= ${EXPIRED}`;
+export const CLEAR_AUDIT_IPS_SQL = `UPDATE user_audit_events SET ip=NULL WHERE ip IS NOT NULL AND created_at <= ${EXPIRED}`;
+
 // 접속지는 cf-connecting-ip 원문이다. 로컬 개발에는 헤더가 없어 null이다.
 export function accessLogIp(request: Request): string | null {
   const ip = request.headers.get('cf-connecting-ip')?.trim();
@@ -37,10 +41,8 @@ export async function recordUsersListView(db: D1Database, view: UsersListView): 
         view.ip,
         Math.floor(Date.now() / 1000),
       ),
-    db.prepare(`DELETE FROM admin_access_events WHERE created_at <= ${EXPIRED}`),
-    db.prepare(
-      `UPDATE user_audit_events SET ip=NULL WHERE ip IS NOT NULL AND created_at <= ${EXPIRED}`,
-    ),
+    db.prepare(PURGE_ACCESS_EVENTS_SQL),
+    db.prepare(CLEAR_AUDIT_IPS_SQL),
   ]);
 }
 

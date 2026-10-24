@@ -1,5 +1,6 @@
 // Bundled only by the isolated verification harness; never registered as an application route.
 import { recordAuthEvent, type AuthEvent } from '../lib/auth/auth-log';
+import { purgeExpiredLogs } from '../lib/maintenance/log-retention';
 import { recordUsersListView, type UsersListView } from '../lib/users/access-log';
 import { mutateUser, type UserMutationInput } from '../lib/users/repository';
 export default {
@@ -8,6 +9,13 @@ export default {
       try {
         await recordUsersListView(env.DB, (await request.json()) as UsersListView);
         return Response.json({ ok: true });
+      } catch (error) {
+        return Response.json({ ok: false, error: String(error) }, { status: 500 });
+      }
+    }
+    if (new URL(request.url).pathname === '/purge') {
+      try {
+        return Response.json({ ok: true, purged: await purgeExpiredLogs(env.DB) });
       } catch (error) {
         return Response.json({ ok: false, error: String(error) }, { status: 500 });
       }

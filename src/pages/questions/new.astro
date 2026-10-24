@@ -203,6 +203,8 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
 </style>
 
 <script>
+  import { solvedToken } from '../../scripts/challenge-gate';
+
   interface QuestionSuccess {
     ok: true;
     question: { id: string };
@@ -218,7 +220,6 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
       onQnaTurnstileSuccess?: (token: string) => void;
       onQnaTurnstileExpired?: () => void;
       onQnaTurnstileError?: () => void;
-      turnstile?: { reset: (widget?: string | HTMLElement) => void };
     }
   }
 
@@ -264,6 +265,14 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
   window.onQnaTurnstileError = () => {
     turnstileToken = '';
   };
+
+  // 위젯은 자동으로 렌더돼 이 스크립트가 콜백을 정의하기 전에 풀릴 수 있다(개발 서버처럼 모듈이 늦게 뜰 때).
+  // 그러면 콜백이 불리지 않아 "성공!"인데 토큰이 비므로, 제출 때도 위젯이 쥔 토큰을 다시 확인한다.
+  function currentToken(): string {
+    if (!turnstileToken) turnstileToken = solvedToken(document);
+    return turnstileToken;
+  }
+  currentToken();
 
   function clearErrors(): void {
     if (!summary || !errorList || !title || !body || !titleError || !bodyError) return;
@@ -325,7 +334,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
       addSummaryError('Use 10,000 characters or fewer for the question.', body);
     }
 
-    if (!turnstileToken) {
+    if (!currentToken()) {
       addSummaryError('Complete the security check before submitting.');
     }
 
@@ -373,7 +382,7 @@ const siteKey = (env as unknown as QnaPublicBindings).TURNSTILE_SITE_KEY ?? '';
         body: JSON.stringify({
           title: title.value,
           body: body.value,
-          turnstileToken,
+          turnstileToken: currentToken(),
           website: website.value,
         }),
       });

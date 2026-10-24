@@ -71,6 +71,7 @@ tcn/
 │   │   └── routes/       # API 라우트 핸들러 테스트
 │   ├── data/ · i18n/     # 정적 데이터(JSON·TS) · 페이지 카피와 UI 문자열
 │   ├── middleware.ts     # 슬래시 정규화 301 + Q&A 응답 보안 헤더
+│   ├── worker.ts         # 운영 Worker 진입점(wrangler main): Astro 핸들러 + 만료 기록 예약 정리
 │   └── styles/global.css # 디자인 토큰 + Tailwind
 ├── public/               # _headers · _redirects · robots.txt · 파비콘·OG
 ├── scripts/              # create-user·seed-seminar-posts + 브라우저·D1 검증 스크립트
@@ -108,6 +109,20 @@ GH_TOKEN=$(gh auth token) zizmor .  # 워크플로 보안 정적 분석 (brew in
 로컬은 `.dev.vars`로 시크릿을 주입하며 커밋에서 제외합니다. 필요한 키는 `.env.example`과 [`deployment.md`](./deployment.md)의 시크릿 표를 보세요.
 
 관리자 로그인에는 Turnstile 챌린지가 걸려 있습니다. 브라우저로 직접 로그인할 때는 `.dev.vars`의 Turnstile 키(localhost를 허용한 위젯)로 통과하면 되고, `npm run verify:admin`처럼 헤드리스 브라우저가 로그인 폼을 밟을 때는 `.dev.vars`에 `LOGIN_CHALLENGE=off`를 두세요(localhost 요청에만 효력이 있습니다).
+
+### 로컬에서 가입·글쓰기·Q&A 시험하기
+
+`.dev.vars`는 프로젝트 루트(`package.json` 옆)에 있고 git에서 제외됩니다. 없으면 `.env.example`을 복사해 만듭니다. 값은 운영 시크릿에 옮기지 않습니다.
+
+| 시험할 것                                                   | `.dev.vars`에 필요한 것                                                                                                                                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 회원가입·비밀번호 재설정·로그인·게시판 글쓰기·어드민 글쓰기 | `SESSION_SECRET`, `MEMBER_FEATURES_ENABLED=true`, `SIGNUP_ENABLED=true`, `AUTH_MAIL_MODE=local`, `LOGIN_CHALLENGE=off`. Turnstile 키는 필요 없습니다(localhost에서만 봇 확인을 건너뜁니다). |
+| Q&A 질문 작성                                               | 위에 더해 `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `QNA_TURNSTILE_HOSTNAMES=localhost`, `QNA_RATE_LIMIT_SECRET`. Q&A 폼에는 우회가 없습니다.                                           |
+
+- 가입 인증번호와 재설정 링크는 메일로 나가지 않고 로컬 DB의 합성 메일함에 쌓입니다. `npm run local:mail`(최근 3통, `npm run local:mail -- 10`이면 10통)로 읽습니다. 격리 미리보기 DB를 쓰면 `TCN_D1_PERSIST_TO=.wrangler/account-preview`를 앞에 붙입니다.
+- Turnstile 키 만들기: Cloudflare 대시보드 → Turnstile → Add widget에서 이름을 `tcn-local`처럼 짓고 호스트 이름에 `localhost`만 넣어 만든 뒤, Site key와 Secret key를 `.dev.vars`에 적습니다. 운영 위젯과 분리해야 운영 Secret key가 로컬에 남지 않습니다. `QNA_RATE_LIMIT_SECRET`은 `openssl rand -hex 32`로 만든 임의의 값이면 됩니다. Cloudflare의 더미 테스트 키는 호스트와 액션 검사를 통과하지 못해 쓸 수 없습니다.
+- 로그인·가입에서도 위젯을 직접 보려면 `LOGIN_CHALLENGE=off` 줄을 지우거나 `on`으로 바꿉니다. 키 변경은 dev 서버를 다시 시작해야 반영됩니다.
+- 로그인한 적 있는 로컬 계정은 로그인 기록이 참조하므로 지울 수 없습니다. 임시 계정은 게이트처럼 `scripts/lib/auth-events.mjs`의 정리를 거치거나, 로컬 DB를 처음부터 다시 만드세요.
 
 > ⚠️ npm 패키지를 바꾼 뒤 dev 서버가 500을 내면 vite 캐시가 스테일된 것입니다. Astro CLI에는 `stop` 명령이 없으니 dev 프로세스를 직접 끝내고(포그라운드면 Ctrl-C, 아니면 해당 PID에 `kill`) 다시 `npm run dev` 하세요.
 
