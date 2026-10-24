@@ -13,6 +13,13 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // astro dev 의 SSR 의존성 스캔이 설정 파일과 테스트가 가져오는 도구까지 사전 번들하려다 실패한다
+    // (tailwind 네이티브 바이너리, wrangler 안의 blake3-wasm). 번들할 이유가 없는 것들이라 뺀다.
+    ssr: {
+      optimizeDeps: {
+        exclude: ['@astrojs/cloudflare', '@tailwindcss/vite', 'miniflare', 'vitest'],
+      },
+    },
     server: {
       allowedHosts: ['.trycloudflare.com'],
     },

@@ -5,6 +5,7 @@ import { mkdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { deleteAuthEventsSql } from './lib/auth-events.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const base = new URL(process.env.BASE_URL ?? 'http://localhost:4345');
 const persist = process.env.TCN_D1_PERSIST_TO ?? '.wrangler/account-preview';
@@ -193,7 +194,7 @@ try {
   if (userId) {
     const id = literal(userId);
     sql(
-      `DELETE FROM account_events WHERE user_id=${id}; DELETE FROM account_reauth_failures WHERE user_id=${id}; DELETE FROM auth_email_challenges WHERE user_id=${id} OR email=${literal(email)}; DELETE FROM users WHERE id=${id};`,
+      `${deleteAuthEventsSql(id)} DELETE FROM account_events WHERE user_id=${id}; DELETE FROM account_reauth_failures WHERE user_id=${id}; DELETE FROM auth_email_challenges WHERE user_id=${id} OR email=${literal(email)}; DELETE FROM users WHERE id=${id};`,
     );
   }
   sql(

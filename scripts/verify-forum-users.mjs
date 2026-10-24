@@ -9,6 +9,7 @@ import { chromium } from 'playwright';
 import { launch } from 'chrome-launcher';
 import lighthouse from 'lighthouse';
 import { verifyMemberFormFallbacks } from './lib/member-form-fallbacks.mjs';
+import { deleteAuthEventsSql } from './lib/auth-events.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const base = new URL(process.env.BASE_URL || 'http://localhost:4321');
@@ -385,6 +386,6 @@ try {
   );
   // Exact generated usernames scope cleanup to fixtures from this invocation.
   sql(
-    `delete from auth_local_mail where recipient in (${ownedUsers}); delete from auth_email_challenges where email in (${ownedUsers}); delete from account_reauth_failures where user_id in (select id from users where username in (${ownedUsers})); delete from account_events where user_id in (select id from users where username in (${ownedUsers})); delete from user_audit_events where target_id in (select id from users where username in (${ownedUsers})) or actor_id in (select id from users where username in (${ownedUsers})); delete from forum_posts where author_id in (select id from users where username in (${ownedUsers})); delete from users where username in (${ownedUsers});`,
+    `${deleteAuthEventsSql(`select id from users where username in (${ownedUsers})`)} delete from auth_local_mail where recipient in (${ownedUsers}); delete from auth_email_challenges where email in (${ownedUsers}); delete from account_reauth_failures where user_id in (select id from users where username in (${ownedUsers})); delete from account_events where user_id in (select id from users where username in (${ownedUsers})); delete from user_audit_events where target_id in (select id from users where username in (${ownedUsers})) or actor_id in (select id from users where username in (${ownedUsers})); delete from forum_posts where author_id in (select id from users where username in (${ownedUsers})); delete from users where username in (${ownedUsers});`,
   );
 }

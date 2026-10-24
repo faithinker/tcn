@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deleteAuthEventsSql } from './lib/auth-events.mjs';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE_URL || 'http://localhost:4321';
@@ -36,7 +37,9 @@ function d1(sql) {
 }
 
 // 계정 준비(멱등). 해시 포맷은 create-user.mjs가 password.ts와 동일하게 만든다.
-d1(`DELETE FROM users WHERE username='${USERNAME}';`);
+d1(
+  `${deleteAuthEventsSql(`SELECT id FROM users WHERE username='${USERNAME}'`)} DELETE FROM users WHERE username='${USERNAME}';`,
+);
 // 비밀번호는 인자가 아니라 환경변수로 넘긴다(create-user.mjs 는 인자 비밀번호를 거부한다).
 execFileSync(process.execPath, ['scripts/create-user.mjs', USERNAME, '--role', 'officer'], {
   cwd: ROOT,
@@ -318,7 +321,9 @@ try {
   await browser.close();
   // 계정 정리(글은 soft delete 완료 상태 유지 — 가시 유니크 인덱스와 충돌 없음).
   try {
-    d1(`DELETE FROM users WHERE username='${USERNAME}';`);
+    d1(
+      `${deleteAuthEventsSql(`SELECT id FROM users WHERE username='${USERNAME}'`)} DELETE FROM users WHERE username='${USERNAME}';`,
+    );
   } catch {
     // 정리 실패는 게이트 결과에 영향 없음(다음 실행이 재생성 전에 삭제).
   }
