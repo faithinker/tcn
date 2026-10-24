@@ -19,7 +19,26 @@ export default {
           "INSERT INTO auth_email_challenges(id,purpose,email,proof_hash,expires_at,created_at,consumed_at) VALUES ('used-signup','signup','probe@example.org','proof',9999999999,1,1)",
         )
         .run();
+      await db
+        .prepare(
+          "INSERT INTO users(id,username,password_hash) VALUES ('burst','burst@example.org',?)",
+        )
+        .bind(await hashPassword('Original phrase beside the river'))
+        .run();
       return Response.json({ ok: true });
+    }
+    if (action === '/reauth-burst') {
+      // Parallel wrong guesses: only the first five may reach the password check.
+      const burst = (await getUserById(db, 'burst'))!;
+      const outcomes = await Promise.all(
+        Array.from({ length: 8 }, () =>
+          reauthenticate(db, burst, 'wrong').then(
+            () => 'accepted',
+            (error: unknown) => (error instanceof AccountError ? error.code : String(error)),
+          ),
+        ),
+      );
+      return Response.json({ outcomes });
     }
     const user = await getUserById(db, 'probe');
     if (!user) return Response.json({ error: 'missing' }, { status: 401 });

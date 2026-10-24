@@ -1,5 +1,10 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 vi.mock('cloudflare:workers', () => ({ env: {} }));
+// Calls through, so the real hash check runs while a test can count how many guesses reached it.
+vi.mock('../auth/password', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../auth/password')>();
+  return { ...actual, verifyPassword: vi.fn(actual.verifyPassword) };
+});
 import { openTestD1, type TestD1 } from '../../test-support/d1';
 import { hashPassword, verifyPassword } from '../auth/password';
 import { getUserById, getUserByUsername } from '../db/users';
@@ -90,6 +95,28 @@ describe('account mutations on real SQLite', () => {
         code: i === 4 ? 'session_ended' : 'invalid_credentials',
       });
     expect((await getUserById(db, 'member'))?.sessionVersion).toBe(user.sessionVersion + 1);
+  });
+  it('checks at most five passwords when guesses arrive in parallel, then ends the session', async () => {
+    vi.mocked(verifyPassword).mockClear();
+    const outcomes = await Promise.all(
+      Array.from({ length: 12 }, () => reauthenticate(db, user, 'wrong').catch((e: unknown) => e)),
+    );
+    expect(vi.mocked(verifyPassword).mock.calls.length).toBeLessThanOrEqual(5);
+    expect(outcomes.every((e) => e instanceof AccountError)).toBe(true);
+    expect(outcomes.filter((e) => (e as AccountError).code === 'session_ended').length).toBe(8);
+    expect((await getUserById(db, 'member'))?.sessionVersion).toBe(user.sessionVersion + 1);
+  });
+  it('still accepts the right password on the fifth attempt and clears the count', async () => {
+    for (let i = 0; i < 4; i++)
+      await expect(reauthenticate(db, user, 'wrong')).rejects.toMatchObject({
+        code: 'invalid_credentials',
+      });
+    await reauthenticate(db, user, 'An old password by the river');
+    expect(
+      await db
+        .prepare("select count(*) as n from account_reauth_failures where user_id='member'")
+        .first(),
+    ).toEqual({ n: 0 });
   });
   it('withdraws without deleting authors or revealing their previous identity', async () => {
     await db
