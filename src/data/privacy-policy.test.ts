@@ -49,4 +49,10 @@ describe('privacy policy text', () => {
     );
     expect(policy).toContain(`그 밖의 계정의 기록은 ${AUTH_LOG_MEMBER_RETENTION_DAYS}일이 지난 뒤`);
   });
+
+  it('explicitly refuses unauthorized email and contact harvesting with legal grounding', () => {
+    expect(policy).toContain('이메일 주소 및 연락처의 무단 수집 거부');
+    expect(policy).toContain('정보통신망 이용촉진 및 정보보호 등에 관한 법률');
+    expect(policy).toContain('제50조의2');
+  });
 });

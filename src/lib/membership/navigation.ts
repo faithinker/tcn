@@ -7,7 +7,7 @@ export interface MemberSession {
 }
 export function memberNavigation(session: MemberSession): { href: string; label: string }[] {
   if (session.memberFeaturesEnabled !== true) return [];
-  if (session.authenticated !== true) return [{ href: '/login', label: 'Sign in' }];
+  if (session.authenticated !== true) return [];
   const links = [{ href: '/account', label: 'Account' }];
   const capabilities = session.capabilities ?? {};
   if (capabilities.assemblyForum === true)

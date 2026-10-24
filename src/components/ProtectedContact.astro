@@ -1,0 +1,91 @@
+---
+import { obfuscateString, toSafeNoscriptFallback } from '../lib/contact/obfuscate';
+
+interface Props {
+  type: 'email' | 'tel' | 'text';
+  value: string;
+  hrefValue?: string;
+  class?: string;
+  asLink?: boolean;
+}
+
+const { type, value, hrefValue, class: className = '', asLink = type !== 'text' } = Astro.props;
+
+const encodedValue = obfuscateString(value);
+const encodedHref = hrefValue ? obfuscateString(hrefValue) : encodedValue;
+const noscriptFallback = toSafeNoscriptFallback(value, type);
+---
+
+{asLink ? (
+  <a
+    href="#"
+    data-protected-contact={encodedValue}
+    data-protected-href={encodedHref}
+    data-protected-type={type}
+    class={className}
+  >
+    <span class="inline-block select-none opacity-0" aria-hidden="true">
+      {noscriptFallback}
+    </span>
+    <noscript>
+      <span>{noscriptFallback}</span>
+    </noscript>
+  </a>
+) : (
+  <span data-protected-contact={encodedValue} data-protected-type={type} class={className}>
+    <span class="inline-block select-none opacity-0" aria-hidden="true">
+      {noscriptFallback}
+    </span>
+    <noscript>
+      <span>{noscriptFallback}</span>
+    </noscript>
+  </span>
+)}
+
+<script>
+  function hydrateProtectedContacts() {
+    const KEY = 0x5a;
+    const elements = document.querySelectorAll<HTMLElement>('[data-protected-contact]');
+    if (elements.length === 0) return;
+
+    for (const el of elements) {
+      const encoded = el.getAttribute('data-protected-contact');
+      if (!encoded) continue;
+
+      let decoded = '';
+      for (let i = 0; i < encoded.length; i += 2) {
+        decoded += String.fromCharCode(parseInt(encoded.slice(i, i + 2), 16) ^ KEY);
+      }
+
+      el.textContent = decoded;
+
+      if (el instanceof HTMLAnchorElement) {
+        const type = el.getAttribute('data-protected-type');
+        const encodedHref = el.getAttribute('data-protected-href') || encoded;
+        let decodedHref = '';
+        for (let i = 0; i < encodedHref.length; i += 2) {
+          decodedHref += String.fromCharCode(parseInt(encodedHref.slice(i, i + 2), 16) ^ KEY);
+        }
+
+        if (type === 'email') {
+          el.href = `mailto:${decodedHref}`;
+        } else if (type === 'tel') {
+          el.href = `tel:${decodedHref.replace(/[^0-9+]/g, '')}`;
+        }
+      }
+
+      el.removeAttribute('data-protected-contact');
+      el.removeAttribute('data-protected-href');
+      el.removeAttribute('data-protected-type');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hydrateProtectedContacts);
+  } else {
+    hydrateProtectedContacts();
+  }
+
+  window.addEventListener('pointerover', hydrateProtectedContacts, { once: true, passive: true });
+  window.addEventListener('focusin', hydrateProtectedContacts, { once: true, passive: true });
+</script>

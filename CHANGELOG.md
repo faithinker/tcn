@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-10-25]
 
+### Feature
+
+- Removed redundant inline "Back to top" link from footer bottom bar, keeping the copyright section minimal and preserving the existing floating BackToTop component pattern. (Branch: `feat/ui`) - Implemented by Antigravity
+- Updated footer official organization details with verified business registration number 408-82-92622, road-name secretariat address, and English president name Wonjoon Kim. (Branch: `feat/ui`) - Implemented by Antigravity
+- Redesigned footer into a 4-column academic layout (Brand, Network, Governance, Secretariat) with official organization meta bar (President Dr. Wonjoon Kim, secretariat phone, address) and back-to-top button. (Branch: `feat/ui`) - Implemented by Antigravity
+- Removed sign-in link from footer for unauthenticated visitors, changed Korean-English privacy policy quick links to English-only ("Privacy Policy") across footer, account shell, and signup pages, and added leave-confirmation dialogs and beforeunload protection during active signup flow. (Branch: `feat/ui`) - Implemented by Antigravity
+
 ### Fix
 
 - Made `POST /api/account/withdraw` answer `401 unauthorized` when the session snapshot is stale (a password change or an earlier withdrawal in another tab). The `account_events` trigger aborts the batch when the UPDATE matches no row, and nothing caught that, so the request returned an HTML 500; `withdrawAccount` now maps `account_change_conflict` to the same `AccountError` the zero-row path used. `test:account:d1` checks it on workerd D1. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude

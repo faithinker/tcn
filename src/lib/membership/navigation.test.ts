@@ -7,10 +7,8 @@ describe('member capability navigation', () => {
     );
     expect(memberNavigation({ memberFeaturesEnabled: false, authenticated: true })).toEqual([]);
   });
-  it('offers sign in to anonymous visitors when enabled', () => {
-    expect(memberNavigation({ memberFeaturesEnabled: true, authenticated: false })).toEqual([
-      { href: '/login', label: 'Sign in' },
-    ]);
+  it('hides member links from anonymous visitors even when enabled', () => {
+    expect(memberNavigation({ memberFeaturesEnabled: true, authenticated: false })).toEqual([]);
   });
   it('keeps rejected accounts reachable and uses only explicit capabilities for privileged links', () => {
     expect(
