@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from '../auth/password';
 import { getUserById, getUserByUsername } from '../db/users';
 import { getForumPost, createForumPost, updateForumPost, hideForumPost } from '../forum/repository';
 import { countPendingUsers, getManagedUser, mutateUser } from '../users/repository';
+import { AccountError } from './policy';
 import { updateProfile, replacePassword, withdrawAccount, reauthenticate } from './repository';
 let h: TestD1;
 let db: D1Database;
@@ -136,6 +137,20 @@ describe('account mutations on real SQLite', () => {
       sessionVersion: user.sessionVersion,
       username: user.username,
     });
+  });
+  it('answers a withdrawal from a stale session with 401 and leaves the account untouched', async () => {
+    await db.prepare("UPDATE users SET session_version=session_version+1 WHERE id='member'").run();
+    const error = await withdrawAccount(db, user, 'withdrawal-0004').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(AccountError);
+    expect(error).toMatchObject({ code: 'unauthorized', status: 401 });
+    expect(await getUserById(db, 'member')).toMatchObject({ username: user.username });
+    expect(
+      (
+        await db.prepare("select count(*) as n from account_events where user_id='member'").first<{
+          n: number;
+        }>()
+      )?.n,
+    ).toBe(0);
   });
   it('denies writes and admin approvals after withdrawal', async () => {
     await withdrawAccount(db, user, 'withdrawal-0003');

@@ -71,17 +71,24 @@ export async function replacePassword(
 export async function withdrawAccount(db: D1Database, user: User, requestId: string) {
   if (!/^[\w-]{8,128}$/.test(requestId)) throw new AccountError('invalid_fields');
   const now = Math.floor(Date.now() / 1000);
-  const results = await db.batch([
-    db
-      .prepare(
-        "UPDATE users SET username='withdrawn:'||id,password_hash='!',display_name=NULL,affiliation=NULL,email_verified_at=NULL,deleted_at=?,session_version=session_version+1 WHERE id=? AND session_version=? AND password_hash=? AND deleted_at IS NULL RETURNING id",
-      )
-      .bind(now, user.id, user.sessionVersion, user.passwordHash),
-    db
-      .prepare(
-        "INSERT INTO account_events(request_id,user_id,action,created_at) VALUES (?,?,'withdrawn',?)",
-      )
-      .bind(requestId, user.id, now),
-  ]);
+  // The account_events trigger aborts the batch when the UPDATE matched nothing (stale session or an earlier withdrawal).
+  const results = await db
+    .batch([
+      db
+        .prepare(
+          "UPDATE users SET username='withdrawn:'||id,password_hash='!',display_name=NULL,affiliation=NULL,email_verified_at=NULL,deleted_at=?,session_version=session_version+1 WHERE id=? AND session_version=? AND password_hash=? AND deleted_at IS NULL RETURNING id",
+        )
+        .bind(now, user.id, user.sessionVersion, user.passwordHash),
+      db
+        .prepare(
+          "INSERT INTO account_events(request_id,user_id,action,created_at) VALUES (?,?,'withdrawn',?)",
+        )
+        .bind(requestId, user.id, now),
+    ])
+    .catch((error: unknown) => {
+      if (error instanceof Error && error.message.includes('account_change_conflict'))
+        throw new AccountError('unauthorized', 401);
+      throw error;
+    });
   if (results[0].results.length !== 1) throw new AccountError('unauthorized', 401);
 }
