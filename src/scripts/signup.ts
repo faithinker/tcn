@@ -16,6 +16,58 @@ let retryAt = 0,
   expiresAt = Number(root.dataset.expiresAt ?? 0) * 1000;
 let inFlight = false;
 let failureShown = false;
+let completed = false;
+
+function isSignupInProgress(): boolean {
+  if (completed) return false;
+  if (root.dataset.codeSent === 'true' || root.dataset.verified === 'true') return true;
+  return emailInput.value.trim().length > 0;
+}
+
+window.addEventListener('beforeunload', (event) => {
+  if (isSignupInProgress()) {
+    event.preventDefault();
+  }
+});
+
+const LEAVE_CONFIRM_MESSAGE =
+  'Account creation is in progress. If you leave now, your progress will be lost. Do you want to leave?\n\n회원가입이 진행 중입니다. 페이지를 벗어나면 진행 상황이 모두 사라집니다. 이동하시겠습니까?';
+
+document.addEventListener('click', (event) => {
+  if (event.defaultPrevented) return;
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+    return;
+
+  const target = event.target as HTMLElement | null;
+  const anchor = target?.closest('a');
+  if (!anchor || !anchor.href) return;
+
+  const hrefAttr = anchor.getAttribute('href') ?? '';
+  if (
+    hrefAttr.startsWith('#') ||
+    hrefAttr.startsWith('javascript:') ||
+    anchor.target === '_blank' ||
+    anchor.hasAttribute('download')
+  ) {
+    return;
+  }
+
+  const targetUrl = new URL(anchor.href, window.location.href);
+  if (
+    targetUrl.pathname === window.location.pathname &&
+    targetUrl.search === window.location.search
+  ) {
+    return;
+  }
+
+  if (isSignupInProgress()) {
+    const leave = window.confirm(LEAVE_CONFIRM_MESSAGE);
+    if (!leave) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+});
 // 위젯 토큰은 1회용이다. 코드를 보내려는 시도마다 게이트를 되돌려 새 토큰을 받는다.
 const gate = createChallengeGate({
   enabled: root.dataset.challenge === 'on',
@@ -181,6 +233,7 @@ detailForm.addEventListener('submit', async (event) => {
       email: root.dataset.email,
     });
     detailForm.reset();
+    completed = true;
     window.location.assign(response.redirectTo);
   } catch (error) {
     formError(detailForm, error);
