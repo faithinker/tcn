@@ -104,7 +104,12 @@ export async function beginSignup(
   const code = String(value % 1000000).padStart(6, '0');
   const codeHash = bytesToHex(await hmacSha256(`${id}:${code}`, secret));
   await db.batch([
-    db.prepare("DELETE FROM auth_email_challenges WHERE email=? AND purpose='signup'").bind(email),
+    // A challenge that already proved the mailbox stays until it expires, so a stranger cannot cancel it mid-signup.
+    db
+      .prepare(
+        "DELETE FROM auth_email_challenges WHERE email=? AND purpose='signup' AND verified_at IS NULL",
+      )
+      .bind(email),
     db
       .prepare(
         "INSERT INTO auth_email_challenges(id,purpose,email,proof_hash,code_hash,expires_at,created_at) VALUES (?,'signup',?,?,?,?,?)",

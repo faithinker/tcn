@@ -152,6 +152,32 @@ it('acknowledges reset without waiting for a provider or revealing account looku
     vi.unstubAllGlobals();
   }
 });
+it('keeps a verified signup challenge when someone else asks for a code for the same address', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    const proof = await verified();
+    vi.setSystemTime(Date.now() + 61_000);
+    const stranger = new Request(url, { headers: { 'cf-connecting-ip': '198.51.100.9' } });
+    await beginSignup(h.db, input.email, stranger, bindings, secret);
+
+    await finishSignup(h.db, proof, input);
+
+    expect(await getUserByUsername(h.db, input.email)).not.toBeNull();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+it('still replaces an unverified challenge when a new code is requested', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    const first = await beginSignup(h.db, input.email, request(), bindings, secret);
+    vi.setSystemTime(Date.now() + 61_000);
+    await beginSignup(h.db, input.email, request(), bindings, secret);
+    expect(await signupState(h.db, first)).toBeNull();
+  } finally {
+    vi.useRealTimers();
+  }
+});
 it('lets one mailbox ask for at most three password resets a day, whether or not it exists', async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   try {
