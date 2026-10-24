@@ -55,6 +55,13 @@ const USAGE =
   'usage: node scripts/create-user.mjs <username> --role officer|member ' +
   '[--executive] [--remote] [--display "Name"] [--dry-run]';
 
+// A value flag must not swallow the next flag: `--display --remote` would otherwise write to the local database.
+function flagValue(argv, i) {
+  const value = argv[i + 1];
+  if (value === undefined || value.startsWith('--')) fail(`${argv[i]} requires a value\n${USAGE}`);
+  return value;
+}
+
 function parseArgs(argv) {
   const positional = [];
   const parsed = { remote: false, dryRun: false, executive: false, displayName: null, role: null };
@@ -62,8 +69,8 @@ function parseArgs(argv) {
     if (argv[i] === '--remote') parsed.remote = true;
     else if (argv[i] === '--dry-run') parsed.dryRun = true;
     else if (argv[i] === '--executive') parsed.executive = true;
-    else if (argv[i] === '--display') parsed.displayName = argv[(i += 1)] ?? null;
-    else if (argv[i] === '--role') parsed.role = argv[(i += 1)] ?? null;
+    else if (argv[i] === '--display') parsed.displayName = flagValue(argv, i++);
+    else if (argv[i] === '--role') parsed.role = flagValue(argv, i++);
     else positional.push(argv[i]);
   }
   return { username: positional[0], extra: positional.slice(1), ...parsed };

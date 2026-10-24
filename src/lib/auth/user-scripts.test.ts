@@ -52,6 +52,23 @@ describe('create-user.mjs', () => {
     expect(result.stdout).not.toContain('pbkdf2$');
   });
 
+  it.each([
+    [['--display', '--dry-run'], '--display'],
+    [['--display', '--remote'], '--display'],
+    [['--display'], '--display'],
+    [['--role', 'member', '--display'], '--display'],
+  ])('does not let %j swallow the next flag', (flags, mentioned) => {
+    const result = run('create-user.mjs', [
+      'a@example.org',
+      ...(flags.includes('--role') ? [] : ['--role', 'member']),
+      ...flags,
+      ...(flags.includes('--dry-run') ? [] : ['--dry-run']),
+    ]);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(mentioned);
+    expect(result.stdout).not.toContain('insert into');
+  });
+
   it('escapes single quotes in the display name', () => {
     const result = run('create-user.mjs', [
       'a@example.org',
