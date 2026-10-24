@@ -3,9 +3,11 @@ import { requireMutation, SecurityError } from '../../../../lib/auth/mutation';
 import { canAccess } from '../../../../lib/auth/permissions';
 import { getDB } from '../../../../lib/db';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../../lib/member-features';
-import { parseBoard, parsePostPayload } from '../../../../lib/forum/payload';
+import { FORUM_REQUEST_BYTES, parseBoard, parsePostPayload } from '../../../../lib/forum/payload';
+import { readJsonWithLimit } from '../../../../lib/qna/payload';
 import { createForumPost, ForumNotFoundError } from '../../../../lib/forum/repository';
 import { forumError, forumJson } from '../../../../lib/forum/response';
+import { consumeForumWrite } from '../../../../lib/forum/write-limit';
 
 export const prerender = false;
 export const POST: APIRoute = async ({ request, params }) => {
@@ -15,8 +17,10 @@ export const POST: APIRoute = async ({ request, params }) => {
     if (params.board !== 'assembly' && params.board !== 'directors') throw new ForumNotFoundError();
     const board = parseBoard(params.board);
     if (!canAccess(user, { kind: 'forum.write', board })) throw new SecurityError('forbidden', 403);
-    const payload = parsePostPayload(await request.json());
-    const post = await createForumPost(getDB(), { ...payload, board, authorId: user.id });
+    const db = getDB();
+    await consumeForumWrite(db, user);
+    const payload = parsePostPayload(await readJsonWithLimit(request, FORUM_REQUEST_BYTES));
+    const post = await createForumPost(db, { ...payload, board, authorId: user.id });
     return forumJson({ ok: true, post }, 201);
   } catch (error) {
     return forumError(error);

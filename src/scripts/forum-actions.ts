@@ -76,6 +76,10 @@ export function forumErrorMessage(code: string): string {
       return 'Member forums are temporarily unavailable. Keep your text and try again later.';
     case 'invalid_input':
       return 'Enter a title of 1–120 characters and a body of 1–10,000 characters. Blank text and NUL characters are not allowed.';
+    case 'rate_limited':
+      return 'You have posted several times in a short while. Your text is still here. Wait a few minutes before trying again.';
+    case 'payload_too_large':
+      return 'This post is too large to send. Shorten it to 10,000 characters or fewer. Your text is still here.';
     case 'network_error':
       return 'The connection failed. Your text is still here. Check your connection and try again.';
     default:

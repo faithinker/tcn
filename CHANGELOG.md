@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Fix
 
 - Stopped sign-out from deleting the trusted-device cookie (`tcn_device`). `POST /api/auth/logout` now clears only the session and signup cookies, while a password change, a withdrawal, a password reset and an ended session still clear all three. Sign-out used to delete the cookie that lets a browser skip the account lock, so an attacker could lock out an administrator who had signed out, which undid the lock escalation added with the trusted-device cookie. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Limited forum writes. One account may post or edit six times in 10 minutes and 40 times a day (a pending account three and 10), answered with `429 rate_limited` and `Retry-After`, through the Q&A limiter table under a `forum:<user id>` key; forbidden requests and hides are not counted. Forum request bodies are now read through `readJsonWithLimit` (64 KiB for a post, 4 KiB for a hide) and answer `413 payload_too_large`, and a forum list page past the last page no longer runs the offset query. The editor shows a message for both errors. Before this a pending account could post to the assembly board without limit, which could spend the D1 Free write allowance. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ### Chore
 

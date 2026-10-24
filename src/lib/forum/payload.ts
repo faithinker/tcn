@@ -1,5 +1,8 @@
 import type { ForumBoard } from '../auth/permissions';
 
+// Room for a 10,000-character body in the widest encodings plus the JSON around it.
+export const FORUM_REQUEST_BYTES = 65_536;
+
 export class ForumInputError extends Error {
   constructor() {
     super('invalid_input');

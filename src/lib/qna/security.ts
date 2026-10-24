@@ -28,10 +28,17 @@ interface RateRow {
   day_attempts: number;
 }
 
+export interface RateLimits {
+  short: number;
+  day: number;
+}
+
+// The forum shares this table and limiter with its own identifiers and allowances.
 export async function consumeQuestionRateLimit(
   db: D1Database,
   identifier: string,
   at = Math.floor(Date.now() / 1_000),
+  limits: RateLimits = { short: SHORT_LIMIT, day: DAY_LIMIT },
 ): Promise<{ allowed: boolean; retryAfter: number }> {
   const statement = db
     .prepare(
@@ -55,15 +62,15 @@ export async function consumeQuestionRateLimit(
          updated_at = ?2
        where (
          short_window_started_at <= ?2 - ${SHORT_WINDOW_SECONDS}
-         or short_attempts < ${SHORT_LIMIT}
+         or short_attempts < ?3
        ) and (
          day_window_started_at <= ?2 - ${DAY_WINDOW_SECONDS}
-         or day_attempts < ${DAY_LIMIT}
+         or day_attempts < ?4
        )
        returning short_window_started_at, short_attempts,
                  day_window_started_at, day_attempts`,
     )
-    .bind(identifier, at);
+    .bind(identifier, at, limits.short, limits.day);
   const consumed = await statement.first<RateRow>();
   if (consumed) {
     await db
@@ -88,10 +95,12 @@ export async function consumeQuestionRateLimit(
   if (!current) return { allowed: false, retryAfter: SHORT_WINDOW_SECONDS };
 
   const waits = [
-    current.short_attempts >= SHORT_LIMIT
+    current.short_attempts >= limits.short
       ? current.short_window_started_at + SHORT_WINDOW_SECONDS - at
       : 0,
-    current.day_attempts >= DAY_LIMIT ? current.day_window_started_at + DAY_WINDOW_SECONDS - at : 0,
+    current.day_attempts >= limits.day
+      ? current.day_window_started_at + DAY_WINDOW_SECONDS - at
+      : 0,
   ];
   return { allowed: false, retryAfter: Math.max(1, ...waits) };
 }

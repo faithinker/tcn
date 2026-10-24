@@ -97,6 +97,52 @@ describe('forum routes with SQLite and real mutation security', () => {
     for (const headers of cases)
       expect((await POST!(ctx('POST', input, 'assembly', 'missing', headers))).status).toBe(403);
   });
+  it('rejects an oversized body before parsing it', async () => {
+    const huge = { title: 'Record', body: 'x'.repeat(70_000) };
+    const response = await POST!(ctx('POST', huge));
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ ok: false, error: 'payload_too_large' });
+    const unparsable = ctx('POST', input) as { request: Request };
+    const broken = new Request(unparsable.request.url, {
+      method: 'POST',
+      headers: unparsable.request.headers,
+      body: '{not json',
+    });
+    expect((await POST!({ request: broken, params: { board: 'assembly' } } as never)).status).toBe(
+      400,
+    );
+  });
+  it('limits how often one account can post or edit, with a smaller allowance while pending', async () => {
+    for (let n = 0; n < 6; n++) expect((await POST!(ctx('POST', input))).status).toBe(201);
+    const limited = await POST!(ctx('POST', input));
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get('retry-after'))).toBeGreaterThan(0);
+    expect(await limited.json()).toEqual({ ok: false, error: 'rate_limited' });
+    const rows = await harness.db
+      .prepare("select count(*) as n from forum_posts where author_id='author'")
+      .first<{ n: number }>();
+    expect(rows?.n).toBe(6);
+
+    state.user = { ...member, id: 'other', status: 'pending' };
+    await harness.db.prepare("UPDATE users SET status='pending' WHERE id='other'").run();
+    for (let n = 0; n < 3; n++) expect((await POST!(ctx('POST', input))).status).toBe(201);
+    expect((await POST!(ctx('POST', input))).status).toBe(429);
+
+    const post = await createForumPost(harness.db, {
+      ...input,
+      board: 'assembly',
+      authorId: 'other',
+    });
+    expect(
+      (await PUT!(ctx('PUT', { ...input, expectedRevision: 1 }, 'assembly', post.id))).status,
+    ).toBe(429);
+  });
+  it('does not charge forbidden or hide requests against the posting allowance', async () => {
+    state.user = { ...member, status: 'rejected' };
+    for (let n = 0; n < 8; n++) expect((await POST!(ctx('POST', input))).status).toBe(403);
+    state.user = { ...member };
+    expect((await POST!(ctx('POST', input))).status).toBe(201);
+  });
   it('rejects unknown boards and injected author/revision/body fields', async () => {
     expect((await POST!(ctx('POST', input, 'unknown'))).status).toBe(404);
     for (const body of [

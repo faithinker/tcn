@@ -74,4 +74,9 @@ describe('forum browser mutation contract', () => {
     expect(forumErrorMessage('network_error')).toMatch(/connection/i);
     expect(forumErrorMessage('invalid_input')).toMatch(/title|body/i);
   });
+  it('tells the writer to wait after the posting limit and to shorten an oversized post', () => {
+    expect(forumErrorMessage('rate_limited')).toMatch(/wait/i);
+    expect(forumErrorMessage('payload_too_large')).toMatch(/too large|shorten/i);
+    expect(forumErrorMessage('rate_limited')).toMatch(/still here/i);
+  });
 });

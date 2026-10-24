@@ -3,7 +3,13 @@ import { requireMutation, SecurityError } from '../../../../lib/auth/mutation';
 import { canAccess } from '../../../../lib/auth/permissions';
 import { getDB } from '../../../../lib/db';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../../lib/member-features';
-import { parseBoard, parsePostPayload, parseRevisionPayload } from '../../../../lib/forum/payload';
+import {
+  FORUM_REQUEST_BYTES,
+  parseBoard,
+  parsePostPayload,
+  parseRevisionPayload,
+} from '../../../../lib/forum/payload';
+import { readJsonWithLimit } from '../../../../lib/qna/payload';
 import {
   getForumPost,
   updateForumPost,
@@ -11,6 +17,7 @@ import {
   ForumNotFoundError,
 } from '../../../../lib/forum/repository';
 import { forumError, forumJson } from '../../../../lib/forum/response';
+import { consumeForumWrite } from '../../../../lib/forum/write-limit';
 
 export const prerender = false;
 export const PUT: APIRoute = async ({ request, params }) => {
@@ -25,7 +32,8 @@ export const PUT: APIRoute = async ({ request, params }) => {
     if (!post) throw new ForumNotFoundError();
     if (!canAccess(user, { kind: 'forum.edit', board, authorId: post.authorId }))
       throw new SecurityError('forbidden', 403);
-    const payload = parsePostPayload(await request.json(), true);
+    await consumeForumWrite(db, user);
+    const payload = parsePostPayload(await readJsonWithLimit(request, FORUM_REQUEST_BYTES), true);
     const updated = await updateForumPost(db, {
       ...payload,
       board,
@@ -50,7 +58,7 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     if (!post) throw new ForumNotFoundError();
     if (!canAccess(user, { kind: 'forum.delete', board, authorId: post.authorId }))
       throw new SecurityError('forbidden', 403);
-    const payload = parseRevisionPayload(await request.json());
+    const payload = parseRevisionPayload(await readJsonWithLimit(request, 4096));
     await hideForumPost(db, { ...payload, board, id: post.id, actorId: user.id });
     return forumJson({ ok: true });
   } catch (error) {

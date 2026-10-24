@@ -40,19 +40,19 @@ export async function listForumPosts(db: D1Database, input: { board: ForumBoard;
     .prepare('select count(*) as total from forum_posts where board=? and deleted_at is null')
     .bind(board)
     .first<{ total: number }>();
-  const { results } = await db
-    .prepare(
-      `${SELECT} where p.board=? and p.deleted_at is null order by p.created_at desc,p.id desc limit 20 offset ?`,
-    )
-    .bind(board, (page - 1) * 20)
-    .all<ForumPost>();
-  return {
-    posts: results,
-    page,
-    pageSize: 20,
-    total: count?.total ?? 0,
-    totalPages: Math.max(1, Math.ceil((count?.total ?? 0) / 20)),
-  };
+  const total = count?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / 20));
+  // A page past the end has no rows, and the caller redirects it, so skip the scan an absurd offset would cost.
+  const { results } =
+    page > totalPages
+      ? { results: [] as ForumPost[] }
+      : await db
+          .prepare(
+            `${SELECT} where p.board=? and p.deleted_at is null order by p.created_at desc,p.id desc limit 20 offset ?`,
+          )
+          .bind(board, (page - 1) * 20)
+          .all<ForumPost>();
+  return { posts: results, page, pageSize: 20, total, totalPages };
 }
 
 export async function getForumPost(

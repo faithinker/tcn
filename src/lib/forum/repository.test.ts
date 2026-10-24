@@ -52,6 +52,19 @@ describe('forum repository on SQLite', () => {
     expect(page).toMatchObject({ page: 2, pageSize: 20, total: 21, totalPages: 2 });
     expect(page.posts.map((p) => p.id)).toEqual(['00']);
   });
+  it('answers a page past the end without running the offset query', async () => {
+    await createForumPost(harness.db, input);
+    const statements: string[] = [];
+    const spy = {
+      prepare: (sql: string) => {
+        statements.push(sql);
+        return harness.db.prepare(sql);
+      },
+    } as unknown as D1Database;
+    const beyond = await listForumPosts(spy, { board: 'assembly', page: 450_359_962_737_049 });
+    expect(beyond).toMatchObject({ posts: [], total: 1, totalPages: 1 });
+    expect(statements.some((sql) => /\boffset\b/i.test(sql))).toBe(false);
+  });
   it('enforces author, board, revision and hidden CAS on updates', async () => {
     const post = await createForumPost(harness.db, input);
     const change = { ...input, id: post.id, title: 'Changed', expectedRevision: 1 };
