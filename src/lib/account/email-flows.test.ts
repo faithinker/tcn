@@ -152,6 +152,19 @@ it('acknowledges reset without waiting for a provider or revealing account looku
     vi.unstubAllGlobals();
   }
 });
+it('does not charge a mailbox for a request its own IP limit already refused', async () => {
+  const attacker = request();
+  for (let i = 0; i < 10; i++)
+    await beginSignup(h.db, `filler${i}@example.org`, attacker, bindings, secret);
+  await expect(
+    beginSignup(h.db, 'victim@example.org', attacker, bindings, secret),
+  ).rejects.toMatchObject({ status: 429 });
+
+  const elsewhere = new Request(url, { headers: { 'cf-connecting-ip': '198.51.100.7' } });
+  await expect(
+    beginSignup(h.db, 'victim@example.org', elsewhere, bindings, secret),
+  ).resolves.toBeDefined();
+});
 it('keeps password reset working when the daily signup verification budget is exhausted', async () => {
   const proof = await verified();
   await finishSignup(h.db, proof, input);

@@ -34,9 +34,10 @@ async function limitMail(
 ) {
   const at = now();
   // Atomic conditional UPSERTs, so concurrent requests cannot pass a read-then-write check.
+  // The IP is judged first, so a request its own IP limit refuses cannot burn the mailbox's slot.
   for (const [label, value, max, cooldown] of [
-    ['email', email, 5, 60],
     ['ip', clientIpKey(request), 10, 0],
+    ['email', email, 5, 60],
   ] as const) {
     const key = purpose + ':' + label + ':' + bytesToHex(await hmacSha256(value, secret));
     const result = await db
