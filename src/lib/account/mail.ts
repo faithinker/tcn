@@ -74,7 +74,17 @@ export async function sendAccountMail(
       )
       .bind('send-budget:' + period, Math.floor(Date.now() / 1000), limit)
       .run();
-    if (result.meta.changes !== 1) throw new AccountError('email_unavailable', 503);
+    if (result.meta.changes !== 1) {
+      // Makes an exhausted budget visible in Workers observability; the address is never logged.
+      console.warn(
+        JSON.stringify({
+          event: 'mail_budget_refused',
+          category,
+          period: period.length === 10 ? 'day' : 'month',
+        }),
+      );
+      throw new AccountError('email_unavailable', 503);
+    }
   }
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',

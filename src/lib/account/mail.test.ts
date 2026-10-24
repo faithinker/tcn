@@ -51,6 +51,26 @@ it('stops before network sends when the conservative free-tier daily budget is c
   ).rejects.toMatchObject({ status: 503 });
   expect(fetch).toHaveBeenCalledTimes(90);
 });
+it('logs a mail_budget_refused event, without the address, when a send is refused for budget', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    for (let i = 0; i < 90; i++)
+      await sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test');
+    await expect(
+      sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test'),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(warn).toHaveBeenCalledOnce();
+    const logged = String(warn.mock.calls[0][0]);
+    expect(JSON.parse(logged)).toEqual({
+      event: 'mail_budget_refused',
+      category: 'security',
+      period: 'day',
+    });
+    expect(logged).not.toContain('person@example.org');
+  } finally {
+    warn.mockRestore();
+  }
+});
 it('reserves daily send budget for password recovery and security notices when signup quota is exhausted', async () => {
   for (let i = 0; i < 70; i++) {
     await sendAccountMail(

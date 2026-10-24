@@ -152,6 +152,23 @@ it('acknowledges reset without waiting for a provider or revealing account looku
     vi.unstubAllGlobals();
   }
 });
+it('lets one mailbox ask for at most three password resets a day, whether or not it exists', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  try {
+    const start = Date.now();
+    const ask = () => requestPasswordReset(h.db, 'member@example.org', request(), bindings, secret);
+    for (let i = 0; i < 3; i++) {
+      vi.setSystemTime(start + i * 120_000);
+      await ask();
+    }
+    vi.setSystemTime(start + 3 * 120_000);
+    await expect(ask()).rejects.toMatchObject({ status: 429 });
+    vi.setSystemTime(start + 86_400_000 + 1_000);
+    await expect(ask()).resolves.not.toThrow();
+  } finally {
+    vi.useRealTimers();
+  }
+});
 it('does not charge a mailbox for a request its own IP limit already refused', async () => {
   const attacker = request();
   for (let i = 0; i < 10; i++)

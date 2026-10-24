@@ -25,9 +25,14 @@ interface Challenge {
   attempts: number;
   consumed_at: number | null;
 }
+// A mailbox may ask for a few mails per window. A reset only sends to an existing member, so its window is a whole
+// day: otherwise one known member address could spend the day's shared mail budget in about 17 hours.
+const MAILBOX_LIMITS = { signup: [5, 3600], reset: [3, 86400] } as const;
+const IP_LIMIT = [10, 3600] as const;
+
 async function limitMail(
   db: D1Database,
-  purpose: string,
+  purpose: 'signup' | 'reset',
   email: string,
   request: Request,
   secret: string,
@@ -35,14 +40,14 @@ async function limitMail(
   const at = now();
   // Atomic conditional UPSERTs, so concurrent requests cannot pass a read-then-write check.
   // The IP is judged first, so a request its own IP limit refuses cannot burn the mailbox's slot.
-  for (const [label, value, max, cooldown] of [
-    ['ip', clientIpKey(request), 10, 0],
-    ['email', email, 5, 60],
+  for (const [label, value, [max, windowSeconds], cooldown] of [
+    ['ip', clientIpKey(request), IP_LIMIT, 0],
+    ['email', email, MAILBOX_LIMITS[purpose], 60],
   ] as const) {
     const key = purpose + ':' + label + ':' + bytesToHex(await hmacSha256(value, secret));
     const result = await db
       .prepare(
-        `INSERT INTO auth_mail_limits(key,attempts,started_at,last_sent_at) VALUES (?,1,?,?) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN started_at<=excluded.started_at-3600 THEN 1 ELSE attempts+1 END,started_at=CASE WHEN started_at<=excluded.started_at-3600 THEN excluded.started_at ELSE started_at END,last_sent_at=excluded.last_sent_at WHERE (started_at<=excluded.started_at-3600 OR attempts<?) AND last_sent_at<=excluded.last_sent_at-?`,
+        `INSERT INTO auth_mail_limits(key,attempts,started_at,last_sent_at) VALUES (?,1,?,?) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN started_at<=excluded.started_at-${windowSeconds} THEN 1 ELSE attempts+1 END,started_at=CASE WHEN started_at<=excluded.started_at-${windowSeconds} THEN excluded.started_at ELSE started_at END,last_sent_at=excluded.last_sent_at WHERE (started_at<=excluded.started_at-${windowSeconds} OR attempts<?) AND last_sent_at<=excluded.last_sent_at-?`,
       )
       .bind(key, at, at, max, cooldown)
       .run();
