@@ -62,11 +62,13 @@ export function normalizeNewPassword(
     throw new AccountError('weak_password');
   return normalized;
 }
+// A single plain address: no display-name or list syntax (`<>",;()[]\`), so the stored address is the mailbox that gets the mail.
+const ADDRESS =
+  /^[^\s@<>",;()[\]\\\x00-\x1f\x7f]+@[^\s@<>",;()[\]\\\x00-\x1f\x7f]+\.[^\s@<>",;()[\]\\\x00-\x1f\x7f]+$/;
 export function normalizeEmail(value: unknown): string {
   if (typeof value !== 'string') throw new AccountError('invalid_email');
   const email = value.trim().toLowerCase();
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    throw new AccountError('invalid_email');
+  if (email.length > 254 || !ADDRESS.test(email)) throw new AccountError('invalid_email');
   return email;
 }
 export function objectInput(value: unknown): Record<string, unknown> {
