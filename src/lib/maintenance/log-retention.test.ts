@@ -31,6 +31,18 @@ const authEvent = (id: string, staff: 0 | 1, days: number) =>
     now() - days * DAY,
   );
 
+const challenge = (id: string, purpose: 'signup' | 'reset', secondsFromNow: number) =>
+  execute(
+    `insert into auth_email_challenges(id,purpose,email,proof_hash,expires_at,created_at)
+     values(?,?,?,?,?,?)`,
+    id,
+    purpose,
+    `${id}@example.org`,
+    'proof',
+    now() + secondsFromNow,
+    now() - 3600,
+  );
+
 beforeEach(async () => {
   harness = await openTestD1();
   db = harness.db;
@@ -92,8 +104,18 @@ describe('purgeExpiredLogs', () => {
     await authEvent('member-old', 0, 91);
     await authEvent('staff-old', 1, 396);
 
-    expect(await purgeExpiredLogs(db)).toEqual({ accessEvents: 1, authEvents: 2, auditIps: 0 });
-    expect(await purgeExpiredLogs(db)).toEqual({ accessEvents: 0, authEvents: 0, auditIps: 0 });
+    expect(await purgeExpiredLogs(db)).toEqual({
+      accessEvents: 1,
+      authEvents: 2,
+      auditIps: 0,
+      emailChallenges: 0,
+    });
+    expect(await purgeExpiredLogs(db)).toEqual({
+      accessEvents: 0,
+      authEvents: 0,
+      auditIps: 0,
+      emailChallenges: 0,
+    });
   });
 
   it('runs on empty tables', async () => {
@@ -101,7 +123,19 @@ describe('purgeExpiredLogs', () => {
       accessEvents: 0,
       authEvents: 0,
       auditIps: 0,
+      emailChallenges: 0,
     });
+  });
+
+  it('deletes expired signup and reset challenges, which hold an email address, and keeps live ones', async () => {
+    await challenge('signup-expired', 'signup', -60);
+    await challenge('reset-expired', 'reset', -1);
+    await challenge('signup-live', 'signup', 600);
+    await challenge('reset-live', 'reset', 1800);
+
+    expect(await purgeExpiredLogs(db)).toMatchObject({ emailChallenges: 2 });
+
+    expect(await ids('auth_email_challenges')).toEqual(['reset-live', 'signup-live']);
   });
 
   it('never tries to delete a row the retention triggers still protect', async () => {

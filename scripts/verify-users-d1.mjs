@@ -304,10 +304,24 @@ try {
   await backdate('purge-access-expired', 396);
   await authBackdate('purge-staff-expired', 1, 396);
   await authBackdate('purge-member-expired', 0, 91);
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  await db
+    .prepare(
+      `INSERT INTO auth_email_challenges(id,purpose,email,proof_hash,expires_at,created_at) VALUES
+       ('purge-challenge-expired','signup','expired@example.org','p',?1,?2),
+       ('purge-challenge-live','reset','live@example.org','p',?3,?2)`,
+    )
+    .bind(nowSeconds - 60, nowSeconds - 3600, nowSeconds + 600)
+    .run();
   const purge = await (await harness.fetch('http://users.test/purge', { method: 'POST' })).json();
   assert.equal(purge.ok, true, 'the scheduled purge must not trip a retention trigger');
   assert.equal(purge.purged.accessEvents >= 1, true);
   assert.equal(purge.purged.authEvents >= 2, true);
+  assert.equal(purge.purged.emailChallenges, 1, 'only the expired email challenge is purged');
+  const challengeIds = (await db.prepare('SELECT id FROM auth_email_challenges').all()).results.map(
+    (row) => row.id,
+  );
+  assert.deepEqual(challengeIds, ['purge-challenge-live']);
   const afterPurge = new Set([
     ...(await accessEvents()).map((event) => event.id),
     ...(await authEvents()).map((event) => event.id),
@@ -317,7 +331,7 @@ try {
   for (const kept of ['inside', 'staff-inside', 'member-inside'])
     assert.equal(afterPurge.has(kept), true, `${kept} is still inside its window`);
   console.log(
-    'PASS: actual workerd scheduled purge deletes only expired access and sign-in events without tripping the delete guards',
+    'PASS: actual workerd scheduled purge deletes only expired access and sign-in events and expired email challenges without tripping the delete guards',
   );
 
   const audits = await db.prepare('SELECT request_fingerprint FROM user_audit_events').all();
