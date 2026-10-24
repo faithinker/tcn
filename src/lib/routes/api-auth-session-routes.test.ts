@@ -48,6 +48,18 @@ describe('account session endpoints', () => {
     expect((await logout(context('/api/auth/logout', { 'x-csrf-token': '' }))).status).toBe(403);
     expect(await (await me(context('/api/auth/me'))).json()).toMatchObject({ authenticated: true });
   });
+  it('records a sign-out, and nothing for a rejected or anonymous one', async () => {
+    const rows = async () =>
+      (await h.db.prepare('SELECT user_id, event, staff FROM auth_events').all()).results;
+
+    await logout(context('/api/auth/logout', { origin: 'https://evil.example' }));
+    await logout(context('/api/auth/logout', { cookie: '' }));
+    expect(await rows()).toEqual([]);
+
+    await logout(context('/api/auth/logout'));
+    expect(await rows()).toEqual([{ user_id: 'user', event: 'logout', staff: 1 }]);
+  });
+
   it('revokes every session and clears auth cookies, including the trusted-device path', async () => {
     const r = await logout(context('/api/auth/logout'));
     expect(r.status).toBe(200);

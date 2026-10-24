@@ -15,6 +15,7 @@ const {
   getUserByUsername,
   pruneLoginRateLimits,
   readDeviceToken,
+  recordAuthEvent,
   recordLoginFailure,
   requireLoginChallenge,
   resetLoginAttempts,
@@ -35,6 +36,7 @@ const {
   getUserByUsername: vi.fn(),
   pruneLoginRateLimits: vi.fn(),
   readDeviceToken: vi.fn(),
+  recordAuthEvent: vi.fn(),
   recordLoginFailure: vi.fn(),
   requireLoginChallenge: vi.fn(),
   resetLoginAttempts: vi.fn(),
@@ -65,6 +67,10 @@ vi.mock('../auth/rate-limit', () => ({
   pruneLoginRateLimits,
   recordLoginFailure,
   resetLoginAttempts,
+}));
+vi.mock('../auth/auth-log', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../auth/auth-log')>()),
+  recordAuthEvent,
 }));
 vi.mock('../db', () => ({ getDB, getUserByUsername }));
 
@@ -97,6 +103,7 @@ describe('POST /api/auth/login', () => {
     vi.clearAllMocks();
     getLoginLockSeconds.mockResolvedValue(0);
     recordLoginFailure.mockResolvedValue(0);
+    recordAuthEvent.mockResolvedValue(true);
     clearLoginFailures.mockResolvedValue(undefined);
     resetLoginAttempts.mockResolvedValue(undefined);
     pruneLoginRateLimits.mockResolvedValue(undefined);
@@ -358,7 +365,9 @@ describe('POST /api/auth/login', () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ ok: false, error: 'invalid_credentials' });
-    expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+    expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key'], undefined, {
+      strict: false,
+    });
   });
 
   it('does the same password work for an unknown username so timing cannot reveal it', async () => {
@@ -456,7 +465,9 @@ describe('POST /api/auth/login', () => {
       const response = await POST!(context());
 
       expect(response.status).toBe(401);
-      expect(recordLoginFailure).toHaveBeenCalledWith({}, ['device:key', 'ip:key']);
+      expect(recordLoginFailure).toHaveBeenCalledWith({}, ['device:key', 'ip:key'], undefined, {
+        strict: false,
+      });
     });
 
     it('still locks a trusted device that keeps failing', async () => {
@@ -517,6 +528,148 @@ describe('POST /api/auth/login', () => {
 
       expect(createDeviceToken).not.toHaveBeenCalled();
       expect(response.headers.getSetCookie()).toEqual([]);
+    });
+  });
+
+  describe('sign-in log and attempt limits', () => {
+    const officer = {
+      id: 'officer-1',
+      username: 'editor',
+      displayName: 'Editor',
+      passwordHash: 'hash',
+      sessionVersion: 1,
+      role: 'officer',
+      status: 'approved',
+    };
+    const member = { ...officer, id: 'member-1', role: 'member' };
+    const eventOf = (call = 0) => recordAuthEvent.mock.calls[call][1];
+
+    it('records a successful sign-in with the account and the request', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      const request = new Request('https://tcn.example/api/auth/login', {
+        method: 'POST',
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+        body: JSON.stringify({ username: 'editor', password: 'secret' }),
+      });
+      await POST!(context(request));
+
+      expect(recordAuthEvent).toHaveBeenCalledTimes(1);
+      expect(recordAuthEvent.mock.calls[0][0]).toEqual({});
+      expect(eventOf()).toMatchObject({ userId: 'officer-1', event: 'login_success' });
+      expect(eventOf().request).toBeInstanceOf(Request);
+    });
+
+    it('lets the write of an officer sign-in retry once and gives everyone else one attempt', async () => {
+      verifyPassword.mockResolvedValue(true);
+      getUserByUsername.mockResolvedValue(officer);
+      await POST!(context());
+      getUserByUsername.mockResolvedValue(member);
+      await POST!(context());
+
+      expect(recordAuthEvent.mock.calls[0][2]).toEqual({ attempts: 2 });
+      expect(recordAuthEvent.mock.calls[1][2]).toEqual({ attempts: 1 });
+    });
+
+    it('records a wrong password on a known account and on an unknown one', async () => {
+      verifyPassword.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(member);
+      await POST!(context());
+      getUserByUsername.mockResolvedValue(null);
+      await POST!(context());
+
+      expect(eventOf(0)).toMatchObject({ userId: 'member-1', event: 'login_failure' });
+      expect(eventOf(1)).toMatchObject({ userId: null, event: 'login_failure' });
+    });
+
+    it('records the failure that earns a lock as a lock, once', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(false);
+      recordLoginFailure.mockResolvedValue(900);
+
+      await POST!(context());
+
+      expect(recordAuthEvent).toHaveBeenCalledTimes(1);
+      expect(eventOf()).toMatchObject({ userId: 'officer-1', event: 'login_locked' });
+    });
+
+    it('writes nothing while an attempt is turned away by an existing lock or challenge', async () => {
+      getLoginLockSeconds.mockResolvedValue(3_600);
+      await POST!(context());
+
+      getLoginLockSeconds.mockResolvedValue(0);
+      requireLoginChallenge.mockRejectedValue(new TurnstileError('turnstile_failed'));
+      await POST!(context());
+
+      expect(recordAuthEvent).not.toHaveBeenCalled();
+    });
+
+    it('lets a member in when the sign-in cannot be recorded, and a wrong password still answers 401', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(member);
+      verifyPassword.mockResolvedValue(true);
+      expect((await POST!(context())).status).toBe(200);
+
+      verifyPassword.mockResolvedValue(false);
+      expect((await POST!(context())).status).toBe(401);
+    });
+
+    it('gives an approved officer no session when the sign-in cannot be recorded', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ ok: false, error: 'auth_log_unavailable' });
+      expect(response.headers.get('retry-after')).toBe('60');
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      expect(response.headers.getSetCookie()).toEqual([]);
+      expect(createSessionToken).not.toHaveBeenCalled();
+      expect(createDeviceToken).not.toHaveBeenCalled();
+    });
+
+    it('does not count an unrecorded officer sign-in as a wrong password, so a retry goes straight through', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      recordAuthEvent.mockResolvedValueOnce(false);
+      expect((await POST!(context())).status).toBe(503);
+      expect(recordLoginFailure).not.toHaveBeenCalled();
+      expect(getLoginLockSeconds).toHaveBeenCalledTimes(1);
+
+      const retry = await POST!(context());
+      expect(retry.status).toBe(200);
+      expect(getLoginLockSeconds).toHaveBeenCalledTimes(2);
+      expect(recordAuthEvent).toHaveBeenCalledTimes(2);
+      expect(retry.headers.getSetCookie().length).toBeGreaterThan(0);
+    });
+
+    it('still lets an officer see a wrong password or a lock when those records cannot be written', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(false);
+      expect((await POST!(context())).status).toBe(401);
+
+      recordLoginFailure.mockResolvedValue(900);
+      expect((await POST!(context())).status).toBe(429);
+    });
+
+    it('gives approved officers the strict failure limit and everyone else the lenient one', async () => {
+      verifyPassword.mockResolvedValue(false);
+      const strictFor = async (user: unknown) => {
+        recordLoginFailure.mockClear();
+        getUserByUsername.mockResolvedValue(user);
+        await POST!(context());
+        return recordLoginFailure.mock.calls[0][3];
+      };
+
+      expect(await strictFor(officer)).toEqual({ strict: true });
+      expect(await strictFor(member)).toEqual({ strict: false });
+      expect(await strictFor({ ...officer, status: 'rejected' })).toEqual({ strict: false });
+      expect(await strictFor(null)).toEqual({ strict: false });
     });
   });
 

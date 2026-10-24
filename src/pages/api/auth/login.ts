@@ -8,6 +8,7 @@ import {
   getSessionSecret,
   verifyPassword,
 } from '../../../lib/auth';
+import { isStaffAccount, recordAuthEvent } from '../../../lib/auth/auth-log';
 import {
   buildDeviceCookie,
   createDeviceToken,
@@ -145,8 +146,16 @@ export const POST: APIRoute = async ({ request, url }) => {
   // 없는 아이디도 같은 비용의 해시 검증을 돌려, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
-    const lockedNow = await recordLoginFailure(db, limitKeys);
+    // 실패 한도는 겨냥한 계정의 종류로 정한다. 없는 아이디는 일반 계정과 같은 한도라 잠금 시점으로 가입 여부가 드러나지 않는다.
+    const lockedNow = await recordLoginFailure(db, limitKeys, undefined, {
+      strict: isStaffAccount(user),
+    });
     if (pruneIsDue()) await pruneLoginRateLimits(db);
+    await recordAuthEvent(db, {
+      userId: user?.id ?? null,
+      event: lockedNow > 0 ? 'login_locked' : 'login_failure',
+      request,
+    });
     if (lockedNow > 0) {
       // 새 잠금이 걸린 순간만 남긴다(Workers 관측성에서 검색 가능). 아이디와 IP 는 기록하지 않고,
       // 같은 계정을 겨냥한 시도를 묶어 볼 수 있게 계정 해시의 앞부분만 쓴다.
@@ -173,6 +182,21 @@ export const POST: APIRoute = async ({ request, url }) => {
     await resetLoginAttempts(db, [accountKey]);
   }
   await pruneLoginRateLimits(db);
+  // 임원 계정은 접속기록(안전성 확보조치 기준 제8조)이 남아야 들어올 수 있다. 비밀번호는 맞았으므로 실패로 세지 않고,
+  // 세션을 주지 않은 채 돌려보내 다시 시도하게 한다. 그 밖의 계정은 기록이 실패해도 로그인을 막지 않는다.
+  // 임원은 일시적인 D1 오류로 막히지 않도록 한 번 더 쓴다.
+  const staff = isStaffAccount(user);
+  const recorded = await recordAuthEvent(
+    db,
+    { userId: user.id, event: 'login_success', request },
+    { attempts: staff ? 2 : 1 },
+  );
+  if (!recorded && staff) {
+    return Response.json(
+      { ok: false, error: 'auth_log_unavailable' },
+      { status: 503, headers: { 'cache-control': 'no-store', 'retry-after': '60' } },
+    );
+  }
   const secure = url.protocol === 'https:';
   const session = await createSessionToken(user.id, secret, {
     sessionVersion: user.sessionVersion,

@@ -2,6 +2,8 @@ import { base64ToBytes, bytesToBase64, textEncoder, timingSafeEqual } from '../c
 
 // PBKDF2-SHA256. 저장 포맷은 자기서술형 `pbkdf2$<iterations>$<saltB64>$<hashB64>` 라 iterations 를 올려도 기존 해시를 검증한다.
 // 반복 횟수는 Workers 요청 CPU 예산을 쓰므로 바꿀 때 password.test.ts 의 예산도 확인한다.
+// 5만 회로 두는 이유: 무료 플랜은 요청당 CPU 10ms 인데 workerd 실측이 5만 회 4ms, 10만 회 8ms, OWASP 권고 60만 회 46ms 다.
+// 유료 플랜(CPU 한도 30초)으로 옮기면 올린다. 그때까지는 15자 이상과 흔한 비밀번호 거부로 보완한다(password-policy.ts).
 const ITERATIONS = 50_000;
 const KEY_BITS = 256;
 const SALT_BYTES = 16;

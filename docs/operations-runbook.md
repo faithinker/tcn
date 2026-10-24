@@ -159,9 +159,11 @@ What is recorded:
 
 - `admin_access_events`: one row per rendered `/admin/users` page (actor, time, IP as `cf-connecting-ip`, `scope` such as `status=pending;page=1`, `subject_ids` as the JSON list of accounts shown, `subject_count`). Invalid arguments, guard failures and redirects write nothing. A failed write answers `503 access_log_unavailable` and the page is not shown.
 - `user_audit_events.ip`: the IP of the executive who approved, rejected or changed permissions. Rows from before migration 0012 have `NULL`.
+- `auth_events` (migration 0013): one row per sign-in success, sign-in failure, new lock and sign-out (`event`, `user_id`, `ip` as `cf-connecting-ip`, `staff`, time). `staff` is 1 for an approved officer at the time of the event. A failed attempt on an unknown username has `user_id` NULL, and the typed username and password are never stored. Attempts turned away by an existing lock or by Turnstile write nothing, so an attack cannot fill the table. A failed write logs `{"event":"auth_log_failed","kind":...}` to Workers observability. For an approved officer a failed `login_success` write is tried once more with the same id (a blip that the retry absorbs logs `{"event":"auth_log_retried"}` as a warning instead); if the retry fails too it answers `503 auth_log_unavailable` and issues no session (the password was right, so it is not counted as a failure and the officer can simply try again), so an officer never gets in without a record. For every other account, and for failures, locks and sign-outs, the sign-in goes on; look for the log line before trusting a quiet period.
+- Retention of `auth_events`: 395 days for `staff = 1`, 90 days for the rest. Triggers reject any `UPDATE` and any `DELETE` younger than that, and every recorded event deletes the expired rows of both classes.
 - Triggers reject any `UPDATE` of an access event and any `DELETE` younger than 395 days. Each recorded view also deletes events older than 395 days and clears `user_audit_events.ip` older than 395 days, so nothing is purged while nobody opens the page.
 
-Not recorded: sign-in, sign-out and failed sign-ins (planned follow-up), and anything done with `wrangler d1 execute` or the Cloudflare dashboard. A Time Travel restore rolls the log back with the rest of the database; note the gap in the review record.
+Not recorded: anything done with `wrangler d1 execute` or the Cloudflare dashboard. A Time Travel restore rolls the log back with the rest of the database; note the gap in the review record.
 
 Reviewer: the privacy officer (수석부회장). The privacy officer's own rows are reviewed by another executive. Run the review with `npx wrangler d1 execute tcn-content --remote` only on the owner's go-ahead. Times below are shifted to KST.
 
@@ -192,8 +194,31 @@ SELECT a.action, datetime(a.created_at,'unixepoch','+9 hours') AS kst, x.usernam
   FROM user_audit_events a JOIN users x ON x.id=a.actor_id JOIN users t ON t.id=a.target_id
  WHERE a.created_at > strftime('%s','now') - 31*86400 ORDER BY a.created_at DESC;
 
--- 5. Controls: three triggers present, oldest row, rows without an IP (expected only for local development).
-SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name='admin_access_events';
+-- 5. Staff sign-ins and sign-outs this month, outside 07:00–23:00 KST or from an IP that account did not use earlier.
+SELECT u.username, e.event, datetime(e.created_at,'unixepoch','+9 hours') AS kst, e.ip
+  FROM auth_events e JOIN users u ON u.id=e.user_id
+ WHERE e.staff=1 AND e.event IN ('login_success','logout') AND e.created_at > strftime('%s','now') - 31*86400
+   AND (CAST(strftime('%H',e.created_at,'unixepoch','+9 hours') AS INTEGER) NOT BETWEEN 7 AND 22
+        OR NOT EXISTS (SELECT 1 FROM auth_events o WHERE o.user_id=e.user_id AND o.ip IS e.ip AND o.event='login_success'
+                        AND o.created_at <= strftime('%s','now') - 31*86400))
+ ORDER BY e.created_at DESC;
+
+-- 6. Failures and locks per IP over the last 31 days (an attack shows as one IP with many failures or locks).
+SELECT ip, sum(event='login_failure') AS failures, sum(event='login_locked') AS locks,
+       count(DISTINCT user_id) AS accounts, sum(user_id IS NULL) AS unknown_accounts
+  FROM auth_events WHERE event IN ('login_failure','login_locked') AND created_at > strftime('%s','now') - 31*86400
+ GROUP BY ip HAVING failures + locks >= 5 ORDER BY failures + locks DESC;
+
+-- 7. A sign-in that succeeded soon after failures on the same account (possible guessed password).
+SELECT u.username, datetime(s.created_at,'unixepoch','+9 hours') AS kst, s.ip, s.staff,
+       (SELECT count(*) FROM auth_events f WHERE f.user_id=s.user_id AND f.event IN ('login_failure','login_locked')
+          AND f.created_at BETWEEN s.created_at - 3600 AND s.created_at) AS failures_in_last_hour
+  FROM auth_events s JOIN users u ON u.id=s.user_id
+ WHERE s.event='login_success' AND s.created_at > strftime('%s','now') - 31*86400
+   AND failures_in_last_hour >= 3 ORDER BY s.created_at DESC;
+
+-- 8. Controls: triggers present (three on the access log, two on the sign-in log), oldest row, rows without an IP (expected only for local development).
+SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name IN ('admin_access_events','auth_events');
 SELECT datetime(min(created_at),'unixepoch','+9 hours') AS oldest, count(*) AS total,
        sum(ip IS NULL) AS without_ip FROM admin_access_events;
 ```
@@ -226,11 +251,11 @@ Several independent layers stand between the internet and `/api/auth/login`. The
 | Turnstile challenge (action `admin_login`) | Worker, before any D1 access                                                                              | `403 turnstile_failed`; `503 security_not_configured` when the secret or host list is missing |
 | Escalating lock                            | Worker, `auth_rate_limits`                                                                                | `429` with `Retry-After`: 15 minutes, then 1 hour, 4 hours, 24 hours as the cap               |
 
-Five wrong passwords in 15 minutes lock an account (any IP) and, separately, an IP. Every further lock for the same identifier is longer; the level is forgotten after a week without activity. A successful sign-in clears the IP and device counters but keeps the account's lock level.
+Five wrong passwords in 15 minutes lock an approved officer's account (any IP) and, separately, an IP. Any other account, and an unknown username, locks after ten, so the moment of the lock does not reveal who is registered; an IP is judged by the account being tried at that moment. Every further lock for the same identifier is longer; the level is forgotten after a week without activity. A successful sign-in clears the IP and device counters but keeps the account's lock level.
 
 **Trusted browser.** A successful sign-in sets a `tcn_device` cookie (signed, HttpOnly, 90 days, sent only to `/api/auth/login`). A browser that presents it for the account it is signing in to skips the _account_ lock and is limited per device (ten attempts) and per IP instead, so an attacker cannot keep the real administrator out by spending guesses. Rotating `SESSION_SECRET` also invalidates these cookies; each administrator becomes an unknown browser until the next successful sign-in.
 
-**Watching for attacks.** A new lock writes one `login_locked` line (lock length, whether the request came from a trusted browser, and a short prefix of the account hash — never the username or IP). Search for it in Workers observability.
+**Watching for attacks.** A new lock writes one `login_locked` line (lock length, whether the request came from a trusted browser, and a short prefix of the account hash — never the username or IP). Search for it in Workers observability. The same events, with the IP, are in `auth_events` (see "Monthly access-log review").
 
 **An administrator is locked out and has no trusted browser.** Wait out `Retry-After`, or clear every login counter. The identifiers are hashed, so a single account cannot be picked out:
 

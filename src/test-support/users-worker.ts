@@ -1,4 +1,5 @@
 // Bundled only by the isolated verification harness; never registered as an application route.
+import { recordAuthEvent, type AuthEvent } from '../lib/auth/auth-log';
 import { recordUsersListView, type UsersListView } from '../lib/users/access-log';
 import { mutateUser, type UserMutationInput } from '../lib/users/repository';
 export default {
@@ -10,6 +11,22 @@ export default {
       } catch (error) {
         return Response.json({ ok: false, error: String(error) }, { status: 500 });
       }
+    }
+    if (new URL(request.url).pathname === '/auth-event') {
+      const body = (await request.json()) as {
+        userId: string | null;
+        event: AuthEvent;
+        ip: string | null;
+      };
+      const signIn = new Request('https://users.test/', {
+        headers: body.ip ? { 'cf-connecting-ip': body.ip } : {},
+      });
+      const ok = await recordAuthEvent(env.DB, {
+        userId: body.userId,
+        event: body.event,
+        request: signIn,
+      });
+      return Response.json({ ok });
     }
     const input = (await request.json()) as UserMutationInput & {
       boundary?: 'demote' | 'promote' | 'revision';

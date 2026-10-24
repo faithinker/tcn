@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { recordAuthEvent } from '../../../lib/auth/auth-log';
 import { getSessionUser } from '../../../lib/auth/guard';
 import { requireMutation, requireSameOrigin, SecurityError } from '../../../lib/auth/mutation';
 import { clearAccountCookies } from '../../../lib/account/cookies';
@@ -10,7 +11,9 @@ export const POST: APIRoute = async ({ request, url }) => {
     const user = await getSessionUser(request);
     if (user) {
       await requireMutation(request, { scope: 'account', require: 'signedIn' });
-      await revokeUserSessions(getDB(), user.id);
+      const db = getDB();
+      await revokeUserSessions(db, user.id);
+      await recordAuthEvent(db, { userId: user.id, event: 'logout', request });
     }
     const headers = new Headers({ 'cache-control': 'no-store' });
     clearAccountCookies(headers, url.protocol === 'https:');

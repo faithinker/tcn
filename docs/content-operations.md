@@ -44,6 +44,6 @@ node scripts/set-user-forum-access.mjs <아이디> --allow --actor <결정권자
 node scripts/seed-seminar-posts.mjs --remote
 ```
 
-비밀번호 정책(`src/lib/auth/password-policy.ts`): 12자 이상, 아이디 미포함, 흔한 비밀번호(`password1234` 등)·단순 반복·순서 거부. 자동화에서는 `TCN_USER_PASSWORD` 환경변수로 넘깁니다(`read -rs TCN_USER_PASSWORD; export TCN_USER_PASSWORD`처럼 넣으면 셸 히스토리에도 남지 않습니다). 로그인 방어(챌린지·잠금·신뢰 기기)는 [`operations-runbook.md`](./operations-runbook.md#administrator-sign-in)를 보세요.
+비밀번호 정책(`src/lib/auth/password-policy.ts`, 웹 가입·변경·재설정과 같은 규칙): NFC 정규화 후 15~64자, 제어·비가시 문자 거부, 아이디 미포함, 흔한 비밀번호(`password1234` 등)·단순 반복·순서 거부. 자동화에서는 `TCN_USER_PASSWORD` 환경변수로 넘깁니다(`read -rs TCN_USER_PASSWORD; export TCN_USER_PASSWORD`처럼 넣으면 셸 히스토리에도 남지 않습니다). 로그인 방어(챌린지·잠금·신뢰 기기)는 [`operations-runbook.md`](./operations-runbook.md#administrator-sign-in)를 보세요.
 
 작성자는 `/admin`에서 로그인 → 글 작성(제목·개최일·주소·본문) → 사진·영상·문서 드래그앤드롭 업로드(이미지는 WebP 자동 변환) → 저장 시 즉시 공개됩니다. 승인된 임원(officer) 계정만 등록·수정할 수 있고, 삭제는 soft delete입니다.

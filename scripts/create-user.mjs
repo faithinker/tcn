@@ -38,7 +38,7 @@ async function hashPassword(plain) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    textEncoder.encode(plain),
+    textEncoder.encode(plain.normalize('NFC')),
     'PBKDF2',
     false,
     ['deriveBits'],
@@ -48,7 +48,7 @@ async function hashPassword(plain) {
     keyMaterial,
     256,
   );
-  return `pbkdf2$${ITERATIONS}$${toBase64(salt)}$${toBase64(new Uint8Array(bits))}`;
+  return `pbkdf2-nfc$${ITERATIONS}$${toBase64(salt)}$${toBase64(new Uint8Array(bits))}`;
 }
 
 const USAGE =

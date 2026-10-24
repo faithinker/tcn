@@ -233,6 +233,74 @@ try {
     'PASS: actual workerd access log, audit IP, immutable events, 395-day delete guard, atomic purge and fail-closed write',
   );
 
+  const record = async (userId, event, ip = '203.0.113.7') =>
+    (
+      await (
+        await harness.fetch('http://users.test/auth-event', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ userId, event, ip }),
+        })
+      ).json()
+    ).ok;
+  const authEvents = async () =>
+    (await db.prepare('SELECT * FROM auth_events ORDER BY created_at, id').all()).results;
+  const authBackdate = (id, staff, days) =>
+    db
+      .prepare(
+        "INSERT INTO auth_events(id,user_id,event,staff,ip,created_at) VALUES (?,NULL,'login_failure',?,'198.51.100.1',CAST(strftime('%s','now') AS INTEGER)-?*86400)",
+      )
+      .bind(id, staff, days)
+      .run();
+  assert.equal(await record('actor', 'login_success'), true);
+  assert.equal(await record('target', 'login_failure'), true);
+  assert.equal(await record(null, 'login_failure'), true);
+  const signIns = (await authEvents())
+    .map((event) => JSON.stringify([event.user_id, event.event, event.staff, event.ip]))
+    .sort();
+  assert.deepEqual(
+    signIns,
+    [
+      ['actor', 'login_success', 1, '203.0.113.7'],
+      ['target', 'login_failure', 0, '203.0.113.7'],
+      [null, 'login_failure', 0, '203.0.113.7'],
+    ]
+      .map((row) => JSON.stringify(row))
+      .sort(),
+  );
+  await assert.rejects(execute("UPDATE auth_events SET ip='198.51.100.9'"), /auth_log_immutable/);
+  await authBackdate('staff-inside', 1, 394);
+  await authBackdate('member-inside', 0, 89);
+  await assert.rejects(
+    execute("DELETE FROM auth_events WHERE id='staff-inside'"),
+    /auth_log_retained/,
+  );
+  await assert.rejects(
+    execute("DELETE FROM auth_events WHERE id='member-inside'"),
+    /auth_log_retained/,
+  );
+  await authBackdate('staff-expired', 1, 396);
+  await authBackdate('member-expired', 0, 91);
+  assert.equal(
+    await record('ghost', 'login_success'),
+    false,
+    'an unrecordable event answers false',
+  );
+  assert.equal(
+    (await authEvents()).some((event) => event.id === 'member-expired'),
+    true,
+    'a failed record rolls back its purge',
+  );
+  assert.equal(await record('actor', 'logout'), true);
+  const keptIds = (await authEvents()).map((event) => event.id);
+  assert.equal(keptIds.includes('staff-expired'), false, 'a record purges expired staff events');
+  assert.equal(keptIds.includes('member-expired'), false, 'a record purges expired member events');
+  assert.equal(keptIds.includes('staff-inside'), true);
+  assert.equal(keptIds.includes('member-inside'), true);
+  console.log(
+    'PASS: actual workerd sign-in log, staff flag from the database, immutable events, 395/90-day delete guards, atomic purge and a failed write that answers false',
+  );
+
   const audits = await db.prepare('SELECT request_fingerprint FROM user_audit_events').all();
   assert.ok(audits.results.every((a) => /^[0-9a-f]{64}$/.test(a.request_fingerprint)));
   console.log(

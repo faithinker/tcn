@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before every commit, in the same commit, and copy the entries into the Pull Request description.
 
+## [2026-10-24]
+
+### Feature
+
+- Added a sign-in log. Each successful sign-in, failed sign-in, new lock and sign-out writes one `auth_events` row (account id, time, `cf-connecting-ip` as received, and a `staff` flag read from the database: 1 for an approved officer). A failed attempt on an unknown username is stored without an account id and the typed username is never stored; attempts turned away by an existing lock or by Turnstile write nothing, so an attack cannot fill the table. A failed write logs `{"event":"auth_log_failed"}`; for an approved officer a failed `login_success` write is retried once with the same id (a duplicate id is ignored, so a commit whose answer was lost does not write twice) and, if the retry fails too, answers `503 auth_log_unavailable` with no session and does not count as a wrong password, so an officer never gets in without a record, while every other account signs in regardless. Migration `0013_auth_events.sql` adds triggers that reject any `UPDATE` and any `DELETE` younger than 395 days for staff rows or 90 days for the rest, and every recorded event deletes the expired rows of both classes. Tests cover the module, the triggers, the login and logout routes and a real workerd D1 (`test:users:d1`). (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Gave accounts that are not approved officers a more lenient failed-sign-in limit: ten failures in 15 minutes instead of five. An unknown username uses the lenient limit too, so the moment of the lock does not reveal who is registered; an IP row is judged by the class of the account being tried. Officer accounts, the escalating lock steps and the ten-attempt trusted-device limit are unchanged. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
+### Fix
+
+- Made `scripts/create-user.mjs` follow the web password rules: NFC-normalized 15 to 64 characters, no control or invisible characters, no blank password, and the shared weak-shape checks, instead of 12 to 128 characters. The script now hashes the NFC-normalized password and stores it as `pbkdf2-nfc`, like the web, so a Korean password does not depend on how it was typed. `password-policy.test.ts` locks the result against the web `normalizeNewPassword`. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
+### Docs
+
+- Recorded the decision to keep the PBKDF2-SHA256 work factor at 50,000, with the reason (Workers Free allows 10 ms of CPU per request; a local workerd measurement gave about 4 ms for 50,000, 8 ms for 100,000 and 46 ms for OWASP's 600,000) and the condition for raising it (moving to the Workers Paid plan), in `src/lib/auth/password.ts` and `docs/account-lifecycle.md`. No behavior changed. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Updated the privacy policy (chapters 1, 2, 4, 5 and 9), the `docs/privacy-policy.ko.md` tracker (A11, B3, B8), the "Monthly access-log review" and "Administrator sign-in" sections of `docs/operations-runbook.md` (three new review queries, checked against a real SQLite), `CONTENT_ARCHITECTURE.md`, `docs/content-operations.md` and the roles spec for the sign-in log, the 13-month and 90-day retention, the new limits and the password rules. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
 ## [2026-10-22]
 
 ### Feature

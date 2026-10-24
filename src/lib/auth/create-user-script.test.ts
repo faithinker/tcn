@@ -28,7 +28,7 @@ describe('scripts/create-user.mjs input handling', () => {
     const result = run(['someone', '--role', 'member'], { TCN_USER_PASSWORD: 'short' });
 
     expect(result.status).toBe(1);
-    expect(result.stderr).toMatch(/at least 12/);
+    expect(result.stderr).toMatch(/at least 15/);
     expect(result.stdout).not.toContain('created');
   });
 

@@ -1,9 +1,13 @@
 // 계정 발급 시(scripts/create-user.mjs) 새 비밀번호만 거르는 정책이다. 기존 계정이나 로그인 검증과는 무관하다.
+// 웹 가입·변경·재설정(account/policy.ts 의 normalizeNewPassword)과 같은 결과를 내야 하며 password-policy.test.ts 가 잠근다.
 // 스크립트가 빌드 없이 Node 로 `.ts` 를 직접 실행하므로 타입처럼 지워지는 문법만 쓴다(enum·파라미터 프로퍼티 금지).
 // 해시가 PBKDF2 50k 회로 묶여 있어(password.ts) 권고치보다 약하므로, 길이와 흔한 비밀번호 거부로 보완한다.
 
-export const MIN_PASSWORD_LENGTH = 12;
-const MAX_PASSWORD_LENGTH = 128;
+export const MIN_PASSWORD_LENGTH = 15;
+const MAX_PASSWORD_LENGTH = 64;
+
+// 제어·서식·줄바꿈 문자는 눈에 보이지 않아 복사해 넣으면 이후 로그인할 수 없게 된다.
+const INVISIBLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 type PolicyResult = { ok: true } | { ok: false; reason: string };
 
@@ -114,11 +118,19 @@ export function isWeakPasswordShape(password: string, username = ''): boolean {
   );
 }
 
-export function checkPasswordPolicy(password: string, username: string): PolicyResult {
-  if (password.length < MIN_PASSWORD_LENGTH) {
+export function checkPasswordPolicy(rawPassword: string, username: string): PolicyResult {
+  const password = rawPassword.normalize('NFC');
+  if (INVISIBLE.test(password)) {
+    return { ok: false, reason: 'The password must not contain control or invisible characters.' };
+  }
+  if (!password.trim()) {
+    return { ok: false, reason: 'The password must not be blank.' };
+  }
+  const length = [...password].length;
+  if (length < MIN_PASSWORD_LENGTH) {
     return { ok: false, reason: `Use at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
-  if (password.length > MAX_PASSWORD_LENGTH) {
+  if (length > MAX_PASSWORD_LENGTH) {
     return { ok: false, reason: `Use at most ${MAX_PASSWORD_LENGTH} characters.` };
   }
 

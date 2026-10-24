@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { DEVICE_COOKIE, DEVICE_TTL_SECONDS } from '../lib/auth/device';
-import { ACCESS_LOG_RETENTION_MONTHS } from '../lib/users/access-log';
+import {
+  AUTH_LOG_MEMBER_RETENTION_DAYS,
+  AUTH_LOG_STAFF_RETENTION_DAYS,
+} from '../lib/auth/auth-log';
+import { ACCESS_LOG_RETENTION_DAYS, ACCESS_LOG_RETENTION_MONTHS } from '../lib/users/access-log';
 import { SESSION_COOKIE } from '../lib/auth/cookie';
 import { SESSION_TTL_SECONDS } from '../lib/auth/session';
 
@@ -35,5 +39,14 @@ describe('privacy policy text', () => {
     // No other month count may be attached to the access log.
     const others = [...policy.matchAll(/(\d+)개월/g)].map((match) => match[1]);
     expect(new Set(others)).toEqual(new Set([String(ACCESS_LOG_RETENTION_MONTHS)]));
+  });
+
+  it('states the sign-in log retention the code enforces', () => {
+    expect(AUTH_LOG_STAFF_RETENTION_DAYS).toBe(ACCESS_LOG_RETENTION_DAYS);
+    const row = policy.split('\n').find((line) => line.startsWith('| 로그인 기록'));
+    expect(row).toContain(
+      `임원 계정은 ${ACCESS_LOG_RETENTION_MONTHS}개월, 그 밖의 계정은 ${AUTH_LOG_MEMBER_RETENTION_DAYS}일`,
+    );
+    expect(policy).toContain(`그 밖의 계정의 기록은 ${AUTH_LOG_MEMBER_RETENTION_DAYS}일이 지난 뒤`);
   });
 });
