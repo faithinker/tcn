@@ -43,7 +43,7 @@
 
 1. **수동 운영 배포**는 `TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy`로만 합니다. 플래그 없이 빌드하면 로컬 D1의 테스트 세미나가 운영 홈에 나갑니다. CI 배포의 `TCN_REQUIRE_CONTENT=1`은 지우지 않습니다.
 2. **새 `admin/`·`api/`·`forum/` 경로 파일**은 공용 가드(`requireOfficer*`, `requireActiveAccount*`, `requireMutation` 등)를 호출해야 합니다. 가드 없이 열어야 하는 경로는 `route-guard-coverage.test.ts`의 공개 목록에 이유와 함께 올려야 CI가 통과합니다.
-3. **상태를 바꾸는 API**는 `requireMutation`으로 동일 출처와 범위별 CSRF 토큰을 검사합니다.
+3. **상태를 바꾸는 API**는 `requireMutation`으로 동일 출처와 범위별 CSRF 토큰을 검사합니다. 세션이 없는 경로(`api/auth/login`, 익명 `api/questions`)와 런북의 curl 절차(세션 쿠키 + Origin)로 부르는 `api/maintenance/media-cleanup`만 동일 출처만 보는 예외이며, `route-guard-coverage.test.ts`의 `SAME_ORIGIN_ONLY`에 이유와 함께 올려야 CI가 통과합니다.
 4. **권한 규칙을 바꿀 때**는 `permissions.ts`와 `permissions.test.ts`의 매트릭스를 함께 고칩니다.
 5. **스키마 변경**은 `migrations/`에 새 번호 파일로 추가합니다. 배포 파이프라인이 Worker 배포 전에 마이그레이션을 자동으로 적용하므로, 기존 동작을 깨는 변경은 단계를 나눕니다.
 6. **회원 기능 플래그**는 운영에서 임의로 켜지 않습니다. 로컬 `.dev.vars`의 `true`를 운영으로 복사하지 말고, 켜는 절차는 [`docs/deployment.md`](./docs/deployment.md#회원-기능-통합-릴리스)를 따릅니다.

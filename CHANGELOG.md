@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Docs
 
+- Wrote the same-origin-only exceptions to the CSRF rule into README rule 3 (login, anonymous questions, `POST /api/maintenance/media-cleanup`) and pinned them in `route-guard-coverage.test.ts`: every state-changing API route must call a mutation guard or be listed in `SAME_ORIGIN_ONLY` with a reason, and a listed route that gains a guard must be removed from the list. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 - Updated the runbook (migrations 0008–0013, the `emailChallenges` field, the purge scope) and the privacy-policy tracker (A12, B5, the migration range) to match the email-challenge purge and the policy corrections. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ## [2026-10-24]

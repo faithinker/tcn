@@ -28,6 +28,21 @@ const PUBLIC_ROUTES: Record<string, string> = {
   'api/questions/index.ts': '익명 질문은 공개 기능이며 Turnstile과 속도 제한으로 보호한다.',
 };
 
+// README 규칙 3: 상태를 바꾸는 API 는 세션·동일 출처·범위별 CSRF 토큰을 함께 보는 가드를 부른다.
+// handlePublicAccount 는 세션이 아직 없는 가입·재설정 요청의 동일 출처 검사와 봇 확인을 맡는다.
+const MUTATION_GUARD_CALL =
+  /\b(?:requireMutation|requireOfficerMutation|handleAdminQuestionMutation|handleUserMutation|handleAccountMutation|handlePublicAccount)\s*\(/;
+const STATE_CHANGING_EXPORT = /export\s+const\s+(?:POST|PUT|PATCH|DELETE)\b/;
+
+// CSRF 토큰 없이 동일 출처만 보는 상태 변경 경로. 새 항목은 이유와 함께 여기에 올린다.
+const SAME_ORIGIN_ONLY: Record<string, string> = {
+  'api/auth/login.ts': '세션 전 요청이라 토큰이 없다. 동일 출처, Turnstile, 잠금 단계가 보호한다.',
+  'api/questions/index.ts':
+    '익명 공개 질문이라 세션이 없다. 동일 출처, Turnstile, 속도 제한이 보호한다.',
+  'api/maintenance/media-cleanup.ts':
+    '운영자가 런북의 curl 절차(세션 쿠키 + Origin)로 부르는 멱등 정리 호출이다. 동일 출처와 officer 만 본다.',
+};
+
 function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
 }
@@ -58,6 +73,29 @@ describe('route guard coverage', () => {
       GUARD_CALL,
     );
   });
+
+  it.each(
+    files.filter(
+      (file) =>
+        file.startsWith('api/') &&
+        STATE_CHANGING_EXPORT.test(stripComments(readFileSync(join(PAGES_DIR, file), 'utf8'))),
+    ),
+  )('state-changing %s uses a mutation guard or is a listed same-origin-only route', (file) => {
+    const source = stripComments(readFileSync(join(PAGES_DIR, file), 'utf8'));
+    if (file in SAME_ORIGIN_ONLY) return;
+    expect(source, `${file} changes state without a CSRF-aware guard`).toMatch(MUTATION_GUARD_CALL);
+  });
+
+  it.each(Object.keys(SAME_ORIGIN_ONLY))(
+    'same-origin-only route %s still exists and still needs the exception',
+    (file) => {
+      expect(files, `${file} is listed but the file is gone`).toContain(file);
+      expect(
+        stripComments(readFileSync(join(PAGES_DIR, file), 'utf8')),
+        `${file} now calls a mutation guard; remove it from SAME_ORIGIN_ONLY`,
+      ).not.toMatch(MUTATION_GUARD_CALL);
+    },
+  );
 
   it.each(Object.keys(PUBLIC_ROUTES))('public route %s still exists', (file) => {
     expect(files, `${file} is listed as public but the file is gone`).toContain(file);
