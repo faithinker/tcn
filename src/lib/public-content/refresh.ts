@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { listSeminarPosts } from '../db';
+import { backgroundWait } from '../notify';
 import { kstToday, parseFingerprintDoc, seminarFingerprint } from './core';
 
 export interface StaticRefreshConfig {
@@ -70,20 +71,6 @@ export async function requestStaticRefresh(
     console.error('Static refresh dispatch error', error);
     return false;
   }
-}
-
-function backgroundWait(promise: Promise<unknown>): void {
-  const maybe = (globalThis as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil;
-  try {
-    const wu = (env as unknown as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil ?? maybe;
-    if (wu) {
-      wu(promise);
-      return;
-    }
-  } catch {
-    // fallback
-  }
-  void promise.catch(() => {});
 }
 
 export function triggerStaticRefresh(requestUrl: string, db: D1Database): void {

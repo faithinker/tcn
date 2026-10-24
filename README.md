@@ -1,6 +1,6 @@
 # 초문화네트워크 (Transcultural Network, TCN) - 사이트 + 콘텐츠 플랫폼
 
-디지털·AI 시대의 **초문화(transcultural) 현상**을 연구하는 국제 학술단체 초문화네트워크(TCN)의 공식 웹사이트입니다. 영어 단일 소개 사이트에 더해, 임원이 세미나·활동 글을 직접 올리는 콘텐츠 관리 기능, 공개 Q&A, 회원 포럼과 이메일 인증 가입을 하나의 Cloudflare Worker로 제공합니다. 회원 포럼과 가입은 구현되어 있지만 기본값이 꺼짐입니다.
+디지털·AI 시대의 **초문화(transcultural) 현상**을 연구하는 국제 학술단체 초문화네트워크(TCN)의 공식 웹사이트입니다. 영어 단일 소개 사이트에 더해, 임원이 세미나·활동 글을 직접 올리는 콘텐츠 관리 기능, 공개 Q&A, 회원 포럼과 이메일 인증 가입을 하나의 Cloudflare Worker로 제공합니다.
 
 - **운영 주소**: [https://thetcn.org](https://thetcn.org) - 커스텀 도메인이며 canonical·sitemap의 기준 주소입니다.
 - **기본 주소**: [https://tcn.faithinker12.workers.dev](https://tcn.faithinker12.workers.dev) - 같은 Worker의 `workers.dev` 주소이며 배포 후 smoke 검사의 대상입니다.
@@ -17,7 +17,7 @@
 | 방문자                  | 소개·창립 선언문·정관·세미나 기록 열람, 공개 Q&A 질문 등록 |
 | 임원 (회장·부회장·이사) | `/admin`에서 세미나·활동 글과 미디어 작성, Q&A 공식 답변   |
 
-**회원 기능 (구현됨, 기본 꺼짐)**
+**회원 기능**
 
 회원 로그인·포럼·계정·사용자 관리는 `MEMBER_FEATURES_ENABLED`가, 가입은 여기에 더해 `SIGNUP_ENABLED`가 정확히 `true`일 때만 열립니다. 꺼져 있으면 회원 로그인·포럼·계정·사용자 관리는 503을, 가입 화면과 API는 404를 돌려줍니다.
 
