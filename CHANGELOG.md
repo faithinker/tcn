@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. AI agents (
 ### Chore
 
 - Raised the daily account-mail thresholds of signup from 50 to 70 and of password reset from 80 to 85; security notices stay at 90 and the monthly thresholds (1,800 / 2,600 / 2,900) are unchanged. The thresholds are watermarks on one shared daily counter, so signup is still cut off first and password reset and security notices keep their share of the 90 attempts reserved inside Resend Free's 100 a day. The tests and the two documents that quote the numbers follow. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+- Cleared the `npm audit` failures that stopped the audit steps of `ci.yml` and `deploy-workers.yml` (they failed on `main` too). `npm audit fix` raised astro 7.3.8 to 7.4.2, `@astrojs/cloudflare` 14.3.4 to 14.4.2, wrangler 4.151.0 to 4.152.0 (miniflare 5.20261019.2-beta), unifont 0.7.5 to 1.0.3 and `fast-uri` to 3.1.9, and a `package.json` `overrides` entry pins miniflare's `undici` to 7.30.1 because the newest miniflare beta pins the vulnerable 7.29.1. `npm run audit` and `npm run audit:prod` report 0 vulnerabilities; remove the override once miniflare ships `undici` 7.30.1 or later. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
 
 ## [2026-10-24]
 

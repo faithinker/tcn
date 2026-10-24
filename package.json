@@ -41,6 +41,11 @@
     "verify:account": "node scripts/verify-account.mjs",
     "local:mail": "node scripts/local-mail.mjs"
   },
+  "overrides": {
+    "miniflare": {
+      "undici": "7.30.1"
+    }
+  },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",
     "@astrojs/react": "^7.0.1",
