@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Feature
 
+- Updated `README.md` to reflect that member forum and signup features are active in production, removing outdated "disabled by default" notices. (Branch: `feat/ui`) - Implemented by Antigravity
+- Added instant static public pages rebuild trigger on seminar save. When a seminar post is created, updated, or soft-deleted, the Worker asynchronously compares the live seminar fingerprint against the deployed fingerprint (/content-fingerprint.json). If changed, it dispatches the GitHub Actions deploy-workers.yml workflow via GITHUB_DISPATCH_TOKEN, avoiding up to a 10-minute wait while keeping polling as a fallback. (Branch: `feat/static-refresh-on-save`) - Implemented by Antigravity
 - Added automatic membership approval notice email. When an executive approves a pending or rejected account on `/admin/users`, an approval notice containing the sign-in URL is dispatched via Resend in the background (`waitUntil`). Replays do not re-send, transient failures retry once in memory without logging recipient emails, and send errors never fail the status mutation. (Branch: `feat/approval-email`) - Implemented by Antigravity
 - Removed redundant inline "Back to top" link from footer bottom bar, keeping the copyright section minimal and preserving the existing floating BackToTop component pattern. (Branch: `feat/ui`) - Implemented by Antigravity
 - Updated footer official organization details with verified business registration number 408-82-92622, road-name secretariat address, and English president name Wonjoon Kim. (Branch: `feat/ui`) - Implemented by Antigravity

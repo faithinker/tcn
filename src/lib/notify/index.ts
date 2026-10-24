@@ -13,7 +13,7 @@ interface NotifyBindings {
   TELEGRAM_TO?: string;
 }
 
-function backgroundWait(promise: Promise<unknown>): void {
+export function backgroundWait(promise: Promise<unknown>): void {
   // waitUntil이 없는 개발·테스트 환경에서는 fire-and-forget으로 폴백한다.
   const maybe = (globalThis as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil;
   try {
