@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. AI agents (Claude, Codex, etc.) must update this file before every commit, in the same commit, and copy the entries into the Pull Request description.
 
+## [2026-10-25]
+
+### Chore
+
+- Raised the daily account-mail thresholds of signup from 50 to 70 and of password reset from 80 to 85; security notices stay at 90 and the monthly thresholds (1,800 / 2,600 / 2,900) are unchanged. The thresholds are watermarks on one shared daily counter, so signup is still cut off first and password reset and security notices keep their share of the 90 attempts reserved inside Resend Free's 100 a day. The tests and the two documents that quote the numbers follow. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
 ## [2026-10-24]
 
 ### Feature

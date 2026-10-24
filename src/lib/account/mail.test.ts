@@ -52,7 +52,7 @@ it('stops before network sends when the conservative free-tier daily budget is c
   expect(fetch).toHaveBeenCalledTimes(90);
 });
 it('reserves daily send budget for password recovery and security notices when signup quota is exhausted', async () => {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 70; i++) {
     await sendAccountMail(
       h.db,
       request,
@@ -76,9 +76,9 @@ it('reserves daily send budget for password recovery and security notices when s
       'signup',
     ),
   ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
-  expect(fetch).toHaveBeenCalledTimes(50);
+  expect(fetch).toHaveBeenCalledTimes(70);
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 15; i++) {
     await sendAccountMail(
       h.db,
       request,
@@ -102,10 +102,10 @@ it('reserves daily send budget for password recovery and security notices when s
       'reset',
     ),
   ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
-  expect(fetch).toHaveBeenCalledTimes(80);
+  expect(fetch).toHaveBeenCalledTimes(85);
 
   await securityNotice(h.db, request, bindings, 'person@example.org', 'password');
-  expect(fetch).toHaveBeenCalledTimes(81);
+  expect(fetch).toHaveBeenCalledTimes(86);
 });
 it('returns a generic provider failure without leaking response bodies', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(new Response('private provider details', { status: 429 }));

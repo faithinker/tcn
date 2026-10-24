@@ -157,7 +157,7 @@ it('keeps password reset working when the daily signup verification budget is ex
   await finishSignup(h.db, proof, input);
   const date = new Date().toISOString().slice(0, 10);
   await h.db
-    .prepare('INSERT INTO auth_mail_limits(key,attempts,started_at,last_sent_at) VALUES (?,50,0,1)')
+    .prepare('INSERT INTO auth_mail_limits(key,attempts,started_at,last_sent_at) VALUES (?,70,0,1)')
     .bind('send-budget:' + date)
     .run();
   const network = vi.fn(async () => Response.json({ id: 'mail' }));

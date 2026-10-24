@@ -7,8 +7,8 @@ export interface MailBindings {
 }
 export type MailCategory = 'signup' | 'reset' | 'security';
 const SEND_BUDGET_LIMITS: Record<MailCategory, readonly [daily: number, monthly: number]> = {
-  signup: [50, 1800],
-  reset: [80, 2600],
+  signup: [70, 1800],
+  reset: [85, 2600],
   security: [90, 2900],
 };
 export function localMail(request: Request, bindings: MailBindings) {
