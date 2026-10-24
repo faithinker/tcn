@@ -134,3 +134,48 @@ export async function securityNotice(
   }
   console.warn(JSON.stringify({ event: 'account_security_notice_failed', kind }));
 }
+export async function approvalNotice(
+  db: D1Database,
+  request: Request,
+  bindings: MailBindings,
+  email: string,
+) {
+  if (!email.includes('@')) return;
+  const deliveryKey = crypto.randomUUID();
+  let origin: string;
+  try {
+    origin = mailOrigin(request, bindings);
+  } catch {
+    return;
+  }
+  const loginUrl = `${origin}/login`;
+  const subject = 'Your TCN membership application has been approved';
+  const text = `Your membership application for the Transcultural Network (TCN) has been approved.
+
+You can now sign in to access member-only features and forums:
+${loginUrl}
+
+If you have any questions, please contact the TCN Secretariat.
+
+Best regards,
+Transcultural Network (TCN)`;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await sendAccountMail(
+        db,
+        request,
+        bindings,
+        email,
+        subject,
+        text,
+        deliveryKey,
+        'security',
+      );
+      return;
+    } catch {
+      /* Provider errors may contain recipient details: do not log them. */
+    }
+  }
+  console.warn(JSON.stringify({ event: 'account_approval_notice_failed' }));
+}

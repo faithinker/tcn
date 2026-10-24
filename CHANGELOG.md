@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Feature
 
+- Added automatic membership approval notice email. When an executive approves a pending or rejected account on `/admin/users`, an approval notice containing the sign-in URL is dispatched via Resend in the background (`waitUntil`). Replays do not re-send, transient failures retry once in memory without logging recipient emails, and send errors never fail the status mutation. (Branch: `feat/approval-email`) - Implemented by Antigravity
 - Removed redundant inline "Back to top" link from footer bottom bar, keeping the copyright section minimal and preserving the existing floating BackToTop component pattern. (Branch: `feat/ui`) - Implemented by Antigravity
 - Updated footer official organization details with verified business registration number 408-82-92622, road-name secretariat address, and English president name Wonjoon Kim. (Branch: `feat/ui`) - Implemented by Antigravity
 - Redesigned footer into a 4-column academic layout (Brand, Network, Governance, Secretariat) with official organization meta bar (President Dr. Wonjoon Kim, secretariat phone, address) and back-to-top button. (Branch: `feat/ui`) - Implemented by Antigravity
