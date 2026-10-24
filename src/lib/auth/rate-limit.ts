@@ -12,7 +12,8 @@ const LOCK_SECONDS = [15 * 60, 60 * 60, 4 * 60 * 60, MAX_LOCK_SECONDS] as const;
 // 임원(승인된 officer) 계정을 겨냥한 실패의 한도.
 const MAX_ATTEMPTS = 5;
 // 신뢰 기기(`device:` 식별자)와 임원이 아닌 계정(일반 회원, 없는 아이디)은 오타가 잦은 실제 사용자라 한도를 넉넉히 준다.
-// 없는 아이디를 임원 한도로 막으면 잠기는 시점의 차이로 일반 회원의 가입 여부가 드러나므로 넉넉한 쪽에 둔다.
+// 없는 아이디를 임원 한도로 막으면 가입 여부가 드러나므로 넉넉한 쪽에 둔다. 잠기는 시점으로 임원 여부는 드러나지만
+// (임원 이름은 공개돼 있다) 한도를 통일하면 회원의 오타 잠금이나 관리자 보호 약화가 더 커서 받아들인다.
 const LENIENT_MAX_ATTEMPTS = 10;
 
 const LOCK_DURATION_SQL = `case lock_count + 1 ${LOCK_SECONDS.map(
