@@ -44,6 +44,19 @@ enabled = false
 [mcp_servers.mcp-atlassian]
 enabled = false
 
+# Apple docs mirror (same purpose as apple-docs), and the code graph server whose
+# Codex instance is pinned to the Obsidian vault.
+[mcp_servers.sosumi]
+enabled = false
+
+[mcp_servers.code-review-graph]
+enabled = false
+
+# Out of scope for this repository: no workflow here converts documents with it.
+# Kept off explicitly so a global definition does not load it.
+[mcp_servers.markitdown]
+enabled = false
+
 # Pinned MCP servers. Exact versions, so every machine runs the same code instead
 # of whatever `@latest` resolves to that day. Each pin was at least 7 days old when
 # chosen. Bump them with the dependency upgrade routine and keep .mcp.json (the
@@ -59,7 +72,3 @@ args = ["-y", "chrome-devtools-mcp@1.10.1"]
 [mcp_servers.playwright]
 command = "npx"
 args = ["-y", "@playwright/mcp@0.0.83"]
-
-[mcp_servers.markitdown]
-command = "uvx"
-args = ["markitdown-mcp==0.0.1a7"]

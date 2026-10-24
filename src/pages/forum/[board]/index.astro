@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Pagination from '../../../components/forum/Pagination.astro';
+import { requireActiveAccountPage, canAccess } from '../../../lib/auth';
+import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../lib/member-features';
+import { getDB } from '../../../lib/db';
+import { parsePage } from '../../../lib/forum/payload';
+import { listForumPosts } from '../../../lib/forum/repository';
+import { forumCopy as copy } from '../../../lib/forum/copy';
+import { formatDate } from '../../../i18n/utils';
+
+export const prerender = false;
+Astro.response.headers.set('cache-control', 'no-store');
+Astro.response.headers.set('x-robots-tag', 'noindex, nofollow');
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const guard = await requireActiveAccountPage(Astro, {
+  loginUrl: `/login?returnTo=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`,
+});
+if (!guard.ok) return guard.response;
+const board = Astro.params.board;
+if (board !== 'assembly' && board !== 'directors')
+  return new Response('Not found', { status: 404 });
+if (!canAccess(guard.user, { kind: 'forum.read', board }))
+  return new Response('You do not have access to this forum.', { status: 403 });
+let page: number;
+try {
+  page = parsePage(Astro.url.searchParams.get('page'));
+} catch {
+  return new Response('Invalid page', { status: 400 });
+}
+let result: Awaited<ReturnType<typeof listForumPosts>> | null = null;
+try {
+  result = await listForumPosts(getDB(), { board, page });
+} catch {
+  Astro.response.status = 503;
+}
+if (result && page > result.totalPages)
+  return Astro.redirect(`/forum/${board}?page=${result.totalPages}`, 302);
+---
+
+<BaseLayout title={copy.title(board)} noindex>
+  <section class="bg-canvas px-5 py-12 sm:py-20">
+    <div class="mx-auto max-w-[60rem]">
+      <nav aria-label="Member area" class="mb-8 flex flex-wrap gap-6 font-sans text-body-sans">
+        <a href="/account" class="inline-flex min-h-12 items-center text-ink underline">
+          Account
+        </a>
+        {board !== 'assembly' && (
+          <a href="/forum/assembly" class="inline-flex min-h-12 items-center text-ink underline">
+            {copy.title('assembly')}
+          </a>
+        )}
+        {board !== 'directors' &&
+          canAccess(guard.user, { kind: 'forum.read', board: 'directors' }) && (
+            <a href="/forum/directors" class="inline-flex min-h-12 items-center text-ink underline">
+              {copy.title('directors')}
+            </a>
+          )}
+      </nav>
+      <header class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
+        <div>
+          <h1 class="font-serif text-display-lg font-semibold text-ink">{copy.title(board)}</h1>
+          <p class="mt-4 max-w-[65ch] font-sans text-body-sans text-ink-soft">
+            {copy.description(board)}
+          </p>
+        </div>
+        <a
+          href={`/forum/${board}/new`}
+          class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-sm bg-ink px-6 font-sans text-button font-bold text-on-primary no-underline"
+        >
+          {copy.newPost}
+        </a>
+      </header>
+      {!result ? (
+        <p role="alert" class="mt-10 font-sans text-body-sans text-danger">
+          {copy.loadError}{' '}
+          <a href={Astro.url.pathname} class="underline">
+            Try again
+          </a>
+        </p>
+      ) : (
+        <>
+          <p class="mt-10 font-sans text-caption text-body-muted">
+            {result.total} {result.total === 1 ? 'post' : 'posts'} · 20 per page
+          </p>
+          {result.posts.length === 0 ? (
+            <p class="mt-6 border-y border-hairline py-10 font-sans text-body-sans text-ink-soft">
+              {copy.empty}
+            </p>
+          ) : (
+            <ol
+              class="mt-3 divide-y divide-hairline border-y border-hairline"
+              aria-label="Forum posts"
+            >
+              {result.posts.map((post) => (
+                <li class="py-6">
+                  <h2 class="break-words font-serif text-display-sm font-semibold text-ink">
+                    <a
+                      class="block text-ink no-underline hover:underline"
+                      href={`/forum/${board}/${encodeURIComponent(post.id)}`}
+                    >
+                      {post.title}
+                    </a>
+                  </h2>
+                  <p class="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-sans text-caption text-body-muted">
+                    <span>
+                      {post.authorWithdrawn ? 'Withdrawn member' : (post.authorName ?? copy.member)}
+                    </span>
+                    <time datetime={post.createdAt}>{formatDate(post.createdAt)}</time>
+                  </p>
+                </li>
+              ))}
+            </ol>
+          )}
+          <Pagination board={board} page={result.page} totalPages={result.totalPages} />
+        </>
+      )}
+    </div>
+  </section>
+</BaseLayout>

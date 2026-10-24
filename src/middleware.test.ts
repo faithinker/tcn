@@ -57,7 +57,7 @@ describe('site middleware', () => {
     },
   );
 
-  it.each(['/about', '/', '/admin', '/api/health'])(
+  it.each(['/about', '/', '/api/health'])(
     'adds the baseline security headers to %s without touching its caching',
     async (path) => {
       const next = vi.fn().mockResolvedValue(new Response('ok'));
@@ -86,6 +86,8 @@ describe('site middleware', () => {
     expect(response.status).toBe(302);
     expect(response.headers.get('location')).toBe('https://tcn.example/admin');
     expectBaseline(response);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-robots-tag')).toBe('noindex');
   });
 
   it('adds the baseline to the canonical redirect as well', async () => {
@@ -95,5 +97,34 @@ describe('site middleware', () => {
 
     expect(response.status).toBe(301);
     expectBaseline(response);
+  });
+
+  it.each([
+    '/admin',
+    '/admin/',
+    '/admin/login',
+    '/admin/posts/new',
+    '/admin/posts/post-1',
+    '/admin/questions',
+    '/admin/questions/q-1',
+    '/admin/users',
+    '/api/posts',
+    '/api/posts/post-1',
+    '/api/media',
+    '/api/media/m-1',
+    '/api/maintenance/media-cleanup',
+    '/forum/directors',
+    '/forum/directors/',
+    '/api/forum/assembly/x',
+    '/api/users/x/status',
+    '/account',
+    '/login',
+    '/signup',
+    '/api/auth/me',
+  ])('prevents caching and indexing of member response %s', async (path) => {
+    const next = vi.fn().mockResolvedValue(new Response('unavailable', { status: 503 }));
+    const response = expectResponse(await onRequest(context(path), next));
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-robots-tag')).toBe('noindex');
   });
 });

@@ -77,8 +77,12 @@ export async function updateMediaMetadata(
 
 // 파일 레코드 실삭제(R2 객체 삭제는 호출측에서 r2Key 로 별도 처리).
 export async function deleteMedia(db: D1Database, id: string): Promise<boolean> {
-  const result = await db.prepare(`delete from media where id = ?1`).bind(id).run();
-  return Boolean(result.meta.changes);
+  const clearHero = db
+    .prepare('update posts set hero_media_id = null where hero_media_id = ?1')
+    .bind(id);
+  const remove = db.prepare('delete from media where id = ?1').bind(id);
+  const results = await db.batch([clearHero, remove]);
+  return Boolean(results[1]?.meta.changes);
 }
 
 export async function deleteMediaAndQueueCleanup(
@@ -92,9 +96,12 @@ export async function deleteMediaAndQueueCleanup(
        select ?2 where exists (select 1 from media where id = ?1)`,
     )
     .bind(id, r2Key);
+  const clearHero = db
+    .prepare('update posts set hero_media_id = null where hero_media_id = ?1')
+    .bind(id);
   const remove = db.prepare('delete from media where id = ?1').bind(id);
-  const results = await db.batch([queue, remove]);
-  return Boolean(results[1]?.meta.changes);
+  const results = await db.batch([queue, clearHero, remove]);
+  return Boolean(results[2]?.meta.changes);
 }
 
 export async function completeMediaCleanup(db: D1Database, r2Key: string): Promise<void> {

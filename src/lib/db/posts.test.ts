@@ -6,6 +6,7 @@ vi.mock('./client', () => ({ newId: () => crypto.randomUUID() }));
 import {
   createPost,
   getPostByEventDate,
+  getSeminarSequence,
   listSeminarPosts,
   PostRevisionConflictError,
   softDeletePost,
@@ -49,6 +50,19 @@ describe('listSeminarPosts', () => {
     const posts = await listSeminarPosts(db());
 
     expect(posts.map((post) => post.title)).toEqual(['Earlier', 'Later']);
+  });
+});
+
+describe('getSeminarSequence', () => {
+  it('computes 1-based chronological sequence among visible dated posts', async () => {
+    await createPost(db(), { title: 'Later', eventDate: '2026-10-30' });
+    await createPost(db(), { title: 'Undated' });
+    const removed = await createPost(db(), { title: 'Removed', eventDate: '2026-01-01' });
+    await softDeletePost(db(), removed.id);
+    await createPost(db(), { title: 'Earlier', eventDate: '2025-12-26' });
+
+    await expect(getSeminarSequence(db(), '2025-12-26')).resolves.toBe(1);
+    await expect(getSeminarSequence(db(), '2026-10-30')).resolves.toBe(2);
   });
 });
 

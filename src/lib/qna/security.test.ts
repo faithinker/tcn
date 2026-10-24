@@ -4,67 +4,13 @@ vi.mock('cloudflare:workers', () => ({ env: {} }));
 
 import {
   consumeQuestionRateLimit,
-  createCsrfToken,
   getQnaRateLimitKey,
   QnaSecurityError,
-  requireAdminMutation,
   requireSameOrigin,
   verifyTurnstile,
-  verifyCsrfToken,
 } from './security';
 
-function adminRequest(overrides: { origin?: string | null; site?: string; csrf?: string } = {}) {
-  const headers = new Headers({
-    cookie: 'tcn_session=signed-session',
-    origin: overrides.origin === undefined ? 'https://tcn.example' : (overrides.origin ?? ''),
-    'sec-fetch-site': overrides.site ?? 'same-origin',
-    'x-csrf-token': overrides.csrf ?? '',
-  });
-  if (overrides.origin === null) headers.delete('origin');
-  return new Request('https://tcn.example/api/questions/q-1/answer', {
-    method: 'PUT',
-    headers,
-  });
-}
-
-describe('session-bound administrator mutation guard', () => {
-  it('accepts a valid session, exact origin, Fetch Metadata and CSRF token', async () => {
-    const csrf = await createCsrfToken('signed-session', 'secret');
-    const getUid = vi.fn().mockResolvedValue('admin-1');
-
-    await expect(
-      requireAdminMutation(adminRequest({ csrf }), { getUid, sessionSecret: 'secret' }),
-    ).resolves.toEqual({ uid: 'admin-1' });
-  });
-
-  it.each([
-    [{ origin: null }, 'invalid_origin'],
-    [{ origin: 'https://evil.example' }, 'invalid_origin'],
-    [{ site: 'cross-site' }, 'cross_site_request'],
-    [{ csrf: 'forged' }, 'invalid_csrf'],
-  ])('rejects mutation header attack %#', async (overrides, code) => {
-    const csrf = await createCsrfToken('signed-session', 'secret');
-    await expect(
-      requireAdminMutation(adminRequest({ csrf, ...overrides }), {
-        getUid: vi.fn().mockResolvedValue('admin-1'),
-        sessionSecret: 'secret',
-      }),
-    ).rejects.toMatchObject({ code, status: 403 });
-  });
-
-  it('rejects an invalid session before accepting any mutation metadata', async () => {
-    const getUid = vi.fn().mockResolvedValue(null);
-    await expect(
-      requireAdminMutation(adminRequest(), { getUid, sessionSecret: 'secret' }),
-    ).rejects.toMatchObject({ code: 'unauthorized', status: 401 });
-  });
-
-  it('uses a constant-time session-bound CSRF signature', async () => {
-    const token = await createCsrfToken('session-a', 'secret');
-    await expect(verifyCsrfToken(token, 'session-a', 'secret')).resolves.toBe(true);
-    await expect(verifyCsrfToken(token, 'session-b', 'secret')).resolves.toBe(false);
-  });
-
+describe('public write origin guard', () => {
   it('requires exact same-origin metadata for public writes', () => {
     expect(() =>
       requireSameOrigin(

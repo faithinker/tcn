@@ -14,6 +14,8 @@ The primary audience is international researchers, educators, and cultural or po
 
 ## Product Purpose
 
+Member surfaces distinguish associate members, approved members, auditors/advisers with special Directors Forum access, officers, and executives. Forums use chronological title/author/date lists rather than social feeds. Only officers manage seminar content, media and official answers. Executives approve applicants and manage other non-executive accounts; their own and other executive accounts are protected from changes in the site.
+
 TCN publishes its founding basis, people, scholarly activity, and official answers as a trustworthy English-language institutional record. Success means that a visitor can understand what TCN is, verify its activity and governance, and find the appropriate participation or contact path without additional explanation.
 
 ## Positioning

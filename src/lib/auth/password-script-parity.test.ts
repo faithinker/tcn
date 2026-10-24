@@ -19,7 +19,7 @@ function scriptLiteral(pattern: RegExp, label: string): string {
 }
 
 const script = {
-  scheme: scriptLiteral(/return `([a-z0-9]+)\$/, '저장 포맷 scheme'),
+  scheme: scriptLiteral(/return `([a-z0-9-]+)\$/, '저장 포맷 scheme'),
   iterations: Number(
     scriptLiteral(/const ITERATIONS = ([\d_]+);/, 'ITERATIONS').replaceAll('_', ''),
   ),
@@ -52,7 +52,7 @@ async function deriveWithScriptParams(plain: string, salt: Uint8Array): Promise<
 describe('create-user.mjs ↔ password.ts PBKDF2 parity', () => {
   it('reads the parameters the script actually hashes with', () => {
     expect(script).toEqual({
-      scheme: 'pbkdf2',
+      scheme: 'pbkdf2-nfc',
       iterations: expect.any(Number),
       digest: expect.any(String),
       keyBits: expect.any(Number),
@@ -62,7 +62,7 @@ describe('create-user.mjs ↔ password.ts PBKDF2 parity', () => {
   });
 
   it('hashes with the same scheme, work factor, salt size and key size', async () => {
-    const stored = await hashPassword('parity check');
+    const stored = await hashPassword('parity check', { normalize: true });
     const [scheme, iterations, saltB64, hashB64] = stored.split('$');
 
     expect(scheme).toBe(script.scheme);
@@ -73,7 +73,7 @@ describe('create-user.mjs ↔ password.ts PBKDF2 parity', () => {
 
   it('derives the same digest bytes as password.ts for the same salt', async () => {
     // digest 알고리즘까지 잠근다 — 스크립트가 SHA-512 로 바뀌면 여기서 갈라진다.
-    const stored = await hashPassword('parity check');
+    const stored = await hashPassword('parity check', { normalize: true });
     const [, , saltB64, hashB64] = stored.split('$');
     const derived = await deriveWithScriptParams(
       'parity check',
@@ -95,5 +95,10 @@ describe('create-user.mjs ↔ password.ts PBKDF2 parity', () => {
 
     expect(await verifyPassword('issued by script', storedByScript)).toBe(true);
     expect(await verifyPassword('wrong password', storedByScript)).toBe(false);
+  });
+
+  it('normalizes to NFC before hashing, like the web path', () => {
+    // 웹은 NFC 로 정규화해 해시한다. 스크립트가 원문을 그대로 해시하면 같은 한글도 입력 방식에 따라 로그인이 갈린다.
+    expect(SCRIPT).toMatch(/textEncoder\.encode\(plain\.normalize\('NFC'\)\)/);
   });
 });

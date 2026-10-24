@@ -47,6 +47,7 @@ Application deletes first enter `media_cleanup_queue`. R2 failures remain queued
 
 ```bash
 curl --fail --request POST \
+  --header 'Origin: https://tcn.faithinker12.workers.dev' \
   --cookie 'tcn_session=<operator-session>' \
   https://tcn.faithinker12.workers.dev/api/maintenance/media-cleanup
 ```
@@ -70,7 +71,7 @@ The mitigation is a short `max-age` (around 300s) in `src/pages/media/[...key].t
 
 `qna_turnstile_tokens` prunes itself. Every accepted siteverify deletes the rows whose `expires_at` has passed in the same `db.batch` that inserts the new digest (`src/lib/qna/security.ts`), so the table stays close to the tokens issued in the last five minutes. Pruning is opportunistic — it only runs when a question is submitted — so expired rows sit there through quiet periods.
 
-`qna_rate_limits` is never pruned. One row is one HMAC-derived client key, and both windows reset in place inside a single UPSERT, so the row outlives its lapsed counters and nothing deletes it. There is no cron trigger and no maintenance route for this table. It grows with the number of distinct submitting clients and never shrinks; watching its size is the operator's job.
+`qna_rate_limits` prunes itself the same way. After each allowed submission the handler deletes the rows whose daily and short windows have both lapsed (`src/lib/qna/security.ts`), so a row lives about 24 hours past its last submission. A quiet period leaves lapsed rows in place until the next submission. There is no cron trigger and no maintenance route for this table. The privacy policy states this 24-hour period, so change both together. Check the size if growth looks unusual:
 
 ```bash
 npx wrangler d1 execute tcn-content --remote \
@@ -78,6 +79,153 @@ npx wrangler d1 execute tcn-content --remote \
 ```
 
 `qna_audit_events` grows without bound too, one row per administrator answer or visibility change. That table is the audit record — do not prune it.
+
+## Personal-information erasure requests
+
+The privacy policy (`src/data/privacy-policy.ko.md`, chapters 5 and 12) promises that an erasure request for a post or question is handled by the operator within 10 days. Account holders erase their own account at `/account`; this section covers text that a person wrote in a forum post or a Q&A question.
+
+1. Confirm the request with the privacy officer and record the date, the post or question URL and the action. Do not copy the erased text into the record.
+2. Verify the requester. A forum post belongs to its author's account. A guest Q&A question has no owner, so erase it only when the requester shows that the text concerns them.
+3. Blank the content; do not delete the row. `qna_audit_events` and the forum author link reference these rows, so a hard delete fails or loses the audit trail. The statements below keep every foreign key and constraint valid. Run them with `--local` first, then with `--remote` only on the owner's go-ahead.
+
+```sql
+-- Q&A question (clears the asker link and hides it). Add the answer statement only
+-- when the official answer repeats the personal information.
+UPDATE qna_questions
+   SET title='[Removed at the author''s request]', body='[Removed at the author''s request]',
+       asker_user_id=NULL, visibility='hidden', revision=revision+1,
+       updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+ WHERE id='<question id>';
+UPDATE qna_answers
+   SET body='[Removed at the author''s request]', revision=revision+1,
+       updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+ WHERE question_id='<question id>';
+
+-- Forum post (also hides it when it is still visible).
+UPDATE forum_posts
+   SET title='[Removed at the author''s request]', body='[Removed at the author''s request]',
+       revision=revision+1, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+       deleted_at=COALESCE(deleted_at, strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+       deleted_by=COALESCE(deleted_by, author_id)
+ WHERE id='<post id>';
+```
+
+4. Select the row again and confirm that the title and body show the placeholder.
+5. D1 Time Travel keeps the earlier state for 30 days. After any restore to a point before an erasure, run the logged erasures again.
+
+## Account roles and executive authority
+
+Roles are officer/member; statuses are pending/approved/rejected. Approved officers manage seminars, media and official Q&A answers. Approved members with can_access_directors_forum=1 (auditors/advisers) can also use the Directors Forum without these operational permissions. Read all permissions from D1 per request.
+
+Approved executives (officer + is_executive=1) use /admin/users for approvals and final permission changes to other approved non-executive accounts. Their own account and any existing executive account are protected, including from status changes; newly promoted executives become protected immediately. User changes and before/after audit records are one atomic D1 operation with revision checks and request-ID retries.
+
+Routine operator changes require an actor and support --dry-run:
+
+```bash
+node scripts/create-user.mjs <username> --role officer --display "Name" --remote
+node scripts/set-user-role.mjs <username> --role officer --actor <executive-username> --remote --dry-run
+node scripts/set-user-forum-access.mjs <username> --allow --actor <executive-username> --remote --dry-run
+```
+
+Role changes specify the full result: omitted --executive clears executive authority, and role commands clear special forum access. Use the separate forum-access command to grant/revoke access for approved members. Ordinary operations increment revision, recheck the actor/target, and atomically insert user_audit_events. Preserve the printed requestId to retry interrupted requests with --request-id. A dry run does not query D1; it prints the preflight and snapshot-based SQL template, not a claim that the target has been checked.
+
+Initial executive setup or protected-executive recovery requires the explicit exceptional path:
+
+```bash
+node scripts/set-user-role.mjs <username> --role officer --executive --bootstrap --reason "<change-ticket>" --remote --dry-run
+```
+
+Remove --dry-run only after reviewing the actual account and approved change. Bootstrap/recovery cannot use the ordinary audit table (which forbids protected/self changes); it prints an explicit BOOTSTRAP/BREAKGLASS record containing reason, requestId and before/after snapshots. Retain that output in the operator change record. Granting officer authority requires an approved account. create-user reads a hidden password prompt or TCN_USER_PASSWORD, never a password argument.
+
+### Integrated release roster
+
+Keep MEMBER_FEATURES_ENABLED=false while migrations/code and initial permissions are being applied. Gate-off member routes return 503 and their menu links stay hidden. Before opening the gate:
+
+1. Read the operating accounts and match actual usernames to src/data/members.json; never infer a match from a similar name.
+2. Assign the president and senior vice president executive authority. The senior vice president is included.
+3. Assign the three directors officer/approved without executive authority.
+4. Assign the auditor and senior adviser member/approved plus special Directors Forum access. They lose seminar/media/official-answer operations but retain both forums and public Q&A questions.
+5. Resolve unrecognized accounts and missing display names before opening private content. Re-query permissions and smoke-test each group.
+6. Open MEMBER_FEATURES_ENABLED only after verification; keep SIGNUP_ENABLED=false until public-signup prerequisites and activation approval are satisfied.
+7. Before SIGNUP_ENABLED, confirm every item in section A of `docs/privacy-policy.ko.md`. The `/privacy` page ships with the code and states those facts as true.
+
+Migrations 0008–0013 are additive; the deploy workflow applies them before code after recording a Time Travel bookmark. Validate the complete implementation locally before one integrated release. Remote changes and deployment require user authorization.
+
+## Monthly access-log review
+
+The privacy policy (`src/data/privacy-policy.ko.md`, chapters 2, 4, 5 and 9) states that executives' views of `/admin/users` are logged, kept for 13 months and reviewed monthly. The legal basis is article 8 of 「개인정보의 안전성 확보조치 기준」. TCN has no internal management plan (article 4(1) proviso: an association below 10,000 data subjects may omit it), so this section is where the review cycle, method and follow-up are fixed. The monthly cycle is TCN's own choice, not a statutory interval.
+
+What is recorded:
+
+- `admin_access_events`: one row per rendered `/admin/users` page (actor, time, IP as `cf-connecting-ip`, `scope` such as `status=pending;page=1`, `subject_ids` as the JSON list of accounts shown, `subject_count`). Invalid arguments, guard failures and redirects write nothing. A failed write answers `503 access_log_unavailable` and the page is not shown.
+- `user_audit_events.ip`: the IP of the executive who approved, rejected or changed permissions. Rows from before migration 0012 have `NULL`.
+- `auth_events` (migration 0013): one row per sign-in success, sign-in failure, new lock and sign-out (`event`, `user_id`, `ip` as `cf-connecting-ip`, `staff`, time). `staff` is 1 for an approved officer at the time of the event. A failed attempt on an unknown username has `user_id` NULL, and the typed username and password are never stored. Attempts turned away by an existing lock or by Turnstile write nothing, so an attack cannot fill the table. A failed write logs `{"event":"auth_log_failed","kind":...}` to Workers observability. For an approved officer a failed `login_success` write is tried once more with the same id (a blip that the retry absorbs logs `{"event":"auth_log_retried"}` as a warning instead); if the retry fails too it answers `503 auth_log_unavailable` and issues no session (the password was right, so it is not counted as a failure and the officer can simply try again), so an officer never gets in without a record. For every other account, and for failures, locks and sign-outs, the sign-in goes on; look for the log line before trusting a quiet period.
+- Retention of `auth_events`: 395 days for `staff = 1`, 90 days for the rest. Triggers reject any `UPDATE` and any `DELETE` younger than that, and every recorded event deletes the expired rows of both classes.
+- Triggers reject any `UPDATE` of an access event and any `DELETE` younger than 395 days. Each recorded view also deletes events older than 395 days and clears `user_audit_events.ip` older than 395 days, so the log stays trimmed while people use the site. A Cron Trigger (`17 18 * * *`, 03:17 KST; `src/worker.ts` and `triggers.crons` in `wrangler.jsonc`) also runs `purgeExpiredLogs` once a day, so expired rows go even when nobody signs in or opens the page. The same run deletes expired `auth_email_challenges` rows, which hold the email address of a signup or password-reset request, so an abandoned request does not keep it past its expiry (at most a day) on a quiet site. Each run writes `{"event":"log_retention_purged","accessEvents":…,"authEvents":…,"auditIps":…,"emailChallenges":…}` to Workers observability, or `log_retention_failed` and a failed invocation if a delete guard rejected the batch.
+
+Not recorded: anything done with `wrangler d1 execute` or the Cloudflare dashboard. A Time Travel restore rolls the log back with the rest of the database; note the gap in the review record.
+
+Reviewer: the privacy officer (수석부회장). The privacy officer's own rows are reviewed by another executive. Run the review with `npx wrangler d1 execute tcn-content --remote` only on the owner's go-ahead. Times below are shifted to KST.
+
+```sql
+-- 1. Views per executive per day over the last 31 days.
+SELECT u.username, date(e.created_at,'unixepoch','+9 hours') AS day, count(*) AS views, max(e.subject_count) AS most_shown
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+ GROUP BY u.username, day ORDER BY day DESC, views DESC;
+
+-- 2. Views outside 07:00–23:00 KST.
+SELECT u.username, datetime(e.created_at,'unixepoch','+9 hours') AS kst, e.ip, e.scope
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+   AND CAST(strftime('%H',e.created_at,'unixepoch','+9 hours') AS INTEGER) NOT BETWEEN 7 AND 22
+ ORDER BY e.created_at DESC;
+
+-- 3. IPs seen this month that the same executive did not use earlier in the retention window.
+SELECT u.username, e.ip, count(*) AS views, min(datetime(e.created_at,'unixepoch','+9 hours')) AS first_seen
+  FROM admin_access_events e JOIN users u ON u.id=e.actor_id
+ WHERE e.created_at > strftime('%s','now') - 31*86400
+   AND NOT EXISTS (SELECT 1 FROM admin_access_events o WHERE o.actor_id=e.actor_id AND o.ip IS e.ip
+                    AND o.created_at <= strftime('%s','now') - 31*86400)
+ GROUP BY u.username, e.ip;
+
+-- 4. Changes made this month, with the actor's IP, to match against the views above.
+SELECT a.action, datetime(a.created_at,'unixepoch','+9 hours') AS kst, x.username AS actor, t.id AS target_id, a.ip
+  FROM user_audit_events a JOIN users x ON x.id=a.actor_id JOIN users t ON t.id=a.target_id
+ WHERE a.created_at > strftime('%s','now') - 31*86400 ORDER BY a.created_at DESC;
+
+-- 5. Staff sign-ins and sign-outs this month, outside 07:00–23:00 KST or from an IP that account did not use earlier.
+SELECT u.username, e.event, datetime(e.created_at,'unixepoch','+9 hours') AS kst, e.ip
+  FROM auth_events e JOIN users u ON u.id=e.user_id
+ WHERE e.staff=1 AND e.event IN ('login_success','logout') AND e.created_at > strftime('%s','now') - 31*86400
+   AND (CAST(strftime('%H',e.created_at,'unixepoch','+9 hours') AS INTEGER) NOT BETWEEN 7 AND 22
+        OR NOT EXISTS (SELECT 1 FROM auth_events o WHERE o.user_id=e.user_id AND o.ip IS e.ip AND o.event='login_success'
+                        AND o.created_at <= strftime('%s','now') - 31*86400))
+ ORDER BY e.created_at DESC;
+
+-- 6. Failures and locks per IP over the last 31 days (an attack shows as one IP with many failures or locks).
+SELECT ip, sum(event='login_failure') AS failures, sum(event='login_locked') AS locks,
+       count(DISTINCT user_id) AS accounts, sum(user_id IS NULL) AS unknown_accounts
+  FROM auth_events WHERE event IN ('login_failure','login_locked') AND created_at > strftime('%s','now') - 31*86400
+ GROUP BY ip HAVING failures + locks >= 5 ORDER BY failures + locks DESC;
+
+-- 7. A sign-in that succeeded soon after failures on the same account (possible guessed password).
+SELECT u.username, datetime(s.created_at,'unixepoch','+9 hours') AS kst, s.ip, s.staff,
+       (SELECT count(*) FROM auth_events f WHERE f.user_id=s.user_id AND f.event IN ('login_failure','login_locked')
+          AND f.created_at BETWEEN s.created_at - 3600 AND s.created_at) AS failures_in_last_hour
+  FROM auth_events s JOIN users u ON u.id=s.user_id
+ WHERE s.event='login_success' AND s.created_at > strftime('%s','now') - 31*86400
+   AND failures_in_last_hour >= 3 ORDER BY s.created_at DESC;
+
+-- 8. Controls: triggers present (three on the access log, two on the sign-in log), oldest row, rows without an IP (expected only for local development).
+SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name IN ('admin_access_events','auth_events');
+SELECT datetime(min(created_at),'unixepoch','+9 hours') AS oldest, count(*) AS total,
+       sum(ip IS NULL) AS without_ip FROM admin_access_events;
+```
+
+Read the results for: a view or change nobody can explain, a time of day or IP the executive does not normally use, a burst of views, an approval whose actor does not appear in the views, a missing trigger, or an oldest row far past 13 months (the daily purge is not running: check the Cron Trigger in the Cloudflare dashboard and the `log_retention_failed` line).
+
+Follow-up for an unexplained entry: ask the executive in writing, keep the rows, and if the explanation does not hold remove that executive's authority with `set-user-role.mjs` and rotate `SESSION_SECRET` (signs everyone out). Record each review (date, reviewer, period covered, findings, follow-up) in the operator change record, outside D1 and without copying IP lists into chat or tickets.
 
 ## Readiness triage
 
@@ -103,11 +251,11 @@ Several independent layers stand between the internet and `/api/auth/login`. The
 | Turnstile challenge (action `admin_login`) | Worker, before any D1 access                                                                              | `403 turnstile_failed`; `503 security_not_configured` when the secret or host list is missing |
 | Escalating lock                            | Worker, `auth_rate_limits`                                                                                | `429` with `Retry-After`: 15 minutes, then 1 hour, 4 hours, 24 hours as the cap               |
 
-Five wrong passwords in 15 minutes lock an account (any IP) and, separately, an IP. Every further lock for the same identifier is longer; the level is forgotten after a week without activity. A successful sign-in clears the IP and device counters but keeps the account's lock level.
+Five wrong passwords in 15 minutes lock an approved officer's account (any IP) and, separately, an IP. Any other account, and an unknown username, locks after ten, so the moment of the lock does not reveal who is registered; an IP is judged by the account being tried at that moment. Every further lock for the same identifier is longer; the level is forgotten after a week without activity. A successful sign-in clears the IP and device counters but keeps the account's lock level.
 
 **Trusted browser.** A successful sign-in sets a `tcn_device` cookie (signed, HttpOnly, 90 days, sent only to `/api/auth/login`). A browser that presents it for the account it is signing in to skips the _account_ lock and is limited per device (ten attempts) and per IP instead, so an attacker cannot keep the real administrator out by spending guesses. Rotating `SESSION_SECRET` also invalidates these cookies; each administrator becomes an unknown browser until the next successful sign-in.
 
-**Watching for attacks.** A new lock writes one `login_locked` line (lock length, whether the request came from a trusted browser, and a short prefix of the account hash — never the username or IP). Search for it in Workers observability.
+**Watching for attacks.** A new lock writes one `login_locked` line (lock length, whether the request came from a trusted browser, and a short prefix of the account hash — never the username or IP). Search for it in Workers observability. The same events, with the IP, are in `auth_events` (see "Monthly access-log review").
 
 **An administrator is locked out and has no trusted browser.** Wait out `Retry-After`, or clear every login counter. The identifiers are hashed, so a single account cannot be picked out:
 

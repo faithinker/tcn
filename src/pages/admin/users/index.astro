@@ -1,0 +1,133 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminPagination from '../../../components/qna/AdminPagination.astro';
+import UserTable from '../../../components/users/UserTable.astro';
+import {
+  createCsrfToken,
+  getSessionSecret,
+  readSessionToken,
+  requireExecutivePage,
+} from '../../../lib/auth';
+import { getDB } from '../../../lib/db';
+import { memberFeaturesEnabled, memberFeatureUnavailable } from '../../../lib/member-features';
+import {
+  accessLogIp,
+  accessLogUnavailable,
+  recordUsersListView,
+} from '../../../lib/users/access-log';
+import { listManagedUsers } from '../../../lib/users/repository';
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+const loginUrl = `/login?returnTo=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`;
+const guard = await requireExecutivePage(Astro, { loginUrl });
+if (!guard.ok) return guard.response;
+const token = readSessionToken(Astro.request);
+if (!token) return Astro.redirect(loginUrl);
+const statuses = ['pending', 'approved', 'rejected'];
+const status = Astro.url.searchParams.get('status') ?? 'pending';
+const rawPage = Astro.url.searchParams.get('page') ?? '1';
+if (
+  !statuses.includes(status) ||
+  !/^[1-9]\d*$/.test(rawPage) ||
+  !Number.isSafeInteger(Number(rawPage))
+)
+  return Astro.redirect('/admin/users');
+const db = getDB();
+const firstPages = await Promise.all(
+  statuses.map((status) => listManagedUsers(db, { status, page: 1 })),
+);
+const counts = Object.fromEntries(statuses.map((status, i) => [status, firstPages[i].total]));
+const users =
+  Number(rawPage) === 1
+    ? firstPages[statuses.indexOf(status)]
+    : await listManagedUsers(db, { status, page: Number(rawPage) });
+const hrefFor = (nextStatus: string, page = 1) =>
+  `/admin/users?${new URLSearchParams({ status: nextStatus, page: String(page) })}`;
+if (users.page !== Number(rawPage)) return Astro.redirect(hrefFor(status, users.page));
+// The list is rendered only after the view is on record; a failed write closes the page.
+try {
+  await recordUsersListView(db, {
+    actorId: guard.user.id,
+    ip: accessLogIp(Astro.request),
+    status,
+    page: users.page,
+    subjectIds: users.items.flatMap((user) =>
+      user.decidedBy ? [user.id, user.decidedBy] : [user.id],
+    ),
+  });
+} catch {
+  return accessLogUnavailable();
+}
+const csrf = await createCsrfToken('users', token, getSessionSecret());
+---
+
+<AdminLayout title="Users" user={guard.user}>
+  <section
+    data-users-admin
+    data-csrf-token={csrf}
+    data-login-url={loginUrl}
+    aria-labelledby="users-heading"
+  >
+    <h1 id="users-heading" class="font-serif text-display-lg font-semibold text-ink">
+      User management
+    </h1>
+    <p class="mt-3 max-w-2xl font-sans text-body-sans text-body-muted">
+      Review membership requests and manage approved members’ permissions. Your account and existing
+      executive accounts are read only.
+    </p>
+    <p class="mt-3 max-w-2xl font-sans text-body-sm text-body-muted">
+      Email addresses are verified at sign-up, which confirms mailbox ownership but not identity.
+      Review requests using the person’s name and affiliation.
+    </p>
+    <nav
+      aria-label="Membership status"
+      class="my-6 flex flex-wrap gap-3 border-b border-hairline font-sans text-body-sm"
+    >
+      {statuses.map((value) => (
+        <a
+          href={hrefFor(value)}
+          aria-current={status === value ? 'page' : undefined}
+          class:list={[
+            'inline-flex min-h-12 items-center gap-2 border-b-2 px-3 font-bold',
+            status === value ? 'border-accent text-accent' : 'border-transparent text-ink',
+          ]}
+        >
+          {value === 'pending' ? 'Awaiting review' : value === 'approved' ? 'Approved' : 'Rejected'}{' '}
+          <span>({counts[value]})</span>
+        </a>
+      ))}
+    </nav>
+    <p class="mb-4 font-sans text-body-sm text-body-muted">
+      {status === 'pending' ? 'Oldest requests first' : 'Most recent decisions first'} ·{' '}
+      {users.total} accounts · 20 per page
+    </p>
+    <div
+      data-users-notice
+      hidden
+      role="status"
+      aria-live="polite"
+      tabindex="-1"
+      class="mb-5 border border-hairline-strong bg-canvas-band p-4 font-sans text-body-sm"
+    ></div>
+    {users.items.length > 0 ? (
+      <UserTable users={users.items} actorId={guard.user.id} />
+    ) : (
+      <p class="border border-hairline px-5 py-12 font-sans text-body-sans">
+        {status === 'pending'
+          ? 'No membership requests are awaiting review.'
+          : 'No accounts have this status.'}
+      </p>
+    )}
+    <AdminPagination
+      page={users.page}
+      totalPages={users.totalPages}
+      hrefForPage={(page) => hrefFor(status, page)}
+    />
+  </section>
+  <script>
+    import '../../../scripts/users-admin';
+  </script>
+</AdminLayout>

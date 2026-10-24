@@ -156,6 +156,33 @@ describe('login rate limiting against a real D1', () => {
     expect(await rowFor('device:d')).toMatchObject({ attempts: 10, lock_count: 1 });
   });
 
+  it('locks a staff account on the fifth failure and any other account on the tenth', async () => {
+    for (let attempt = 1; attempt <= 4; attempt += 1) {
+      await recordLoginFailure(db(), KEYS, T0, { strict: true });
+    }
+    await expect(recordLoginFailure(db(), KEYS, T0, { strict: true })).resolves.toBe(LOCKS[0]);
+
+    await db().prepare('delete from auth_rate_limits').run();
+    for (let attempt = 1; attempt <= 9; attempt += 1) {
+      await expect(recordLoginFailure(db(), KEYS, T0, { strict: false })).resolves.toBe(0);
+    }
+    await expect(recordLoginFailure(db(), KEYS, T0, { strict: false })).resolves.toBe(LOCKS[0]);
+  });
+
+  it('treats a call without options as the strict staff limit', async () => {
+    await expect(failUntilLocked(KEYS, T0, 5)).resolves.toBe(LOCKS[0]);
+  });
+
+  it('judges each failure by the class of the account it targets, even on a shared IP row', async () => {
+    for (let attempt = 1; attempt <= 6; attempt += 1) {
+      await recordLoginFailure(db(), ['account:member', 'ip:i'], T0, { strict: false });
+    }
+    // The IP has six failures and no lock. One failure on a staff account reaches its limit of five.
+    await expect(
+      recordLoginFailure(db(), ['account:staff', 'ip:i'], T0, { strict: true }),
+    ).resolves.toBe(LOCKS[0]);
+  });
+
   it('drops the rows of the given identifiers on a successful login', async () => {
     await recordLoginFailure(db(), KEYS, T0);
     await recordLoginFailure(db(), ['device:d', 'ip:other'], T0);

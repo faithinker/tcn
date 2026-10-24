@@ -1,37 +1,63 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UPLOAD_LIMITS } from '../media/validate';
 
-const { addMedia, bucket, getBucket, getDB, getPost, getSessionUid, newId } = vi.hoisted(() => ({
-  addMedia: vi.fn(),
-  bucket: { put: vi.fn(), delete: vi.fn() },
-  getBucket: vi.fn(),
-  getDB: vi.fn(() => ({})),
-  getPost: vi.fn(),
-  getSessionUid: vi.fn(),
-  newId: vi.fn(() => 'media-id'),
-}));
+const { addMedia, bucket, getBucket, getDB, getPost, getSessionSecret, getSessionUser, newId } =
+  vi.hoisted(() => ({
+    addMedia: vi.fn(),
+    bucket: { put: vi.fn(), delete: vi.fn() },
+    getBucket: vi.fn(),
+    getDB: vi.fn(() => ({})),
+    getPost: vi.fn(),
+    getSessionSecret: vi.fn(() => 'test-secret'),
+    getSessionUser: vi.fn(),
+    newId: vi.fn(() => 'media-id'),
+  }));
 
-vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../auth/guard', () => ({
+  getSessionUid: vi.fn(),
+  getSessionSecret,
+  getSessionUser,
+}));
 vi.mock('../db', () => ({ addMedia, getBucket, getDB, getPost, newId }));
 
+import { createCsrfToken } from '../auth/mutation';
 import { POST } from '../../pages/api/media/index';
+
+const OFFICER = {
+  id: 'user-1',
+  username: 'editor',
+  displayName: 'Editor',
+  role: 'officer',
+  status: 'approved',
+  isExecutive: false,
+} as const;
+const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
+let csrfToken = '';
 
 function context({
   mime = 'video/mp4',
   size = 3,
   filename = 'seminar.mp4',
   includeLength = true,
+  extraHeaders = {},
 }: {
   mime?: string;
   size?: number;
   filename?: string;
   includeLength?: boolean;
+  extraHeaders?: Record<string, string>;
 } = {}) {
   const url = new URL('http://localhost/api/media');
   url.searchParams.set('postId', 'post-1');
   url.searchParams.set('position', '2');
   url.searchParams.set('filename', filename);
-  const headers = new Headers({ 'content-type': mime });
+  const headers = new Headers({
+    origin: 'http://localhost',
+    cookie: 'tcn_session=test-session',
+    'x-csrf-token': csrfToken,
+    'content-type': mime,
+    ...extraHeaders,
+  });
   if (includeLength) headers.set('content-length', String(size));
   const request = new Request(url, {
     method: 'POST',
@@ -42,9 +68,10 @@ function context({
 }
 
 describe('POST /api/media', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('user-1');
+    csrfToken = await createCsrfToken('posts', 'test-session', 'test-secret');
+    getSessionUser.mockResolvedValue(OFFICER);
     getBucket.mockReturnValue(bucket);
     getPost.mockResolvedValue({ id: 'post-1' });
     bucket.put.mockResolvedValue({});
@@ -55,6 +82,20 @@ describe('POST /api/media', () => {
       r2Key: 'post-1/media-id.mp4',
       kind: 'video',
     });
+  });
+
+  it('answers 401 without a session and 403 to a non-officer or missing CSRF before reading the body', async () => {
+    getSessionUser.mockResolvedValue(null);
+    expect((await POST!(context())).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect((await POST!(context({ extraHeaders: { 'x-csrf-token': '' } }))).status).toBe(403);
+
+    getSessionUser.mockResolvedValue(MEMBER);
+    const response = await POST!(context());
+    expect(response.status).toBe(403);
+    expect(getPost).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
   });
 
   it('streams non-image request bodies to R2 before recording metadata', async () => {

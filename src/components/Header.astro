@@ -4,7 +4,7 @@ import { navItems } from '../lib/navigation';
 import ThemeToggle from './ThemeToggle.astro';
 
 const here = Astro.url.pathname.replace(/\/$/, '') || '/';
-const desktopNavItems = navItems.filter((item) => item.key !== 'nav.contact');
+const desktopNavItems = navItems;
 const isActive = (href: string) => {
   const target = href.replace(/\/$/, '') || '/';
   if (href === '/') return here === target;
@@ -15,6 +15,8 @@ const isExact = (href: string) => {
   const target = href.replace(/\/$/, '') || '/';
   return here === target;
 };
+const isGroupActive = (item: (typeof navItems)[number]) =>
+  isActive(item.href) || item.children?.some((child) => isActive(child.href));
 ---
 
 <header class="sticky top-0 z-50 border-b border-hairline-strong bg-canvas pt-[env(safe-area-inset-top)]">
@@ -38,10 +40,14 @@ const isExact = (href: string) => {
     >
       {desktopNavItems.map((item) =>
         item.children ? (
-          <details class="desktop-nav-dropdown group relative min-h-[73px]" data-nav-dropdown>
+          <details
+            class="desktop-nav-dropdown group relative min-h-[73px]"
+            data-nav-dropdown
+            data-board-menu={item.key === 'nav.boards' || undefined}
+          >
             <summary
               aria-current={
-                isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
+                isExact(item.href) ? 'page' : isGroupActive(item) ? 'location' : undefined
               }
               class="desktop-nav-item nav-summary flex min-h-[73px] cursor-pointer list-none items-center justify-center gap-1 whitespace-nowrap border-b-2 border-transparent px-2 font-sans text-body-sm font-bold text-ink transition-colors min-[72rem]:gap-1.5 min-[72rem]:px-3 min-[72rem]:text-body-sans"
             >
@@ -63,8 +69,13 @@ const isExact = (href: string) => {
               {item.children.map((child) => (
                 <a
                   href={child.href}
+                  data-board-link={item.key === 'nav.boards' ? child.href : undefined}
+                  hidden={item.key === 'nav.boards' && child.href !== '/questions'}
                   aria-current={isExact(child.href) ? 'page' : undefined}
-                  class="flex min-h-[44px] items-center whitespace-nowrap px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft aria-[current]:text-link"
+                  class:list={[
+                    'flex min-h-[44px] items-center whitespace-nowrap px-3 font-sans text-body-sm font-bold text-ink no-underline hover:bg-canvas-soft aria-[current]:text-link',
+                    { 'mt-2 border-t border-hairline pt-2': child.key === 'nav.contact' },
+                  ]}
                 >
                   {t(child.key)}
                 </a>
@@ -81,15 +92,50 @@ const isExact = (href: string) => {
           </a>
         ),
       )}
-      <a
-        href="/contact"
-        class="ml-1 inline-flex min-h-[48px] self-center items-center whitespace-nowrap rounded-sm bg-ink px-3 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-ink-soft min-[72rem]:ml-2 min-[72rem]:px-5 min-[72rem]:text-button"
-      >
-        {t('nav.cta')}
-      </a>
     </nav>
 
     <div class="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 min-[56rem]:ml-0">
+      <div class="flex items-center gap-1" role="group" aria-label="Account">
+        <a
+          href="/login"
+          data-header-sign-in
+          class="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-sm bg-ink px-3 font-sans text-body-sm font-bold text-on-primary no-underline hover:bg-ink-soft min-[72rem]:px-4"
+        >
+          {t('nav.signIn')}
+        </a>
+        <a
+          href="/account"
+          data-header-profile
+          aria-label={t('nav.profile')}
+          title={t('nav.profile')}
+          class="inline-flex size-11 shrink-0 items-center justify-center rounded-sm text-ink no-underline hover:bg-canvas-soft"
+          hidden
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+          </svg>
+        </a>
+        <button
+          type="button"
+          data-header-logout
+          title="Log out on all devices"
+          class="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-sm px-2 font-sans text-body-sm font-bold text-ink hover:bg-canvas-soft disabled:cursor-wait disabled:opacity-60 min-[72rem]:px-3"
+          hidden
+        >
+          {t('nav.logOut')}
+        </button>
+      </div>
       <ThemeToggle />
 
       <button
@@ -117,6 +163,13 @@ const isExact = (href: string) => {
     </div>
   </div>
 
+  <p
+    data-header-auth-error
+    role="alert"
+    class="border-t border-hairline bg-canvas px-4 py-2 font-sans text-body-sm text-danger"
+    hidden
+  ></p>
+
   <nav
     id="mobileNav"
     class="max-h-[calc(100dvh-73px-env(safe-area-inset-top))] overflow-y-auto overscroll-contain border-t border-hairline bg-canvas min-[56rem]:hidden"
@@ -130,7 +183,7 @@ const isExact = (href: string) => {
             <div class="border-b border-hairline py-2">
               <p
                 aria-current={
-                  isExact(item.href) ? 'page' : isActive(item.href) ? 'location' : undefined
+                  isExact(item.href) ? 'page' : isGroupActive(item) ? 'location' : undefined
                 }
                 class="px-3 py-2 font-sans text-caption font-bold uppercase text-body-muted aria-[current]:text-link"
               >
@@ -138,9 +191,15 @@ const isExact = (href: string) => {
               </p>
               <ul class="border-l border-hairline ml-3">
                 {item.children.map((child) => (
-                  <li>
+                  <li
+                    class:list={{
+                      'mt-2 border-t border-hairline pt-2': child.key === 'nav.contact',
+                    }}
+                  >
                     <a
                       href={child.href}
+                      data-board-link={item.key === 'nav.boards' ? child.href : undefined}
+                      hidden={item.key === 'nav.boards' && child.href !== '/questions'}
                       aria-current={isExact(child.href) ? 'page' : undefined}
                       class="flex min-h-[44px] items-center px-4 font-sans text-body-sans font-bold text-ink no-underline aria-[current]:text-link"
                     >
@@ -161,14 +220,6 @@ const isExact = (href: string) => {
           )}
         </li>
       ))}
-      <li class="px-3 py-2">
-        <a
-          href="/contact"
-          class="inline-flex min-h-[48px] w-full items-center justify-center rounded-sm bg-ink px-5 font-sans text-button font-bold text-on-primary no-underline"
-        >
-          {t('nav.cta')}
-        </a>
-      </li>
     </ul>
   </nav>
 </header>
@@ -193,6 +244,7 @@ const isExact = (href: string) => {
 </style>
 
 <script>
+  import '../scripts/member-navigation';
   const btn = document.getElementById('navToggle');
   const menu = document.getElementById('mobileNav');
 
@@ -208,6 +260,7 @@ const isExact = (href: string) => {
   // 잔여 이동으로 메뉴가 열리자마자 닫히는 것을 막는다.
   const DROPDOWN_SCROLL_TOLERANCE = 24;
   let dropdownScrollY = 0;
+  const pinnedDropdowns = new WeakSet<HTMLDetailsElement>();
 
   const openDropdown = () => dropdowns.find((item) => item.open);
 
@@ -216,22 +269,54 @@ const isExact = (href: string) => {
       if (item === except || !item.open) continue;
       // 패널 안에 포커스가 있는 채로 닫으면 포커스가 body 로 유실된다 — 요약으로 되돌린다.
       if (item.contains(document.activeElement)) item.querySelector('summary')?.focus();
+      pinnedDropdowns.delete(item);
       item.open = false;
     }
   };
 
   for (const dropdown of dropdowns) {
     dropdown.addEventListener('toggle', () => {
-      if (!dropdown.open) return;
+      if (!dropdown.open) {
+        pinnedDropdowns.delete(dropdown);
+        return;
+      }
       dropdownScrollY = window.scrollY;
       closeDropdowns(dropdown);
     });
+
+    if (dropdown.hasAttribute('data-board-menu')) {
+      dropdown.addEventListener('pointerenter', (event) => {
+        if (event.pointerType !== 'mouse' || !matchMedia('(hover: hover)').matches) return;
+        closeDropdowns(dropdown);
+        dropdownScrollY = window.scrollY;
+        dropdown.open = true;
+      });
+      dropdown.addEventListener('pointerleave', () => {
+        if (pinnedDropdowns.has(dropdown)) return;
+        // A keyboard user may still be working inside the panel.
+        if (dropdown.querySelector('div')?.contains(document.activeElement)) return;
+        dropdown.open = false;
+      });
+      dropdown.querySelector('summary')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (pinnedDropdowns.has(dropdown)) {
+          pinnedDropdowns.delete(dropdown);
+          dropdown.open = false;
+        } else {
+          closeDropdowns(dropdown);
+          pinnedDropdowns.add(dropdown);
+          dropdownScrollY = window.scrollY;
+          dropdown.open = true;
+        }
+      });
+    }
 
     // 키보드로 마지막 항목을 지나 Tab 하면 닫는다.
     // relatedTarget이 없으면 창 자체가 포커스를 잃은 경우라 유지한다.
     dropdown.addEventListener('focusout', (event) => {
       const next = event.relatedTarget;
       if (!(next instanceof Node) || dropdown.contains(next)) return;
+      pinnedDropdowns.delete(dropdown);
       dropdown.open = false;
     });
   }
@@ -285,8 +370,9 @@ const isExact = (href: string) => {
     'scroll',
     () => {
       if (isOpen() && Math.abs(window.scrollY - openScrollY) > 4) setMenuOpen(false);
-      if (openDropdown() && Math.abs(window.scrollY - dropdownScrollY) > DROPDOWN_SCROLL_TOLERANCE)
-        closeDropdowns();
+      const current = openDropdown();
+      const tolerance = current?.hasAttribute('data-board-menu') ? 0 : DROPDOWN_SCROLL_TOLERANCE;
+      if (current && Math.abs(window.scrollY - dropdownScrollY) > tolerance) closeDropdowns();
     },
     { passive: true },
   );

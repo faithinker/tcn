@@ -9,9 +9,12 @@ const WINDOW_SECONDS = 15 * 60;
 const MAX_LOCK_SECONDS = 24 * 60 * 60;
 const LOCK_SECONDS = [15 * 60, 60 * 60, 4 * 60 * 60, MAX_LOCK_SECONDS] as const;
 
+// 임원(승인된 officer) 계정을 겨냥한 실패의 한도.
 const MAX_ATTEMPTS = 5;
-// 신뢰 기기(`device:` 식별자)는 오타가 잦은 실제 사용자라 한도를 넉넉히 준다.
-const DEVICE_MAX_ATTEMPTS = 10;
+// 신뢰 기기(`device:` 식별자)와 임원이 아닌 계정(일반 회원, 없는 아이디)은 오타가 잦은 실제 사용자라 한도를 넉넉히 준다.
+// 없는 아이디를 임원 한도로 막으면 가입 여부가 드러나므로 넉넉한 쪽에 둔다. 잠기는 시점으로 임원 여부는 드러나지만
+// (임원 이름은 공개돼 있다) 한도를 통일하면 회원의 오타 잠금이나 관리자 보호 약화가 더 커서 받아들인다.
+const LENIENT_MAX_ATTEMPTS = 10;
 
 const LOCK_DURATION_SQL = `case lock_count + 1 ${LOCK_SECONDS.map(
   (seconds, index) => `when ${index + 1} then ${seconds}`,
@@ -21,8 +24,8 @@ function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-function maxAttemptsFor(identifier: string): number {
-  return identifier.startsWith('device:') ? DEVICE_MAX_ATTEMPTS : MAX_ATTEMPTS;
+function maxAttemptsFor(identifier: string, strict: boolean): number {
+  return identifier.startsWith('device:') || !strict ? LENIENT_MAX_ATTEMPTS : MAX_ATTEMPTS;
 }
 
 function placeholders(count: number, first: number): string {
@@ -66,6 +69,8 @@ export async function getLoginLockSeconds(
 /**
  * 실패 한 번을 모든 식별자에 센다. 남은 잠금 시간(초)을 돌려준다(잠기지 않았으면 0).
  *
+ * - 한도는 이번 실패가 겨냥한 계정의 종류로 정한다(`strict`: 임원 계정이면 5회, 아니면 10회). 기본값은 엄격한 쪽이다.
+ *   IP 행은 여러 계정의 실패가 섞이므로 그 순간의 한도로 판단한다.
  * - 이미 잠긴 식별자는 세지도 잠금을 늘리지도 않는다.
  * - 윈도가 지나도 잠금이 유효하면 윈도를 되돌리지 않는다.
  * - 잠금이 끝나면 새 윈도에서 다시 센다. `lock_count` 는 줄이지 않아 다음 잠금이 더 길어진다.
@@ -74,6 +79,7 @@ export async function recordLoginFailure(
   db: D1Database,
   keys: readonly string[],
   at = nowSeconds(),
+  { strict = true }: { strict?: boolean } = {},
 ): Promise<number> {
   if (keys.length === 0) return 0;
 
@@ -106,7 +112,7 @@ export async function recordLoginFailure(
        end,
        updated_at = ?2`,
   );
-  await db.batch(keys.map((key) => statement.bind(key, at, maxAttemptsFor(key))));
+  await db.batch(keys.map((key) => statement.bind(key, at, maxAttemptsFor(key, strict))));
   return getLoginLockSeconds(db, keys, at);
 }
 

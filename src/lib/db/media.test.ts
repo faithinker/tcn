@@ -5,13 +5,14 @@ vi.mock('./client', () => ({ newId: () => crypto.randomUUID() }));
 
 import {
   addMedia,
+  deleteMedia,
   deleteMediaAndQueueCleanup,
   getMediaById,
   getPublicMediaByKey,
   listMediaCleanupKeys,
   updateMediaMetadata,
 } from './media';
-import { createPost, softDeletePost } from './posts';
+import { createPost, getPost, softDeletePost, updatePost } from './posts';
 
 let harness: TestD1;
 const db = () => harness.db;
@@ -70,6 +71,32 @@ describe('deleteMediaAndQueueCleanup', () => {
 
     await expect(getMediaById(db(), media.id)).resolves.toBeNull();
     await expect(listMediaCleanupKeys(db())).resolves.toEqual(['p1/file.webp']);
+  });
+
+  it('clears heroMediaId on posts referencing the deleted media', async () => {
+    const { post, media } = await seedMedia('p1/hero.webp');
+    await updatePost(db(), post.id, {
+      title: post.title,
+      heroMediaId: media.id,
+      expectedRevision: post.revision,
+    });
+    await expect(getPost(db(), post.id)).resolves.toMatchObject({ heroMediaId: media.id });
+
+    await expect(deleteMediaAndQueueCleanup(db(), media.id, 'p1/hero.webp')).resolves.toBe(true);
+
+    await expect(getPost(db(), post.id)).resolves.toMatchObject({ heroMediaId: null });
+  });
+
+  it('clears heroMediaId when deleteMedia is called directly', async () => {
+    const { post, media } = await seedMedia('p1/direct.webp');
+    await updatePost(db(), post.id, {
+      title: post.title,
+      heroMediaId: media.id,
+      expectedRevision: post.revision,
+    });
+
+    await expect(deleteMedia(db(), media.id)).resolves.toBe(true);
+    await expect(getPost(db(), post.id)).resolves.toMatchObject({ heroMediaId: null });
   });
 
   it('queues nothing for a row that is already gone', async () => {

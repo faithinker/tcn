@@ -1,7 +1,8 @@
+import { requireMutation } from '../auth/mutation';
 import { QNA_LIMITS, QnaPayloadError, readJsonWithLimit } from './payload';
 import { QnaNotFoundError, QnaRevisionConflictError } from './repository';
 import { qnaJson } from './response';
-import { QnaSecurityError, requireAdminMutation } from './security';
+import { QnaSecurityError } from './security';
 
 interface ParseResult<T> {
   ok: boolean;
@@ -40,7 +41,8 @@ export async function handleAdminQuestionMutation<TInput, TResult>(
 ): Promise<Response> {
   let actorUserId: string;
   try {
-    actorUserId = (await requireAdminMutation(options.request)).uid;
+    const { user } = await requireMutation(options.request, { scope: 'qna', require: 'officer' });
+    actorUserId = user.id;
   } catch (error) {
     return mutationErrorResponse(error);
   }

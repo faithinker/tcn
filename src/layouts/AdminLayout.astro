@@ -2,6 +2,9 @@
 import '../styles/global.css';
 import { getDB } from '../lib/db';
 import { countAdminQuestions } from '../lib/qna/repository';
+import { canAccess, getSessionUser } from '../lib/auth';
+import { memberFeaturesEnabled } from '../lib/member-features';
+import { countPendingUsers } from '../lib/users/repository';
 
 interface Props {
   title?: string;
@@ -10,7 +13,14 @@ interface Props {
 }
 const { title = 'Admin', user = null, waitingQuestionCount } = Astro.props;
 const pathname = Astro.url.pathname;
-const activeSection = pathname.startsWith('/admin/questions') ? 'questions' : 'posts';
+const activeSection = pathname.startsWith('/admin/users')
+  ? 'users'
+  : pathname.startsWith('/admin/questions')
+    ? 'questions'
+    : 'posts';
+const sessionUser = user && memberFeaturesEnabled() ? await getSessionUser(Astro.request) : null;
+const manageUsers = memberFeaturesEnabled() && canAccess(sessionUser, { kind: 'users.list' });
+const pendingUsers = manageUsers ? await countPendingUsers(getDB()) : 0;
 const waitingCount =
   user === null ? 0 : (waitingQuestionCount ?? (await countAdminQuestions(getDB(), 'waiting')));
 // astro.config.mjs 의 site — 로컬에서 편집 중이어도 퀵링크는 항상 운영 사이트를 가리킨다.
@@ -193,6 +203,26 @@ const liveSiteUrl = (Astro.site ?? new URL('https://thetcn.org')).href;
                 {waitingCount}
               </span>
             </a>
+            {manageUsers && (
+              <a
+                href="/admin/users"
+                aria-current={activeSection === 'users' ? 'page' : undefined}
+                class:list={[
+                  'inline-flex min-h-13 items-center gap-2 border-b-[3px] pt-[3px] text-body-sm font-bold no-underline sm:min-h-18',
+                  activeSection === 'users'
+                    ? 'border-accent text-ink'
+                    : 'border-transparent text-body-muted hover:text-link',
+                ]}
+              >
+                Users{' '}
+                <span
+                  id="admin-pending-user-count"
+                  class="inline-flex min-h-6 min-w-6 items-center justify-center rounded-full bg-canvas-band px-1.5 text-caption font-bold"
+                >
+                  {pendingUsers}
+                </span>
+              </a>
+            )}
           </nav>
 
           <div class="ml-auto flex min-h-15 items-center gap-5 font-sans text-caption sm:min-h-18">
@@ -219,9 +249,18 @@ const liveSiteUrl = (Astro.site ?? new URL('https://thetcn.org')).href;
       </header>
     )}
     <script>
+      import { logoutAccount, watchAccountSession } from '../scripts/account-client';
+      watchAccountSession();
       document.getElementById('admin-logout')?.addEventListener('click', async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/admin/login';
+        const button = document.getElementById('admin-logout') as HTMLButtonElement;
+        button.disabled = true;
+        try {
+          await logoutAccount();
+          window.location.href = '/admin/login';
+        } catch {
+          button.disabled = false;
+          button.textContent = 'Log out failed. Try again';
+        }
       });
     </script>
     <main

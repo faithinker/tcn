@@ -4,6 +4,7 @@ import {
   parseQuestionPayload,
   parseVisibilityPayload,
   QNA_LIMITS,
+  readBytesWithLimit,
   readJsonWithLimit,
 } from './payload';
 
@@ -71,6 +72,18 @@ describe('Q&A query and payload contracts', () => {
       ok: false,
       error: 'invalid_visibility',
     });
+  });
+});
+
+describe('bounded byte reader', () => {
+  it('returns the streamed bytes and refuses more than the limit', async () => {
+    const request = (text: string, headers: HeadersInit = {}) =>
+      new Request('https://tcn.example/x', { method: 'POST', body: text, headers });
+    expect(new TextDecoder().decode(await readBytesWithLimit(request('hello'), 5))).toBe('hello');
+    await expect(readBytesWithLimit(request('hello!'), 5)).rejects.toThrow('payload_too_large');
+    await expect(readBytesWithLimit(request('hi', { 'content-length': '999' }), 5)).rejects.toThrow(
+      'payload_too_large',
+    );
   });
 });
 

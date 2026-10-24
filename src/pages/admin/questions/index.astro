@@ -3,19 +3,25 @@ export const prerender = false;
 
 import AdminPagination from '../../../components/qna/AdminPagination.astro';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getSessionSecret, getSessionUid, readSessionToken } from '../../../lib/auth';
-import { getDB, getUserById } from '../../../lib/db';
+import {
+  createCsrfToken,
+  getSessionSecret,
+  readSessionToken,
+  requireOfficerPage,
+} from '../../../lib/auth';
+import { getDB } from '../../../lib/db';
 import type { QnaAdminStatus } from '../../../lib/db/types';
 import { listAdminQuestions } from '../../../lib/qna/repository';
-import { createCsrfToken } from '../../../lib/qna/security';
 import { formatWaitingAge } from '../../../scripts/admin-qna-utils';
 
 Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
 
 const currentPath = `${Astro.url.pathname}${Astro.url.search}`;
 const loginUrl = `/admin/login?returnTo=${encodeURIComponent(currentPath)}`;
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect(loginUrl);
+const guard = await requireOfficerPage(Astro, { loginUrl });
+if (!guard.ok) return guard.response;
+const { user } = guard;
 
 const sessionToken = readSessionToken(Astro.request);
 if (!sessionToken) return Astro.redirect(loginUrl);
@@ -44,13 +50,11 @@ const requestedPage =
 if (requestedPage === 0) return Astro.redirect(hrefFor(status));
 
 const db = getDB();
-const [user, waitingFirst, answeredFirst, hiddenFirst] = await Promise.all([
-  getUserById(db, uid),
+const [waitingFirst, answeredFirst, hiddenFirst] = await Promise.all([
   listAdminQuestions(db, { status: 'waiting', page: 1 }),
   listAdminQuestions(db, { status: 'answered', page: 1 }),
   listAdminQuestions(db, { status: 'hidden', page: 1 }),
 ]);
-if (!user) return Astro.redirect(loginUrl);
 
 const firstPages = {
   waiting: waitingFirst,
@@ -68,7 +72,7 @@ const counts = {
   answered: answeredFirst.total,
   hidden: hiddenFirst.total,
 };
-const csrfToken = await createCsrfToken(sessionToken, getSessionSecret());
+const csrfToken = await createCsrfToken('qna', sessionToken, getSessionSecret());
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',

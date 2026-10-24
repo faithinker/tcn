@@ -5,7 +5,7 @@ const {
   completeMediaCleanup,
   getBucket,
   getDB,
-  getSessionUid,
+  getSessionUser,
   listMediaCleanupKeys,
   recordMediaCleanupFailure,
 } = vi.hoisted(() => ({
@@ -13,12 +13,16 @@ const {
   completeMediaCleanup: vi.fn(),
   getBucket: vi.fn(),
   getDB: vi.fn(() => ({})),
-  getSessionUid: vi.fn(),
+  getSessionUser: vi.fn(),
   listMediaCleanupKeys: vi.fn(),
   recordMediaCleanupFailure: vi.fn(),
 }));
 
-vi.mock('../auth', () => ({ getSessionUid }));
+vi.mock('../auth/guard', () => ({
+  getSessionUid: vi.fn(),
+  getSessionSecret: vi.fn(),
+  getSessionUser,
+}));
 vi.mock('../db', () => ({
   completeMediaCleanup,
   getBucket,
@@ -29,10 +33,20 @@ vi.mock('../db', () => ({
 
 import { POST } from '../../pages/api/maintenance/media-cleanup';
 
+const OFFICER = {
+  id: 'user-1',
+  username: 'editor',
+  displayName: 'Editor',
+  role: 'officer',
+  status: 'approved',
+  isExecutive: false,
+} as const;
+const MEMBER = { ...OFFICER, id: 'member-1', role: 'member' } as const;
+
 describe('POST /api/maintenance/media-cleanup', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getSessionUid.mockResolvedValue('user-1');
+    getSessionUser.mockResolvedValue(OFFICER);
     getBucket.mockReturnValue(bucket);
     listMediaCleanupKeys.mockResolvedValue(['a.webp', 'b.webp']);
     bucket.delete.mockResolvedValue(undefined);
@@ -40,9 +54,32 @@ describe('POST /api/maintenance/media-cleanup', () => {
     recordMediaCleanupFailure.mockResolvedValue(undefined);
   });
 
+  it('answers 401 without a session and 403 to missing origin or a non-officer before listing cleanup keys', async () => {
+    const request = (headers: HeadersInit = { origin: 'http://localhost' }) =>
+      ({
+        request: new Request('http://localhost/api/maintenance/media-cleanup', {
+          method: 'POST',
+          headers,
+        }),
+      }) as never;
+
+    getSessionUser.mockResolvedValue(null);
+    expect((await POST!(request())).status).toBe(401);
+
+    getSessionUser.mockResolvedValue(OFFICER);
+    expect((await POST!(request({}))).status).toBe(403);
+
+    getSessionUser.mockResolvedValue(MEMBER);
+    expect((await POST!(request())).status).toBe(403);
+    expect(listMediaCleanupKeys).not.toHaveBeenCalled();
+  });
+
   it('reconciles queued R2 objects and clears successful jobs', async () => {
     const response = await POST!({
-      request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
+      request: new Request('http://localhost/api/maintenance/media-cleanup', {
+        method: 'POST',
+        headers: { origin: 'http://localhost' },
+      }),
     } as never);
 
     expect(response.status).toBe(200);
@@ -60,7 +97,10 @@ describe('POST /api/maintenance/media-cleanup', () => {
     bucket.delete.mockRejectedValueOnce(new Error('R2 unavailable'));
 
     const response = await POST!({
-      request: new Request('http://localhost/api/maintenance/media-cleanup', { method: 'POST' }),
+      request: new Request('http://localhost/api/maintenance/media-cleanup', {
+        method: 'POST',
+        headers: { origin: 'http://localhost' },
+      }),
     } as never);
 
     await expect(response.json()).resolves.toEqual({

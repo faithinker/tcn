@@ -2,6 +2,8 @@ import { base64ToBytes, bytesToBase64, textEncoder, timingSafeEqual } from '../c
 
 // PBKDF2-SHA256. 저장 포맷은 자기서술형 `pbkdf2$<iterations>$<saltB64>$<hashB64>` 라 iterations 를 올려도 기존 해시를 검증한다.
 // 반복 횟수는 Workers 요청 CPU 예산을 쓰므로 바꿀 때 password.test.ts 의 예산도 확인한다.
+// 5만 회로 두는 이유: 무료 플랜은 요청당 CPU 10ms 인데 workerd 실측이 5만 회 4ms, 10만 회 8ms, OWASP 권고 60만 회 46ms 다.
+// 유료 플랜(CPU 한도 30초)으로 옮기면 올린다. 그때까지는 15자 이상과 흔한 비밀번호 거부로 보완한다(password-policy.ts).
 const ITERATIONS = 50_000;
 const KEY_BITS = 256;
 const SALT_BYTES = 16;
@@ -30,16 +32,19 @@ async function derive(plain: string, salt: Uint8Array, iterations: number): Prom
 export const DUMMY_PASSWORD_HASH =
   'pbkdf2$50000$bjzxg4Gz5wa6xWhVNy48hQ==$Sn9nja1fQgD/X3lb06fdAOt2g3fXIYy8f7G8WzDzlek=';
 
-export async function hashPassword(plain: string): Promise<string> {
+export async function hashPassword(
+  plain: string,
+  options: { normalize?: boolean } = {},
+): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-  const hash = await derive(plain, salt, ITERATIONS);
-  return `pbkdf2$${ITERATIONS}$${bytesToBase64(salt)}$${bytesToBase64(hash)}`;
+  const hash = await derive(options.normalize ? plain.normalize('NFC') : plain, salt, ITERATIONS);
+  return `${options.normalize ? 'pbkdf2-nfc' : 'pbkdf2'}$${ITERATIONS}$${bytesToBase64(salt)}$${bytesToBase64(hash)}`;
 }
 
 // 손상된 저장값만 false로 처리하고 derive 실패는 런타임 오류로 전파한다.
 export async function verifyPassword(plain: string, stored: string): Promise<boolean> {
   const [scheme, iterationsRaw, saltB64, hashB64] = stored.split('$');
-  if (scheme !== 'pbkdf2' || !saltB64 || !hashB64) return false;
+  if (!['pbkdf2', 'pbkdf2-nfc'].includes(scheme) || !saltB64 || !hashB64) return false;
   const iterations = Number(iterationsRaw);
   if (!Number.isInteger(iterations) || iterations < 1) return false;
 
@@ -52,6 +57,10 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
     return false; // base64 손상 = 검증 불가한 저장값
   }
 
-  const actual = await derive(plain, salt, iterations);
+  const actual = await derive(
+    scheme === 'pbkdf2-nfc' ? plain.normalize('NFC') : plain,
+    salt,
+    iterations,
+  );
   return timingSafeEqual(actual, expected);
 }

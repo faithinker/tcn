@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/account.css';
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<BaseLayout {title} noindex>
+  <section class="account-shell">
+    <div class="account-grid">
+      <header class="account-intro">
+        <h1>{title}</h1>
+        <p>{description}</p>
+        <slot name="navigation" />
+        <nav aria-label="Privacy">
+          <a href="/privacy">
+            <strong lang="ko">개인정보 처리방침</strong>&nbsp;
+            <span lang="en">(Privacy Policy)</span>
+          </a>
+        </nav>
+      </header>
+      <div class="account-body">
+        <slot />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

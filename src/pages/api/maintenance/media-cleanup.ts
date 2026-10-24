@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSessionUid } from '../../../lib/auth';
+import { requireOfficer } from '../../../lib/auth';
 import {
   completeMediaCleanup,
   getBucket,
@@ -12,9 +12,8 @@ export const prerender = false;
 
 // 인증된 운영자가 호출하는 idempotent reconciliation endpoint.
 export const POST: APIRoute = async ({ request }) => {
-  if (!(await getSessionUid(request))) {
-    return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
-  }
+  const guard = await requireOfficer(request);
+  if (!guard.ok) return guard.response;
 
   const db = getDB();
   const bucket = getBucket();

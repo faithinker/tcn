@@ -12,10 +12,6 @@
       "command": "npx",
       "args": ["-y", "@playwright/mcp@0.0.83"]
     },
-    "markitdown": {
-      "command": "uvx",
-      "args": ["markitdown-mcp==0.0.1a7"]
-    },
     "astro-docs": {
       "type": "http",
       "url": "https://mcp.docs.astro.build/mcp"

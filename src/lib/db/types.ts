@@ -63,13 +63,23 @@ export interface MediaInput {
   caption?: string | null;
 }
 
+export type UserRole = 'officer' | 'member';
+export type AccountStatus = 'pending' | 'approved' | 'rejected';
+
 export interface User {
+  emailVerifiedAt?: number | null;
   id: string;
   username: string;
   passwordHash: string;
   displayName: string | null;
   sessionVersion: number;
   createdAt: UnixSeconds;
+  role: UserRole;
+  status: AccountStatus;
+  // 결정권(회장·부회장). status 가 approved 이고 role 이 officer 일 때만 의미를 가진다.
+  isExecutive: boolean;
+  canAccessDirectorsForum: boolean;
+  affiliation: string | null;
 }
 
 export type QnaVisibility = 'visible' | 'hidden';

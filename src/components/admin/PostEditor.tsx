@@ -46,6 +46,7 @@ interface Props {
   // 공개 링크의 절대 주소는 서버에서 주입한다 — 클라이언트에서 window 로 만들면
   // SSR 결과와 달라져 하이드레이션이 깨진다.
   siteOrigin?: string;
+  csrfToken?: string;
 }
 
 function webpFilename(filename: string): string {
@@ -57,6 +58,7 @@ export default function PostEditor({
   media: initialMedia = [],
   seminarSequence = 1,
   siteOrigin = '',
+  csrfToken = '',
 }: Readonly<Props>) {
   const [postId, setPostId] = useState<string | null>(post?.id ?? null);
   const [title, setTitle] = useState(post?.title ?? '');
@@ -193,7 +195,7 @@ export default function PostEditor({
           `/api/media?${uploadQuery}`,
           {
             method: 'POST',
-            headers: { 'content-type': item.uploadMimeType },
+            headers: { 'content-type': item.uploadMimeType, 'x-csrf-token': csrfToken },
             body: payload,
           },
         );
@@ -244,7 +246,7 @@ export default function PostEditor({
           '/api/posts',
           {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
+            headers: { 'content-type': 'application/json', 'x-csrf-token': csrfToken },
             body: JSON.stringify({
               title,
               summary,
@@ -287,7 +289,7 @@ export default function PostEditor({
           `/api/posts/${id}`,
           {
             method: 'PUT',
-            headers: { 'content-type': 'application/json' },
+            headers: { 'content-type': 'application/json', 'x-csrf-token': csrfToken },
             body: JSON.stringify({
               title,
               summary,
@@ -311,7 +313,7 @@ export default function PostEditor({
             ? Promise.resolve(null)
             : requestJson(`/api/media/${item.id}`, {
                 method: 'PATCH',
-                headers: { 'content-type': 'application/json' },
+                headers: { 'content-type': 'application/json', 'x-csrf-token': csrfToken },
                 body: JSON.stringify(mediaMetadataForSave(item, position)),
               }),
         ),
@@ -386,7 +388,10 @@ export default function PostEditor({
     setBusy(true);
     setStatus('Deleting media…');
     try {
-      await requestJson(`/api/media/${id}`, { method: 'DELETE' });
+      await requestJson(`/api/media/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-csrf-token': csrfToken },
+      });
       setMedia((current) => current.filter((candidate) => candidate.id !== id));
       setHeroMediaId((current) => (current === id ? null : current));
       setStatus('Media deleted ✓');
@@ -436,7 +441,10 @@ export default function PostEditor({
     setBusy(true);
     setStatus('Deleting post…');
     try {
-      await requestJson(`/api/posts/${postId}`, { method: 'DELETE' });
+      await requestJson(`/api/posts/${postId}`, {
+        method: 'DELETE',
+        headers: { 'x-csrf-token': csrfToken },
+      });
       // 의도한 이탈이므로 이탈 경고를 끈다.
       dirtyRef.current = false;
       window.location.href = '/admin';

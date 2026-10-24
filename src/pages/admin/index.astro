@@ -1,15 +1,16 @@
 ---
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getSessionUid } from '../../lib/auth';
-import { getDB, getUserById, listPosts } from '../../lib/db';
+import { requireOfficerPage } from '../../lib/auth';
+import { getDB, listPosts } from '../../lib/db';
 
-const uid = await getSessionUid(Astro.request);
-if (!uid) return Astro.redirect('/admin/login');
+const guard = await requireOfficerPage(Astro);
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+if (!guard.ok) return guard.response;
+const { user } = guard;
 
-const db = getDB();
-const [user, posts] = await Promise.all([getUserById(db, uid), listPosts(db)]);
-if (!user) return Astro.redirect('/admin/login');
+const posts = await listPosts(getDB());
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',

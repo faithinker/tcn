@@ -27,17 +27,23 @@
 
 ## 작성자 계정·시드
 
-회원가입 UI가 없습니다. 최고관리자가 계정을 수동 발급합니다.
+사이트 내 가입 UI는 `SIGNUP_ENABLED=true`일 때만 열립니다. 신규 가입은 준회원으로 시작하고, 결정권자가 사용자 관리 화면에서 승인합니다. 가입을 닫아 둔 동안에도 운영자가 승인된 계정을 수동 발급할 수 있습니다.
 
 ```bash
-# 작성자 계정 발급 (--remote 없으면 로컬 D1)
+# 계정 발급 (--remote 없으면 로컬 D1). --role 은 필수이고 임원은 officer, 일반 회원은 member 다.
 # 비밀번호는 인자로 받지 않는다 — 터미널에서 실행하면 숨김 입력으로 두 번 묻는다.
-node scripts/create-user.mjs <아이디> --remote --display "이름"
+node scripts/create-user.mjs <아이디> --role officer --remote --display "이름"
+
+# 역할 변경, 회장·부회장 지정(결정권). 운영 DB 에는 먼저 --dry-run 으로 SQL 을 확인한다.
+node scripts/set-user-role.mjs <아이디> --role officer --executive --actor <결정권자아이디> --remote --dry-run
+
+# 감사·고문: 승인된 member에 임원 게시판 접근만 추가합니다.
+node scripts/set-user-forum-access.mjs <아이디> --allow --actor <결정권자아이디> --remote --dry-run
 
 # 세미나 글 시드 (멱등)
 node scripts/seed-seminar-posts.mjs --remote
 ```
 
-비밀번호 정책(`src/lib/auth/password-policy.ts`): 12자 이상, 아이디 미포함, 흔한 비밀번호(`password1234` 등)·단순 반복·순서 거부. 자동화에서는 `TCN_USER_PASSWORD` 환경변수로 넘깁니다(`read -rs TCN_USER_PASSWORD; export TCN_USER_PASSWORD`처럼 넣으면 셸 히스토리에도 남지 않습니다). 로그인 방어(챌린지·잠금·신뢰 기기)는 [`operations-runbook.md`](./operations-runbook.md#administrator-sign-in)를 보세요.
+비밀번호 정책(`src/lib/auth/password-policy.ts`, 웹 가입·변경·재설정과 같은 규칙): NFC 정규화 후 15~64자, 제어·비가시 문자 거부, 아이디 미포함, 흔한 비밀번호(`password1234` 등)·단순 반복·순서 거부. 자동화에서는 `TCN_USER_PASSWORD` 환경변수로 넘깁니다(`read -rs TCN_USER_PASSWORD; export TCN_USER_PASSWORD`처럼 넣으면 셸 히스토리에도 남지 않습니다). 로그인 방어(챌린지·잠금·신뢰 기기)는 [`operations-runbook.md`](./operations-runbook.md#administrator-sign-in)를 보세요.
 
-작성자는 `/admin`에서 로그인 → 글 작성(제목·개최일·주소·본문) → 사진·영상·문서 드래그앤드롭 업로드(이미지는 WebP 자동 변환) → 저장 시 즉시 공개됩니다. 권한은 flat(인증된 회원 누구나 등록·수정), 삭제는 soft delete입니다.
+작성자는 `/admin`에서 로그인 → 글 작성(제목·개최일·주소·본문) → 사진·영상·문서 드래그앤드롭 업로드(이미지는 WebP 자동 변환) → 저장 시 즉시 공개됩니다. 승인된 임원(officer) 계정만 등록·수정할 수 있고, 삭제는 soft delete입니다.

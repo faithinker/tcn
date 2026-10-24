@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getSessionUid } from '../../../lib/auth';
+import { requireOfficerMutation } from '../../../lib/auth';
 import {
   completeMediaCleanup,
   deleteMediaAndQueueCleanup,
@@ -14,8 +14,8 @@ import { normalizeMediaMetadata, type MediaMetadataPayload } from '../../../lib/
 export const prerender = false;
 
 export const PATCH: APIRoute = async ({ request, params }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await requireOfficerMutation(request);
+  if (!guard.ok) return guard.response;
 
   const id = params.id;
   if (!id) return Response.json({ ok: false, error: 'missing_id' }, { status: 400 });
@@ -38,8 +38,8 @@ export const PATCH: APIRoute = async ({ request, params }) => {
 
 // D1에서 공개 레코드와 cleanup 작업을 원자적으로 기록한 뒤 R2 삭제를 시도한다.
 export const DELETE: APIRoute = async ({ request, params }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+  const guard = await requireOfficerMutation(request);
+  if (!guard.ok) return guard.response;
 
   const id = params.id;
   if (!id) return Response.json({ ok: false, error: 'missing_id' }, { status: 400 });

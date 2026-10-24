@@ -93,6 +93,22 @@ export function seminarStatus(eventDate: string, today: string): SeminarStatus {
   return 'upcoming';
 }
 
+export function toSeminarView(
+  post: Post & { eventDate: string },
+  sequence: number,
+  today: string,
+): SeminarView {
+  const href = seminarHref(post.eventDate);
+  if (!href) throw new Error(`Invalid seminar event date: ${post.eventDate}`);
+  return {
+    ...post,
+    sequence,
+    status: seminarStatus(post.eventDate, today),
+    ordinalLabel: formatSeminarOrdinalLabel(sequence),
+    href,
+  };
+}
+
 export function deriveSeminarCollection(posts: Post[], today: string): SeminarCollection {
   const dated = posts
     .filter((post): post is Post & { eventDate: string } => Boolean(post.eventDate))
@@ -100,18 +116,7 @@ export function deriveSeminarCollection(posts: Post[], today: string): SeminarCo
   const duplicate = dated.find((post, index) => post.eventDate === dated[index - 1]?.eventDate);
   if (duplicate) throw new Error(`Duplicate seminar event date: ${duplicate.eventDate}`);
 
-  const chronological = dated.map((post, index) => {
-    const sequence = index + 1;
-    const href = seminarHref(post.eventDate);
-    if (!href) throw new Error(`Invalid seminar event date: ${post.eventDate}`);
-    return {
-      ...post,
-      sequence,
-      status: seminarStatus(post.eventDate, today),
-      ordinalLabel: formatSeminarOrdinalLabel(sequence),
-      href,
-    } satisfies SeminarView;
-  });
+  const chronological = dated.map((post, index) => toSeminarView(post, index + 1, today));
   const upcoming = chronological.filter((seminar) => seminar.status !== 'held');
   const past = chronological.filter((seminar) => seminar.status === 'held').toReversed();
 

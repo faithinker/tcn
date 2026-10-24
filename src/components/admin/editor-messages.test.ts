@@ -22,6 +22,9 @@ describe('requestErrorMessage', () => {
     expect(requestErrorMessage(new ApiRequestError('unauthorized', 401), FALLBACK)).toMatch(
       /Sign in again/,
     );
+    expect(requestErrorMessage(new ApiRequestError('invalid_csrf', 403), FALLBACK)).toMatch(
+      /Reload this page/,
+    );
   });
 
   it('keeps the API error code visible for unmapped codes', () => {

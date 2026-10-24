@@ -162,4 +162,27 @@ describe('question rate limiting against a real D1', () => {
       retryAfter: 0,
     });
   });
+
+  it('prunes expired rows from other identifiers when a new question is allowed', async () => {
+    await db()
+      .prepare(
+        `insert into qna_rate_limits
+           (identifier, short_window_started_at, short_attempts,
+            day_window_started_at, day_attempts, updated_at)
+         values (?1, ?2, 1, ?2, 1, ?2)`,
+      )
+      .bind('qna:expired-visitor', T0 - DAY_WINDOW)
+      .run();
+
+    await expect(consumeQuestionRateLimit(db(), KEY, T0)).resolves.toEqual({
+      allowed: true,
+      retryAfter: 0,
+    });
+
+    const stale = await db()
+      .prepare('select identifier from qna_rate_limits where identifier = ?1')
+      .bind('qna:expired-visitor')
+      .first();
+    expect(stale).toBeNull();
+  });
 });

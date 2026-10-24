@@ -1,16 +1,33 @@
 import type { APIRoute } from 'astro';
-import { getAssets, getBucket, getDB, getPublicMediaByKey } from '../../lib/db';
+import { getAssets, getBucket, getDB, getPublicMediaByKey, type Media } from '../../lib/db';
 
 export const prerender = false;
 
+function attachmentDisposition(filename: string | null | undefined): string {
+  const raw = (filename ?? '').replace(/[\r\n]/g, '').trim() || 'download';
+  const ascii =
+    raw
+      .replace(/[^\x20-\x7e]/g, '')
+      .replace(/["\\]/g, '_')
+      .trim() || 'download';
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(raw)}`;
+}
+
 // R2 미디어 공개 서빙(버킷은 비공개 유지). 이미지 렌더·문서/영상 다운로드가 이 경로를 참조.
-// 다운로드 강제는 링크의 download 속성(동일 출처)으로 처리.
-function responseHeaders(object: R2Object, contentLength: number): Headers {
+function responseHeaders(
+  object: R2Object,
+  contentLength: number,
+  media?: Pick<Media, 'kind' | 'filename'> | null,
+): Headers {
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set('etag', object.httpEtag);
   headers.set('accept-ranges', 'bytes');
   headers.set('content-length', String(contentLength));
+  headers.set('x-content-type-options', 'nosniff');
+  if (media?.kind === 'document') {
+    headers.set('content-disposition', attachmentDisposition(media.filename));
+  }
   // 캐시 정책: 의도적으로 매 뷰 재검증(max-age=0 + must-revalidate).
   // "동의 없는 사진 미노출" 원칙상 사진 삭제·글 soft delete 가 이미 본 브라우저에도 즉시 적용돼야 한다.
   // 비용은 뷰 1건당 Worker 호출·D1 조회·R2 조건부 GET 각 1회라 부하는 '요청 수'다.
@@ -125,7 +142,8 @@ export const GET: APIRoute = async ({ params, request }) => {
   if (key === FOUNDING_FILM_KEY) {
     return serveFoundingFilm(request, getAssets());
   }
-  if (!(await getPublicMediaByKey(getDB(), key))) {
+  const media = await getPublicMediaByKey(getDB(), key);
+  if (!media) {
     return new Response('Not found', { status: 404 });
   }
 
@@ -136,14 +154,14 @@ export const GET: APIRoute = async ({ params, request }) => {
   if (!object) return new Response('Not found', { status: 404 });
   if (!('body' in object)) {
     const status = request.headers.has('if-none-match') ? 304 : 412;
-    return new Response(null, { status, headers: responseHeaders(object, 0) });
+    return new Response(null, { status, headers: responseHeaders(object, 0, media) });
   }
 
   const range = request.headers.has('range') ? returnedRange(object) : null;
   if (rangeHeader && !range) return rangeNotSatisfiable(object.size);
 
   const contentLength = range?.length ?? object.size;
-  const headers = responseHeaders(object, contentLength);
+  const headers = responseHeaders(object, contentLength, media);
   if (range) {
     headers.set(
       'content-range',
@@ -160,7 +178,8 @@ export const HEAD: APIRoute = async ({ params, request }) => {
   if (key === FOUNDING_FILM_KEY) {
     return serveFoundingFilm(request, getAssets(), true);
   }
-  if (!(await getPublicMediaByKey(getDB(), key))) {
+  const media = await getPublicMediaByKey(getDB(), key);
+  if (!media) {
     return new Response(null, { status: 404 });
   }
 
@@ -169,6 +188,6 @@ export const HEAD: APIRoute = async ({ params, request }) => {
 
   return new Response(null, {
     status: 200,
-    headers: responseHeaders(object, object.size),
+    headers: responseHeaders(object, object.size, media),
   });
 };

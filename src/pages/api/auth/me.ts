@@ -1,19 +1,62 @@
 import type { APIRoute } from 'astro';
-import { getSessionUid } from '../../../lib/auth';
-import { getDB, getUserById } from '../../../lib/db';
+import {
+  clearSessionCookie,
+  getSessionUser,
+  createCsrfToken,
+  getSessionSecret,
+  readSessionToken,
+} from '../../../lib/auth';
+import { canAccess } from '../../../lib/auth/permissions';
+import { memberFeaturesEnabled } from '../../../lib/member-features';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
-  const uid = await getSessionUid(request);
-  if (!uid) return Response.json({ ok: true, authenticated: false });
+  const headers = new Headers({ 'cache-control': 'no-store' });
+  if (request.headers.get('sec-fetch-site') === 'cross-site') {
+    return Response.json({ ok: false, error: 'cross_site_request' }, { status: 403, headers });
+  }
 
-  const user = await getUserById(getDB(), uid);
-  if (!user) return Response.json({ ok: true, authenticated: false });
+  const user = await getSessionUser(request);
+  if (!user) {
+    if (readSessionToken(request)) {
+      headers.append(
+        'set-cookie',
+        clearSessionCookie({ secure: new URL(request.url).protocol === 'https:' }),
+      );
+    }
+    return Response.json(
+      {
+        ok: true,
+        authenticated: false,
+        memberFeaturesEnabled: memberFeaturesEnabled(),
+      },
+      { headers },
+    );
+  }
 
-  return Response.json({
-    ok: true,
-    authenticated: true,
-    user: { id: user.id, username: user.username, displayName: user.displayName },
-  });
+  return Response.json(
+    {
+      ok: true,
+      authenticated: true,
+      csrfToken: await createCsrfToken('account', readSessionToken(request)!, getSessionSecret()),
+      memberFeaturesEnabled: memberFeaturesEnabled(),
+      capabilities: {
+        directorsForum:
+          memberFeaturesEnabled() && canAccess(user, { kind: 'forum.read', board: 'directors' }),
+        assemblyForum:
+          memberFeaturesEnabled() && canAccess(user, { kind: 'forum.read', board: 'assembly' }),
+        manageUsers: memberFeaturesEnabled() && canAccess(user, { kind: 'users.list' }),
+        manageContent: canAccess(user, { kind: 'seminar.write' }),
+      },
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        status: user.status,
+      },
+    },
+    { headers },
+  );
 };

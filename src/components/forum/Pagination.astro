@@ -1,0 +1,47 @@
+---
+import type { ForumBoard } from '../../lib/auth/permissions';
+interface Props {
+  board: ForumBoard;
+  page: number;
+  totalPages: number;
+}
+const { board, page, totalPages } = Astro.props;
+const href = (value: number) => `/forum/${board}?page=${value}`;
+---
+
+{totalPages > 1 && (
+  <nav
+    aria-label="Forum pagination"
+    class="mt-8 flex flex-wrap items-center justify-between gap-4 font-sans text-body-sans"
+  >
+    {page > 1 ? (
+      <a
+        href={href(page - 1)}
+        rel="prev"
+        class="inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-4 text-ink no-underline"
+      >
+        Previous
+      </a>
+    ) : (
+      <span aria-disabled="true" class="text-body-muted">
+        Previous
+      </span>
+    )}
+    <span aria-current="page">
+      Page {page} of {totalPages}
+    </span>
+    {page < totalPages ? (
+      <a
+        href={href(page + 1)}
+        rel="next"
+        class="inline-flex min-h-12 items-center rounded-sm border border-hairline-strong px-4 text-ink no-underline"
+      >
+        Next
+      </a>
+    ) : (
+      <span aria-disabled="true" class="text-body-muted">
+        Next
+      </span>
+    )}
+  </nav>
+)}

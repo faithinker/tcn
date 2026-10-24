@@ -1,19 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { env, getDB, requireAdminMutation, setQuestionVisibility, upsertOfficialAnswer } =
-  vi.hoisted(() => ({
+const { env, getDB, requireMutation, setQuestionVisibility, upsertOfficialAnswer } = vi.hoisted(
+  () => ({
     env: { SESSION_SECRET: 'session-secret' },
     getDB: vi.fn(() => ({})),
-    requireAdminMutation: vi.fn(),
+    requireMutation: vi.fn(),
     setQuestionVisibility: vi.fn(),
     upsertOfficialAnswer: vi.fn(),
-  }));
+  }),
+);
 
 vi.mock('cloudflare:workers', () => ({ env }));
 vi.mock('../db', () => ({ getDB }));
-vi.mock('../qna/security', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../qna/security')>()),
-  requireAdminMutation,
+vi.mock('../auth/mutation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../auth/mutation')>()),
+  requireMutation,
 }));
 vi.mock('../qna/repository', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../qna/repository')>()),
@@ -46,7 +47,7 @@ function context(method: string, body: unknown) {
 describe('administrator Q&A mutations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    requireAdminMutation.mockResolvedValue({ uid: 'admin-1' });
+    requireMutation.mockResolvedValue({ user: { id: 'admin-1' } });
     upsertOfficialAnswer.mockResolvedValue({ questionId: 'q-1', revision: 1, body: 'Answer' });
     setQuestionVisibility.mockResolvedValue({ id: 'q-1', visibility: 'hidden', revision: 2 });
   });
@@ -66,7 +67,7 @@ describe('administrator Q&A mutations', () => {
   });
 
   it('runs the common guard before opening the DB boundary', async () => {
-    requireAdminMutation.mockRejectedValue(new QnaSecurityError('unauthorized', 401));
+    requireMutation.mockRejectedValue(new QnaSecurityError('unauthorized', 401));
     const response = await PUT!(context('PUT', { body: 'Answer', expectedRevision: 0 }));
     expect(response.status).toBe(401);
     expect(getDB).not.toHaveBeenCalled();
@@ -103,8 +104,26 @@ describe('administrator Q&A mutations', () => {
     );
   });
 
+  it('asks the common guard for an officer on the Q&A scope', async () => {
+    await PUT!(context('PUT', { body: 'Answer', expectedRevision: 0 }));
+    expect(requireMutation).toHaveBeenCalledWith(expect.any(Request), {
+      scope: 'qna',
+      require: 'officer',
+    });
+  });
+
+  it('answers 403 forbidden to a signed-in account that is not an officer', async () => {
+    requireMutation.mockRejectedValue(new QnaSecurityError('forbidden', 403));
+
+    const response = await PATCH!(context('PATCH', { visibility: 'hidden', expectedRevision: 1 }));
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({ ok: false, error: 'forbidden' });
+    expect(getDB).not.toHaveBeenCalled();
+  });
+
   it('guards visibility mutations before opening the DB boundary', async () => {
-    requireAdminMutation.mockRejectedValue(new QnaSecurityError('invalid_csrf', 403));
+    requireMutation.mockRejectedValue(new QnaSecurityError('invalid_csrf', 403));
 
     const response = await PATCH!(context('PATCH', { visibility: 'hidden', expectedRevision: 1 }));
 

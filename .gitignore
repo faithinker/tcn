@@ -13,6 +13,7 @@ verify/
 
 # os / editor
 .DS_Store
+.obsidian/
 *.log
 npm-debug.log*
 
@@ -22,6 +23,10 @@ npm-debug.log*
 !.env.example
 .dev.vars
 .dev.vars.*
+*.pem
+*.key
+credentials.json
+secrets.json
 translation-input.json
 translation-output.json
 
@@ -48,3 +53,6 @@ coverage/
 
 # 외부 저장소 참조용 shallow clone (tiptap 스킬이 필요할 때 생성 — 추적 제외)
 .reference/
+
+# CodeGraph 코드 그래프 색인 (머신별 로컬 DB — 추적 제외)
+.codegraph/

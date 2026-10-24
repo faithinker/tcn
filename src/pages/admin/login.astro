@@ -2,157 +2,26 @@
 export const prerender = false;
 import { env } from 'cloudflare:workers';
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import LoginForm from '../../components/membership/LoginForm.astro';
 import { getSessionUid } from '../../lib/auth';
 import {
   isLoginChallengeBypassed,
-  LOGIN_CHALLENGE_ACTION,
   type LoginChallengeBindings,
 } from '../../lib/auth/login-challenge';
 import { safeAdminReturnTo } from '../../lib/admin-api';
-
+import { memberFeaturesEnabled } from '../../lib/member-features';
 const returnTo = safeAdminReturnTo(Astro.url.searchParams.get('returnTo'));
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex');
+if (memberFeaturesEnabled())
+  return Astro.redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`);
 if (await getSessionUid(Astro.request)) return Astro.redirect(returnTo);
-
-// 로그인은 Turnstile 챌린지를 통과해야 한다. 로컬·CI 의 LOGIN_CHALLENGE=off 만 예외(로컬 호스트 한정).
 const bindings = env as unknown as LoginChallengeBindings & { TURNSTILE_SITE_KEY?: string };
 const challengeBypassed = isLoginChallengeBypassed(bindings, Astro.url);
 const siteKey = bindings.TURNSTILE_SITE_KEY ?? '';
-// 챌린지가 필요한데 사이트 키가 없으면 서버도 503 으로 닫는다 — 폼을 막고 이유를 보여 준다.
 const challengeUnavailable = !challengeBypassed && !siteKey;
 ---
 
 <AdminLayout title="Sign in">
-  <div class="mx-auto max-w-sm" data-return-to={returnTo}>
-    <h1 class="mb-6 font-serif text-display-sm font-semibold text-ink">Sign in</h1>
-    <form id="login-form" class="space-y-4" data-challenge={challengeBypassed ? 'off' : 'on'}>
-      <label class="block">
-        <span class="mb-1 block text-caption text-body-muted">Username</span>
-        <input
-          name="username"
-          required
-          spellcheck="false"
-          autocomplete="username"
-          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
-        />
-      </label>
-      <label class="block">
-        <span class="mb-1 block text-caption text-body-muted">Password</span>
-        <input
-          name="password"
-          type="password"
-          required
-          autocomplete="current-password"
-          class="w-full border border-hairline-strong bg-canvas px-3 py-2 text-body-sm text-ink focus-visible:border-accent"
-        />
-      </label>
-      {!challengeBypassed && siteKey && (
-        <div
-          class="cf-turnstile"
-          data-sitekey={siteKey}
-          data-action={LOGIN_CHALLENGE_ACTION}
-          data-callback="onLoginTurnstileSuccess"
-          data-expired-callback="onLoginTurnstileExpired"
-          data-error-callback="onLoginTurnstileError"
-        />
-      )}
-      <p
-        id="login-error"
-        role="alert"
-        aria-live="polite"
-        class:list={['text-caption text-accent', !challengeUnavailable && 'hidden']}
-      >
-        {challengeUnavailable
-          ? 'Sign-in is temporarily unavailable. The security check is not configured.'
-          : 'Invalid username or password.'}
-      </p>
-      <button
-        type="submit"
-        disabled={challengeUnavailable}
-        class="w-full bg-ink px-4 py-2 font-sans text-body-sm font-bold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Sign in
-      </button>
-    </form>
-  </div>
-  <script>
-    import { CHALLENGE_PENDING_MESSAGE, failureMessage } from '../../scripts/login-messages';
-
-    declare global {
-      interface Window {
-        onLoginTurnstileSuccess?: (token: string) => void;
-        onLoginTurnstileExpired?: () => void;
-        onLoginTurnstileError?: () => void;
-        turnstile?: { reset: (widget?: string | HTMLElement) => void };
-      }
-    }
-
-    const form = document.getElementById('login-form') as HTMLFormElement | null;
-    const errorEl = document.getElementById('login-error');
-    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-    const challengeOn = form?.dataset.challenge === 'on';
-
-    // 위젯 토큰은 1회용이다. 제출을 시도할 때마다 비우고 위젯을 다시 돌려 새 토큰을 받는다.
-    let turnstileToken = '';
-    window.onLoginTurnstileSuccess = (token) => {
-      turnstileToken = token;
-    };
-    window.onLoginTurnstileExpired = () => {
-      turnstileToken = '';
-    };
-    window.onLoginTurnstileError = () => {
-      turnstileToken = '';
-    };
-    function resetChallenge(): void {
-      turnstileToken = '';
-      const widget = document.querySelector<HTMLElement>('.cf-turnstile');
-      if (widget) window.turnstile?.reset(widget);
-    }
-    function showError(message: string): void {
-      if (!errorEl) return;
-      errorEl.textContent = message;
-      errorEl.classList.remove('hidden');
-    }
-
-    form?.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      errorEl?.classList.add('hidden');
-      if (challengeOn && !turnstileToken) {
-        showError(CHALLENGE_PENDING_MESSAGE);
-        return;
-      }
-      if (submit) {
-        submit.disabled = true;
-        submit.textContent = 'Signing in…';
-      }
-      try {
-        const data = new FormData(form);
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            username: data.get('username'),
-            password: data.get('password'),
-            turnstileToken,
-          }),
-        });
-        if (response.ok) {
-          const container = document.querySelector<HTMLElement>('[data-return-to]');
-          window.location.href = container?.dataset.returnTo || '/admin';
-          return;
-        }
-        showError(failureMessage(response.status, response.headers.get('retry-after')));
-      } catch {
-        showError('Network unavailable. Check your connection and try again.');
-      } finally {
-        if (challengeOn) resetChallenge();
-        if (submit) {
-          submit.disabled = false;
-          submit.textContent = 'Sign in';
-        }
-      }
-    });
-  </script>
-  {!challengeBypassed && siteKey && (
-    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-  )}
+  <LoginForm {returnTo} {challengeBypassed} {siteKey} {challengeUnavailable} />
 </AdminLayout>

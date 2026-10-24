@@ -1,0 +1,263 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AccountShell from '../components/membership/AccountShell.astro';
+import PasswordField from '../components/membership/PasswordField.astro';
+import { getSessionUser } from '../lib/auth';
+import { isLoginChallengeBypassed, type LoginChallengeBindings } from '../lib/auth/login-challenge';
+import { SIGNUP_CHALLENGE_ACTION } from '../lib/account/account-challenge';
+import { CHALLENGE_CALLBACKS } from '../scripts/challenge-gate';
+import {
+  signupEnabled,
+  memberFeaturesEnabled,
+  memberFeatureUnavailable,
+} from '../lib/member-features';
+import { signupState } from '../lib/account/email-flows';
+import { signupProof } from '../lib/account/public-route';
+import { getDB } from '../lib/db/client';
+if (!signupEnabled()) return new Response(null, { status: 404 });
+if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+if (await getSessionUser(Astro.request)) return Astro.redirect('/account');
+const state = await signupState(getDB(), signupProof(Astro.request));
+const verified = state?.verified === true;
+const bindings = env as unknown as LoginChallengeBindings & { TURNSTILE_SITE_KEY?: string };
+const challengeBypassed = isLoginChallengeBypassed(bindings, Astro.url);
+const siteKey = bindings.TURNSTILE_SITE_KEY ?? '';
+const challengeUnavailable = !challengeBypassed && !siteKey;
+---
+
+<AccountShell
+  title="Join TCN"
+  description="Create an account to participate in the General Assembly forum and connect with the network."
+>
+  <nav slot="navigation" aria-label="Membership navigation">
+    <a href="/login">Already a member? Sign in</a>
+    <a href="/about">About the network</a>
+  </nav>
+  <div
+    id="signup-root"
+    data-email={state?.email ?? ''}
+    data-verified={String(verified)}
+    data-code-sent={String(!!state)}
+    data-expires-at={state?.expiresAt}
+    data-challenge={!challengeBypassed && siteKey ? 'on' : 'off'}
+  >
+    <ol class="account-steps" aria-label="Account creation progress">
+      <li id="signup-step-email" aria-current={!verified ? 'step' : undefined}>
+        <span class="account-step-number" aria-hidden="true">
+          1
+        </span>
+        Verify email
+      </li>
+      <li id="signup-step-details" aria-current={verified ? 'step' : undefined}>
+        <span class="account-step-number" aria-hidden="true">
+          2
+        </span>
+        Account details
+      </li>
+    </ol>
+    <section class="account-section" id="signup-email-section" hidden={verified}>
+      <h2>Start with your email</h2>
+      <p class="account-lead">
+        We will send a verification code to confirm that this email belongs to you.
+      </p>
+      <form
+        id="signup-email-form"
+        class="account-form"
+        method="post"
+        action="/api/auth/signup/start"
+      >
+        <div class="account-field">
+          <label for="signup-email" class="account-label">
+            Email address
+          </label>
+          <input
+            class="account-input"
+            id="signup-email"
+            name="email"
+            type="email"
+            value={state?.email ?? ''}
+            required
+            maxlength="254"
+            autocomplete="email"
+            disabled={!!state}
+          />
+          <p class="account-help">
+            This will be your login email. It cannot be changed after registration.
+          </p>
+          <p class="account-help">
+            You must be at least 14 years old to create an account. See how TCN handles your
+            personal information in the{' '}
+            <a href="/privacy">
+              <span lang="ko">개인정보 처리방침</span> (Privacy Policy)
+            </a>
+            .
+          </p>
+        </div>
+        {!challengeBypassed && siteKey && (
+          <div
+            class="cf-turnstile"
+            data-sitekey={siteKey}
+            data-action={SIGNUP_CHALLENGE_ACTION}
+            data-appearance="interaction-only"
+            data-callback={CHALLENGE_CALLBACKS.success}
+            data-expired-callback={CHALLENGE_CALLBACKS.expired}
+            data-error-callback={CHALLENGE_CALLBACKS.error}
+          />
+        )}
+        {challengeUnavailable && (
+          <p class="account-error" role="alert">
+            Account creation is temporarily unavailable. Please try again later.
+          </p>
+        )}
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button
+          type="submit"
+          class="account-button"
+          id="send-signup-code"
+          hidden={!!state}
+          disabled={challengeUnavailable}
+          data-locked={challengeUnavailable ? 'true' : undefined}
+        >
+          Send verification code
+        </button>
+      </form>
+      <form
+        id="signup-code-form"
+        class="account-form"
+        method="post"
+        action="/api/auth/signup/verify"
+        hidden={!state}
+      >
+        <p id="code-delivery-status" class="account-help" role="status">
+          A code has been sent. Check your inbox and spam folder.
+        </p>
+        <div class="account-field">
+          <label for="signup-code" class="account-label">
+            Six-digit verification code
+          </label>
+          <input
+            id="signup-code"
+            name="code"
+            class="account-input account-code"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]{6}"
+            minlength="6"
+            maxlength="6"
+            required
+            aria-describedby="signup-code-help"
+          />
+          <p id="signup-code-help" class="account-help">
+            Use the latest code. <span id="signup-code-expiry">Codes expire after 10 minutes.</span>
+          </p>
+        </div>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button type="submit" class="account-button">
+          Verify email
+        </button>
+        <div class="account-actions">
+          <button type="button" id="resend-signup-code" class="account-text-button">
+            Resend code
+          </button>
+          <button type="button" class="account-text-button" data-change-signup-email>
+            Use a different email
+          </button>
+        </div>
+      </form>
+    </section>
+    <section class="account-section" id="signup-details-section" hidden={!verified}>
+      <h2>Your account details</h2>
+      <p class="account-lead">
+        You will join as an associate member while your application is reviewed.
+      </p>
+      <div class="mt-5">
+        <label for="verified-signup-email" class="account-label">
+          Verified email
+        </label>
+        <input
+          id="verified-signup-email"
+          class="account-input mt-2"
+          value={state?.email ?? ''}
+          disabled
+        />
+        <button type="button" class="account-text-button" data-change-signup-email>
+          Use a different email
+        </button>
+      </div>
+      <form id="signup-form" class="account-form" method="post" action="/api/auth/signup">
+        <div class="account-field">
+          <label class="account-label" for="signup-name">
+            Display name
+          </label>
+          <input
+            id="signup-name"
+            class="account-input"
+            name="displayName"
+            autocomplete="name"
+            required
+            maxlength="100"
+            aria-describedby="signup-name-help"
+          />
+          <p id="signup-name-help" class="account-help">
+            Use a name other members can recognise. It will appear beside your forum posts.
+          </p>
+        </div>
+        <div class="account-field">
+          <label class="account-label" for="signup-affiliation">
+            Affiliation <span class="font-normal text-body-muted">(optional)</span>
+          </label>
+          <input
+            id="signup-affiliation"
+            class="account-input"
+            name="affiliation"
+            autocomplete="organization"
+            maxlength="200"
+          />
+          <p class="account-help">
+            Your university, institution or organisation. Optional: if you enter it, you agree that
+            TCN keeps it to review your application and manage your account until you remove it or
+            close your account.
+          </p>
+        </div>
+        <PasswordField
+          id="signup-password"
+          name="password"
+          label="Password"
+          isNew
+          help="Use 15–64 characters. A long phrase is welcome; a symbol is not required."
+        />
+        <PasswordField
+          id="signup-password-confirmation"
+          name="passwordConfirmation"
+          label="Confirm password"
+        />
+        <p class="account-help">
+          TCN uses your email, name and optional affiliation to manage your account and review your
+          application. Leaving affiliation blank does not affect your application. Your email is not
+          displayed in the forums. Details are in the{' '}
+          <a href="/privacy">
+            <span lang="ko">개인정보 처리방침</span> (Privacy Policy)
+          </a>
+          .
+        </p>
+        <p data-form-error class="account-error" role="alert" tabindex="-1" hidden></p>
+        <button type="submit" class="account-button">
+          Create account
+        </button>
+      </form>
+    </section>
+    <noscript>
+      <p class="account-notice mt-5">
+        JavaScript is required for secure email verification. Enable it and reload, or contact the
+        Secretariat for assistance.
+      </p>
+    </noscript>
+  </div>
+  <script>
+    import '../scripts/signup';
+  </script>
+  {!challengeBypassed && siteKey && (
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+  )}
+</AccountShell>

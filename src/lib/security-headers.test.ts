@@ -32,7 +32,6 @@ describe('security header policy', () => {
   it('declares the baseline every response must carry', () => {
     expect(Object.keys(SECURITY_HEADERS).sort()).toEqual([
       'Content-Security-Policy',
-      'Content-Security-Policy-Report-Only',
       'Permissions-Policy',
       'Referrer-Policy',
       'Strict-Transport-Security',
@@ -44,26 +43,22 @@ describe('security header policy', () => {
     expect(SECURITY_HEADERS['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
   });
 
-  it('only enforces CSP directives that cannot break page scripts or styles', () => {
+  it('enforces the full CSP policy and allows only the Turnstile external origin', () => {
     const enforced = SECURITY_HEADERS['Content-Security-Policy'] ?? '';
 
-    expect(directive(enforced, 'frame-ancestors')).toEqual(["'none'"]);
+    expect(directive(enforced, 'default-src')).toEqual(["'self'"]);
+    expect(directive(enforced, 'script-src')).toContain(TURNSTILE);
+    expect(directive(enforced, 'style-src')).toEqual(["'self'", "'unsafe-inline'"]);
+    expect(directive(enforced, 'img-src')).toEqual(["'self'", 'data:', 'blob:']);
+    expect(directive(enforced, 'font-src')).toEqual(["'self'"]);
+    expect(directive(enforced, 'media-src')).toEqual(["'self'", 'blob:']);
+    expect(directive(enforced, 'frame-src')).toEqual([TURNSTILE]);
+    expect(directive(enforced, 'connect-src')).toContain(TURNSTILE);
+    expect(directive(enforced, 'form-action')).toEqual(["'self'"]);
     expect(directive(enforced, 'base-uri')).toEqual(["'self'"]);
     expect(directive(enforced, 'object-src')).toEqual(["'none'"]);
-    expect(directive(enforced, 'script-src')).toEqual([]);
-    expect(directive(enforced, 'default-src')).toEqual([]);
-  });
-
-  it('observes the full CSP in report-only mode and allows only the Turnstile origin', () => {
-    const observed = SECURITY_HEADERS['Content-Security-Policy-Report-Only'] ?? '';
-
-    expect(directive(observed, 'default-src')).toEqual(["'self'"]);
-    expect(directive(observed, 'script-src')).toContain(TURNSTILE);
-    expect(directive(observed, 'frame-src')).toEqual([TURNSTILE]);
-    expect(directive(observed, 'connect-src')).toContain(TURNSTILE);
-    expect(directive(observed, 'object-src')).toEqual(["'none'"]);
-    expect(directive(observed, 'frame-ancestors')).toEqual(["'none'"]);
-    expect(observed).not.toMatch(/(^|\s)\*(\s|;|$)/);
+    expect(directive(enforced, 'frame-ancestors')).toEqual(["'none'"]);
+    expect(enforced).not.toMatch(/(^|\s)\*(\s|;|$)/);
   });
 
   it('turns off powerful browser features the site never uses', () => {

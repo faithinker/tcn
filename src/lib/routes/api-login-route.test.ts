@@ -15,6 +15,7 @@ const {
   getUserByUsername,
   pruneLoginRateLimits,
   readDeviceToken,
+  recordAuthEvent,
   recordLoginFailure,
   requireLoginChallenge,
   resetLoginAttempts,
@@ -35,6 +36,7 @@ const {
   getUserByUsername: vi.fn(),
   pruneLoginRateLimits: vi.fn(),
   readDeviceToken: vi.fn(),
+  recordAuthEvent: vi.fn(),
   recordLoginFailure: vi.fn(),
   requireLoginChallenge: vi.fn(),
   resetLoginAttempts: vi.fn(),
@@ -66,6 +68,10 @@ vi.mock('../auth/rate-limit', () => ({
   recordLoginFailure,
   resetLoginAttempts,
 }));
+vi.mock('../auth/auth-log', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../auth/auth-log')>()),
+  recordAuthEvent,
+}));
 vi.mock('../db', () => ({ getDB, getUserByUsername }));
 
 import { POST } from '../../pages/api/auth/login';
@@ -78,6 +84,7 @@ function context(request?: Request) {
       new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
         headers: {
+          origin: 'https://tcn.example',
           'content-type': 'application/json',
           'cf-connecting-ip': '203.0.113.10',
         },
@@ -96,6 +103,7 @@ describe('POST /api/auth/login', () => {
     vi.clearAllMocks();
     getLoginLockSeconds.mockResolvedValue(0);
     recordLoginFailure.mockResolvedValue(0);
+    recordAuthEvent.mockResolvedValue(true);
     clearLoginFailures.mockResolvedValue(undefined);
     resetLoginAttempts.mockResolvedValue(undefined);
     pruneLoginRateLimits.mockResolvedValue(undefined);
@@ -104,6 +112,157 @@ describe('POST /api/auth/login', () => {
     verifyDeviceToken.mockResolvedValue(null);
     deviceRateLimitKey.mockResolvedValue('device:key');
     createDeviceToken.mockResolvedValue({ token: 'device-token', deviceId: 'new-device' });
+  });
+
+  it.each(['application/json', 'application/x-www-form-urlencoded'])(
+    'refuses a %s body past 8 KiB without reading it all, before Turnstile or D1',
+    async (contentType) => {
+      let pulled = 0;
+      const stream = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (pulled >= 1000) return controller.close();
+          pulled += 1;
+          controller.enqueue(new Uint8Array(1024).fill(97));
+        },
+      });
+      const response = await POST!(
+        context(
+          new Request('https://tcn.example/api/auth/login', {
+            method: 'POST',
+            headers: {
+              origin: 'https://tcn.example',
+              'content-type': contentType,
+              'cf-connecting-ip': '203.0.113.10',
+            },
+            body: stream,
+            duplex: 'half',
+          } as RequestInit),
+        ),
+      );
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({ ok: false, error: 'payload_too_large' });
+      expect(pulled).toBeLessThan(50);
+      expect(requireLoginChallenge).not.toHaveBeenCalled();
+      expect(getDB).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects missing origin, foreign origin and cross-site Fetch Metadata before Turnstile or D1', async () => {
+    for (const [headers, error] of [
+      [{ 'content-type': 'application/json' }, 'invalid_origin'],
+      [{ origin: 'https://evil.example', 'content-type': 'application/json' }, 'invalid_origin'],
+      [
+        {
+          origin: 'https://tcn.example',
+          'sec-fetch-site': 'cross-site',
+          'content-type': 'application/json',
+        },
+        'cross_site_request',
+      ],
+    ] as const) {
+      const response = await POST!(
+        context(
+          new Request('https://tcn.example/api/auth/login', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ username: 'editor', password: 'secret' }),
+          }),
+        ),
+      );
+      expect(response.status).toBe(403);
+      await expect(response.json()).resolves.toEqual({ ok: false, error });
+    }
+    expect(requireLoginChallenge).not.toHaveBeenCalled();
+    expect(getUserByUsername).not.toHaveBeenCalled();
+  });
+
+  it('returns a safe member destination without exposing internal privilege flags', async () => {
+    getUserByUsername.mockResolvedValue({
+      id: 'member',
+      username: 'reader',
+      displayName: 'Reader',
+      sessionVersion: 0,
+      role: 'member',
+      status: 'pending',
+    });
+    verifyPassword.mockResolvedValue(true);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+          body: JSON.stringify({ username: 'reader', password: 'secret', returnTo: '//evil.org' }),
+        }),
+      ),
+    );
+    expect(await response.json()).toMatchObject({
+      redirectTo: '/forum/assembly',
+      user: { role: 'member', status: 'pending' },
+    });
+  });
+  it('normalizes email credentials while retaining legacy username lookup', async () => {
+    getUserByUsername.mockResolvedValue(null);
+    await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+          body: JSON.stringify({ username: ' Reader@Example.ORG ', password: 'secret' }),
+        }),
+      ),
+    );
+    expect(getUserByUsername).toHaveBeenCalledWith(expect.anything(), 'reader@example.org');
+  });
+
+  it('preserves an exact legacy mixed-case email-shaped username', async () => {
+    const legacy = {
+      id: 'legacy',
+      username: 'Editor@Example.org',
+      displayName: 'Legacy editor',
+      sessionVersion: 1,
+      role: 'officer',
+      status: 'approved',
+      passwordHash: 'legacy-hash',
+    };
+    getUserByUsername.mockImplementation(async (_db, value) =>
+      value === legacy.username ? legacy : null,
+    );
+    verifyPassword.mockResolvedValue(true);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+          body: JSON.stringify({ username: legacy.username, password: 'secret' }),
+        }),
+      ),
+    );
+    expect(response.status).toBe(200);
+    expect(getUserByUsername).toHaveBeenCalledExactlyOnceWith(expect.anything(), legacy.username);
+  });
+
+  it('does not switch to a case-distinct account after an exact username password fails', async () => {
+    const exact = {
+      id: 'upper',
+      username: 'Reader@Example.org',
+      passwordHash: 'upper-hash',
+      sessionVersion: 1,
+    };
+    getUserByUsername.mockImplementation(async (_db, value) =>
+      value === exact.username ? exact : { ...exact, id: 'lower', username: 'reader@example.org' },
+    );
+    verifyPassword.mockResolvedValue(false);
+    const response = await POST!(
+      context(
+        new Request('https://tcn.example/api/auth/login', {
+          method: 'POST',
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+          body: JSON.stringify({ username: exact.username, password: 'secret' }),
+        }),
+      ),
+    );
+    expect(response.status).toBe(401);
+    expect(getUserByUsername).toHaveBeenCalledExactlyOnceWith(expect.anything(), exact.username);
   });
 
   describe('Turnstile challenge', () => {
@@ -124,7 +283,10 @@ describe('POST /api/auth/login', () => {
       getUserByUsername.mockResolvedValue(null);
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: {
+          origin: 'https://tcn.example',
+          'content-type': 'application/x-www-form-urlencoded',
+        },
         body: new URLSearchParams({
           username: 'editor',
           password: 'secret',
@@ -177,7 +339,7 @@ describe('POST /api/auth/login', () => {
       ]) {
         const request = new Request('https://tcn.example/api/auth/login', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
+          headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
           body: JSON.stringify({ ...body, turnstileToken: 'turnstile-token' }),
         });
 
@@ -194,7 +356,7 @@ describe('POST /api/auth/login', () => {
       requireLoginChallenge.mockRejectedValue(new TurnstileError('turnstile_failed'));
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
         body: JSON.stringify({ username: 'editor', password: 'secret', turnstileToken: { x: 1 } }),
       });
 
@@ -206,7 +368,7 @@ describe('POST /api/auth/login', () => {
     it('rejects missing credentials before spending a Siteverify call', async () => {
       const request = new Request('https://tcn.example/api/auth/login', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
         body: JSON.stringify({ turnstileToken: 'turnstile-token' }),
       });
 
@@ -236,7 +398,9 @@ describe('POST /api/auth/login', () => {
 
     expect(response.status).toBe(401);
     expect(await response.json()).toEqual({ ok: false, error: 'invalid_credentials' });
-    expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key']);
+    expect(recordLoginFailure).toHaveBeenCalledWith({}, ['account:key', 'ip:key'], undefined, {
+      strict: false,
+    });
   });
 
   it('does the same password work for an unknown username so timing cannot reveal it', async () => {
@@ -334,7 +498,9 @@ describe('POST /api/auth/login', () => {
       const response = await POST!(context());
 
       expect(response.status).toBe(401);
-      expect(recordLoginFailure).toHaveBeenCalledWith({}, ['device:key', 'ip:key']);
+      expect(recordLoginFailure).toHaveBeenCalledWith({}, ['device:key', 'ip:key'], undefined, {
+        strict: false,
+      });
     });
 
     it('still locks a trusted device that keeps failing', async () => {
@@ -395,6 +561,148 @@ describe('POST /api/auth/login', () => {
 
       expect(createDeviceToken).not.toHaveBeenCalled();
       expect(response.headers.getSetCookie()).toEqual([]);
+    });
+  });
+
+  describe('sign-in log and attempt limits', () => {
+    const officer = {
+      id: 'officer-1',
+      username: 'editor',
+      displayName: 'Editor',
+      passwordHash: 'hash',
+      sessionVersion: 1,
+      role: 'officer',
+      status: 'approved',
+    };
+    const member = { ...officer, id: 'member-1', role: 'member' };
+    const eventOf = (call = 0) => recordAuthEvent.mock.calls[call][1];
+
+    it('records a successful sign-in with the account and the request', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      const request = new Request('https://tcn.example/api/auth/login', {
+        method: 'POST',
+        headers: { origin: 'https://tcn.example', 'content-type': 'application/json' },
+        body: JSON.stringify({ username: 'editor', password: 'secret' }),
+      });
+      await POST!(context(request));
+
+      expect(recordAuthEvent).toHaveBeenCalledTimes(1);
+      expect(recordAuthEvent.mock.calls[0][0]).toEqual({});
+      expect(eventOf()).toMatchObject({ userId: 'officer-1', event: 'login_success' });
+      expect(eventOf().request).toBeInstanceOf(Request);
+    });
+
+    it('lets the write of an officer sign-in retry once and gives everyone else one attempt', async () => {
+      verifyPassword.mockResolvedValue(true);
+      getUserByUsername.mockResolvedValue(officer);
+      await POST!(context());
+      getUserByUsername.mockResolvedValue(member);
+      await POST!(context());
+
+      expect(recordAuthEvent.mock.calls[0][2]).toEqual({ attempts: 2 });
+      expect(recordAuthEvent.mock.calls[1][2]).toEqual({ attempts: 1 });
+    });
+
+    it('records a wrong password on a known account and on an unknown one', async () => {
+      verifyPassword.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(member);
+      await POST!(context());
+      getUserByUsername.mockResolvedValue(null);
+      await POST!(context());
+
+      expect(eventOf(0)).toMatchObject({ userId: 'member-1', event: 'login_failure' });
+      expect(eventOf(1)).toMatchObject({ userId: null, event: 'login_failure' });
+    });
+
+    it('records the failure that earns a lock as a lock, once', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(false);
+      recordLoginFailure.mockResolvedValue(900);
+
+      await POST!(context());
+
+      expect(recordAuthEvent).toHaveBeenCalledTimes(1);
+      expect(eventOf()).toMatchObject({ userId: 'officer-1', event: 'login_locked' });
+    });
+
+    it('writes nothing while an attempt is turned away by an existing lock or challenge', async () => {
+      getLoginLockSeconds.mockResolvedValue(3_600);
+      await POST!(context());
+
+      getLoginLockSeconds.mockResolvedValue(0);
+      requireLoginChallenge.mockRejectedValue(new TurnstileError('turnstile_failed'));
+      await POST!(context());
+
+      expect(recordAuthEvent).not.toHaveBeenCalled();
+    });
+
+    it('lets a member in when the sign-in cannot be recorded, and a wrong password still answers 401', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(member);
+      verifyPassword.mockResolvedValue(true);
+      expect((await POST!(context())).status).toBe(200);
+
+      verifyPassword.mockResolvedValue(false);
+      expect((await POST!(context())).status).toBe(401);
+    });
+
+    it('gives an approved officer no session when the sign-in cannot be recorded', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      const response = await POST!(context());
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ ok: false, error: 'auth_log_unavailable' });
+      expect(response.headers.get('retry-after')).toBe('60');
+      expect(response.headers.get('cache-control')).toBe('no-store');
+      expect(response.headers.getSetCookie()).toEqual([]);
+      expect(createSessionToken).not.toHaveBeenCalled();
+      expect(createDeviceToken).not.toHaveBeenCalled();
+    });
+
+    it('does not count an unrecorded officer sign-in as a wrong password, so a retry goes straight through', async () => {
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(true);
+
+      recordAuthEvent.mockResolvedValueOnce(false);
+      expect((await POST!(context())).status).toBe(503);
+      expect(recordLoginFailure).not.toHaveBeenCalled();
+      expect(getLoginLockSeconds).toHaveBeenCalledTimes(1);
+
+      const retry = await POST!(context());
+      expect(retry.status).toBe(200);
+      expect(getLoginLockSeconds).toHaveBeenCalledTimes(2);
+      expect(recordAuthEvent).toHaveBeenCalledTimes(2);
+      expect(retry.headers.getSetCookie().length).toBeGreaterThan(0);
+    });
+
+    it('still lets an officer see a wrong password or a lock when those records cannot be written', async () => {
+      recordAuthEvent.mockResolvedValue(false);
+      getUserByUsername.mockResolvedValue(officer);
+      verifyPassword.mockResolvedValue(false);
+      expect((await POST!(context())).status).toBe(401);
+
+      recordLoginFailure.mockResolvedValue(900);
+      expect((await POST!(context())).status).toBe(429);
+    });
+
+    it('gives approved officers the strict failure limit and everyone else the lenient one', async () => {
+      verifyPassword.mockResolvedValue(false);
+      const strictFor = async (user: unknown) => {
+        recordLoginFailure.mockClear();
+        getUserByUsername.mockResolvedValue(user);
+        await POST!(context());
+        return recordLoginFailure.mock.calls[0][3];
+      };
+
+      expect(await strictFor(officer)).toEqual({ strict: true });
+      expect(await strictFor(member)).toEqual({ strict: false });
+      expect(await strictFor({ ...officer, status: 'rejected' })).toEqual({ strict: false });
+      expect(await strictFor(null)).toEqual({ strict: false });
     });
   });
 

@@ -42,7 +42,7 @@
 
 - 알림: **Discord 웹훅 · Telegram 봇 API** - 글 등록/수정 시 `waitUntil` 백그라운드 발송(`src/lib/notify/`).
 - 검증: `astro check`(타입·스키마) · **Vitest**(유닛) · **Playwright**(스크린샷) · **Lighthouse**(접근성).
-- 품질 게이트(CI): Codecov(커버리지 업로드) · SonarCloud(PR은 `ci.yml`, main 기준선은 `sonar-main.yml`).
+- 품질 게이트(CI): Codecov(커버리지 업로드) · SonarCloud(PR은 `ci.yml`, main 기준선은 `sonar-main.yml`) · zizmor(GitHub Actions 워크플로 보안 분석, `ci.yml`의 `zizmor` 잡).
 
 **데이터 흐름**: 공개 페이지(Astro SSR)가 D1을 읽어 렌더 → 작성자는 `/admin`(React+Tiptap)에서 글 작성 → `/api/posts`가 D1에 저장·이미지를 R2에 업로드 → 저장 즉시 공개 + 알림. 전 과정이 하나의 Cloudflare Worker에서 동작합니다.
 
@@ -71,6 +71,7 @@ tcn/
 │   │   └── routes/       # API 라우트 핸들러 테스트
 │   ├── data/ · i18n/     # 정적 데이터(JSON·TS) · 페이지 카피와 UI 문자열
 │   ├── middleware.ts     # 슬래시 정규화 301 + Q&A 응답 보안 헤더
+│   ├── worker.ts         # 운영 Worker 진입점(wrangler main): Astro 핸들러 + 만료 기록 예약 정리
 │   └── styles/global.css # 디자인 토큰 + Tailwind
 ├── public/               # _headers · _redirects · robots.txt · 파비콘·OG
 ├── scripts/              # create-user·seed-seminar-posts + 브라우저·D1 검증 스크립트
@@ -79,6 +80,16 @@ tcn/
 ```
 
 ## 로컬 실행
+
+회원 기능 검증 시 로컬 D1 마이그레이션을 먼저 적용하고 `.dev.vars`에 `SESSION_SECRET`, `MEMBER_FEATURES_ENABLED=true`, `SIGNUP_ENABLED=true`, `LOGIN_CHALLENGE=off`를 설정합니다. 마지막 값은 localhost의 헤드리스 로그인에만 사용합니다. 운영은 두 회원 기능 플래그를 기본 false로 유지합니다.
+
+- `npm run test:forum:d1`: 격리된 workerd D1의 Forum 제약·롤백
+- `npm run test:users:d1`: 실제 사용자 변경 저장 계층의 감사·충돌·결정권자 보호
+- `npm run verify:forum-users`: localhost 역할별 브라우저·승인·특별 접근·게시/숨김·가입 검증, 임시 계정 정리
+- `npm run verify:header`: 등급별 게시판 메뉴 표시, 호버·클릭 고정·바깥 클릭·스크롤·키보드·모바일 검증
+- `MEMBER_A11Y=1 npm run verify:forum-users`: 같은 흐름에 인증 화면 Lighthouse 접근성 확인 추가
+
+브라우저 산출물은 gitignored `verify/members/`에 저장합니다. `/login`, `/account`, `/forum/assembly`, `/forum/directors`, `/admin/users`에서 확인합니다. 기존 관리자 저작 화면도 계속 `verify:admin`으로 검증합니다.
 
 ```bash
 npm ci                 # lockfile 기준 의존성 설치
@@ -92,11 +103,26 @@ npm run format         # Prettier 일괄 정리 (검사만: format:check)
 npm run audit          # 개발 도구를 포함한 전체 의존성 High 이상 감사
 npm run audit:prod     # 운영 의존성 보안 감사
 npm run generate-types # wrangler types (D1/R2 바인딩 타입 생성)
+GH_TOKEN=$(gh auth token) zizmor .  # 워크플로 보안 정적 분석 (brew install zizmor, CI와 같은 1.31.1)
 ```
 
 로컬은 `.dev.vars`로 시크릿을 주입하며 커밋에서 제외합니다. 필요한 키는 `.env.example`과 [`deployment.md`](./deployment.md)의 시크릿 표를 보세요.
 
 관리자 로그인에는 Turnstile 챌린지가 걸려 있습니다. 브라우저로 직접 로그인할 때는 `.dev.vars`의 Turnstile 키(localhost를 허용한 위젯)로 통과하면 되고, `npm run verify:admin`처럼 헤드리스 브라우저가 로그인 폼을 밟을 때는 `.dev.vars`에 `LOGIN_CHALLENGE=off`를 두세요(localhost 요청에만 효력이 있습니다).
+
+### 로컬에서 가입·글쓰기·Q&A 시험하기
+
+`.dev.vars`는 프로젝트 루트(`package.json` 옆)에 있고 git에서 제외됩니다. 없으면 `.env.example`을 복사해 만듭니다. 값은 운영 시크릿에 옮기지 않습니다.
+
+| 시험할 것                                                   | `.dev.vars`에 필요한 것                                                                                                                                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 회원가입·비밀번호 재설정·로그인·게시판 글쓰기·어드민 글쓰기 | `SESSION_SECRET`, `MEMBER_FEATURES_ENABLED=true`, `SIGNUP_ENABLED=true`, `AUTH_MAIL_MODE=local`, `LOGIN_CHALLENGE=off`. Turnstile 키는 필요 없습니다(localhost에서만 봇 확인을 건너뜁니다). |
+| Q&A 질문 작성                                               | 위에 더해 `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `QNA_TURNSTILE_HOSTNAMES=localhost`, `QNA_RATE_LIMIT_SECRET`. Q&A 폼에는 우회가 없습니다.                                           |
+
+- 가입 인증번호와 재설정 링크는 메일로 나가지 않고 로컬 DB의 합성 메일함에 쌓입니다. `npm run local:mail`(최근 3통, `npm run local:mail -- 10`이면 10통)로 읽습니다. 격리 미리보기 DB를 쓰면 `TCN_D1_PERSIST_TO=.wrangler/account-preview`를 앞에 붙입니다.
+- Turnstile 키 만들기: Cloudflare 대시보드 → Turnstile → Add widget에서 이름을 `tcn-local`처럼 짓고 호스트 이름에 `localhost`만 넣어 만든 뒤, Site key와 Secret key를 `.dev.vars`에 적습니다. 운영 위젯과 분리해야 운영 Secret key가 로컬에 남지 않습니다. `QNA_RATE_LIMIT_SECRET`은 `openssl rand -hex 32`로 만든 임의의 값이면 됩니다. Cloudflare의 더미 테스트 키는 호스트와 액션 검사를 통과하지 못해 쓸 수 없습니다.
+- 로그인·가입에서도 위젯을 직접 보려면 `LOGIN_CHALLENGE=off` 줄을 지우거나 `on`으로 바꿉니다. 키 변경은 dev 서버를 다시 시작해야 반영됩니다.
+- 로그인한 적 있는 로컬 계정은 로그인 기록이 참조하므로 지울 수 없습니다. 임시 계정은 게이트처럼 `scripts/lib/auth-events.mjs`의 정리를 거치거나, 로컬 DB를 처음부터 다시 만드세요.
 
 > ⚠️ npm 패키지를 바꾼 뒤 dev 서버가 500을 내면 vite 캐시가 스테일된 것입니다. Astro CLI에는 `stop` 명령이 없으니 dev 프로세스를 직접 끝내고(포그라운드면 Ctrl-C, 아니면 해당 PID에 `kill`) 다시 `npm run dev` 하세요.
 
@@ -117,6 +143,7 @@ D1 스키마 검증은 서버 없이 `wrangler`로 로컬 D1을 직접 두드립
 
 ```bash
 npm run test:qna:d1    # Q&A 유니크·CHECK 제약이 실제로 거부하는지 확인
+npm run test:roles:d1  # 역할 마이그레이션의 백필·기본값·CHECK 제약 확인
 ```
 
 ## AI 에이전트 설정
@@ -128,3 +155,9 @@ codex --profile web
 ```
 
 MCP 설정은 저장소 로컬 `.codex/config.toml`에 있습니다. 웹 전용 저장소라 Cloudflare·Astro 문서 MCP는 여기서만 켜고, iOS·Figma·Jira·Postman 계열은 여기서 꺼 둡니다. 스킬과 Cloudflare 플러그인 설정은 프로젝트 설정에서 무시되므로 `~/.codex/web.config.toml` 프로필에 두며(iOS용은 `ios.config.toml`), 이 파일은 머신 로컬이라 저장소에 포함되지 않습니다. 반대로 iOS 프로젝트에서는 웹·인프라 도구가 전역 설정에서 꺼져 있어 로드되지 않습니다. 켜고 끄는 도구의 전체 목록과 Claude Code 쪽 설정은 [`AGENTS.md`](../AGENTS.md)의 "Tool scope (web vs iOS)" 섹션이 단일 원천이며, Claude Code는 `CLAUDE.md`가 `AGENTS.md`를 임포트해 같은 정책을 따릅니다.
+
+Claude Code의 MCP 차단·스킬 켜기·권한·훅은 추적되는 `.claude/settings.json`에 있어서, 새로 클론해도 폴더를 신뢰하면 그대로 적용됩니다. 이 머신 전용 항목(MCP 승인, 개인용 일회성 `allow` 규칙)은 gitignore된 `.claude/settings.local.json`에 두며, 필요할 때 Claude Code가 만듭니다. 각 훅의 동작과 `permissions.ask` 목록은 [`AGENTS.md`](../AGENTS.md)의 "Claude Code project hooks" 섹션을 보세요.
+
+## Account lifecycle preview
+
+Email-verified signup, profile editing, password change/reset and withdrawal have an isolated local preview and dedicated browser/D1 gates. See [Account lifecycle](account-lifecycle.md) for Resend configuration, the loopback-only mail sink, API/retention policies and the commands. `npm run test:account:d1` never reads the developer or production D1; `npm run verify:account` requires the isolated preview server and refuses real email delivery.

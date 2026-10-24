@@ -1,7 +1,8 @@
-import { listSeminarPosts } from '../db/posts';
+import { getPostByEventDate, getSeminarSequence, listSeminarPosts } from '../db/posts';
 import {
   deriveSeminarCollection,
   siteToday,
+  toSeminarView,
   type SeminarCollection,
   type SeminarView,
 } from './model';
@@ -18,6 +19,8 @@ export async function getSeminarByEventDate(
   eventDate: string,
   today = siteToday(),
 ): Promise<SeminarView | null> {
-  const collection = await getSeminarCollection(db, today);
-  return collection.chronological.find((seminar) => seminar.eventDate === eventDate) ?? null;
+  const post = await getPostByEventDate(db, eventDate);
+  if (!post?.eventDate) return null;
+  const sequence = Math.max(1, await getSeminarSequence(db, eventDate));
+  return toSeminarView({ ...post, eventDate: post.eventDate }, sequence, today);
 }

@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import type { APIRoute } from 'astro';
 import { getDB, getUserByUsername } from '../../../lib/db';
+import { QnaPayloadError, readBytesWithLimit, readJsonWithLimit } from '../../../lib/qna/payload';
 import {
   buildSessionCookie,
   createSessionToken,
@@ -8,6 +9,7 @@ import {
   getSessionSecret,
   verifyPassword,
 } from '../../../lib/auth';
+import { isStaffAccount, recordAuthEvent } from '../../../lib/auth/auth-log';
 import {
   buildDeviceCookie,
   createDeviceToken,
@@ -27,7 +29,9 @@ import {
   recordLoginFailure,
   resetLoginAttempts,
 } from '../../../lib/auth/rate-limit';
+import { requireSameOrigin, SecurityError } from '../../../lib/auth/mutation';
 import { TurnstileError } from '../../../lib/turnstile';
+import { memberDestination } from '../../../lib/membership/redirects';
 
 export const prerender = false;
 
@@ -50,28 +54,41 @@ interface Credentials {
   username: string;
   password: string;
   turnstileToken: string;
+  returnTo: string;
 }
+
+// A sign-in body is a username, a password and a challenge token, so a few KiB is generous.
+const MAX_BODY_BYTES = 8192;
 
 async function readCredentials(request: Request): Promise<Credentials> {
   const contentType = request.headers.get('content-type') ?? '';
   if (contentType.includes('application/json')) {
-    const body = (await request.json().catch(() => ({}))) as {
+    const body = (await readJsonWithLimit(request, MAX_BODY_BYTES).catch((error: unknown) => {
+      if (error instanceof QnaPayloadError && error.message === 'payload_too_large') throw error;
+      return {};
+    })) as {
       username?: unknown;
       password?: unknown;
       turnstileToken?: unknown;
+      returnTo?: unknown;
     };
     return {
       username: text(body.username),
       password: text(body.password),
       turnstileToken: text(body.turnstileToken),
+      returnTo: text(body.returnTo),
     };
   }
-  const form = await request.formData().catch(() => new FormData());
+  const bytes = await readBytesWithLimit(request, MAX_BODY_BYTES);
+  const form = await new Response(bytes, { headers: { 'content-type': contentType } })
+    .formData()
+    .catch(() => new FormData());
   return {
     username: text(form.get('username')),
     password: text(form.get('password')),
     // 위젯이 폼에 직접 넣는 표준 필드 이름.
     turnstileToken: text(form.get('cf-turnstile-response')),
+    returnTo: text(form.get('returnTo')),
   };
 }
 
@@ -84,7 +101,27 @@ function lockedResponse(retryAfterSeconds: number): Response {
 }
 
 export const POST: APIRoute = async ({ request, url }) => {
-  const { username, password, turnstileToken } = await readCredentials(request);
+  try {
+    requireSameOrigin(request);
+  } catch (error) {
+    if (error instanceof SecurityError) {
+      return Response.json({ ok: false, error: error.code }, { status: error.status });
+    }
+    throw error;
+  }
+
+  let credentials: Credentials;
+  try {
+    credentials = await readCredentials(request);
+  } catch (error) {
+    if (error instanceof QnaPayloadError)
+      return Response.json({ ok: false, error: 'payload_too_large' }, { status: 413 });
+    throw error;
+  }
+  const { password, turnstileToken, returnTo } = credentials;
+  const username = credentials.username.includes('@')
+    ? credentials.username.trim().toLowerCase()
+    : credentials.username;
   if (!username || !password) {
     return Response.json({ ok: false, error: 'missing_credentials' }, { status: 400 });
   }
@@ -118,12 +155,24 @@ export const POST: APIRoute = async ({ request, url }) => {
   const lockedFor = await getLoginLockSeconds(db, limitKeys);
   if (lockedFor > 0) return lockedResponse(lockedFor);
 
-  const user = await getUserByUsername(db, username);
+  // Preserve exact legacy identifiers; only fall back to normalized new-signup email
+  // when the submitted identifier has no match. Never switch accounts after a bad password.
+  const exactUser = await getUserByUsername(db, credentials.username);
+  const user =
+    exactUser ?? (credentials.username !== username ? await getUserByUsername(db, username) : null);
   // 없는 아이디도 같은 비용의 해시 검증을 돌려, 응답 시간으로 아이디 존재 여부를 알 수 없게 한다.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
-    const lockedNow = await recordLoginFailure(db, limitKeys);
+    // 실패 한도는 겨냥한 계정의 종류로 정한다. 없는 아이디는 일반 계정과 같은 한도라 잠금 시점으로 가입 여부가 드러나지 않는다.
+    const lockedNow = await recordLoginFailure(db, limitKeys, undefined, {
+      strict: isStaffAccount(user),
+    });
     if (pruneIsDue()) await pruneLoginRateLimits(db);
+    await recordAuthEvent(db, {
+      userId: user?.id ?? null,
+      event: lockedNow > 0 ? 'login_locked' : 'login_failure',
+      request,
+    });
     if (lockedNow > 0) {
       // 새 잠금이 걸린 순간만 남긴다(Workers 관측성에서 검색 가능). 아이디와 IP 는 기록하지 않고,
       // 같은 계정을 겨냥한 시도를 묶어 볼 수 있게 계정 해시의 앞부분만 쓴다.
@@ -150,6 +199,21 @@ export const POST: APIRoute = async ({ request, url }) => {
     await resetLoginAttempts(db, [accountKey]);
   }
   await pruneLoginRateLimits(db);
+  // 임원 계정은 접속기록(안전성 확보조치 기준 제8조)이 남아야 들어올 수 있다. 비밀번호는 맞았으므로 실패로 세지 않고,
+  // 세션을 주지 않은 채 돌려보내 다시 시도하게 한다. 그 밖의 계정은 기록이 실패해도 로그인을 막지 않는다.
+  // 임원은 일시적인 D1 오류로 막히지 않도록 한 번 더 쓴다.
+  const staff = isStaffAccount(user);
+  const recorded = await recordAuthEvent(
+    db,
+    { userId: user.id, event: 'login_success', request },
+    { attempts: staff ? 2 : 1 },
+  );
+  if (!recorded && staff) {
+    return Response.json(
+      { ok: false, error: 'auth_log_unavailable' },
+      { status: 503, headers: { 'cache-control': 'no-store', 'retry-after': '60' } },
+    );
+  }
   const secure = url.protocol === 'https:';
   const session = await createSessionToken(user.id, secret, {
     sessionVersion: user.sessionVersion,
@@ -163,7 +227,14 @@ export const POST: APIRoute = async ({ request, url }) => {
   return new Response(
     JSON.stringify({
       ok: true,
-      user: { id: user.id, username: user.username, displayName: user.displayName },
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        role: user.role,
+        status: user.status,
+      },
+      redirectTo: memberDestination(user, returnTo),
     }),
     { status: 200, headers },
   );

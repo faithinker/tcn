@@ -1,9 +1,13 @@
 // 계정 발급 시(scripts/create-user.mjs) 새 비밀번호만 거르는 정책이다. 기존 계정이나 로그인 검증과는 무관하다.
+// 웹 가입·변경·재설정(account/policy.ts 의 normalizeNewPassword)과 같은 결과를 내야 하며 password-policy.test.ts 가 잠근다.
 // 스크립트가 빌드 없이 Node 로 `.ts` 를 직접 실행하므로 타입처럼 지워지는 문법만 쓴다(enum·파라미터 프로퍼티 금지).
 // 해시가 PBKDF2 50k 회로 묶여 있어(password.ts) 권고치보다 약하므로, 길이와 흔한 비밀번호 거부로 보완한다.
 
-export const MIN_PASSWORD_LENGTH = 12;
-const MAX_PASSWORD_LENGTH = 128;
+export const MIN_PASSWORD_LENGTH = 15;
+const MAX_PASSWORD_LENGTH = 64;
+
+// 제어·서식·줄바꿈 문자는 눈에 보이지 않아 복사해 넣으면 이후 로그인할 수 없게 된다.
+const INVISIBLE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 type PolicyResult = { ok: true } | { ok: false; reason: string };
 
@@ -45,8 +49,16 @@ const COMMON = [
 const DECORATION = /^\d{0,8}$/;
 
 function isRepetitive(value: string): boolean {
+  const chars = [...value];
   for (let unit = 1; unit <= 4; unit += 1) {
-    if (value.length % unit === 0 && value === value.slice(0, unit).repeat(value.length / unit)) {
+    if (
+      chars.length % unit === 0 &&
+      value ===
+        chars
+          .slice(0, unit)
+          .join('')
+          .repeat(chars.length / unit)
+    ) {
       return true;
     }
   }
@@ -55,11 +67,12 @@ function isRepetitive(value: string): boolean {
 
 // 123456789012 · 987654321098 · abcdefghijkl 처럼 코드값이 한 칸씩 오르거나 내리는 문자열.
 function isSequential(value: string): boolean {
-  if (value.length < 2) return false;
-  const code = (index: number) => value.codePointAt(index) ?? 0;
+  const chars = [...value];
+  if (chars.length < 2) return false;
+  const code = (index: number) => chars[index].codePointAt(0) ?? 0;
   const step = code(1) - code(0);
   if (Math.abs(step) !== 1) return false;
-  for (let index = 2; index < value.length; index += 1) {
+  for (let index = 2; index < chars.length; index += 1) {
     if (code(index) - code(index - 1) !== step) return false;
   }
   return true;
@@ -77,16 +90,51 @@ function isDigitCycle(value: string): boolean {
   return ascending || descending;
 }
 
-export function checkPasswordPolicy(password: string, username: string): PolicyResult {
-  if (password.length < MIN_PASSWORD_LENGTH) {
+function containsUsername(password: string, username: string): boolean {
+  const name = username.trim().toLowerCase();
+  const lower = password.toLowerCase();
+  if (name.length >= 3 && lower.includes(name)) return true;
+  if (name.includes('@')) {
+    const localPart = name.split('@')[0] ?? '';
+    if (localPart.length >= 4 && lower.includes(localPart)) return true;
+  }
+  return false;
+}
+
+function isDecoratedCommon(password: string): boolean {
+  const normalized = password.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return COMMON.some(
+    (word) => normalized.startsWith(word) && DECORATION.test(normalized.slice(word.length)),
+  );
+}
+
+export function isWeakPasswordShape(password: string, username = ''): boolean {
+  return (
+    containsUsername(password, username) ||
+    isRepetitive(password) ||
+    isSequential(password) ||
+    isDigitCycle(password) ||
+    isDecoratedCommon(password)
+  );
+}
+
+export function checkPasswordPolicy(rawPassword: string, username: string): PolicyResult {
+  const password = rawPassword.normalize('NFC');
+  if (INVISIBLE.test(password)) {
+    return { ok: false, reason: 'The password must not contain control or invisible characters.' };
+  }
+  if (!password.trim()) {
+    return { ok: false, reason: 'The password must not be blank.' };
+  }
+  const length = [...password].length;
+  if (length < MIN_PASSWORD_LENGTH) {
     return { ok: false, reason: `Use at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
-  if (password.length > MAX_PASSWORD_LENGTH) {
+  if (length > MAX_PASSWORD_LENGTH) {
     return { ok: false, reason: `Use at most ${MAX_PASSWORD_LENGTH} characters.` };
   }
 
-  const name = username.trim().toLowerCase();
-  if (name.length >= 3 && password.toLowerCase().includes(name)) {
+  if (containsUsername(password, username)) {
     return { ok: false, reason: 'The password must not contain the username.' };
   }
 
@@ -94,11 +142,7 @@ export function checkPasswordPolicy(password: string, username: string): PolicyR
     return { ok: false, reason: 'The password is too repetitive or a simple sequence.' };
   }
 
-  const normalized = password.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const isDecoratedCommon = COMMON.some(
-    (word) => normalized.startsWith(word) && DECORATION.test(normalized.slice(word.length)),
-  );
-  if (isDecoratedCommon) {
+  if (isDecoratedCommon(password)) {
     return {
       ok: false,
       reason: 'The password is a common word with only digits or symbols added.',

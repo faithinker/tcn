@@ -17,7 +17,17 @@
 - `QNA_TURNSTILE_HOSTNAMES` 시크릿 - 공개 Q&A는 Turnstile 검증 응답의 hostname이 이 **정확 일치 허용 목록**에 있어야 통과하고, 없으면 질문 생성과 `/api/ready`가 fail closed(503)됩니다. 방문자가 접속하는 모든 호스트(`thetcn.org` 등)를 쉼표로 넣어야 하며, Turnstile 위젯 자체에도 같은 호스트가 허용돼 있어야 합니다.
 - 배포 smoke 대상(`deploy-workers.yml`의 `PRODUCTION_URL`·`environment.url`) - 현재 `workers.dev`입니다. 커스텀 도메인으로 옮길지는 별도 결정입니다.
 
+## 예약 실행
+
+`wrangler.jsonc`의 `triggers.crons`가 Worker의 Cron Trigger를 등록하고, `wrangler deploy`가 배포할 때 함께 반영합니다. 지금은 하나(`17 18 * * *`, 매일 03:17 KST)로, 보관 기간이 지난 접속기록·로그인 기록을 지웁니다(`src/worker.ts`, 점검 방법은 `operations-runbook.md`). Workers Free는 계정 전체에서 Cron Trigger를 5개까지 허용하므로, 같은 계정의 다른 Worker가 쓰는 개수를 확인한 뒤 늘립니다. 로컬 시험은 `wrangler dev --test-scheduled`를 띄우고 `curl 'http://localhost:8787/cdn-cgi/handler/scheduled?cron=17+18+*+*+*'`를 호출합니다.
+
 ## 자동 배포
+
+### 회원 기능 통합 릴리스
+
+Forum·계정·사용자 관리는 전체 로컬 검증 후 하나의 릴리스로 배포합니다. `MEMBER_FEATURES_ENABLED`를 기본 false로 유지해 초기 권한 설정 중 신규 Forum·사용자 관리 화면/API를 503으로 닫습니다. 실제 username 명단 대조, 회장·수석부회장 결정권 설정, 감사·고문 특별 접근 설정과 역할별 확인 뒤 true로 엽니다. `SIGNUP_ENABLED`는 별도 false로 유지하고 개인정보·남용 방어 준비 후 승인받아 공개합니다. 로컬 `.dev.vars`의 true 설정을 운영으로 복사하지 마세요.
+
+운영 권한 스크립트의 `--actor`, 초기 bootstrap과 변경 기록 절차는 [운영 런북](./operations-runbook.md#account-roles-and-executive-authority)을 따릅니다. 이번 개발 검증은 로컬에서만 수행하며 운영 배포·계정 변경은 별도 승인 작업입니다.
 
 `main`에 머지되면 `deploy-workers.yml`이 전체 의존성 감사, check·test·build, D1 Time Travel bookmark와 migration 적용 후 Worker를 배포합니다. 배포 뒤 순서가 핵심입니다.
 

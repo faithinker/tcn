@@ -1,18 +1,26 @@
 import type { APIRoute } from 'astro';
-import { clearSessionCookie, getSessionUid } from '../../../lib/auth';
+import { recordAuthEvent } from '../../../lib/auth/auth-log';
+import { getSessionUser } from '../../../lib/auth/guard';
+import { requireMutation, requireSameOrigin, SecurityError } from '../../../lib/auth/mutation';
+import { clearAccountCookies } from '../../../lib/account/cookies';
 import { getDB, revokeUserSessions } from '../../../lib/db';
-
 export const prerender = false;
-
 export const POST: APIRoute = async ({ request, url }) => {
-  const uid = await getSessionUid(request);
-  if (uid) await revokeUserSessions(getDB(), uid);
-
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: {
-      'content-type': 'application/json',
-      'set-cookie': clearSessionCookie({ secure: url.protocol === 'https:' }),
-    },
-  });
+  try {
+    requireSameOrigin(request);
+    const user = await getSessionUser(request);
+    if (user) {
+      await requireMutation(request, { scope: 'account', require: 'signedIn' });
+      const db = getDB();
+      await revokeUserSessions(db, user.id);
+      await recordAuthEvent(db, { userId: user.id, event: 'logout', request });
+    }
+    const headers = new Headers({ 'cache-control': 'no-store' });
+    clearAccountCookies(headers, url.protocol === 'https:', { keepDevice: true });
+    return Response.json({ ok: true }, { headers });
+  } catch (error) {
+    if (error instanceof SecurityError)
+      return Response.json({ ok: false, error: error.code }, { status: error.status });
+    throw error;
+  }
 };

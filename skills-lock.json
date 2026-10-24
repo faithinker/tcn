@@ -31,6 +31,12 @@
       "skillPath": "skills/review-animations/SKILL.md",
       "computedHash": "c92905bff59c3007d07c2638a2a83d5d71c901feef108cce1da0bf3c7cafd579"
     },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
+    },
     "tiptap": {
       "source": "ueberdosis/tiptap",
       "sourceType": "github",
