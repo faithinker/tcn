@@ -125,3 +125,67 @@ it('withdraws then prevents every reuse of the old session', async () => {
   expect(await r.json()).toMatchObject({ redirectTo: '/account/withdrawn' });
   expect((await PATCH(ctx('/api/account/profile', { displayName: 'Stale' }))).status).toBe(401);
 });
+const MAIL_ENV = {
+  RESEND_API_KEY: 'test-key',
+  AUTH_MAIL_FROM: 'accounts@tcn.example',
+  AUTH_PUBLIC_ORIGIN: 'https://tcn.example',
+};
+const closeAccount = {
+  currentPassword: 'An old password by the river',
+  requestId: 'withdraw-0003',
+  confirmation: true,
+};
+const changePassword = {
+  currentPassword: 'An old password by the river',
+  newPassword: 'A different phrase by the sea',
+  passwordConfirmation: 'A different phrase by the sea',
+};
+it.each([
+  ['withdrawal', withdraw, '/api/account/withdraw', closeAccount],
+  ['password change', password, '/api/account/password', changePassword],
+] as const)(
+  'answers a %s without waiting for the security notice when the runtime can run it later',
+  async (_name, route, path, body) => {
+    Object.assign(env, MAIL_ENV);
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    const network = vi.fn(async () => {
+      await gate;
+      return Response.json({ id: 'mail' });
+    });
+    vi.stubGlobal('fetch', network);
+    const tasks: Promise<unknown>[] = [];
+    try {
+      const context = {
+        ...ctx(path, body),
+        locals: { cfContext: { waitUntil: (task: Promise<unknown>) => tasks.push(task) } },
+      };
+      const outcome = await Promise.race([
+        route(context as never),
+        new Promise<string>((resolve) => setTimeout(() => resolve('blocked'), 300)),
+      ]);
+      expect(outcome).not.toBe('blocked');
+      expect((outcome as Response).status).toBe(200);
+      expect(tasks).toHaveLength(1);
+    } finally {
+      release();
+      await Promise.all(tasks);
+      expect(network).toHaveBeenCalledOnce();
+      vi.unstubAllGlobals();
+      for (const key of Object.keys(MAIL_ENV)) delete (env as Record<string, unknown>)[key];
+    }
+  },
+);
+it('still sends the security notice before answering when there is no way to run it later', async () => {
+  Object.assign(env, MAIL_ENV);
+  const network = vi.fn(async () => Response.json({ id: 'mail' }));
+  vi.stubGlobal('fetch', network);
+  try {
+    const response = await withdraw(ctx('/api/account/withdraw', closeAccount));
+    expect(response.status).toBe(200);
+    expect(network).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllGlobals();
+    for (const key of Object.keys(MAIL_ENV)) delete (env as Record<string, unknown>)[key];
+  }
+});

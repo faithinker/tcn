@@ -20,14 +20,30 @@ export async function readAccountBody(request: Request) {
   }
   return objectInput(parsed);
 }
+// Work that must not hold up the answer, such as a notice mail. Without a runtime hook it simply runs to completion first.
+export type Background = (task: Promise<unknown>) => Promise<void>;
+type WaitUntil = (task: Promise<unknown>) => void;
+
+function backgroundFor(waitUntil?: WaitUntil): Background {
+  return async (task) => {
+    const guarded = task.catch(() =>
+      console.warn(JSON.stringify({ event: 'account_background_failed' })),
+    );
+    if (waitUntil) waitUntil(guarded);
+    else await guarded;
+  };
+}
+
 export async function handleAccountMutation(
   request: Request,
   run: (
     db: D1Database,
     user: User,
     body: Record<string, unknown>,
+    background: Background,
   ) => Promise<Record<string, unknown>>,
   endSession = false,
+  waitUntil?: WaitUntil,
 ) {
   if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
   try {
@@ -39,7 +55,7 @@ export async function handleAccountMutation(
     const user = await getSessionAccount(request);
     if (!user) throw new AccountError('unauthorized', 401);
     const body = await readAccountBody(request);
-    const data = await run(getDB(), user, body);
+    const data = await run(getDB(), user, body, backgroundFor(waitUntil));
     const headers = new Headers({ 'cache-control': 'no-store' });
     if (endSession) clearAccountCookies(headers, new URL(request.url).protocol === 'https:');
     return Response.json({ ok: true, ...data }, { headers });
