@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ### Feature
 
+- Updated footer official organization details with verified business registration number 408-82-92622, road-name secretariat address, and English president name Wonjoon Kim. (Branch: `feat/ui`) - Implemented by Antigravity
 - Redesigned footer into a 4-column academic layout (Brand, Network, Governance, Secretariat) with official organization meta bar (President Dr. Wonjoon Kim, secretariat phone, address) and back-to-top button. (Branch: `feat/ui`) - Implemented by Antigravity
 - Removed sign-in link from footer for unauthenticated visitors, changed Korean-English privacy policy quick links to English-only ("Privacy Policy") across footer, account shell, and signup pages, and added leave-confirmation dialogs and beforeunload protection during active signup flow. (Branch: `feat/ui`) - Implemented by Antigravity
 

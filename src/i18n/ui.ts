@@ -72,7 +72,8 @@ export const ui = {
   'common.past': 'Past',
   'common.tba': 'To be announced',
   'footer.office': 'Secretariat',
-  'footer.officeValue': '286, Gukhwa-ri, Ganghwa-eup, Ganghwa-gun, Incheon, Republic of Korea',
+  'footer.officeValue':
+    '51, Gobigogae-ro 95beon-gil, Ganghwa-eup, Ganghwa-gun, Incheon 23028, Republic of Korea',
   'footer.copyright': 'Transcultural Network',
   'footer.contactEmail': 'mingoo@aks.ac.kr',
 } as const;
