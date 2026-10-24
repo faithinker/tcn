@@ -82,6 +82,7 @@ export interface UserMutationInput {
   expectedRevision: number;
   requestId: string;
   ip?: string | null;
+  onApproved?: (email: string) => void;
 }
 interface AuditRow {
   actor_id: string;
@@ -150,6 +151,10 @@ export async function mutateUser(db: D1Database, input: UserMutationInput) {
   if (target.revision !== input.expectedRevision)
     throw new UserChangeError('revision_conflict', 409);
   const now = Math.floor(Date.now() / 1000);
+  const isApproval =
+    input.kind === 'status' &&
+    after.status === 'approved' &&
+    (target.status === 'pending' || target.status === 'rejected');
   const action =
     input.kind === 'permissions'
       ? 'permissions_changed'
@@ -218,6 +223,9 @@ export async function mutateUser(db: D1Database, input: UserMutationInput) {
   try {
     const results = await db.batch([update, audit]);
     if (results[0].meta.changes !== 1) throw new UserChangeError('revision_conflict', 409);
+    if (isApproval && input.onApproved) {
+      input.onApproved(target.username);
+    }
     return resultOf(event);
   } catch (error) {
     requireUserManager(await getManagedUser(db, input.actorId));

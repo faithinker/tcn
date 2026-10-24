@@ -1,3 +1,5 @@
+import { approvalNotice } from '../account/mail';
+import { mailBindings } from '../account/public-route';
 import { requireMutation } from '../auth/mutation';
 import { getDB } from '../db';
 import { memberFeaturesEnabled, memberFeatureUnavailable } from '../member-features';
@@ -5,6 +7,19 @@ import { readJsonWithLimit } from '../qna/payload';
 import { accessLogIp } from './access-log';
 import { UserChangeError } from './permissions';
 import { mutateUser } from './repository';
+
+export type Background = (task: Promise<unknown>) => Promise<void>;
+type WaitUntil = (task: Promise<unknown>) => void;
+
+function backgroundFor(waitUntil?: WaitUntil): Background {
+  return async (task) => {
+    const guarded = task.catch(() =>
+      console.warn(JSON.stringify({ event: 'user_background_failed' })),
+    );
+    if (waitUntil) waitUntil(guarded);
+    else await guarded;
+  };
+}
 
 const json = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -15,8 +30,10 @@ export async function handleUserMutation(
   request: Request,
   targetId: string | undefined,
   kind: 'status' | 'permissions',
+  waitUntil?: WaitUntil,
 ): Promise<Response> {
   if (!memberFeaturesEnabled()) return memberFeatureUnavailable();
+  const background = backgroundFor(waitUntil);
   try {
     const { user } = await requireMutation(request, { scope: 'users', require: 'executive' });
     if (!targetId) throw new UserChangeError('missing_id', 400);
@@ -46,6 +63,7 @@ export async function handleUserMutation(
         typeof value.canAccessDirectorsForum !== 'boolean')
     )
       throw new UserChangeError('invalid_permissions', 400);
+    let approvedEmail: string | undefined;
     const result = await mutateUser(getDB(), {
       actorId: user.id,
       targetId,
@@ -54,7 +72,13 @@ export async function handleUserMutation(
       expectedRevision: expectedRevision as number,
       requestId: requestId as string,
       ip: accessLogIp(request),
+      onApproved: (email) => {
+        approvedEmail = email;
+      },
     });
+    if (approvedEmail) {
+      await background(approvalNotice(getDB(), request, mailBindings(), approvedEmail));
+    }
     return json({ ok: true, user: result });
   } catch (error) {
     if (error && typeof error === 'object' && 'status' in error && 'code' in error) {

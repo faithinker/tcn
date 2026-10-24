@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { openTestD1, type TestD1 } from '../../test-support/d1';
-import { securityNotice, sendAccountMail } from './mail';
+import { approvalNotice, securityNotice, sendAccountMail } from './mail';
 let h: TestD1;
 const request = new Request('https://tcn.example/signup');
 const bindings = {
@@ -132,4 +132,34 @@ it('returns a generic provider failure without leaking response bodies', async (
   await expect(
     sendAccountMail(h.db, request, bindings, 'person@example.org', 'Verify', 'test'),
   ).rejects.toMatchObject({ code: 'email_unavailable', status: 503 });
+});
+it('sends an approval notice email with the login URL', async () => {
+  await approvalNotice(h.db, request, bindings, 'approved.member@example.org');
+  expect(fetch).toHaveBeenCalledWith(
+    'https://api.resend.com/emails',
+    expect.objectContaining({
+      method: 'POST',
+      headers: expect.objectContaining({ authorization: 'Bearer test-key' }),
+    }),
+  );
+  const init = vi.mocked(fetch).mock.calls[0][1]!;
+  expect(JSON.parse(init.body as string)).toMatchObject({
+    to: ['approved.member@example.org'],
+    subject: 'Your TCN membership application has been approved',
+    text: expect.stringContaining('https://tcn.example/login'),
+  });
+});
+it('retries approval notice once on transient error and logs on failure without leaking email', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.mocked(fetch).mockRejectedValue(new Error('resend connection failure'));
+  try {
+    await approvalNotice(h.db, request, bindings, 'failing.member@example.org');
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledOnce();
+    const logged = String(warn.mock.calls[0][0]);
+    expect(JSON.parse(logged)).toEqual({ event: 'account_approval_notice_failed' });
+    expect(logged).not.toContain('failing.member@example.org');
+  } finally {
+    warn.mockRestore();
+  }
 });

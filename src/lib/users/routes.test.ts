@@ -7,11 +7,15 @@ const state = vi.hoisted(() => ({
   security: null as null | { code: string; status: number },
   db: null as D1Database | null,
 }));
+vi.mock('cloudflare:workers', () => ({ env: {} }));
 vi.mock('../member-features', () => ({
   memberFeaturesEnabled: () => state.enabled,
   memberFeatureUnavailable: () => new Response(null, { status: 503 }),
 }));
 vi.mock('../db', () => ({ getDB: () => state.db }));
+vi.mock('../account/mail', () => ({
+  approvalNotice: vi.fn(async () => {}),
+}));
 vi.mock('../auth/mutation', () => ({
   requireMutation: vi.fn(async () => {
     if (state.security) throw state.security;
@@ -19,6 +23,7 @@ vi.mock('../auth/mutation', () => ({
   }),
 }));
 import { requireMutation } from '../auth/mutation';
+import { approvalNotice } from '../account/mail';
 import { PATCH as status } from '../../pages/api/users/[id]/status';
 import { PATCH as permissions } from '../../pages/api/users/[id]/permissions';
 let harness: TestD1;
@@ -108,4 +113,45 @@ it('rejects injected actor fields, malformed revisions and incomplete permission
 it('returns missing user and revision conflicts without claiming success', async () => {
   expect((await call(status, payload, 'missing')).status).toBe(404);
   expect((await call(status, { ...payload, expectedRevision: 2 })).status).toBe(409);
+});
+it('sends an approval notice when a pending account is approved', async () => {
+  const response = await call(status, payload);
+  expect(response.status).toBe(200);
+  expect(approvalNotice).toHaveBeenCalledWith(
+    state.db,
+    expect.any(Request),
+    expect.any(Object),
+    'target',
+  );
+});
+it('does not send an approval notice when rejecting an account', async () => {
+  const response = await call(status, {
+    status: 'rejected',
+    expectedRevision: 1,
+    requestId: 'reject-001',
+  });
+  expect(response.status).toBe(200);
+  expect(approvalNotice).not.toHaveBeenCalled();
+});
+it('runs approval notice in background via cfContext.waitUntil without blocking response', async () => {
+  const tasks: Promise<unknown>[] = [];
+  const response = await status({
+    request: new Request('https://tcn.test/api/users/target/status', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+    params: { id: 'target' },
+    locals: { cfContext: { waitUntil: (task: Promise<unknown>) => tasks.push(task) } },
+  } as never);
+  expect(response.status).toBe(200);
+  expect(tasks).toHaveLength(1);
+  await Promise.all(tasks);
+  expect(approvalNotice).toHaveBeenCalled();
+});
+it('never fails the user status update if the approval notice fails', async () => {
+  vi.mocked(approvalNotice).mockRejectedValueOnce(new Error('mail transport error'));
+  const response = await call(status, payload);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ ok: true, user: { status: 'approved' } });
 });
