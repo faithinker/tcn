@@ -52,8 +52,8 @@ TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy
 - **데이터**: `npm run build`(와 `dev`·`start`) 앞에서 `scripts/export-public-content.mjs`가 D1의 공개 세미나 목록을 `src/generated/public-seminars.json`(gitignore)으로 내보내고, 세 페이지가 이 스냅샷으로 프리렌더됩니다. 출처는 환경에 따라 자동 선택됩니다.
   - 운영 배포(`deploy-workers.yml`): `TCN_REQUIRE_CONTENT=1` - 운영 D1만 허용하고, 읽지 못하면 **빌드가 실패**합니다(빈 목록이나 로컬 데이터로 배포되지 않도록).
   - `CLOUDFLARE_API_TOKEN`이 있으면 운영 D1, 없고 로컬 D1이 있으면 로컬, 둘 다 없으면 빈 스냅샷(CI의 PR 빌드). `TCN_CONTENT_SOURCE=remote|local|empty`로 직접 고를 수 있습니다.
-- **자동 갱신**: `refresh-static-content.yml`이 10분마다 라이브 지문(`/api/content-fingerprint`, D1 기준)과 배포본 지문(`/content-fingerprint.json`, 정적)을 비교합니다. 지문은 세미나 목록 + KST 날짜의 해시라서, 세미나를 추가·수정·삭제했거나 날짜가 넘어가 상태(예정/오늘/지난)가 바뀌면 달라집니다. 달라지면 `deploy-workers.yml`을 `workflow_dispatch`로 다시 돌립니다.
-  - 반영 지연은 최대 약 10분 + 배포 시간(약 5분)입니다. 본문·사진 변경은 상세 페이지가 즉시 반영하므로 이 지연과 무관합니다.
+- **자동 갱신**: 세미나 등록·수정·삭제 시 Worker가 백그라운드에서 배포본 지문과 비교해 내용이 변경되었으면 GitHub Actions `deploy-workers.yml`을 즉시 트리거합니다(`GITHUB_DISPATCH_TOKEN` 설정 시). 백업으로 `refresh-static-content.yml`이 10분마다 라이브 지문(`/api/content-fingerprint`, D1 기준)과 배포본 지문(`/content-fingerprint.json`, 정적)을 비교하여 재빌드를 트리거합니다. 지문은 세미나 목록 + KST 날짜의 해시라서, 세미나를 추가·수정·삭제했거나 날짜가 넘어가 상태(예정/오늘/지난)가 바뀌면 달라집니다. 달라지면 `deploy-workers.yml`을 `workflow_dispatch`로 다시 돌립니다.
+  - 저장 즉시 트리거되는 경우 약 2~3분 안에 정적 페이지가 재배포됩니다. 본문·사진 변경은 상세 페이지가 즉시 반영하므로 이 지연과 무관합니다.
   - 비교 자체가 실패하면(엔드포인트 장애, 챌린지 HTML 등) 배포하지 않고 워크플로를 실패로 표시합니다. 배포가 진행 중이면 건너뛰고, 직전 15분 안에 이 경로로 배포했는데도 어긋나면 루프 방지로 다시 배포하지 않습니다.
   - `PRODUCTION_URL`은 존 도메인 `thetcn.org`입니다. Bot Fight Mode를 켜면 GitHub 러너의 요청이 403으로 막혀 이 워크플로가 실패하므로(2026-10-16 실측) 꺼 둔 상태를 유지해야 합니다. 배포 smoke를 `workers.dev`에서 `thetcn.org`로 옮길 때도 같은 이유로 꺼져 있어야 합니다.
   - 저장소에 60일간 활동이 없으면 GitHub이 예약 워크플로를 멈춥니다. 멈추면 정적 페이지가 낡습니다.
@@ -72,6 +72,7 @@ TCN_CONTENT_SOURCE=remote npm run build && npx wrangler deploy
 | `QNA_RATE_LIMIT_SECRET`          | 원 IP 비저장 HMAC rate-limit key                                |
 | `DISCORD_WEBHOOK`                | 글 알림 - 디스코드 웹훅 URL                                     |
 | `TELEGRAM_TOKEN` · `TELEGRAM_TO` | 글 알림 - 봇 토큰 · 채팅 ID                                     |
+| `GITHUB_DISPATCH_TOKEN`          | 세미나 저장 즉시 정적 페이지 재빌드 - GitHub PAT (Actions r/w) |
 
 - 로컬은 `.dev.vars`를 사용하며 커밋에서 제외합니다(키 목록은 `.env.example`). 로컬 Q&A 제출 검증에는 localhost를 허용한 전용 Turnstile widget과 `QNA_TURNSTILE_HOSTNAMES=localhost`를 씁니다. Turnstile 공식 dummy key 응답에는 hostname이 없어 단위·CI 테스트는 Siteverify를 mock합니다.
 - 관리자 로그인도 같은 Turnstile 위젯·키를 씁니다(`data-action="admin_login"`이라 Q&A 토큰으로는 통과하지 못합니다). 그래서 **로그인이 되려면 `thetcn.org`가 위젯의 Hostnames와 `QNA_TURNSTILE_HOSTNAMES`에 모두 있어야** 하고, 둘 중 하나가 빠지면 로그인 화면이 위젯을 못 띄우거나 서버가 403으로 닫습니다. `LOGIN_CHALLENGE=off`는 로컬·CI의 `.dev.vars` 전용 스위치로, 요청이 `localhost`일 때만 챌린지를 건너뜁니다(운영에는 설정하지 않으며 설정돼도 운영 호스트에선 무효).

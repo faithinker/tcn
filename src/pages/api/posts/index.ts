@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { requireOfficerMutation } from '../../../lib/auth';
 import { createPost, getDB, listSeminarPosts } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
+import { triggerStaticRefresh } from '../../../lib/public-content/refresh';
 import { parsePostPayload } from '../../../lib/posts';
 import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminars';
 
@@ -50,5 +51,6 @@ export const POST: APIRoute = async ({ request }) => {
   }
   // 알림은 베스트에포트 백그라운드 — 저장 응답을 막지 않는다.
   notifyPostChange(request.url, post, 'created');
+  triggerStaticRefresh(request.url, db);
   return Response.json({ ok: true, post });
 };

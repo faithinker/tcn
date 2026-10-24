@@ -10,6 +10,7 @@ import {
   updatePost,
 } from '../../../lib/db';
 import { notifyPostChange } from '../../../lib/notify';
+import { triggerStaticRefresh } from '../../../lib/public-content/refresh';
 import { parsePostPayload } from '../../../lib/posts';
 import { isSeminarDateConflictError, validateSeminarDate } from '../../../lib/seminars';
 
@@ -88,6 +89,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
   if (!post) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
   // 알림은 베스트에포트 백그라운드 — 저장 응답을 막지 않는다.
   notifyPostChange(request.url, post, 'updated');
+  triggerStaticRefresh(request.url, db);
   return Response.json({ ok: true, post });
 };
 
@@ -100,5 +102,6 @@ export const DELETE: APIRoute = async ({ request, params }) => {
 
   const deleted = await softDeletePost(getDB(), id);
   if (!deleted) return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
+  triggerStaticRefresh(request.url, getDB());
   return Response.json({ ok: true });
 };

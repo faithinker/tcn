@@ -11,6 +11,7 @@ const {
   notifyPostChange,
   PostRevisionConflictError,
   softDeletePost,
+  triggerStaticRefresh,
   updatePost,
 } = vi.hoisted(() => ({
   createPost: vi.fn(),
@@ -27,6 +28,7 @@ const {
     }
   },
   softDeletePost: vi.fn(),
+  triggerStaticRefresh: vi.fn(),
   updatePost: vi.fn(),
 }));
 
@@ -46,6 +48,7 @@ vi.mock('../db', () => ({
   updatePost,
 }));
 vi.mock('../notify', () => ({ notifyPostChange }));
+vi.mock('../public-content/refresh', () => ({ triggerStaticRefresh }));
 
 import { createCsrfToken } from '../auth/mutation';
 import { DELETE, PUT } from '../../pages/api/posts/[id]';
@@ -170,6 +173,10 @@ describe('POST /api/posts', () => {
       'https://tcn.example/api/posts',
       { id: 'post-1', title: 'Third seminar' },
       'created',
+    );
+    expect(triggerStaticRefresh).toHaveBeenCalledWith(
+      'https://tcn.example/api/posts',
+      expect.anything(),
     );
   });
 
@@ -300,6 +307,10 @@ describe('PUT /api/posts/[id]', () => {
       { id: 'post-1', title: 'Third seminar', revision: 3 },
       'updated',
     );
+    expect(triggerStaticRefresh).toHaveBeenCalledWith(
+      'https://tcn.example/api/posts/post-1',
+      expect.anything(),
+    );
   });
 });
 
@@ -330,6 +341,10 @@ describe('DELETE /api/posts/[id]', () => {
     const deleted = await DELETE!(itemContext('DELETE'));
     expect(deleted.status).toBe(200);
     expect(softDeletePost).toHaveBeenCalledWith(expect.anything(), 'post-1');
+    expect(triggerStaticRefresh).toHaveBeenCalledWith(
+      'https://tcn.example/api/posts/post-1',
+      expect.anything(),
+    );
 
     softDeletePost.mockResolvedValue(false);
     const missing = await DELETE!(itemContext('DELETE'));
