@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. AI agents (
 
 ## [2026-10-25]
 
+### Fix
+
+- Stopped sign-out from deleting the trusted-device cookie (`tcn_device`). `POST /api/auth/logout` now clears only the session and signup cookies, while a password change, a withdrawal, a password reset and an ended session still clear all three. Sign-out used to delete the cookie that lets a browser skip the account lock, so an attacker could lock out an administrator who had signed out, which undid the lock escalation added with the trusted-device cookie. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude
+
 ### Chore
 
 - Raised the daily account-mail thresholds of signup from 50 to 70 and of password reset from 80 to 85; security notices stay at 90 and the monthly thresholds (1,800 / 2,600 / 2,900) are unchanged. The thresholds are watermarks on one shared daily counter, so signup is still cut off first and password reset and security notices keep their share of the 90 attempts reserved inside Resend Free's 100 a day. The tests and the two documents that quote the numbers follow. (Branch: `feat/roles-phase1-foundation`) - Implemented by Claude

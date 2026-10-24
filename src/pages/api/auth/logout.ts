@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       await recordAuthEvent(db, { userId: user.id, event: 'logout', request });
     }
     const headers = new Headers({ 'cache-control': 'no-store' });
-    clearAccountCookies(headers, url.protocol === 'https:');
+    clearAccountCookies(headers, url.protocol === 'https:', { keepDevice: true });
     return Response.json({ ok: true }, { headers });
   } catch (error) {
     if (error instanceof SecurityError)

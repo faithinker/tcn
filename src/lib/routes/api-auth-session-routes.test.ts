@@ -60,12 +60,13 @@ describe('account session endpoints', () => {
     expect(await rows()).toEqual([{ user_id: 'user', event: 'logout', staff: 1 }]);
   });
 
-  it('revokes every session and clears auth cookies, including the trusted-device path', async () => {
+  it('revokes every session and clears the session and signup cookies but keeps the trusted-device cookie', async () => {
     const r = await logout(context('/api/auth/logout'));
     expect(r.status).toBe(200);
-    expect(r.headers.getSetCookie().find((v) => v.startsWith('tcn_device='))).toContain(
-      'Path=/api/auth/login',
-    );
+    const cookies = r.headers.getSetCookie();
+    expect(cookies.find((v) => v.startsWith('tcn_session='))).toContain('Max-Age=0');
+    expect(cookies.find((v) => v.startsWith('tcn_signup='))).toContain('Max-Age=0');
+    expect(cookies.some((v) => v.startsWith('tcn_device='))).toBe(false);
     expect(await (await me(context('/api/auth/me'))).json()).toMatchObject({
       authenticated: false,
     });
